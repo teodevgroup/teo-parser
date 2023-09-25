@@ -1,22 +1,28 @@
-use crate::ast::identifier::ASTIdentifier;
-use crate::ast::span::Span;
+use std::fmt::{Display, Formatter};
+use super::span::Span;
+use super::identifier::Identifier;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct ASTIdentifierPath {
-    pub(crate) identifiers: Vec<ASTIdentifier>,
+pub(crate) struct IdentifierPath {
+    pub(crate) identifiers: Vec<Identifier>,
     pub(crate) span: Span,
 }
 
-impl ASTIdentifierPath {
-    pub(crate) fn path(&self) -> Vec<String> {
-        self.identifiers.iter().map(|i| i.name.clone()).collect()
+impl IdentifierPath {
+
+    pub(crate) fn path(&self) -> Vec<&str> {
+        self.identifiers.iter().map(|i| i.name.as_str()).collect()
     }
 }
-//
-// impl Display for ASTIdentifierPath {
-//     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-//         for identifier in self.identifiers.iter() {
-//
-//         }
-//     }
-// }
+
+impl Display for IdentifierPath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for (i, id) in self.identifiers.iter().enumerate() {
+            if i != 0 {
+                f.write_str(".")?;
+            }
+            Display::fmt(&id, f)?;
+        }
+        Ok(())
+    }
+}

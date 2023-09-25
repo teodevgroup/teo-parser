@@ -22,7 +22,7 @@ pub trait DiagnosticsLog {
 pub struct DiagnosticsError {
     span: Span,
     message: String,
-    source_path: PathBuf,
+    source_path: String,
 }
 
 impl DiagnosticsLog for DiagnosticsError {
@@ -34,7 +34,7 @@ impl DiagnosticsLog for DiagnosticsError {
         self.message.as_str()
     }
 
-    fn source_path(&self) -> &Path {
+    fn source_path(&self) -> &str {
         &self.source_path
     }
 
@@ -65,7 +65,7 @@ impl DiagnosticsLog for &DiagnosticsError {
         self.message.as_str()
     }
 
-    fn source_path(&self) -> &Path {
+    fn source_path(&self) -> &str {
         &self.source_path
     }
 
@@ -87,7 +87,7 @@ impl DiagnosticsLog for &DiagnosticsError {
 }
 
 impl DiagnosticsError {
-    pub fn new(span: Span, message: impl Into<String>, source_path: PathBuf) -> Self {
+    pub fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
         Self { span, message: message.into(), source_path }
     }
 }
@@ -96,7 +96,7 @@ impl DiagnosticsError {
 pub struct DiagnosticsWarning {
     span: Span,
     message: String,
-    source_path: PathBuf,
+    source_path: String,
 }
 
 impl DiagnosticsLog for DiagnosticsWarning {
@@ -108,7 +108,7 @@ impl DiagnosticsLog for DiagnosticsWarning {
         self.message.as_str()
     }
 
-    fn source_path(&self) -> &Path {
+    fn source_path(&self) -> &str {
         &self.source_path
     }
 
@@ -160,7 +160,7 @@ impl DiagnosticsLog for &DiagnosticsWarning {
 }
 
 impl DiagnosticsWarning {
-    pub fn new(span: Span, message: impl Into<String>, source_path: PathBuf) -> Self {
+    pub fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
         Self { span, message: message.into(), source_path }
     }
 }
@@ -204,15 +204,15 @@ impl Diagnostics {
         }
     }
 
-    pub fn insert_unparsed_rule(&mut self, span: Span, source_path: PathBuf) {
+    pub fn insert_unparsed_rule(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "SyntaxError: Unexpected content.", source_path))
     }
 
-    pub fn insert_unresolved_model(&mut self, span: Span, source_path: PathBuf) {
+    pub fn insert_unresolved_model(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "ResolvingError: Model is not defined.", source_path))
     }
 
-    pub fn insert_unresolved_enum(&mut self, span: Span, source_path: PathBuf) {
+    pub fn insert_unresolved_enum(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "ResolvingError: Type is not defined.", source_path))
     }
 }
