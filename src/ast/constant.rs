@@ -1,8 +1,8 @@
 use std::fmt::{Display, Formatter};
-use crate::parser::ast::entity::Entity;
-use crate::parser::ast::expression::Expression;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
+use crate::ast::entity::Entity;
+use crate::ast::expression::Expression;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Constant {

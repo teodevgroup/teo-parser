@@ -1,10 +1,10 @@
 use std::fmt::{Display, Formatter};
 use to_mut_proc_macro::ToMut;
 use to_mut::ToMut;
-use crate::parser::ast::entity::Entity;
-use crate::parser::ast::expression::ExpressionKind;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
+use crate::ast::entity::Entity;
+use crate::ast::expression::ExpressionKind;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
 use crate::prelude::Value;
 
 #[derive(Debug, Clone)]

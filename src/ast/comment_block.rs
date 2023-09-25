@@ -1,4 +1,4 @@
-use crate::parser::ast::span::Span;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub struct CommentBlock {

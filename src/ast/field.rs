@@ -1,9 +1,9 @@
 use crate::app::app_ctx::AppCtx;
-use crate::parser::ast::comment_block::CommentBlock;
-use crate::parser::ast::decorator::ASTDecorator;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::r#type::ASTFieldType;
-use crate::parser::ast::span::Span;
+use crate::ast::comment_block::CommentBlock;
+use crate::ast::decorator::ASTDecorator;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::r#type::ASTFieldType;
+use crate::ast::span::Span;
 use crate::prelude::Value;
 
 #[derive(Debug, Copy, Clone)]

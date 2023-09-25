@@ -1,5 +1,5 @@
-use crate::parser::ast::accessible::Accessible;
-use crate::parser::ast::reference::Reference;
+use crate::ast::accessible::Accessible;
+use crate::ast::reference::Reference;
 use crate::prelude::Value;
 
 #[derive(Debug, Clone)]

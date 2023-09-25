@@ -1,6 +1,6 @@
-use crate::parser::ast::expression::Expression;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
+use crate::ast::expression::Expression;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Item {

@@ -1,7 +1,7 @@
-use crate::parser::ast::comment_block::CommentBlock;
-use crate::parser::ast::decorator::ASTDecorator;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
+use crate::ast::comment_block::CommentBlock;
+use crate::ast::decorator::ASTDecorator;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub(crate) struct ASTEnum {

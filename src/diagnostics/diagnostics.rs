@@ -1,6 +1,6 @@
 use std::any::TypeId;
 use std::path::{Path, PathBuf};
-use crate::parser::ast::span::Span;
+use crate::ast::span::Span;
 
 pub trait DiagnosticsLog {
     fn span(&self) -> &Span;

@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use crate::gen::interface::client::kind::Kind as ClientKind;
-use crate::parser::ast::span::Span;
-use crate::parser::ast::item::Item;
-use crate::parser::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
+use crate::ast::item::Item;
+use crate::ast::identifier::ASTIdentifier;
 
 #[derive(Debug, Clone)]
 pub struct ASTClient {

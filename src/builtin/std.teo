@@ -1,0 +1,114 @@
+/// @name std
+/// This namespace contains the Teo standard library
+namespace std {
+
+    /// @name Database
+    /// Represents the supported database of Teo
+    interface enum Database {
+        /// @name MongoDB
+        /// The MongoDB database    
+        mongo
+        /// @name MySQL
+        /// The MySQL database
+        mysql
+        /// @name PostgreSQL
+        /// The PostgreSQL database
+        postgres
+        /// @name SQLite
+        /// The SQLite database
+        sqlite
+    }
+
+    /// @name Client Language
+    /// The programming langauge of the generated client
+    interface enum ClientLanguage {
+        /// @name javaScript
+        /// The javaScript programming language
+        javaScript
+        /// @name TypeScript
+        /// The TypeScript programming language
+        typeScript
+        /// @name Swift
+        /// The Swift programming language
+        swift
+        /// @name Kotlin
+        /// The Kotlin programming language
+        kotlin
+        /// @name C#
+        /// The C# programming language
+        cSharp
+        /// @name Dart
+        /// The Dart programming language
+        dart
+    }
+
+    /// @name Runtime
+    /// Represents the supported runtime of Teo
+    interface enum Runtime {
+        /// @name Rust
+        /// The rust runtime
+        rust
+        /// @name Node.js
+        /// The Node.js runtime
+        node
+        /// @name Python
+        /// The python runtime
+        python
+    }
+
+    /// @name Connector
+    /// Represents the database connection
+    declare config connector {
+        /// @name Provider
+        /// Represents the type of database this app connects
+        provider: Database
+        /// @name URL
+        /// The URL of the database to connect to
+        url: String
+    }
+
+    /// @name Server
+    /// Define the HTTP server configuration
+    declare config server {
+        /// @name bind
+        /// On which IP and port the HTTP server binds
+        bind: (String, Int32)
+        /// @name path prefix
+        /// The request URL path prefix
+        pathPrefix: String?
+    }
+
+    /// @name Entity Generator
+    /// Define an entity generator
+    declare config entity {
+        /// @name Provider
+        /// Which runtime is used for the generated entities
+        provider: Runtime
+        /// @name Destination
+        /// Where the generated entities are places
+        dest: String
+    }
+
+    /// @name Client Generator
+    /// Define a client generator
+    declare config client {
+        /// @name Provider
+        /// Which programming language is used for the generated client
+        provider: ClientLanguage
+        /// @name Destination
+        /// Where the generated client are placed
+        dest: String
+        /// @name Package
+        /// Whether generate code only or a package, defaults to `true`
+        package: Bool?
+        /// @name Host
+        /// The host for the generated client
+        host: String
+        /// @name Object Name
+        /// The main object name for the generated package
+        objectName: String?
+        /// @name Git Commit
+        /// Whether do `git commit` after each generation
+        gitCommit: Bool?
+    }
+}

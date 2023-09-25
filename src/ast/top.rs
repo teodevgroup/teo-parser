@@ -1,19 +1,19 @@
-use crate::parser::ast::action::ActionGroupDeclaration;
-use crate::parser::ast::client::ASTClient;
-use crate::parser::ast::config::ASTServer;
-use crate::parser::ast::connector::ASTConnector;
-use crate::parser::ast::constant::Constant;
-use crate::parser::ast::data_set::ASTDataSet;
-use crate::parser::ast::debug_conf::ASTDebugConf;
-use crate::parser::ast::generator::ASTEntity;
-use crate::parser::ast::import::ASTImport;
-use crate::parser::ast::interface::InterfaceDeclaration;
-use crate::parser::ast::middleware::MiddlewareDeclaration;
-use crate::parser::ast::model::ASTModel;
-use crate::parser::ast::namespace::ASTNamespace;
-use crate::parser::ast::r#enum::ASTEnum;
-use crate::parser::ast::static_files::StaticFiles;
-use crate::parser::ast::test_conf::ASTTestConf;
+use crate::ast::action::ActionGroupDeclaration;
+use crate::ast::client::ASTClient;
+use crate::ast::config::ASTServer;
+use crate::ast::connector::ASTConnector;
+use crate::ast::constant::Constant;
+use crate::ast::data_set::ASTDataSet;
+use crate::ast::debug_conf::ASTDebugConf;
+use crate::ast::generator::ASTEntity;
+use crate::ast::import::ASTImport;
+use crate::ast::interface::InterfaceDeclaration;
+use crate::ast::middleware::MiddlewareDeclaration;
+use crate::ast::model::ASTModel;
+use crate::ast::namespace::ASTNamespace;
+use crate::ast::r#enum::ASTEnum;
+use crate::ast::static_files::StaticFiles;
+use crate::ast::test_conf::ASTTestConf;
 
 #[derive(Debug)]
 pub(crate) enum Top {

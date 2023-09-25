@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use crate::parser::ast::interface_type::InterfaceType;
-use crate::parser::ast::r#type::Arity;
+use crate::ast::interface_type::InterfaceType;
+use crate::ast::r#type::Arity;
 use super::span::Span;
 
 #[derive(Debug, Clone, PartialEq)]

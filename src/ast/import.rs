@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use maplit::hashmap;
-use crate::parser::ast::expression::StringLiteral;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::reference::Reference;
-use crate::parser::ast::span::Span;
+use crate::ast::expression::StringLiteral;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::reference::Reference;
+use crate::ast::span::Span;
 
 #[derive(Clone, Debug)]
 pub(crate) struct ASTImport {

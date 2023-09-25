@@ -1,5 +1,5 @@
-use crate::parser::ast::identifier_path::ASTIdentifierPath;
-use crate::parser::ast::span::Span;
+use crate::ast::identifier_path::ASTIdentifierPath;
+use crate::ast::span::Span;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub(crate) enum Arity {

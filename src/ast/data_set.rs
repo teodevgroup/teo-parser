@@ -1,7 +1,7 @@
-use crate::parser::ast::expression::DictionaryLiteral;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::identifier_path::ASTIdentifierPath;
-use crate::parser::ast::span::Span;
+use crate::ast::expression::DictionaryLiteral;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::identifier_path::ASTIdentifierPath;
+use crate::ast::span::Span;
 use crate::prelude::Value;
 
 #[derive(Debug, Clone)]

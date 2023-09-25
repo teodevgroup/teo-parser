@@ -1,5 +1,5 @@
-use crate::parser::ast::span::Span;
-use crate::parser::ast::item::Item;
+use crate::ast::span::Span;
+use crate::ast::item::Item;
 
 #[derive(Debug, Clone)]
 pub struct ASTDebugConf {

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::r#type::Arity;
-use crate::parser::ast::span::Span;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::r#type::Arity;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub(crate) struct InterfaceType {

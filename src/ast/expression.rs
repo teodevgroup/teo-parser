@@ -1,13 +1,13 @@
 use std::fmt::{Display, Formatter};
-use crate::parser::ast::argument::{ArgumentList};
-use crate::parser::ast::arith_expr::ArithExpr;
-use crate::parser::ast::entity::Entity;
-use crate::parser::ast::group::Group;
-use crate::parser::ast::pipeline::ASTPipeline;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
-use crate::parser::ast::subscript::Subscript;
-use crate::parser::ast::unit::Unit;
+use crate::ast::argument::{ArgumentList};
+use crate::ast::arith_expr::ArithExpr;
+use crate::ast::entity::Entity;
+use crate::ast::group::Group;
+use crate::ast::pipeline::ASTPipeline;
+use crate::ast::identifier::ASTIdentifier;
+use crate::ast::span::Span;
+use crate::ast::subscript::Subscript;
+use crate::ast::unit::Unit;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Negation {

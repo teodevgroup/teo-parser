@@ -4,7 +4,7 @@ use colored::Colorize;
 use pathdiff::diff_paths;
 use std::fs::read_to_string;
 use std::iter::repeat;
-use crate::parser::diagnostics::diagnostics::{Diagnostics, DiagnosticsLog};
+use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsLog};
 
 pub fn print_diagnostics_and_exit(diagnostics: &Diagnostics, print_warnings: bool) {
     print_diagnostics(diagnostics, print_warnings);

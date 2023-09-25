@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
-use crate::parser::ast::expression::ExpressionKind;
-use crate::parser::ast::span::Span;
+use crate::ast::expression::ExpressionKind;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Unit {

@@ -1,7 +1,7 @@
-use crate::parser::ast::accessible::Accessible;
-use crate::parser::ast::argument::{Argument, ArgumentList};
-use crate::parser::ast::expression::ExpressionKind;
-use crate::parser::ast::span::Span;
+use crate::ast::accessible::Accessible;
+use crate::ast::argument::{Argument, ArgumentList};
+use crate::ast::expression::ExpressionKind;
+use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub struct ASTDecorator {
