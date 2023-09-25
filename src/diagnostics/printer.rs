@@ -39,7 +39,7 @@ fn print_diagnostics_log<T>(log: T) where T: DiagnosticsLog {
             }
         }
     } else {
-        source.to_str().unwrap().to_owned()
+        source.to_owned()
     };
     let title = if log.is_warning() {
         "Warning".yellow().bold()

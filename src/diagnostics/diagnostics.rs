@@ -1,13 +1,12 @@
 use std::any::TypeId;
-use std::path::{Path, PathBuf};
 use crate::ast::span::Span;
 
-pub trait DiagnosticsLog {
+pub(crate) trait DiagnosticsLog {
     fn span(&self) -> &Span;
 
     fn message(&self) -> &str;
 
-    fn source_path(&self) -> &Path;
+    fn source_path(&self) -> &str;
 
     fn into_warning(self) -> DiagnosticsWarning;
 
@@ -87,7 +86,7 @@ impl DiagnosticsLog for &DiagnosticsError {
 }
 
 impl DiagnosticsError {
-    pub fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
+    pub(crate) fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
         Self { span, message: message.into(), source_path }
     }
 }
@@ -138,7 +137,7 @@ impl DiagnosticsLog for &DiagnosticsWarning {
         self.message.as_str()
     }
 
-    fn source_path(&self) -> &Path {
+    fn source_path(&self) -> &str {
         &self.source_path
     }
 
@@ -160,7 +159,7 @@ impl DiagnosticsLog for &DiagnosticsWarning {
 }
 
 impl DiagnosticsWarning {
-    pub fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
+    pub(crate) fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
         Self { span, message: message.into(), source_path }
     }
 }
@@ -173,30 +172,30 @@ pub struct Diagnostics {
 
 impl Diagnostics {
 
-    pub fn new() -> Diagnostics {
+    pub(crate) fn new() -> Diagnostics {
         Diagnostics {
             errors: Vec::new(),
             warnings: Vec::new(),
         }
     }
 
-    pub fn has_errors(&self) -> bool {
+    pub(crate) fn has_errors(&self) -> bool {
         !self.errors.is_empty()
     }
 
-    pub fn has_warnings(&self) -> bool {
+    pub(crate) fn has_warnings(&self) -> bool {
         !self.warnings.is_empty()
     }
 
-    pub fn warnings(&self) -> &Vec<DiagnosticsWarning> {
+    pub(crate) fn warnings(&self) -> &Vec<DiagnosticsWarning> {
         &self.warnings
     }
 
-    pub fn errors(&self) -> &Vec<DiagnosticsError> {
+    pub(crate) fn errors(&self) -> &Vec<DiagnosticsError> {
         &self.errors
     }
 
-    pub fn insert<T>(&mut self, item: T) where T: DiagnosticsLog + 'static {
+    pub(crate) fn insert<T>(&mut self, item: T) where T: DiagnosticsLog + 'static {
         if TypeId::of::<T>() == TypeId::of::<DiagnosticsWarning>() {
             self.warnings.push(item.into_warning());
         } else if TypeId::of::<T>() == TypeId::of::<DiagnosticsError>() {
@@ -204,15 +203,15 @@ impl Diagnostics {
         }
     }
 
-    pub fn insert_unparsed_rule(&mut self, span: Span, source_path: String) {
+    pub(crate) fn insert_unparsed_rule(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "SyntaxError: Unexpected content.", source_path))
     }
 
-    pub fn insert_unresolved_model(&mut self, span: Span, source_path: String) {
+    pub(crate) fn insert_unresolved_model(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "ResolvingError: Model is not defined.", source_path))
     }
 
-    pub fn insert_unresolved_enum(&mut self, span: Span, source_path: String) {
+    pub(crate) fn insert_unresolved_enum(&mut self, span: Span, source_path: String) {
         self.insert(DiagnosticsError::new(span, "ResolvingError: Type is not defined.", source_path))
     }
 }

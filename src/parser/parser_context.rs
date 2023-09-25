@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::path::PathBuf;
 use maplit::btreemap;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::Diagnostics;
