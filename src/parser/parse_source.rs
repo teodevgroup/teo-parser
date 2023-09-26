@@ -1,3 +1,5 @@
+use maplit::btreemap;
+use pest::Parser;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::parser::parse_identifier::parse_identifier;
@@ -11,6 +13,7 @@ pub(super) fn parse_source(
 ) -> Source {
     let path = path.into();
     let id = context.start_next_source(path.clone());
+    let mut tops = btreemap!{};
     let mut references = SourceReferences::new();
     let mut pairs = match SchemaParser::parse(Rule::schema, &content) {
         Ok(pairs) => pairs,
@@ -18,19 +21,20 @@ pub(super) fn parse_source(
     };
     let pairs = pairs.next().unwrap();
     let mut pairs = pairs.into_inner().peekable();
-    while let Some(current) = pairs.next() {
-        match current.as_rule() {
-            Rule::import_statement => {
-                let import = self.parse_import(current, source_id, item_id, path.clone(), context);
-                tops.insert(item_id, import);
-                imports.insert(item_id);
-            }
-        }
-    }
+    // while let Some(current) = pairs.next() {
+    //     match current.as_rule() {
+    //         Rule::import_statement => {
+    //             let import = self.parse_import(current, source_id, item_id, path.clone(), context);
+    //             tops.insert(item_id, import);
+    //             imports.insert(item_id);
+    //         }
+    //     }
+    // }
     Source::new(
         id,
         if builtin { SourceType::Builtin } else { SourceType::Normal },
         path,
+        tops,
         references
     )
 }

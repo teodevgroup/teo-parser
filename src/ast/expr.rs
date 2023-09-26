@@ -1,17 +1,17 @@
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
-use teo_teon::value::Value;
 use crate::ast::accessible::Accessible;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
+use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RangeLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct Negation {
     pub(crate) expression: Box<ExpressionKind>,
     pub(crate) span: Span,
@@ -25,7 +25,7 @@ impl Display for Negation {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct BitwiseNegation {
     pub(crate) expression: Box<ExpressionKind>,
     pub(crate) span: Span,
@@ -39,7 +39,7 @@ impl Display for BitwiseNegation {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct NullishCoalescing {
     pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,
@@ -58,7 +58,7 @@ impl Display for NullishCoalescing {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) enum ExpressionKind {
     Group(Group),
     NullishCoalescing(NullishCoalescing),
@@ -277,14 +277,7 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_identifier(&self) -> Option<&ASTIdentifier> {
-        match self {
-            ExpressionKind::Identifier(i) => Some(i),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_identifier_mut(&mut self) -> Option<&mut ASTIdentifier> {
+    pub(crate) fn as_identifier(&self) -> Option<&Identifier> {
         match self {
             ExpressionKind::Identifier(i) => Some(i),
             _ => None,
@@ -375,7 +368,7 @@ impl Display for ExpressionKind {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct Expression {
     pub(crate) kind: ExpressionKind,
     pub(crate) resolved: Mutex<Option<Accessible>>,

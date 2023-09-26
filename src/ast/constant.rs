@@ -3,7 +3,7 @@ use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct Constant {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Identifier,

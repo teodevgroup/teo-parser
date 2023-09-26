@@ -4,7 +4,7 @@ use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Argument {
     pub(crate) name: Option<Identifier>,
     pub(crate) value: Expression,

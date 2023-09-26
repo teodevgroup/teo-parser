@@ -4,6 +4,7 @@ use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Model {
@@ -36,6 +37,14 @@ impl Model {
             decorators,
             span,
         }
+    }
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
     }
 
     pub(crate) fn sorted_fields(&self) -> Vec<&Field> {

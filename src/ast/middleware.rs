@@ -9,3 +9,14 @@ pub(crate) struct Middleware {
     pub(crate) argument_list: Option<ArgumentList>,
     pub(crate) span: Span,
 }
+
+impl Middleware {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+}

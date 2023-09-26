@@ -1,10 +1,6 @@
 use crate::ast::identifier::Identifier;
 use crate::ast::interface_type::InterfaceType;
 use crate::ast::span::Span;
-use crate::core::interface::ResolvedInterfaceField;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::span::Span;
-use crate::parser::ast::interface_type::InterfaceType;
 
 #[derive(Debug)]
 pub(crate) struct ActionGroupDeclaration {

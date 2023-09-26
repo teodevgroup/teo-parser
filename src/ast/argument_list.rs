@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use crate::ast::argument::Argument;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ArgumentList {
     pub(crate) arguments: Vec<Argument>,
     pub(crate) span: Span,

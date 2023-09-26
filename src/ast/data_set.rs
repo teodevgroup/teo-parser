@@ -1,11 +1,11 @@
 use std::sync::Mutex;
 use teo_teon::value::Value;
-use crate::ast::expr::DictionaryLiteral;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
+use crate::ast::literals::DictionaryLiteral;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DataSet {
     pub(crate) path: Vec<usize>,
     pub(crate) ns_path: Vec<String>,
@@ -28,12 +28,12 @@ impl DataSet {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DataSetGroupResolved {
     model_path: Vec<usize>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DataSetGroup {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier_path: IdentifierPath,
@@ -42,11 +42,12 @@ pub struct DataSetGroup {
     pub(crate) resolved: Mutex<Option<DataSetGroupResolved>>,
 }
 
+#[derive(Debug)]
 pub struct DataSetRecordResolved {
     value: Value,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DataSetRecord {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Identifier,

@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct Unit {
     pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,

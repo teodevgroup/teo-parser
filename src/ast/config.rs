@@ -2,7 +2,7 @@ use crate::ast::config_item::ConfigItem;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Config {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Option<Identifier>,

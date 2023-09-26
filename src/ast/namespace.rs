@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug};
 use maplit::btreeset;
 use crate::ast::action::ActionGroupDeclaration;
 use crate::ast::config::Config;
@@ -41,6 +41,14 @@ impl Namespace {
             tops,
             references,
         }
+    }
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
     }
 
     pub(crate) fn get_constant(&self, id: usize) -> &Constant {
@@ -150,6 +158,7 @@ impl Namespace {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct NamespaceReferences {
     pub(crate) constants: BTreeSet<usize>,
     pub(crate) enums: BTreeSet<usize>,

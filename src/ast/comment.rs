@@ -1,6 +1,6 @@
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Comment {
     pub(crate) name: Option<String>,
     pub(crate) desc: Option<String>,

@@ -4,12 +4,12 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct DecoratorResolved {
     string_path: Vec<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Decorator {
     pub(crate) expression: ExpressionKind,
     pub(crate) span: Span,

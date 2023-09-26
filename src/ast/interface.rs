@@ -12,6 +12,15 @@ pub(crate) struct InterfaceDeclaration {
 }
 
 impl InterfaceDeclaration {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
     pub(crate) fn args(&self) -> &Vec<InterfaceType> {
         &self.name.args
     }

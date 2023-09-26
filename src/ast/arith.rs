@@ -33,6 +33,7 @@ impl Display for Op {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct BinaryOp {
     span: Span,
     lhs: Box<ArithExpr>,
@@ -47,7 +48,7 @@ impl BinaryOp {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) enum ArithExpr {
     Expression(Box<ExpressionKind>),
     UnaryNeg(Box<ExpressionKind>),

@@ -5,6 +5,8 @@ use crate::ast::data_set::DataSet;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::Middleware;
+use crate::ast::model::Model;
+use crate::ast::namespace::Namespace;
 use crate::ast::r#enum::Enum;
 
 #[derive(Debug)]
@@ -28,7 +30,7 @@ impl Top {
             Top::Import(i) => i.id(),
             Top::Constant(c) => c.id(),
             Top::Enum(e) => e.id(),
-            Top::Model(m) => m.id,
+            Top::Model(m) => m.id(),
             Top::Config(c) => c.id(),
             Top::DataSet(d) => d.id(),
             Top::Middleware(m) => m.id(),
@@ -102,10 +104,6 @@ impl Top {
 
     pub(crate) fn is_data_set(&self) -> bool {
         self.as_data_set().is_some()
-    }
-
-    pub(crate) fn is_debug_conf(&self) -> bool {
-        self.as_debug_conf().is_some()
     }
 
     pub(crate) fn as_middleware(&self) -> Option<&Middleware> {

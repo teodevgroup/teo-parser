@@ -6,7 +6,7 @@ use crate::ast::literals::StringLiteral;
 use crate::ast::reference::Reference;
 use crate::ast::span::Span;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub(crate) struct Import {
     pub(crate) path: Vec<usize>,
     pub(crate) identifiers: Vec<Identifier>,

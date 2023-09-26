@@ -3,7 +3,7 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct NumericLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -16,7 +16,7 @@ impl Display for NumericLiteral {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct StringLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -28,7 +28,7 @@ impl Display for StringLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct RegExpLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -40,7 +40,7 @@ impl Display for RegExpLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct BoolLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -52,7 +52,7 @@ impl Display for BoolLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct NullLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -64,7 +64,7 @@ impl Display for NullLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct EnumVariantLiteral {
     pub(crate) value: String,
     pub(crate) span: Span,
@@ -82,7 +82,7 @@ impl Display for EnumVariantLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct RangeLiteral {
     pub(crate) closed: bool,
     pub(crate) expressions: Vec<ExpressionKind>,
@@ -102,7 +102,7 @@ impl Display for RangeLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct TupleLiteral {
     pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,
@@ -122,7 +122,7 @@ impl Display for TupleLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct ArrayLiteral {
     pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,
@@ -142,7 +142,7 @@ impl Display for ArrayLiteral {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct DictionaryLiteral {
     pub(crate) expressions: Vec<(ExpressionKind, ExpressionKind)>,
     pub(crate) span: Span,
