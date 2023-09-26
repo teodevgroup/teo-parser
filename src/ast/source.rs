@@ -1,22 +1,37 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::sync::atomic::AtomicBool;
+use maplit::btreeset;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(crate) enum SourceType {
     Builtin,
-    Main,
     Normal,
 }
 
 pub(crate) struct Source {
-    id: usize,
-    r#type: SourceType,
-    file_path: String,
+    pub(crate) id: usize,
+    pub(crate) r#type: SourceType,
+    pub(crate) file_path: String,
     //tops: BTreeMap<usize, Top>,
-    references: SourceReferences,
-    resolved_1: AtomicBool,
-    resolved_2: AtomicBool,
-    resolved_3: AtomicBool,
+    pub(crate) references: SourceReferences,
+    pub(crate) resolved_1: AtomicBool,
+    pub(crate) resolved_2: AtomicBool,
+    pub(crate) resolved_3: AtomicBool,
+}
+
+impl Source {
+
+    pub(crate) fn new(id: usize, r#type: SourceType, file_path: String, references: SourceReferences) -> Self {
+        Self {
+            id,
+            r#type,
+            file_path,
+            references,
+            resolved_1: AtomicBool::new(false),
+            resolved_2: AtomicBool::new(false),
+            resolved_3: AtomicBool::new(false),
+        }
+    }
 }
 
 pub(crate) struct SourceReferences {
@@ -26,4 +41,18 @@ pub(crate) struct SourceReferences {
     pub(crate) models: BTreeSet<usize>,
     pub(crate) namespaces: BTreeSet<usize>,
     pub(crate) data_sets: BTreeSet<usize>,
+}
+
+impl SourceReferences {
+
+    pub(crate) fn new() -> Self {
+        Self {
+            imports: btreeset!{},
+            constants: btreeset!{},
+            enums: btreeset!{},
+            models: btreeset!{},
+            namespaces: btreeset!{},
+            data_sets: btreeset!{},
+        }
+    }
 }

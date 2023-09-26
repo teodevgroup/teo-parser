@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use maplit::btreemap;
 use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
@@ -37,6 +37,11 @@ impl<'a> ParserContext<'a> {
         self.source_lookup.insert(source_id, path);
         self.current_source_id = source_id;
         source_id
+    }
+
+    pub(super) fn is_source_parsing_or_parsed(&self, path: &String) -> bool {
+        let set: HashSet<&String> = self.source_lookup.values().collect();
+        set.contains(path)
     }
 
     pub(super) fn insert_unparsed(&mut self, span: Span) {
