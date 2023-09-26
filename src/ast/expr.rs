@@ -2,11 +2,10 @@ use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use teo_teon::value::Value;
 use crate::ast::accessible::Accessible;
-use crate::ast::argument::{ArgumentList};
-use crate::ast::arith_expr::ArithExpr;
-use crate::ast::entity::Entity;
+use crate::ast::argument_list::ArgumentList;
+use crate::ast::arith::ArithExpr;
 use crate::ast::group::Group;
-use crate::ast::pipeline::Pipelines;
+use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
@@ -80,7 +79,7 @@ pub(crate) enum ExpressionKind {
     ArgumentList(ArgumentList),
     Subscript(Subscript),
     Unit(Unit),
-    Pipeline(ASTPipeline),
+    Pipeline(Pipeline),
 }
 
 impl ExpressionKind {
@@ -334,14 +333,14 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_pipeline(&self) -> Option<&ASTPipeline> {
+    pub(crate) fn as_pipeline(&self) -> Option<&Pipeline> {
         match self {
             ExpressionKind::Pipeline(p) => Some(p),
             _ => None,
         }
     }
 
-    pub(crate) fn as_pipeline_mut(&mut self) -> Option<&mut ASTPipeline> {
+    pub(crate) fn as_pipeline_mut(&mut self) -> Option<&mut Pipeline> {
         match self {
             ExpressionKind::Pipeline(p) => Some(p),
             _ => None,

@@ -3,12 +3,12 @@ use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
-pub(crate) struct ASTPipeline {
+pub(crate) struct Pipeline {
     pub(crate) expression: Box<ExpressionKind>,
     pub(crate) span: Span,
 }
 
-impl Display for ASTPipeline {
+impl Display for Pipeline {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("$")?;

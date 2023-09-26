@@ -1,6 +1,7 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::AtomicBool;
 use maplit::btreeset;
+use crate::ast::top::Top;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(crate) enum SourceType {
@@ -12,7 +13,7 @@ pub(crate) struct Source {
     pub(crate) id: usize,
     pub(crate) r#type: SourceType,
     pub(crate) file_path: String,
-    //tops: BTreeMap<usize, Top>,
+    pub(crate) tops: BTreeMap<usize, Top>,
     pub(crate) references: SourceReferences,
     pub(crate) resolved_1: AtomicBool,
     pub(crate) resolved_2: AtomicBool,
@@ -21,11 +22,12 @@ pub(crate) struct Source {
 
 impl Source {
 
-    pub(crate) fn new(id: usize, r#type: SourceType, file_path: String, references: SourceReferences) -> Self {
+    pub(crate) fn new(id: usize, r#type: SourceType, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
         Self {
             id,
             r#type,
             file_path,
+            tops,
             references,
             resolved_1: AtomicBool::new(false),
             resolved_2: AtomicBool::new(false),
