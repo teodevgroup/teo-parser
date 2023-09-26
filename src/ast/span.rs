@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use crate::ast::expr::ExpressionKind::Pipeline;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Span {
@@ -6,6 +7,18 @@ pub(crate) struct Span {
     pub(crate) end: usize,
     pub(crate) start_position: (usize, usize),
     pub(crate) end_position: (usize, usize),
+}
+
+impl Default for Span {
+
+    fn default() -> Self {
+        Self {
+            start: 0,
+            end: 0,
+            start_position: (0, 0),
+            end_position: (0, 0),
+        }
+    }
 }
 
 impl Span {

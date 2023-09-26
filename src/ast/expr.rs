@@ -1,5 +1,6 @@
+use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use crate::ast::accessible::Accessible;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;
@@ -371,12 +372,12 @@ impl Display for ExpressionKind {
 #[derive(Debug)]
 pub(crate) struct Expression {
     pub(crate) kind: ExpressionKind,
-    pub(crate) resolved: Mutex<Option<Accessible>>,
+    pub(crate) resolved: RefCell<Option<Accessible>>,
 }
 
 impl Expression {
     pub(crate) fn new(kind: ExpressionKind) -> Self {
-        Self { kind, resolved: Mutex::new(None) }
+        Self { kind, resolved: RefCell::new(None) }
     }
 }
 

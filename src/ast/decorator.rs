@@ -13,21 +13,17 @@ pub struct DecoratorResolved {
 pub struct Decorator {
     pub(crate) expression: ExpressionKind,
     pub(crate) span: Span,
-    pub(crate) arguments: Option<ArgumentList>,
+    pub(crate) arguments: ArgumentList,
     pub(crate) resolved: Mutex<Option<DecoratorResolved>>,
 }
 
 impl Decorator {
 
-    pub(crate) fn new(expression: ExpressionKind, span: Span, arguments: Option<ArgumentList>) -> Self {
+    pub(crate) fn new(expression: ExpressionKind, span: Span, arguments: ArgumentList) -> Self {
         Self { expression, span, arguments, resolved: Mutex::new(None) }
     }
 
     pub(crate) fn get_argument_list(&self) -> &Vec<Argument> {
-        static ARGUMENTS: Vec<Argument> = vec![];
-        match &self.arguments {
-            Some(argument_list) => &argument_list.arguments,
-            None => &ARGUMENTS,
-        }
+        &self.arguments.arguments
     }
 }

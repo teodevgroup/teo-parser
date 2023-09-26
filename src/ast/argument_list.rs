@@ -8,6 +8,12 @@ pub struct ArgumentList {
     pub(crate) span: Span,
 }
 
+impl Default for ArgumentList {
+    fn default() -> Self {
+        Self { arguments: Vec::default(), span: Span::default(), }
+    }
+}
+
 impl ArgumentList {
 
     pub fn arguments(&self) -> &Vec<Argument> {

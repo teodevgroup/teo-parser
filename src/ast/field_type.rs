@@ -68,6 +68,8 @@ impl FieldType {
     }
 
     pub(crate) fn resolve(&self, resolved: FieldTypeResolved) {
-        *self.resolved.lock().unwrap().as_mut() = resolved;
+        let mut binding = self.resolved.lock().unwrap();
+        let mut_ref = binding.as_mut().unwrap();
+        *mut_ref = resolved;
     }
 }
