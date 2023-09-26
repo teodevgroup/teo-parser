@@ -2,37 +2,42 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use maplit::hashmap;
 use crate::ast::identifier::Identifier;
-use crate::parser::ast::expression::StringLiteral;
-use crate::parser::ast::identifier::ASTIdentifier;
-use crate::parser::ast::reference::Reference;
-use crate::parser::ast::span::Span;
+use crate::ast::literals::StringLiteral;
+use crate::ast::reference::Reference;
+use crate::ast::span::Span;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Import {
-    pub(crate) id: usize,
-    pub(crate) source_id: usize,
+    pub(crate) path: Vec<usize>,
     pub(crate) identifiers: Vec<Identifier>,
     pub(crate) source: StringLiteral,
-    pub(crate) path: PathBuf,
+    pub(crate) file_path: PathBuf,
     pub(crate) span: Span,
     pub(crate) resolved: bool,
     pub(crate) from_id: Option<usize>,
     pub(crate) references: HashMap<String, Reference>,
 }
 
-impl ASTImport {
+impl Import {
 
-    pub(crate) fn new(item_id: usize, source_id: usize, identifiers: Vec<ASTIdentifier>, source: StringLiteral, path: PathBuf, span: Span) -> Self {
+    pub(crate) fn new(path: Vec<usize>, identifiers: Vec<Identifier>, source: StringLiteral, file_path: PathBuf, span: Span) -> Self {
         Self {
-            id: item_id,
-            source_id,
+            path,
             identifiers,
             source,
-            path,
+            file_path,
             span,
             resolved: false,
             from_id: None,
             references: hashmap!{},
         }
+    }
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
     }
 }
