@@ -1,0 +1,67 @@
+use std::sync::Mutex;
+use teo_teon::value::Value;
+use crate::ast::expr::DictionaryLiteral;
+use crate::ast::identifier::Identifier;
+use crate::ast::identifier_path::IdentifierPath;
+use crate::ast::span::Span;
+
+#[derive(Debug, Clone)]
+pub struct DataSet {
+    pub(crate) path: Vec<usize>,
+    pub(crate) ns_path: Vec<String>,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) span: Span,
+    pub(crate) identifier: Identifier,
+    pub(crate) auto_seed: bool,
+    pub(crate) notrack: bool,
+    pub(crate) groups: Vec<DataSetGroup>,
+}
+
+impl DataSet {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DataSetGroupResolved {
+    model_path: Vec<usize>,
+}
+
+#[derive(Debug, Clone)]
+pub struct DataSetGroup {
+    pub(crate) path: Vec<usize>,
+    pub(crate) identifier_path: IdentifierPath,
+    pub(crate) span: Span,
+    pub(crate) records: Vec<DataSetRecord>,
+    pub(crate) resolved: Mutex<Option<DataSetGroupResolved>>,
+}
+
+pub struct DataSetRecordResolved {
+    value: Value,
+}
+
+#[derive(Debug, Clone)]
+pub struct DataSetRecord {
+    pub(crate) path: Vec<usize>,
+    pub(crate) identifier: Identifier,
+    pub(crate) span: Span,
+    pub(crate) dictionary: DictionaryLiteral,
+    pub(crate) resolved: Mutex<Option<DataSetRecordResolved>>,
+}
+
+impl DataSetRecord {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+}
