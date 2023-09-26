@@ -5,6 +5,7 @@ mod parse_source;
 mod parse_builtin_source_file;
 mod parse_source_file;
 mod parse_literals;
+mod parse_import;
 
 mod pest_parser;
 mod parser_context;

@@ -13,9 +13,6 @@ pub(crate) struct Import {
     pub(crate) source: StringLiteral,
     pub(crate) file_path: PathBuf,
     pub(crate) span: Span,
-    pub(crate) resolved: bool,
-    pub(crate) from_id: Option<usize>,
-    pub(crate) references: HashMap<String, Reference>,
 }
 
 impl Import {
@@ -27,9 +24,6 @@ impl Import {
             source,
             file_path,
             span,
-            resolved: false,
-            from_id: None,
-            references: hashmap!{},
         }
     }
 

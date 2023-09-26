@@ -2,7 +2,9 @@ use maplit::btreemap;
 use pest::Parser;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::source::{Source, SourceReferences, SourceType};
+use crate::ast::top::Top;
 use crate::parser::parse_identifier::parse_identifier;
+use crate::parser::parse_import::parse_import;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
@@ -21,15 +23,16 @@ pub(super) fn parse_source(
     };
     let pairs = pairs.next().unwrap();
     let mut pairs = pairs.into_inner().peekable();
-    // while let Some(current) = pairs.next() {
-    //     match current.as_rule() {
-    //         Rule::import_statement => {
-    //             let import = self.parse_import(current, source_id, item_id, path.clone(), context);
-    //             tops.insert(item_id, import);
-    //             imports.insert(item_id);
-    //         }
-    //     }
-    // }
+    while let Some(current) = pairs.next() {
+        match current.as_rule() {
+            Rule::import_statement => {
+                let import = parse_import(current, path.as_ref(), context);
+                references.imports.insert(import.id());
+                tops.insert(import.id(), Top::Import(import));
+            }
+            _ => (),
+        }
+    }
     Source::new(
         id,
         if builtin { SourceType::Builtin } else { SourceType::Normal },
