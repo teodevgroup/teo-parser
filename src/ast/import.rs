@@ -1,16 +1,17 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use maplit::hashmap;
-use crate::ast::expression::StringLiteral;
-use crate::ast::identifier::ASTIdentifier;
-use crate::ast::reference::Reference;
-use crate::ast::span::Span;
+use crate::ast::identifier::Identifier;
+use crate::parser::ast::expression::StringLiteral;
+use crate::parser::ast::identifier::ASTIdentifier;
+use crate::parser::ast::reference::Reference;
+use crate::parser::ast::span::Span;
 
 #[derive(Clone, Debug)]
-pub(crate) struct ASTImport {
+pub(crate) struct Import {
     pub(crate) id: usize,
     pub(crate) source_id: usize,
-    pub(crate) identifiers: Vec<ASTIdentifier>,
+    pub(crate) identifiers: Vec<Identifier>,
     pub(crate) source: StringLiteral,
     pub(crate) path: PathBuf,
     pub(crate) span: Span,

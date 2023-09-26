@@ -1,10 +1,13 @@
 use std::fmt::{Display, Formatter};
+use std::sync::Mutex;
+use teo_teon::value::Value;
+use crate::ast::accessible::Accessible;
 use crate::ast::argument::{ArgumentList};
 use crate::ast::arith_expr::ArithExpr;
 use crate::ast::entity::Entity;
 use crate::ast::group::Group;
-use crate::ast::pipeline::ASTPipeline;
-use crate::ast::identifier::ASTIdentifier;
+use crate::ast::pipeline::Pipelines;
+use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
@@ -217,6 +220,20 @@ impl Display for DictionaryLiteral {
 }
 
 #[derive(Debug, Clone)]
+pub(crate) struct Group {
+    pub(crate) expression: Box<ExpressionKind>,
+    pub(crate) span: Span,
+}
+
+impl Display for Group {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("(")?;
+        Display::fmt(self.expression.as_ref(), f)?;
+        f.write_str(")")
+    }
+}
+
+#[derive(Debug, Clone)]
 pub(crate) enum ExpressionKind {
     Group(Group),
     NullishCoalescing(NullishCoalescing),
@@ -233,7 +250,7 @@ pub(crate) enum ExpressionKind {
     TupleLiteral(TupleLiteral),
     ArrayLiteral(ArrayLiteral),
     DictionaryLiteral(DictionaryLiteral),
-    Identifier(ASTIdentifier),
+    Identifier(Identifier),
     ArgumentList(ArgumentList),
     Subscript(Subscript),
     Unit(Unit),
@@ -536,12 +553,12 @@ impl Display for ExpressionKind {
 #[derive(Debug, Clone)]
 pub(crate) struct Expression {
     pub(crate) kind: ExpressionKind,
-    pub(crate) resolved: Option<Entity>,
+    pub(crate) resolved: Mutex<Option<Accessible>>,
 }
 
 impl Expression {
     pub(crate) fn new(kind: ExpressionKind) -> Self {
-        Self { kind, resolved: None }
+        Self { kind, resolved: Mutex::new(None) }
     }
 }
 

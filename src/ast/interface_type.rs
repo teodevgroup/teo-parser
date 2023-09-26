@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use crate::ast::identifier::ASTIdentifier;
-use crate::ast::r#type::Arity;
+use crate::ast::arity::Arity;
+use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::span::Span;
 
 #[derive(Debug, Clone)]
 pub(crate) struct InterfaceType {
-    pub(crate) name: ASTIdentifier,
+    pub(crate) name: IdentifierPath,
     pub(crate) args: Vec<InterfaceType>,
     pub(crate) arity: Arity,
     pub(crate) collection_optional: bool,
@@ -30,7 +30,7 @@ impl InterfaceType {
 
 impl Display for InterfaceType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.name.name)?;
+        Display::fmt(&self.name, f)?;
         if self.args.len() > 0 {
             f.write_str("<")?;
         }
