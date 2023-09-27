@@ -19,7 +19,7 @@ pub(crate) enum Top {
     DataSet(DataSet),
     Middleware(Middleware),
     ActionGroup(ActionGroupDeclaration),
-    InterfaceDeclaration(InterfaceDeclaration),
+    Interface(InterfaceDeclaration),
     Namespace(Namespace),
 }
 
@@ -35,7 +35,7 @@ impl Top {
             Top::DataSet(d) => d.id(),
             Top::Middleware(m) => m.id(),
             Top::ActionGroup(a) => a.id(),
-            Top::InterfaceDeclaration(i) => i.id(),
+            Top::Interface(i) => i.id(),
             Top::Namespace(n) => n.id(),
         }
     }
@@ -130,7 +130,7 @@ impl Top {
 
     pub(crate) fn as_interface(&self) -> Option<&InterfaceDeclaration> {
         match self {
-            Top::InterfaceDeclaration(m) => Some(m),
+            Top::Interface(m) => Some(m),
             _ => None,
         }
     }

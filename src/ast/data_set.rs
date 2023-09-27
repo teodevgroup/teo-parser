@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::sync::Mutex;
 use teo_teon::value::Value;
 use crate::ast::identifier::Identifier;
@@ -7,10 +8,10 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct DataSet {
-    pub(crate) path: Vec<usize>,
-    pub(crate) ns_path: Vec<String>,
-    pub(crate) string_path: Vec<String>,
     pub(crate) span: Span,
+    pub(crate) path: Vec<usize>,
+    pub(crate) parent_path: Vec<String>,
+    pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) auto_seed: bool,
     pub(crate) notrack: bool,
@@ -39,7 +40,7 @@ pub struct DataSetGroup {
     pub(crate) identifier_path: IdentifierPath,
     pub(crate) span: Span,
     pub(crate) records: Vec<DataSetRecord>,
-    pub(crate) resolved: Mutex<Option<DataSetGroupResolved>>,
+    pub(crate) resolved: RefCell<Option<DataSetGroupResolved>>,
 }
 
 #[derive(Debug)]
@@ -53,7 +54,7 @@ pub struct DataSetRecord {
     pub(crate) identifier: Identifier,
     pub(crate) span: Span,
     pub(crate) dictionary: DictionaryLiteral,
-    pub(crate) resolved: Mutex<Option<DataSetRecordResolved>>,
+    pub(crate) resolved: RefCell<Option<DataSetRecordResolved>>,
 }
 
 impl DataSetRecord {
