@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::cell::RefCell;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field_type::FieldType;
@@ -43,22 +43,17 @@ pub(crate) struct FieldResolved {
 
 #[derive(Debug)]
 pub(crate) struct Field {
-    pub(crate) path: Vec<usize>,
-    pub(crate) comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
-    pub(crate) r#type: FieldType,
-    pub(crate) decorators: Vec<Decorator>,
     pub(crate) span: Span,
-    pub(crate) resolved: Mutex<Option<FieldResolved>>,
+    pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) comment: Option<Comment>,
+    pub(crate) decorators: Vec<Decorator>,
+    pub(crate) identifier: Identifier,
+    pub(crate) field_type: FieldType,
+    pub(crate) resolved: RefCell<Option<FieldResolved>>,
 }
 
 impl Field {
-
-    pub(crate) fn new(path: Vec<usize>, comment: Option<Comment>, identifier: Identifier, r#type: FieldType, decorators: Vec<Decorator>, span: Span) -> Self {
-        Self {
-            path, comment, identifier, r#type, decorators, span, resolved: Mutex::new(None),
-        }
-    }
 
     pub(crate) fn name(&self) -> &str {
         self.identifier.name.as_str()

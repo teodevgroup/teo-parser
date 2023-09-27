@@ -45,7 +45,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     let mut identifier: Option<Identifier> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::EMPTY_LINES | Rule::comment_block => {},
+            Rule::COLON | Rule::EMPTY_LINES => {},
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::item_decorator => decorators.push(parse_decorator(current, context)),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),

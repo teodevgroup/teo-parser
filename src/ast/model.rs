@@ -8,13 +8,13 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Model {
+    pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) identifier: Identifier,
     pub(crate) comment: Option<Comment>,
-    pub(crate) fields: Vec<Field>,
     pub(crate) decorators: Vec<Decorator>,
-    pub(crate) span: Span,
+    pub(crate) identifier: Identifier,
+    pub(crate) fields: Vec<Field>,
 }
 
 impl Model {

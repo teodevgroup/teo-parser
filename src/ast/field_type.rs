@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::sync::Mutex;
 use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
@@ -55,17 +56,10 @@ pub(crate) struct FieldType {
     pub(crate) arity: Arity,
     pub(crate) item_required: bool,
     pub(crate) collection_required: bool,
-    pub(crate) resolved: Mutex<Option<FieldTypeResolved>>,
+    pub(crate) resolved: RefCell<Option<FieldTypeResolved>>,
 }
 
 impl FieldType {
-
-    pub(crate) fn new(span: Span, identifier_path: IdentifierPath, arity: Arity, item_required: bool, collection_required: bool) -> Self {
-        Self {
-            span, identifier_path, arity, item_required, collection_required,
-            resolved: Mutex::new(None),
-        }
-    }
 
     pub(crate) fn resolve(&self, resolved: FieldTypeResolved) {
         let mut binding = self.resolved.lock().unwrap();
