@@ -2,9 +2,9 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct Comment {
+    pub(crate) span: Span,
     pub(crate) name: Option<String>,
     pub(crate) desc: Option<String>,
-    pub(crate) span: Span,
 }
 
 impl Comment {
