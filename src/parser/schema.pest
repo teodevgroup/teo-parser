@@ -282,11 +282,11 @@ enum_declaration = {
     ~ ENUM_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (enum_value_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (enum_member_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
-enum_value_declaration = {
+enum_member_declaration = {
     triple_comment_block? ~
     (item_decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
     identifier
@@ -391,7 +391,7 @@ interface_item = {
 
 interface_enum_declaration = {
     INTERFACE_KEYWORD ~ ENUM_KEYWORD ~ identifier ~ (EXTENDS_KEYWORD ~ interface_type ~ ("," ~ interface_type)* ~ ","?)? ~ BLOCK_OPEN
-    ~ (enum_value_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (enum_member_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

@@ -5,13 +5,13 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub(crate) struct Enum {
-    pub(crate) path: Vec<usize>,
-    pub(crate) comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) decorators: Vec<Decorator>,
-    pub(crate) members: Vec<EnumMember>,
     pub(crate) span: Span,
+    pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) comment: Option<Comment>,
+    pub(crate) decorators: Vec<Decorator>,
+    pub(crate) identifier: Identifier,
+    pub(crate) members: Vec<EnumMember>,
 }
 
 impl Enum {
