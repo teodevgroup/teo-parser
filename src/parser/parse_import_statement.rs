@@ -9,7 +9,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::utils::path::import_path;
 
-pub(super) fn parse_import(pair: Pair<'_>, source_path: &Path, context: &mut ParserContext) -> Import {
+pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &Path, context: &mut ParserContext) -> Import {
     let span = parse_span(&pair);
     let mut identifiers = vec![];
     let mut source: Option<StringLiteral> = None;

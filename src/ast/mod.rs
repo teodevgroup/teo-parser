@@ -4,6 +4,7 @@ pub(crate) mod identifier;
 pub(crate) mod identifier_path;
 pub(crate) mod config;
 pub(crate) mod config_item;
+pub(crate) mod config_keyword;
 pub(crate) mod model;
 pub(crate) mod r#enum;
 pub(crate) mod comment;

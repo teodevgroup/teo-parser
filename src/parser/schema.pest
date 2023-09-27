@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_declaration | enum_declaration | model_declaration | let_declaration | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -233,7 +233,7 @@ expression = {
 // variable & constant declaration
 // #############
 
-let_declaration = { "let" ~ identifier ~ "=" ~ expression }
+constant_statement = { "let" ~ identifier ~ "=" ~ expression }
 
 // #############
 // arguments
@@ -261,7 +261,7 @@ argument_declaration = { identifier ~ ":" ~ interface_type }
 
 config_keywords = { SERVER_KEYWORD | CONNECTOR_KEYWORD | CLIENT_KEYWORD | ENTITY_KEYWORD | DEBUG_KEYWORD | TEST_KEYWORD }
 
-config_declaration = {
+config_block = {
     config_keywords
     ~ identifier?
     ~ BLOCK_OPEN
@@ -401,7 +401,7 @@ interface_enum_declaration = {
 namespace = {
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_declaration | enum_declaration | model_declaration | let_declaration | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
