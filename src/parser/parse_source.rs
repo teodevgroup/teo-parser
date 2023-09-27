@@ -3,6 +3,7 @@ use pest::Parser;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::ast::top::Top;
+use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_import_statement::parse_import_statement;

@@ -13,9 +13,12 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
     let mut keyword: Option<ConfigKeyword> = None;
     let mut identifier: Option<Identifier> = None;
     let mut items: Vec<ConfigItem> = vec![];
+    let path = context.next_parent_path();
+    let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
+            Rule::BLOCK_OPEN => string_path = Some(context.next_parent_string_path(if identifier.is_some() { identifier.as_ref().unwrap().name() } else { keyword.as_ref().unwrap().name() })),
+            Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
             Rule::config_keywords => keyword = Some(parse_config_keyword(current)),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::config_item => items.push(parse_config_item(current, context)),
@@ -24,10 +27,12 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    context.pop_parent_id();
+    context.pop_string_path();
     Config {
         span,
-        path: context.next_path(),
-        string_path: context.next_string_path(if identifier.is_some() { identifier.as_ref().unwrap().name() } else { keyword.as_ref().unwrap().name() }),
+        path,
+        string_path: string_path.unwrap(),
         keyword: keyword.unwrap(),
         identifier,
         items,
@@ -49,5 +54,11 @@ fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem 
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    ConfigItem { identifier: identifier.unwrap(), expression: expression.unwrap(), span }
+    ConfigItem {
+        span,
+        path: context.next_path(),
+        string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
+        identifier: identifier.unwrap(),
+        expression: expression.unwrap(),
+    }
 }

@@ -73,6 +73,10 @@ impl<'a> ParserContext<'a> {
         string_path
     }
 
+    pub(super) fn next_parent_string_path(&mut self, item: impl Into<String>) -> Vec<String> {
+        self.current_string_path.push(item.into());
+        self.current_string_path.clone()
+    }
 
     pub(super) fn push_string_path(&mut self, item: impl Into<String>) {
         self.current_string_path.push(item.into())
