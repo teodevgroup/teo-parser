@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::data_set::{DataSet, DataSetGroup, DataSetGroupResolved, DataSetRecord};
+use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::DictionaryLiteral;
@@ -10,7 +10,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_data_set(pair: Pair<'_>, context: &mut ParserContext) -> DataSet {
+pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DataSet {
     let span = parse_span(&pair);
     let mut identifier: Option<Identifier> = None;
     let mut auto_seed = false;

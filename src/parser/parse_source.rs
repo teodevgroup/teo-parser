@@ -4,6 +4,7 @@ use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::ast::top::Top;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_constant_statement::parse_constant_statement;
+use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_model::parse_model_declaration;
@@ -55,7 +56,7 @@ pub(super) fn parse_source(
                 tops.insert(r#enum.id(), Top::Enum(r#enum));
             },
             Rule::dataset_declaration => { // dataset a { ... }
-                let data_set = parse_dataset_declaration(current, context);
+                let data_set = parse_data_set_declaration(current, context);
                 references.data_sets.insert(data_set.id());
                 context.schema_references.data_sets.push(data_set.path.clone());
                 tops.insert(data_set.id(), Top::DataSet(data_set));
