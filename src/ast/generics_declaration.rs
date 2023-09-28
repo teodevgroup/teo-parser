@@ -4,5 +4,5 @@ use crate::ast::span::Span;
 #[derive(Debug)]
 pub struct GenericsDeclaration {
     pub(crate) span: Span,
-    pub(crate) items: Vec<Identifier>,
+    pub(crate) identifiers: Vec<Identifier>,
 }

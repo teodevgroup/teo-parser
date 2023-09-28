@@ -17,11 +17,12 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut extends: Vec<InterfaceExtending> = vec![];
     let mut fields: Vec<InterfaceField> = vec![];
     let path = context.next_parent_path();
+    let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
-                context.push_string_path(identifier.as_ref().unwrap().name());
+                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
             },
             Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
             Rule::interface_extending => extends.push(parse_interface_extending(current, context)),
@@ -34,7 +35,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
     InterfaceDeclaration {
         span,
         path,
-        string_path,
+        string_path: string_path.unwrap(),
         identifier: identifier.unwrap(),
         generics_declaration,
         extends,
@@ -51,7 +52,7 @@ fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Ge
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    GenericsDeclaration { span, items }
+    GenericsDeclaration { span, identifiers }
 }
 
 fn parse_interface_extending(pair: Pair<'_>, context: &mut ParserContext) -> InterfaceExtending {

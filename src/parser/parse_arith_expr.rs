@@ -6,7 +6,7 @@ use crate::parser::pest_parser::{Pair, PRATT_PARSER, Rule};
 
 pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> ArithExpr {
     let span = parse_span(&pair);
-    PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
+    let result = PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::operand => ArithExpr::Expression(Box::new(parse_expression_kind(primary, context))),
         _ => {
             context.insert_unparsed(parse_span(&primary));
@@ -33,5 +33,6 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             op,
             rhs: Box::new(rhs),
         })
-    }).parse(pair.into_inner())
+    }).parse(pair.into_inner());
+    result
 }

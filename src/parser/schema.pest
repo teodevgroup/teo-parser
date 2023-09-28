@@ -59,7 +59,8 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-field_type = { identifier_path ~ ("<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">")? ~ optionality? ~ arity? ~ optionality? }
+field_type = { identifier_path ~ field_type_generics? ~ optionality? ~ arity? ~ optionality? }
+field_type_generics = { "<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
 optionality = { "?" }
 
