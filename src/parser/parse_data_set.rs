@@ -5,6 +5,7 @@ use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::DictionaryLiteral;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
+use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};

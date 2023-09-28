@@ -99,7 +99,7 @@ pub(super) fn parse_tuple_literal(pair: &Pair<'_>, context: &mut ParserContext) 
     TupleLiteral { expressions, span }
 }
 
-pub(super) fn parse_dictionary_literal(pair: &Pair<'_>, context: &mut ParserContext) -> DictionaryLiteral {
+pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserContext) -> DictionaryLiteral {
     let span = parse_span(&pair);
     let mut expressions: Vec<(ExpressionKind, ExpressionKind)> = vec![];
     for current in pair.into_inner() {
