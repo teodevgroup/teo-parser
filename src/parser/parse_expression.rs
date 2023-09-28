@@ -6,6 +6,7 @@ use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_group::parse_group;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_literals::{parse_array_literal, parse_bool_literal, parse_dictionary_literal, parse_enum_variant_literal, parse_null_literal, parse_numeric_literal, parse_range_literal, parse_regexp_literal, parse_string_literal, parse_tuple_literal};
+use crate::parser::parse_pipeline::parse_pipeline;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_subscript::parse_subscript;
 use crate::parser::parser_context::ParserContext;

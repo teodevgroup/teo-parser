@@ -1,13 +1,12 @@
 use std::cell::RefCell;
-use crate::ast::arity::Arity;
 use crate::ast::field::Field;
 use crate::ast::field_type::FieldType;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::Model;
 use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field_type::parse_field_type;
 use crate::parser::parse_identifier::parse_identifier;
-use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};

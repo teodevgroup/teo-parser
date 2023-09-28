@@ -1,6 +1,7 @@
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;

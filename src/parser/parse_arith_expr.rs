@@ -8,7 +8,10 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
     let span = parse_span(&pair);
     PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::operand => ArithExpr::Expression(Box::new(parse_expression_kind(primary, context))),
-        _ => context.insert_unparsed(parse_span(&primary)),
+        _ => {
+            context.insert_unparsed(parse_span(&primary));
+            unreachable!()
+        },
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
             Rule::ADD => Op::Add,

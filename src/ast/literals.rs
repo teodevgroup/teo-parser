@@ -13,7 +13,7 @@ pub(crate) struct NumericLiteral {
 
 impl Display for NumericLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.value)
+        Display::fmt(&self.value, f)
     }
 }
 
@@ -52,7 +52,7 @@ pub(crate) struct BoolLiteral {
 
 impl Display for BoolLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.value)
+        Display::fmt(&self.value, f)
     }
 }
 
@@ -88,9 +88,9 @@ impl Display for EnumVariantLiteral {
 #[derive(Debug)]
 pub(crate) struct RangeLiteral {
     pub(crate) span: Span,
-    pub(crate) start: ExpressionKind,
+    pub(crate) start: Box<ExpressionKind>,
     pub(crate) closed: bool,
-    pub(crate) end: ExpressionKind,
+    pub(crate) end: Box<ExpressionKind>,
 }
 
 impl Display for RangeLiteral {

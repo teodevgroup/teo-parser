@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
 use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::span::Span;
@@ -79,9 +78,7 @@ pub(crate) struct FieldType {
 impl FieldType {
 
     pub(crate) fn resolve(&self, resolved: FieldTypeResolved) {
-        let mut binding = self.resolved.lock().unwrap();
-        let mut_ref = binding.as_mut().unwrap();
-        *mut_ref = resolved;
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 }
 

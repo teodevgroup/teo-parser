@@ -17,7 +17,6 @@ pub(crate) mod reference;
 pub(crate) mod accessible;
 pub(crate) mod action;
 pub(crate) mod interface;
-pub(crate) mod interface_type;
 pub(crate) mod field_type;
 pub(crate) mod arity;
 pub(crate) mod argument;

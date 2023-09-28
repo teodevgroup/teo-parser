@@ -31,6 +31,7 @@ impl SchemaReferences {
             builtin_sources: vec![],
             main_source: None,
             connectors: vec![],
+            configs: vec![],
             server: None,
             entities: vec![],
             clients: vec![],

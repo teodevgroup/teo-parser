@@ -210,13 +210,7 @@ unit_without_range_literal = {
     ~ (subscript | argument_list | "." ~ identifier)*
 }
 
-operand = {
-    negation |
-    bitwise_negation |
-    nullish_coalescing |
-    unit |
-    pipeline
-}
+operand = { unit | pipeline }
 
 expression = {
     arith_expr |

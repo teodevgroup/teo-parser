@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
-use std::ops::Deref;
 use teo_teon::value::Value;
-use crate::ast::accessible::Accessible;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;

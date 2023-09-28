@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::sync::Mutex;
 use teo_teon::value::Value;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;

@@ -5,7 +5,8 @@ use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RangeLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
-use crate::parser::parse_expression::parse_expression_kind;
+use crate::parser::parse_argument::parse_argument_list;
+use crate::parser::parse_expression::{parse_expression_kind, parse_unit};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -146,14 +147,14 @@ pub(super) fn parse_range_literal(pair: Pair<'_>, context: &mut ParserContext) -
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    RangeLiteral { span, start: start.unwrap(), closed, end: end.unwrap() }
+    RangeLiteral { span, start: Box::new(start.unwrap()), closed, end: Box::new(end.unwrap()) }
 }
 
 fn parse_range_end(pair: Pair<'_>, context: &mut ParserContext) -> ExpressionKind {
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::numeric_literal => return ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context)),
-            Rule::unit_without_range_literal => return parse_unit(current, context),
+            Rule::unit_without_range_literal => return ExpressionKind::Unit(parse_unit(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

@@ -48,9 +48,9 @@ impl Model {
     }
 
     pub(crate) fn sorted_fields(&self) -> Vec<&Field> {
-        self.fields.iter().sorted_by(|a, b| if a.resolved.lock().unwrap().as_ref().unwrap().class.is_primitive_field() {
+        self.fields.iter().sorted_by(|a, b| if a.resolved().class.is_primitive_field() {
             Ordering::Greater
-        } else if b.resolved.lock().unwrap().as_ref().unwrap().class.is_relation() {
+        } else if b.resolved().class.is_relation() {
             Ordering::Less
         } else {
             Ordering::Less

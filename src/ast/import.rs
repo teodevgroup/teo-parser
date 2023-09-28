@@ -1,9 +1,6 @@
-use std::collections::HashMap;
 use std::path::PathBuf;
-use maplit::hashmap;
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::StringLiteral;
-use crate::ast::reference::Reference;
 use crate::ast::span::Span;
 
 #[derive(Debug)]

@@ -12,7 +12,7 @@ use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_namespace::parse_namespace;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
-use super::pest_parser::{Pair, Rule};
+use super::pest_parser::Rule;
 
 pub(super) fn parse_source(
     content: &str, path: impl Into<String>, builtin: bool, context: &mut ParserContext,

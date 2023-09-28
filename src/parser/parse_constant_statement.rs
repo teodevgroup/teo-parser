@@ -1,6 +1,7 @@
 use crate::ast::constant::Constant;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
+use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -13,7 +14,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserConte
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::expression => expression = Some(parse_expression(current, context)),
+            Rule::expression => expression = Some(Expression::new(parse_expression_kind(current, context))),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

@@ -1,4 +1,3 @@
-use pest::Parser as PestParser;
 use pest::pratt_parser::PrattParser;
 use once_cell::sync::Lazy;
 

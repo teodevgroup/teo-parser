@@ -58,4 +58,12 @@ impl Field {
     pub(crate) fn name(&self) -> &str {
         self.identifier.name.as_str()
     }
+
+    pub(crate) fn resolve(&self, resolved: FieldResolved) {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub(crate) fn resolved(&self) -> &FieldResolved {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
 }

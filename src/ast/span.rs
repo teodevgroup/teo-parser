@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::ExpressionKind::Pipeline;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Span {

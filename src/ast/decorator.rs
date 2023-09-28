@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
+use crate::ast::unit::Unit;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum DecoratorClass {
@@ -25,7 +25,7 @@ pub struct DecoratorResolved {
 #[derive(Debug)]
 pub struct Decorator {
     pub(crate) span: Span,
-    pub(crate) expression: ExpressionKind,
+    pub(crate) unit: Unit,
     pub(crate) resolved: RefCell<Option<DecoratorResolved>>,
 }
 
