@@ -160,12 +160,10 @@ BI_AND = { "&" }
 BI_XOR = { "^" }
 BI_OR = { "|" }
 BI_NEG = { "~" }
-BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR }
+NULLISH_COALESCING = { "??" }
+BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | NEG | BI_NEG | NULLISH_COALESCING }
 // OPERATORS = { "!" | "&&" | "||" | ">" | "<" | ">>" | "<<" }
-negation = { "-" ~ unit }
-bitwise_negation = { "~" ~ unit }
 arith_expr = { operand ~ (BINARY_OPERATOR ~ operand)+ }
-nullish_coalescing = { unit ~ ("??" ~ unit)+ }
 
 // #############
 // group
@@ -221,10 +219,7 @@ operand = {
 }
 
 expression = {
-    negation |
-    bitwise_negation |
     arith_expr |
-    nullish_coalescing |
     unit |
     pipeline
 }

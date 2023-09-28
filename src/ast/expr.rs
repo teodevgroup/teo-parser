@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use std::sync::{Arc, Mutex};
 use crate::ast::accessible::Accessible;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;

@@ -5,6 +5,7 @@ use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RangeLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -27,7 +28,7 @@ pub(super) fn parse_bool_literal(pair: &Pair<'_>) -> BoolLiteral {
     }
 }
 
-pub(super) fn parse_regexp_literal(pair: &Pair<'_>, context: &mut ParserContext) -> RegExpLiteral {
+pub(super) fn parse_regexp_literal(pair: Pair<'_>, context: &mut ParserContext) -> RegExpLiteral {
     let span = parse_span(&pair);
     let mut value = None;
     for current in pair.into_inner() {
@@ -59,7 +60,7 @@ pub(super) fn parse_numeric_literal(pair: &Pair<'_>, _context: &mut ParserContex
     }
 }
 
-pub(super) fn parse_enum_variant_literal(pair: &Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
+pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
     let span = parse_span(&pair);
     let mut argument_list: Option<ArgumentList> = None;
     let mut value: Option<String> = None;
@@ -73,7 +74,7 @@ pub(super) fn parse_enum_variant_literal(pair: &Pair<'_>, context: &mut ParserCo
     EnumVariantLiteral { span, value: value.unwrap(), argument_list }
 }
 
-pub(super) fn parse_array_literal(pair: &Pair<'_>, context: &mut ParserContext) -> ArrayLiteral {
+pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -> ArrayLiteral {
     let span = parse_span(&pair);
     let mut expressions: Vec<ExpressionKind> = vec![];
     for current in pair.into_inner() {
@@ -86,7 +87,7 @@ pub(super) fn parse_array_literal(pair: &Pair<'_>, context: &mut ParserContext) 
     ArrayLiteral { expressions, span }
 }
 
-pub(super) fn parse_tuple_literal(pair: &Pair<'_>, context: &mut ParserContext) -> TupleLiteral {
+pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -> TupleLiteral {
     let span = parse_span(&pair);
     let mut expressions: Vec<ExpressionKind> = vec![];
     for current in pair.into_inner() {
@@ -128,7 +129,7 @@ fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (Expre
     return (key.unwrap(), value.unwrap())
 }
 
-pub(super) fn parse_range_literal(pair: &Pair<'_>, context: &mut ParserContext) -> RangeLiteral {
+pub(super) fn parse_range_literal(pair: Pair<'_>, context: &mut ParserContext) -> RangeLiteral {
     let span = parse_span(&pair);
     let mut start = None;
     let mut end = None;

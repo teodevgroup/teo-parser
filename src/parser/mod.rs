@@ -16,6 +16,12 @@ mod parse_comment;
 mod parse_field_type;
 mod parse_namespace;
 mod parse_decorator;
+mod parse_pipeline;
+mod parse_expression;
+mod parse_argument;
+mod parse_subscript;
+mod parse_group;
+mod parse_arith_expr;
 
 mod pest_parser;
 mod parser_context;

@@ -14,6 +14,7 @@ pub enum Op {
     BitXor,
     BitOr,
     BitNeg,
+    NullishCoalescing,
 }
 
 impl Display for Op {
@@ -29,16 +30,17 @@ impl Display for Op {
             Op::BitXor => f.write_str("^"),
             Op::BitOr => f.write_str("|"),
             Op::BitNeg => f.write_str("~"),
+            Op::NullishCoalescing => f.write_str("??"),
         }
     }
 }
 
 #[derive(Debug)]
 pub(crate) struct BinaryOp {
-    span: Span,
-    lhs: Box<ArithExpr>,
-    op: Op,
-    rhs: Box<ArithExpr>,
+    pub(crate) span: Span,
+    pub(crate) lhs: Box<ArithExpr>,
+    pub(crate) op: Op,
+    pub(crate) rhs: Box<ArithExpr>,
 }
 
 impl BinaryOp {
@@ -70,8 +72,14 @@ impl ArithExpr {
 impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ArithExpr::UnaryNeg(e) => Display::fmt(&e, f),
-            ArithExpr::UnaryBitNeg(e) => Display::fmt(&e, f),
+            ArithExpr::UnaryNeg(e) => {
+                f.write_str("-")?;
+                Display::fmt(&e, f)
+            },
+            ArithExpr::UnaryBitNeg(e) => {
+                f.write_str("~")?;
+                Display::fmt(&e, f)
+            },
             ArithExpr::Expression(e) => Display::fmt(&e, f),
             ArithExpr::BinaryOp(b) => {
                 Display::fmt(&b.lhs, f)?;

@@ -56,7 +56,7 @@ impl Display for BoolLiteral {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct NullLiteral {
     pub(crate) span: Span,
 }
