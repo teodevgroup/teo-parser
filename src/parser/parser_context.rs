@@ -90,6 +90,10 @@ impl<'a> ParserContext<'a> {
         self.current_string_path.clone()
     }
 
+    pub(super) fn current_path(&self) -> Vec<usize> {
+        self.current_path.clone()
+    }
+
     pub(super) fn is_source_parsing_or_parsed(&self, path: &String) -> bool {
         let set: HashSet<&String> = self.source_lookup.values().collect();
         set.contains(path)

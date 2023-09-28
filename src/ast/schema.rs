@@ -20,6 +20,7 @@ pub(crate) struct SchemaReferences {
     pub(crate) enums: Vec<Vec<usize>>,
     pub(crate) models: Vec<Vec<usize>>,
     pub(crate) data_sets: Vec<Vec<usize>>,
+    pub(crate) interfaces: Vec<Vec<usize>>,
     pub(crate) namespaces: Vec<Vec<usize>>,
 }
 
@@ -38,6 +39,7 @@ impl SchemaReferences {
             data_sets: vec![],
             debug: None,
             test: None,
+            interfaces: vec![],
             namespaces: vec![],
         }
     }

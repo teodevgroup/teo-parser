@@ -42,8 +42,9 @@ pub(crate) struct SourceReferences {
     pub(crate) configs: BTreeSet<usize>,
     pub(crate) enums: BTreeSet<usize>,
     pub(crate) models: BTreeSet<usize>,
-    pub(crate) namespaces: BTreeSet<usize>,
     pub(crate) data_sets: BTreeSet<usize>,
+    pub(crate) interfaces: BTreeSet<usize>,
+    pub(crate) namespaces: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -56,6 +57,7 @@ impl SourceReferences {
             enums: btreeset!{},
             models: btreeset!{},
             namespaces: btreeset!{},
+            interfaces: btreeset!{},
             data_sets: btreeset!{},
         }
     }

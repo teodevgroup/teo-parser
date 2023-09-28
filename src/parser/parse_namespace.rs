@@ -1,38 +1,31 @@
 use maplit::btreemap;
-use pest::Parser;
-use crate::ast::source::{Source, SourceReferences, SourceType};
+use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::top::Top;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
-use crate::parser::parse_import_statement::parse_import_statement;
+use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
 use crate::parser::parse_model::parse_model_declaration;
-use crate::parser::parse_namespace::parse_namespace;
+use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
-use crate::parser::pest_parser::SchemaParser;
-use super::pest_parser::{Pair, Rule};
+use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_source(
-    content: &str, path: impl Into<String>, builtin: bool, context: &mut ParserContext,
-) -> Source {
-    let path = path.into();
-    let id = context.start_next_source(path.clone());
+pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Namespace {
+    let span = parse_span(&pair);
+    let parent_path = context.current_path();
+    let parent_string_path = context.current_string_path();
+    let path = context.next_parent_path();
+    let mut identifier = None;
+    let mut string_path = None;
+    let mut references = NamespaceReferences::new();
     let mut tops = btreemap!{};
-    let mut references = SourceReferences::new();
-    let mut pairs = match SchemaParser::parse(Rule::schema, &content) {
-        Ok(pairs) => pairs,
-        Err(err) => panic!("{}", err)
-    };
-    let pairs = pairs.next().unwrap();
-    let mut pairs = pairs.into_inner().peekable();
-    while let Some(current) = pairs.next() {
+    for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::import_statement => { // import { a, b } from './some.schema'
-                let import = parse_import_statement(current, path.as_ref(), context);
-                references.imports.insert(import.id());
-                tops.insert(import.id(), Top::Import(import));
+            Rule::identifier => {
+                identifier = Some(parse_identifier(&current));
+                context.next_string_path(identifier.as_ref().unwrap().name());
             },
             Rule::constant_statement => { // let a = 5
                 let constant = parse_constant_statement(current, context);
@@ -74,17 +67,20 @@ pub(super) fn parse_source(
                 references.namespaces.insert(namespace.id());
                 context.schema_references.namespaces.push(namespace.path.clone());
                 tops.insert(namespace.id(), Top::Namespace(namespace));
-            }
-            // declares
-            // action group
+            },
             _ => (),
         }
     }
-    Source::new(
-        id,
-        if builtin { SourceType::Builtin } else { SourceType::Normal },
+    context.pop_parent_id();
+    context.pop_string_path();
+    Namespace {
+        span,
         path,
+        parent_path,
+        string_path: string_path.unwrap(),
+        parent_string_path,
+        identifier: identifier.unwrap(),
         tops,
-        references
-    )
+        references,
+    }
 }

@@ -15,33 +15,17 @@ use crate::ast::top::Top;
 
 #[derive(Debug)]
 pub(crate) struct Namespace {
+    pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) parent_path: Vec<usize>,
-    pub(crate) span: Span,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) parent_string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) tops: BTreeMap<usize, Top>,
     pub(crate) references: NamespaceReferences,
 }
 
 impl Namespace {
-
-    pub(crate) fn new(
-        path: Vec<usize>,
-        parent_path: Vec<usize>,
-        span: Span,
-        identifier: Identifier,
-        tops: BTreeMap<usize, Top>,
-        references: NamespaceReferences,
-    ) -> Self {
-        Self {
-            path,
-            parent_path,
-            span,
-            identifier,
-            tops,
-            references,
-        }
-    }
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()
@@ -161,10 +145,12 @@ impl Namespace {
 #[derive(Debug)]
 pub(crate) struct NamespaceReferences {
     pub(crate) constants: BTreeSet<usize>,
+    pub(crate) configs: BTreeSet<usize>,
     pub(crate) enums: BTreeSet<usize>,
     pub(crate) models: BTreeSet<usize>,
-    pub(crate) namespaces: BTreeSet<usize>,
     pub(crate) data_sets: BTreeSet<usize>,
+    pub(crate) interfaces: BTreeSet<usize>,
+    pub(crate) namespaces: BTreeSet<usize>,
 }
 
 impl NamespaceReferences {
@@ -172,10 +158,12 @@ impl NamespaceReferences {
     pub(crate) fn new() -> Self {
         Self {
             constants: btreeset!{},
+            configs: btreeset!{},
             enums: btreeset!{},
             models: btreeset!{},
-            namespaces: btreeset!{},
             data_sets: btreeset!{},
+            interfaces: btreeset!{},
+            namespaces: btreeset!{},
         }
     }
 }
