@@ -50,9 +50,10 @@ pub struct DataSetRecordResolved {
 
 #[derive(Debug)]
 pub struct DataSetRecord {
-    pub(crate) path: Vec<usize>,
-    pub(crate) identifier: Identifier,
     pub(crate) span: Span,
+    pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) identifier: Identifier,
     pub(crate) dictionary: DictionaryLiteral,
     pub(crate) resolved: RefCell<Option<DataSetRecordResolved>>,
 }

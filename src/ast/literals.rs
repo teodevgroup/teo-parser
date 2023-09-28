@@ -1,11 +1,13 @@
 use std::fmt::{Display, Formatter};
+use regex::Regex;
+use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub(crate) struct NumericLiteral {
-    pub(crate) value: String,
+    pub(crate) value: Value,
     pub(crate) span: Span,
 }
 
@@ -30,19 +32,21 @@ impl Display for StringLiteral {
 
 #[derive(Debug)]
 pub(crate) struct RegExpLiteral {
-    pub(crate) value: String,
+    pub(crate) value: Regex,
     pub(crate) span: Span,
 }
 
 impl Display for RegExpLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.value)
+        f.write_str("/")?;
+        f.write_str(self.value.as_str())?;
+        f.write_str("/")
     }
 }
 
 #[derive(Debug)]
 pub(crate) struct BoolLiteral {
-    pub(crate) value: String,
+    pub(crate) value: bool,
     pub(crate) span: Span,
 }
 
@@ -54,13 +58,12 @@ impl Display for BoolLiteral {
 
 #[derive(Debug)]
 pub(crate) struct NullLiteral {
-    pub(crate) value: String,
     pub(crate) span: Span,
 }
 
 impl Display for NullLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.value)
+        f.write_str("null")
     }
 }
 

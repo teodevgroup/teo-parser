@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetGroupResolved, DataSetRecord};
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
+use crate::ast::literals::DictionaryLiteral;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
@@ -69,5 +70,27 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
 }
 
 fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> DataSetRecord {
-
+    let span = parse_span(&pair);
+    let mut identifier: Option<Identifier> = None;
+    let mut dictionary: Option<DictionaryLiteral> = None;
+    let path = context.next_path();
+    let mut string_path = None;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::identifier => {
+                identifier = Some(parse_identifier(&current));
+                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
+            },
+            Rule::dictionary_literal => dictionary = Some(parse_dictionary_literal(current, context)),
+            _ => (),
+        }
+    }
+    DataSetRecord {
+        span,
+        path,
+        string_path: string_path.unwrap(),
+        identifier: identifier.unwrap(),
+        dictionary: dictionary.unwrap(),
+        resolved: RefCell::new(None),
+    }
 }
