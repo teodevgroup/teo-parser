@@ -87,21 +87,17 @@ impl Display for EnumVariantLiteral {
 
 #[derive(Debug)]
 pub(crate) struct RangeLiteral {
-    pub(crate) closed: bool,
-    pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,
+    pub(crate) start: ExpressionKind,
+    pub(crate) closed: bool,
+    pub(crate) end: ExpressionKind,
 }
 
 impl Display for RangeLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let len = self.expressions.len();
-        for (index, expression) in self.expressions.iter().enumerate() {
-            Display::fmt(expression, f)?;
-            if index != len - 1 {
-                f.write_str(if self.closed { "..." } else { ".." })?;
-            }
-        }
-        Ok(())
+        Display::fmt(&self.start, f)?;
+        f.write_str(if self.closed { "..." } else { ".." })?;
+        Display::fmt(&self.end, f)
     }
 }
 
