@@ -12,7 +12,7 @@ pub(crate) struct InterfaceDeclaration {
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) extends: Vec<InterfaceExtending>,
-    pub(crate) items: Vec<InterfaceField>,
+    pub(crate) fields: Vec<InterfaceField>,
 }
 
 impl InterfaceDeclaration {
@@ -33,6 +33,8 @@ impl InterfaceDeclaration {
 #[derive(Debug)]
 pub(crate) struct InterfaceField {
     pub(crate) span: Span,
-    pub(crate) name: Identifier,
+    pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
+    pub(crate) identifier: Identifier,
     pub(crate) field_type: FieldType,
 }
