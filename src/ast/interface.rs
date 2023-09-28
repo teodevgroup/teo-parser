@@ -1,6 +1,7 @@
+use crate::ast::field_type::FieldType;
 use crate::ast::generics_declaration::GenericsDeclaration;
+use crate::ast::generics_extending::InterfaceExtending;
 use crate::ast::identifier::Identifier;
-use crate::ast::interface_type::InterfaceType;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -10,8 +11,8 @@ pub(crate) struct InterfaceDeclaration {
     pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) extends: Vec<InterfaceType>,
-    pub(crate) items: Vec<InterfaceItem>,
+    pub(crate) extends: Vec<InterfaceExtending>,
+    pub(crate) items: Vec<InterfaceField>,
 }
 
 impl InterfaceDeclaration {
@@ -24,14 +25,14 @@ impl InterfaceDeclaration {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn args(&self) -> &Vec<InterfaceType> {
-        &self.name.args
+    pub(crate) fn extends(&self) -> &Vec<InterfaceExtending> {
+        &self.extends
     }
 }
 
 #[derive(Debug)]
-pub(crate) struct InterfaceItem {
+pub(crate) struct InterfaceField {
     pub(crate) span: Span,
     pub(crate) name: Identifier,
-    pub(crate) kind: InterfaceType,
+    pub(crate) field_type: FieldType,
 }

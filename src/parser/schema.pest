@@ -375,16 +375,20 @@ action_declaration = {
 // #############
 // interface
 // #############
-interface_extending_item = { identifier_path ~ interface_extending? }
-interface_extending = { "<" ~ interface_extending_item ~ ("," ~ interface_extending_item)* ~ "," ~ ">" }
+
+interface_extending = { identifier_path ~ interface_extending_generics? }
+
+interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_extending)* ~ "," ~ ">" }
+
 generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
+
 interface_declaration = {
-    INTERFACE_KEYWORD ~ identifier_path ~ interface_extending ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
-    ~ (interface_item | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
+    ~ (interface_field | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
-interface_item = {
+interface_field = {
     identifier ~ COLON ~ field_type
 }
 
