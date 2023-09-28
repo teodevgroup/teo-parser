@@ -1,29 +1,37 @@
-use std::sync::Mutex;
-use crate::ast::argument::Argument;
+use std::cell::RefCell;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum DecoratorClass {
+    EnumDecorator,
+    EnumMemberDecorator,
+    ModelDecorator,
+    ModelFieldDecorator,
+    ModelRelationDecorator,
+    ModelPropertyDecorator,
+    InterfaceDecorator,
+    InterfaceFieldDecorator,
+}
+
 #[derive(Debug)]
 pub struct DecoratorResolved {
-    string_path: Vec<String>,
+    pub(crate) path: Vec<usize>,
+    pub(crate) class: DecoratorClass,
+    pub(crate) arguments: ArgumentList,
 }
 
 #[derive(Debug)]
 pub struct Decorator {
-    pub(crate) expression: ExpressionKind,
     pub(crate) span: Span,
-    pub(crate) arguments: ArgumentList,
-    pub(crate) resolved: Mutex<Option<DecoratorResolved>>,
+    pub(crate) expression: ExpressionKind,
+    pub(crate) resolved: RefCell<Option<DecoratorResolved>>,
 }
 
 impl Decorator {
 
-    pub(crate) fn new(expression: ExpressionKind, span: Span, arguments: ArgumentList) -> Self {
-        Self { expression, span, arguments, resolved: Mutex::new(None) }
-    }
-
-    pub(crate) fn get_argument_list(&self) -> &Vec<Argument> {
-        &self.arguments.arguments
+    pub(crate) fn resolved(&self) -> &DecoratorResolved {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 }

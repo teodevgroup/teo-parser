@@ -15,6 +15,7 @@ mod parse_interface_declaration;
 mod parse_comment;
 mod parse_field_type;
 mod parse_namespace;
+mod parse_decorator;
 
 mod pest_parser;
 mod parser_context;
