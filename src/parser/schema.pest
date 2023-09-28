@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -59,7 +59,7 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-field_type = { identifier_path ~ optionality? ~ arity? ~ optionality? }
+field_type = { identifier_path ~ ("<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">")? ~ optionality? ~ arity? ~ optionality? }
 arity = {"[]" | "{}" }
 optionality = { "?" }
 
@@ -253,7 +253,7 @@ pipeline = { "$" ~ identifier_unit }
 // arguments declaration
 // #############
 argument_list_declaration = { "(" ~ (NEWLINE | WHITESPACE)* ~ (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~ TRAILING_COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
-argument_declaration = { identifier ~ ":" ~ interface_type }
+argument_declaration = { identifier ~ ":" ~ field_type }
 
 // #############
 // config blocks
@@ -355,7 +355,7 @@ property_decorator_declaration = {
 }
 
 pipeline_item_declaration = {
-    DECLARE_KEYWORD ~ PIPELINE_KEYWORD ~ ITEM_KEYWORD ~ identifier ~ ("<" ~ interface_type ~ ("," ~ interface_type)* ~ ","? ~ ">")? ~ argument_list_declaration?
+    DECLARE_KEYWORD ~ PIPELINE_KEYWORD ~ ITEM_KEYWORD ~ identifier ~ ("<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">")? ~ argument_list_declaration?
 }
 
 action_group_declaration = {
@@ -369,30 +369,23 @@ req_type = {
 }
 
 action_declaration = {
-    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ interface_type ~ ")" ~ COLON ~ interface_type ~ (USING_KEYWORD ~ req_type)?
+    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ field_type ~ ")" ~ COLON ~ field_type ~ (USING_KEYWORD ~ req_type)?
 }
 
 // #############
 // interface
 // #############
-interface_type = {
-    identifier ~ ("<" ~ interface_type ~ ("," ~ interface_type)* ~ ","? ~ ">")? ~ optionality? ~ arity? ~ optionality?
-}
-
+interface_extending_item = { identifier_path ~ interface_extending? }
+interface_extending = { "<" ~ interface_extending_item ~ ("," ~ interface_extending_item)* ~ "," ~ ">" }
+generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
 interface_declaration = {
-    INTERFACE_KEYWORD ~ interface_type ~ (EXTENDS_KEYWORD ~ interface_type ~ ("," ~ interface_type)* ~ ","?)? ~ BLOCK_OPEN
+    INTERFACE_KEYWORD ~ identifier_path ~ interface_extending ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
     ~ (interface_item | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
 interface_item = {
-    identifier ~ COLON ~ interface_type
-}
-
-interface_enum_declaration = {
-    INTERFACE_KEYWORD ~ ENUM_KEYWORD ~ identifier ~ (EXTENDS_KEYWORD ~ interface_type ~ ("," ~ interface_type)* ~ ","?)? ~ BLOCK_OPEN
-    ~ (enum_member_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
-    ~ BLOCK_CLOSE
+    identifier ~ COLON ~ field_type
 }
 
 // #############
@@ -401,7 +394,7 @@ interface_enum_declaration = {
 namespace = {
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | interface_enum_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
