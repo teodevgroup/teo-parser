@@ -7,6 +7,13 @@ pub struct Schema {
     pub(crate) references: SchemaReferences,
 }
 
+impl Schema {
+
+    pub(crate) fn sources(&self) -> Vec<&Source> {
+        self.sources.values().collect()
+    }
+}
+
 pub(crate) struct SchemaReferences {
     pub(crate) builtin_sources: Vec<usize>,
     pub(crate) main_source: Option<usize>,
