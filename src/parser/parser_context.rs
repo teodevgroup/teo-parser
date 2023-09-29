@@ -94,9 +94,9 @@ impl<'a> ParserContext<'a> {
         self.current_path.clone()
     }
 
-    pub(super) fn is_source_parsing_or_parsed(&self, path: &String) -> bool {
+    pub(super) fn is_source_parsing_or_parsed(&self, path: &str) -> bool {
         let set: HashSet<&String> = self.source_lookup.values().collect();
-        set.contains(path)
+        set.iter().find(|p| p.as_str() == path).is_some()
     }
 
     pub(super) fn insert_unparsed(&mut self, span: Span) {

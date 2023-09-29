@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::AtomicBool;
 use maplit::btreeset;
+use crate::ast::import::Import;
 use crate::ast::top::Top;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -33,6 +34,10 @@ impl Source {
             resolved_2: AtomicBool::new(false),
             resolved_3: AtomicBool::new(false),
         }
+    }
+
+    pub(crate) fn imports(&self) -> Vec<&Import> {
+        self.references.imports.iter().map(|id| self.tops.get(id).unwrap().as_import().unwrap()).collect()
     }
 }
 
