@@ -1,6 +1,8 @@
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 use maplit::btreeset;
+use crate::ast::schema::Schema;
+use crate::ast::source::Source;
 use crate::diagnostics::diagnostics::Diagnostics;
 
 #[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -15,17 +17,29 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) examined_model_fields: Mutex<BTreeSet<String>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
     pub(crate) diagnostics: &'a mut Diagnostics,
+    pub(crate) schema: &'a Schema,
+    pub(crate) source: Option<&'a Source>,
 }
 
 impl<'a> ResolverContext<'a> {
 
-    pub(crate) fn new(diagnostics: &'a mut Diagnostics) -> Self {
+    pub(crate) fn new(diagnostics: &'a mut Diagnostics, schema: &'a Schema) -> Self {
         Self {
             examined_model_paths: Mutex::new(btreeset!{}),
             examined_model_fields: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
             diagnostics,
+            schema,
+            source: None,
         }
+    }
+
+    pub(crate) fn start_source(&mut self, source: &'a Source) {
+        self.source = Some(source);
+    }
+
+    pub(crate) fn source(&self) -> &Source {
+        self.source.unwrap()
     }
 
     pub(crate) fn add_examined_model_path(&self, model_path: Vec<String>) {

@@ -35,6 +35,10 @@ impl Namespace {
         *self.path.last().unwrap()
     }
 
+    pub(crate) fn tops(&self) -> Vec<&Top> {
+        self.tops.values().collect()
+    }
+
     pub(crate) fn get_constant(&self, id: usize) -> &Constant {
         self.tops.get(&id).unwrap().as_constant().unwrap()
     }

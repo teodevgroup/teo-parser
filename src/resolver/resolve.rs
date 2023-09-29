@@ -4,14 +4,17 @@ use crate::resolver::resolve_source::{resolve_source_first, resolve_source_secon
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(crate) fn resolve(schema: &Schema, diagnostics: &mut Diagnostics) {
-    let mut context = ResolverContext::new(diagnostics);
+    let mut context = ResolverContext::new(diagnostics, schema);
     for source in schema.sources() {
-        resolve_source_first(source, schema, &mut context);
+        context.start_source(source);
+        resolve_source_first(&mut context);
     }
     for source in schema.sources() {
-        resolve_source_second(source, schema, &mut context);
+        context.start_source(source);
+        resolve_source_second(&mut context);
     }
     for source in schema.sources() {
-        resolve_source_third(source, schema, &mut context);
+        context.start_source(source);
+        resolve_source_third(&mut context);
     }
 }

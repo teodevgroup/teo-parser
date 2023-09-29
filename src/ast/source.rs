@@ -36,6 +36,10 @@ impl Source {
         }
     }
 
+    pub(crate) fn tops(&self) -> Vec<&Top> {
+        self.tops.values().collect()
+    }
+
     pub(crate) fn imports(&self) -> Vec<&Import> {
         self.references.imports.iter().map(|id| self.tops.get(id).unwrap().as_import().unwrap()).collect()
     }
