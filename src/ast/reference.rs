@@ -1,20 +1,19 @@
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum ReferenceType {
-    /// Resolve the reference with the field decorator map
-    FieldDecorator,
-    /// Resolve the reference with the relation decorator map
-    RelationDecorator,
-    /// Resolve the reference with the property decorator map
-    PropertyDecorator,
-    /// Resolve the reference with the model decorator map
+    EnumDecorator,
+    EnumMemberDecorator,
     ModelDecorator,
-    /// Resolve the reference with the pipeline item map
+    ModelFieldDecorator,
+    ModelRelationDecorator,
+    ModelPropertyDecorator,
+    InterfaceDecorator,
+    InterfaceFieldDecorator,
     PipelineItem,
-    /// Resolve the reference with the default map
     Default,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Reference {
-    path: Vec<String>,
+    path: Vec<usize>,
+    r#type: ReferenceType,
 }

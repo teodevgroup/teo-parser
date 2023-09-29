@@ -6,33 +6,61 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug, Copy, Clone)]
+pub(crate) enum FieldHint {
+    ModelField,
+    InterfaceField,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum FieldClass {
-    Field,
-    DroppedField,
-    Relation,
-    Property,
+    ModelPrimitiveField,
+    ModelDroppedPrimitiveField,
+    ModelRelation,
+    ModelProperty,
+    InterfaceField,
 }
 
 impl FieldClass {
-    pub(crate) fn is_relation(&self) -> bool {
+    pub(crate) fn is_model_relation(&self) -> bool {
         match self {
-            FieldClass::Relation => true,
+            FieldClass::ModelRelation => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_primitive_field(&self) -> bool {
+    pub(crate) fn is_model_primitive_field(&self) -> bool {
         match self {
-            FieldClass::Field => true,
+            FieldClass::ModelPrimitiveField => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_dropped(&self) -> bool {
+    pub(crate) fn is_model_dropped_primitive_field(&self) -> bool {
         match self {
-            FieldClass::DroppedField => true,
+            FieldClass::ModelDroppedPrimitiveField => true,
             _ => false,
         }
+    }
+
+    pub(crate) fn is_model_property(&self) -> bool {
+        match self {
+            FieldClass::ModelProperty => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_interface_field(&self) -> bool {
+        match self {
+            FieldClass::InterfaceField => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_model_field(&self) -> bool {
+        self.is_model_field() ||
+        self.is_model_dropped_primitive_field() ||
+        self.is_model_relation() ||
+        self.is_model_property()
     }
 }
 

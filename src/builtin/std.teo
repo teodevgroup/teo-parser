@@ -1,6 +1,44 @@
 /// @name std
-/// This namespace contains the Teo standard library
+/// The Teo standard library
 namespace std {
+
+    /// @name Action
+    /// Represents the predefined actions
+    interface option Action {
+        create = 1
+        update = 1 << 1
+        delete = 1 << 2
+        find = 1 << 3
+        first = 1 << 4
+        connect = 1 << 5
+        disconnect = 1 << 6
+        set = 1 << 7
+        join = 1 << 8
+        signIn = 1 << 9
+        identity = 1 << 10
+        count = 1 << 11
+        aggregate = 1 << 12
+        groupBy = 1 << 13
+        programCode = 1 << 14
+        upsert = .create | .update
+        connectOrCreate = .connect | .create
+        joinCreate = .join | .create
+        joinDelete = .join | .delete
+        findFirst = .find | .first
+        entry = 1 << 15
+        nested = 1 << 16
+        internalPosition = 1 << 17
+        single = 1 << 18
+        many = 1 << 19
+        internalAmount = 1 << 20
+    }
+
+    /// @name Sort Order
+    /// Represents the sort order
+    interface enum Sort {
+        asc
+        desc
+    }
 
     /// @name Database
     /// Represents the supported database of Teo
@@ -111,4 +149,317 @@ namespace std {
         /// Whether do `git commit` after each generation
         gitCommit: Bool?
     }
+
+    /// @name Map
+    /// Specify an underlying database table name for the model
+    declare unique model decorator map(table_name?: String)
+
+    /// @name Id
+    /// Specify the model's primary index
+    declare unique model decorator id(fields?: PrimitiveField<Self> | PrimitiveField<Self>[], map?: String?)
+
+    /// @name Index
+    /// Add an index to the model
+    declare model decorator index(fields?: PrimitiveField<Self> | PrimitiveField<Self>[], map?: String?)
+
+    /// @name Unique
+    /// Add a unique constraint to the model
+    declare model decorator unique(fields?: PrimitiveField<Self> | PrimitiveField<Self>[], map?: String?)
+
+    /// @name Migration
+    /// Specify the migration operations for the model
+    declare unique model decorator migration(renamed: (String | Vec<String>)?, version: String?, drop: Bool?)
+
+    /// @name Before Save
+    /// Specify the action to trigger before an object is saved
+    declare unique model decorator beforeSave(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name After Save
+    /// Specify the action to trigger after an object is saved
+    declare unique model decorator afterSave(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Before Delete
+    /// Specify the action to trigger before an object is deleted
+    declare unique model decorator beforeDelete(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name After Delete
+    /// Specify the action to trigger after an object is deleted
+    declare unique model decorator afterDelete(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Can Read
+    declare unique model decorator canRead(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Can Mutate
+    declare unique model decorator canWrite(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Disable
+    /// Specify disabled actions
+    declare unique model decorator disable(actions?: Action)
+
+    /// @name Identity
+    /// Specify whether the model is used as identity
+    declare unique model decorator identity
+
+    /// @name Map
+    /// Specify an underlying database column name for the model field
+    declare unique model field decorator map(table_name?: String)
+
+    /// @name Database Type
+    /// Specify an underlying database type for the model field
+    declare unique model field decorator db(type?: DatabaseType<CurrentConnector>)
+
+    /// @name Readonly
+    /// Disallow this field to be written by the client
+    declare unique model field decorator readonly
+
+    /// @name Writeonly
+    /// Disallow this field to be read by the client
+    declare unique model field decorator writeonly
+
+    /// @name Internal
+    /// Disallow this field to be read or write by the client
+    declare unique model field decorator internal
+
+    /// @name Write on Create
+    /// This field can only be written on create
+    declare unique model field decorator writeOnCreate
+
+    /// @name Write Once
+    /// This field can only be written if current value is null
+    declare unique model field decorator writeOnce
+
+    /// @name Write Nonnull
+    /// This field can only be written if new value is not null
+    declare unique model field decorator writeNonNull
+
+    /// @name Read If
+    /// This field can be read by the client if the pipeline passes
+    declare unique model field decorator readIf(cond?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Write If
+    /// This field can be written by the client if the pipeline passes
+    declare unique model field decorator writeIf(cond?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Read Write
+    /// This field can be written and read by the client, this is the default behavior
+    declare unique model field decorator readwrite
+
+    /// @name Present With
+    /// Specify when some other field are not null, this field is required
+    declare unique model field decorator presentWith(fields?: ScalarField<Self> | ScalarField<Self>[])
+
+    /// @name Present Without
+    /// Specify when some other field are null, this field is required
+    declare unique model field decorator presentWithout(fields?: ScalarField<Self> | ScalarField<Self>[])
+
+    /// @name Present If
+    /// Specify when some condition passes, this field is required
+    declare unique model field decorator presentIf(cond?: Pipeline<Object<Self>, Ignored>>)
+
+    /// @name Atomic
+    /// This field can be updated with atomic updator
+    declare unique model field decorator atomic
+
+    /// @name Nonatomic
+    /// This field cannot be updated with atomic updator
+    declare unique model field decorator nonatomic
+
+    /// @name Id
+    /// Specify this field as the model's primary index
+    declare exclusive unique model field decorator id(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Index
+    /// Index this field
+    declare unique model field decorator index(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Unique
+    /// Unique index this field
+    declare unique model field decorator unique(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Virtual
+    /// Specify a virtual field
+    declare unique model field decorator virtual
+
+    /// @name Record Previous
+    /// Record the previous value for this field
+    declare unique model field decorator recordPrevious
+
+    /// @name Input Omissible
+    /// When generating clients, the input is always optional
+    declare unique model field decorator inputOmissible
+
+    /// @name Outout Omissible
+    /// When generating clients, the outout is always optional
+    declare unique model field decorator outputOmissible
+
+    /// @name Auto
+    /// The field value is automatically set by the underlying database
+    declare unique model field decorator auto
+
+    /// @name Auto Increment
+    /// The field value is a serial number automatically set by the underlying database
+    declare unique model field decorator autoIncrement
+
+    /// @name Default
+    /// Specify a default value for this field
+    declare unique model field decorator default(value?: FieldType<Self> | Pipeline<Null, FieldType>)
+
+    /// @name Foreign Key
+    /// This field is used as foreign key
+    declare unique model field decorator foreignKey
+
+    /// @name On Set
+    /// This pipeline is triggered when value is set
+    declare unique model field decorator onSet(pipeline?: Pipeline<FieldType<Self>?, InputType>)
+
+    /// @name On Save
+    /// This pipeline is triggered before the value is saving into the database
+    declare unique model field decorator onSave(pipeline?: Pipeline<FieldType<Self>?, FieldType<Self>>)
+
+    /// @name On Output
+    /// This pipeline is triggered on output
+    declare unique model field decorator onOutput(pipeline?: Pipeline<FieldType<Self>, InputType>)
+
+    /// @name Auth Identity
+    /// This field is used as auth identity
+    declare unique model field decorator authIdentity
+
+    /// @name Auth By
+    /// This field is used as signing in identity checker
+    declare unique model field decorator authBy(pipeline?: Pipeline<FieldType<Self>, Ignored>)
+
+    /// @name Queryable
+    /// This field can be queried by the client
+    declare unique model field decorator queryable
+
+    /// @name Unqueryable
+    /// This field can't be queried by the client
+    declare unique model field decorator unqueryable
+
+    /// @name Sortable
+    /// This field can be sorted by the client
+    declare unique model field decorator sortable
+
+    /// @name Unsortable
+    /// This field can't be sorted by the client
+    declare unique model field decorator unsortable
+
+    /// @name Can Read
+    /// Specify the permission checker for read on this field
+    declare unique model field decorator canRead(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Can Mutate
+    /// Specify the permission checker for write on this field
+    declare unique model field decorator canMutate(pipeline?: Pipeline<Object<Self>, Ignored>)
+
+    /// @name Migration
+    /// Specify the migration operation for this field
+    declare unique model field decorator migration(
+        renamed: (String | Vec<String>)?, 
+        version: String?, 
+        default: FieldType<Self>?,
+        priority: Int?
+    )
+
+    /// @name Dropped
+    /// Specify that this field is dropped
+    declare unique model field decorator dropped
+
+    /// @name Relation
+    /// Define a model relation
+    declare unique model relation decorator relation {
+        /// Define a normal relation
+        variant(fields: ScalarField<Self>, references: ScalarField<Relation>)
+        /// Define a through relation
+        variant(through: Model, local: ScalarField<Through>, foreign: ScalarField<Through>)
+    }
+
+    /// @name Getter
+    /// Define a property with getter
+    declare unique model property decorator getter(pipeline?: Pipeline<Object<Self>, FieldType<Self>>)
+
+    /// @name Setter
+    /// Define a property with setter
+    declare unique model property decorator setter(pipeline?: Pipeline<FieldType<Self>, Ignored>)
+
+    /// @name Cache
+    /// Define a cached property, a cached property is saved into the database
+    declare unique model property decorator cached
+
+    /// @name Dependencies
+    /// Define dependencies for a cached property
+    declare unique model property decorator deps(deps?: ScalarField<Self> | ScalarField<Self>[])
+
+    /// @name Index
+    /// Define index for this cached property
+    declare unique model property decorator index(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Unique
+    /// Define unique index for this cached property
+    declare unique model property decorator unique(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Add
+    /// Add a new numeric value 
+    declare pipeline item add {
+        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+    }
+
+    /// @name Sub
+    /// Subtract a numeric value 
+    declare pipeline item sub {
+        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+    }
+
+    /// @name Mul
+    /// Multiply a numeric value 
+    declare pipeline item mul {
+        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+    }
+
+    /// @name Div
+    /// Divide a numeric value 
+    declare pipeline item div {
+        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+    }
+
+    /// @name Mod
+    /// Mod a numeric value 
+    declare pipeline item mod {
+        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+    }
+
+    /// @name Floor
+    /// Get the floor value
+    declare pipeline item floor {
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    /// @name Ceil
+    /// Get the ceil value
+    declare pipeline item ceil {
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    
 }

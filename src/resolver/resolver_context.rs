@@ -4,6 +4,7 @@ use maplit::btreeset;
 use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
 use crate::ast::model::Model;
+use crate::ast::namespace::Namespace;
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -24,6 +25,7 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) diagnostics: &'a mut Diagnostics,
     pub(crate) schema: &'a Schema,
     pub(crate) source: Option<&'a Source>,
+    pub(crate) namespaces: Vec<&'a Namespace>,
 }
 
 impl<'a> ResolverContext<'a> {
@@ -36,6 +38,7 @@ impl<'a> ResolverContext<'a> {
             diagnostics,
             schema,
             source: None,
+            namespaces: vec![],
         }
     }
 
@@ -43,8 +46,20 @@ impl<'a> ResolverContext<'a> {
         self.source = Some(source);
     }
 
+    pub(crate) fn push_namespace(&mut self, namespace: &'a Namespace) {
+        self.namespaces.push(namespace);
+    }
+
+    pub(crate) fn pop_namespace(&mut self) {
+        self.namespaces.pop();
+    }
+
     pub(crate) fn source(&self) -> &Source {
         self.source.unwrap()
+    }
+
+    pub(crate) fn current_namespace(&self) -> Option<&Namespace> {
+        *self.namespaces.last()
     }
 
     pub(crate) fn add_examined_model_path(&self, model_path: Vec<String>) {

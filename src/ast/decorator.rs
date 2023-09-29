@@ -3,22 +3,9 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::span::Span;
 use crate::ast::unit::Unit;
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum DecoratorClass {
-    EnumDecorator,
-    EnumMemberDecorator,
-    ModelDecorator,
-    ModelFieldDecorator,
-    ModelRelationDecorator,
-    ModelPropertyDecorator,
-    InterfaceDecorator,
-    InterfaceFieldDecorator,
-}
-
 #[derive(Debug)]
 pub struct DecoratorResolved {
     pub(crate) path: Vec<usize>,
-    pub(crate) class: DecoratorClass,
     pub(crate) arguments: ArgumentList,
 }
 

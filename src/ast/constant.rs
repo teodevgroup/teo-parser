@@ -1,7 +1,14 @@
+use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
+use crate::ast::accessible::Accessible;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+
+#[derive(Debug)]
+pub(crate) struct ConstantResolved {
+    accessible: Accessible,
+}
 
 #[derive(Debug)]
 pub(crate) struct Constant {
@@ -10,6 +17,7 @@ pub(crate) struct Constant {
     pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) expression: Expression,
+    pub(crate) resolved: RefCell<Option<ConstantResolved>>,
 }
 
 impl Constant {
@@ -21,6 +29,8 @@ impl Constant {
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
+
+    pub(crate) fn
 }
 
 impl Display for Constant {
