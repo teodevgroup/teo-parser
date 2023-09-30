@@ -3,7 +3,7 @@ use crate::ast::top::Top;
 use crate::resolver::resolve_model::resolve_model;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_namespace_first(namespace: &Namespace, context: &mut ResolverContext) {
+pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a mut ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
@@ -23,7 +23,7 @@ pub(super) fn resolve_namespace_first(namespace: &Namespace, context: &mut Resol
     context.pop_namespace();
 }
 
-pub(super) fn resolve_namespace_second(namespace: &Namespace, context: &mut ResolverContext) {
+pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'a mut ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
@@ -35,7 +35,7 @@ pub(super) fn resolve_namespace_second(namespace: &Namespace, context: &mut Reso
     context.pop_namespace();
 }
 
-pub(super) fn resolve_namespace_third(namespace: &Namespace, context: &mut ResolverContext) {
+pub(super) fn resolve_namespace_third<'a>(namespace: &'a Namespace, context: &mut ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
