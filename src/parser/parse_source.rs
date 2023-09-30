@@ -2,6 +2,7 @@ use maplit::btreemap;
 use pest::Parser;
 use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::ast::top::Top;
+use crate::parser::parse_action_group::parse_action_group_declaration;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
@@ -10,6 +11,7 @@ use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
+use crate::parser::parse_middleware::parse_middleware;
 use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_namespace::parse_namespace;
 use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
@@ -97,7 +99,18 @@ pub(super) fn parse_source(
                 context.schema_references.pipeline_item_declarations.push(pipeline_item_declaration.path.clone());
                 tops.insert(pipeline_item_declaration.id(), Top::PipelineItemDeclaration(pipeline_item_declaration));
             },
-            // action group
+            Rule::middleware_declaration => {
+                let middleware_declaration = parse_middleware(current, context);
+                references.middlewares.insert(middleware_declaration.id());
+                context.schema_references.middlewares.push(middleware_declaration.path.clone());
+                tops.insert(middleware_declaration.id(), Top::Middleware(middleware_declaration));
+            },
+            Rule::action_group_declaration => {
+                let action_group_declaration = parse_action_group_declaration(current, context);
+                references.action_groups.insert(action_group_declaration.id());
+                context.schema_references.action_groups.push(action_group_declaration.path.clone());
+                tops.insert(action_group_declaration.id(), Top::ActionGroup(action_group_declaration));
+            },
             _ => (),
         }
     }

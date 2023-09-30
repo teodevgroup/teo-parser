@@ -1,13 +1,13 @@
-use crate::ast::r#type::TypeItem;
+use crate::ast::r#type::{TypeExpr, TypeItem};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub(crate) struct ActionGroupDeclaration {
+    pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Identifier,
-    pub(crate) actions: Vec<ActionDeclaration>,
-    pub(crate) span: Span,
+    pub(crate) action_declarations: Vec<ActionDeclaration>,
 }
 
 impl ActionGroupDeclaration {
@@ -23,14 +23,12 @@ impl ActionGroupDeclaration {
 
 #[derive(Debug)]
 pub(crate) struct ActionDeclaration {
+    pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Identifier,
-    pub(crate) input_type: TypeItem,
-    pub(crate) output_type: TypeItem,
+    pub(crate) input_type: TypeExpr,
+    pub(crate) output_type: TypeExpr,
     pub(crate) input_format: ActionInputFormat,
-    pub(crate) span: Span,
-    pub(crate) resolved_input_interface: Option<(usize, usize)>,
-    // pub(crate) resolved_input_shape: Option<ResolvedInterfaceField>,
 }
 
 impl ActionDeclaration {
