@@ -3,6 +3,7 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::generics_extending::InterfaceExtending;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::parser::parse_field::parse_field;
+use crate::parser::parse_generics::parse_generics_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
@@ -40,18 +41,6 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         extends,
         fields,
     }
-}
-
-fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserContext) -> GenericsDeclaration {
-    let span = parse_span(&pair);
-    let mut identifiers = vec![];
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::identifier => identifiers.push(parse_identifier(&current)),
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    GenericsDeclaration { span, identifiers }
 }
 
 fn parse_interface_extending(pair: Pair<'_>, context: &mut ParserContext) -> InterfaceExtending {

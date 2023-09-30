@@ -104,6 +104,11 @@ impl<'a> ParserContext<'a> {
         self.diagnostics.insert_unparsed_rule(span, path.clone());
     }
 
+    pub(super) fn insert_invalid_decorator_declaration(&mut self, span: Span) {
+        let path = self.source_lookup.get(&self.current_source_id).unwrap();
+        self.diagnostics.insert(DiagnosticsError::new(span, "Decorator type is invalid", path.clone()));
+    }
+
     pub(super) fn insert_error(&mut self, span: Span, message: impl Into<String>) {
         let path = self.source_lookup.get(&self.current_source_id).unwrap();
         self.diagnostics.insert(DiagnosticsError::new(span, message.into(), path.clone()));

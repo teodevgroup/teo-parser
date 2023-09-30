@@ -17,7 +17,6 @@ pub(crate) struct DecoratorDeclaration {
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) has_variants: bool,
     pub(crate) variants: Vec<DecoratorVariant>,
 }
 
