@@ -1,4 +1,3 @@
-use crate::ast::decorator::DecoratorClass;
 use crate::ast::field::FieldHint;
 use crate::ast::model::Model;
 use crate::resolver::resolver_context::ResolverContext;

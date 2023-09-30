@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::field::Field;
-use crate::ast::field_type::FieldType;
+use crate::ast::r#type::TypeItem;
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
@@ -15,7 +15,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
-    let mut field_type: Option<FieldType> = None;
+    let mut field_type: Option<TypeItem> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::EMPTY_LINES => {},

@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | action_group_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -13,9 +13,12 @@ BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
 BLOCK_CLOSE = { "}" }
 ENUM_KEYWORD = { "enum" }
 MODEL_KEYWORD = { "model" }
+UNIQUE_KEYWORD = { "unique" }
+VARIANT_KEYWORD = { "variant" }
 FIELD_KEYWORD = { "field" }
 RELATION_KEYWORD = { "relation" }
 PROPERTY_KEYWORD = { "property" }
+MEMBER_KEYWORD = { "member" }
 PIPELINE_KEYWORD = { "pipeline" }
 ITEM_KEYWORD = { "item" }
 SERVER_KEYWORD = { "server" }
@@ -49,6 +52,7 @@ COLON = { ":" }
 TRAILING_COMMA = @{ "," }
 RANGE_OPEN = { ".." }
 RANGE_CLOSE = { "..." }
+OPTIONAL = { "?" }
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
 
@@ -61,8 +65,9 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-field_type = { identifier_path ~ field_type_generics? ~ optionality? ~ arity? ~ optionality? }
-field_type_generics = { "<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">" }
+type_expression = { field_type_item ~ (BI_OR ~ field_type_item)* }
+field_type_item = { identifier_path ~ field_type_generics? ~ optionality? ~ arity? ~ optionality? }
+field_type_generics = { "<" ~ field_type_item ~ ("," ~ field_type_item)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
 optionality = { "?" }
 
@@ -108,7 +113,7 @@ bool_literal = @{ "true" | "false" }
 null_literal = { "null" }
 
 // #############
-// enum choice literals
+// enum variant literals
 // #############
 enum_variant_literal = { "." ~ identifier ~ argument_list? }
 
@@ -256,7 +261,7 @@ pipeline = { "$" ~ identifier_unit }
 // arguments declaration
 // #############
 argument_list_declaration = { "(" ~ (NEWLINE | WHITESPACE)* ~ (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~ TRAILING_COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
-argument_declaration = { identifier ~ ":" ~ field_type }
+argument_declaration = { identifier ~ OPTIONAL? ~ ":" ~ type_expression }
 
 // #############
 // config blocks
@@ -320,7 +325,7 @@ field_declaration = {
     (item_decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)*
     ~ identifier
     ~ COLON
-    ~ field_type
+    ~ type_expression
 //     ~ double_comment_block?
 //     ~ NEWLINE?
 }
@@ -341,28 +346,51 @@ dataset_group_record_declaration = {
 // #############
 // declare
 // #############
-middleware_declaration = {
-    DECLARE_KEYWORD ~ MIDDLEWARE_KEYWORD ~ identifier ~ argument_list_declaration?
+decorator_declaration = {
+    triple_comment_block? ~
+    DECLARE_KEYWORD ~
+    UNIQUE_KEYWORD? ~
+    (MODEL_KEYWORD | ENUM_KEYWORD | INTERFACE_KEYWORD) ~
+    (FIELD_KEYWORD | RELATION_KEYWORD | PROPERTY_KEYWORD | MEMBER_KEYWORD)? ~
+    DECORATOR_KEYWORD ~
+    identifier ~
+    (generics_declaration? ~ argument_list_declaration ~ generics_constraint?)? ~
+    (BLOCK_OPEN ~
+    decorator_variant_declaration ~
+    BLOCK_CLOSE)?
 }
 
-model_decorator_declaration = {
-    DECLARE_KEYWORD ~ MODEL_KEYWORD ~ DECORATOR_KEYWORD ~ identifier ~ argument_list_declaration?
-}
-
-field_decorator_declaration = {
-    DECLARE_KEYWORD ~ FIELD_KEYWORD ~ DECORATOR_KEYWORD ~ identifier ~ argument_list_declaration?
-}
-
-relation_decorator_declaration = {
-    DECLARE_KEYWORD ~ RELATION_KEYWORD ~ DECORATOR_KEYWORD ~ identifier ~ argument_list_declaration?
-}
-
-property_decorator_declaration = {
-    DECLARE_KEYWORD ~ PROPERTY_KEYWORD ~ DECORATOR_KEYWORD ~ identifier ~ argument_list_declaration?
+decorator_variant_declaration = {
+    triple_comment_block? ~
+    VARIANT_KEYWORD ~
+    (generics_declaration? ~ argument_list_declaration ~ generics_constraint?)?
 }
 
 pipeline_item_declaration = {
-    DECLARE_KEYWORD ~ PIPELINE_KEYWORD ~ ITEM_KEYWORD ~ identifier ~ ("<" ~ field_type ~ ("," ~ field_type)* ~ ","? ~ ">")? ~ argument_list_declaration?
+    triple_comment_block? ~
+    DECLARE_KEYWORD ~ PIPELINE_KEYWORD ~ ITEM_KEYWORD ~
+    identifier ~
+    (
+      (
+        (generics_declaration? ~ argument_list_declaration)? ~
+        COLON ~
+        type_expression ~
+        "->" ~
+        type_expression ~ generics_constraint?
+      ) | (
+        BLOCK_OPEN ~ pipeline_item_variant_declaration ~ BLOCK_CLOSE
+      )
+    )
+}
+
+pipeline_item_variant_declaration = {
+    triple_comment_block? ~
+    VARIANT_KEYWORD ~
+    generics_declaration? ~ argument_list_declaration ~
+    COLON ~
+    type_expression ~
+    "->" ~
+    type_expression ~ generics_constraint?
 }
 
 action_group_declaration = {
@@ -376,7 +404,11 @@ req_type = {
 }
 
 action_declaration = {
-    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ field_type ~ ")" ~ COLON ~ field_type ~ (USING_KEYWORD ~ req_type)?
+    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
+}
+
+middleware_declaration = {
+    DECLARE_KEYWORD ~ MIDDLEWARE_KEYWORD ~ identifier ~ argument_list_declaration?
 }
 
 config_declaration = {
@@ -399,6 +431,9 @@ interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_ex
 
 generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
 
+generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ "," }
+generics_constraint_item = { identifier ~ ":" ~ type_expression }
+
 interface_declaration = {
     triple_comment_block ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
     ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
@@ -412,7 +447,7 @@ namespace = {
     triple_comment_block ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

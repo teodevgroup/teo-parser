@@ -3,7 +3,6 @@ use teo_teon::value::Value;
 use crate::ast::arith::ArithExpr;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::expr::ExpressionKind;
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::{NumericLiteral, StringLiteral};
 use crate::ast::span::Span;

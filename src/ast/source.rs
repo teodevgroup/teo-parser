@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::atomic::AtomicBool;
 use maplit::btreeset;
 use crate::ast::import::Import;
 use crate::ast::top::Top;

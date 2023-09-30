@@ -1,12 +1,11 @@
-use std::cell::RefCell;
 use crate::ast::arity::Arity;
-use crate::ast::field_type::FieldType;
+use crate::ast::r#type::TypeItem;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_field_type(pair: Pair<'_>, context: &mut ParserContext) -> FieldType {
+pub(super) fn parse_field_type(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
     let span = parse_span(&pair);
     let mut identifier_path = None;
     let mut generics = vec![];
@@ -23,18 +22,17 @@ pub(super) fn parse_field_type(pair: Pair<'_>, context: &mut ParserContext) -> F
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    FieldType {
+    TypeItem {
         span,
         identifier_path: identifier_path.unwrap(),
         generics,
         item_required,
         arity,
         collection_required,
-        resolved: RefCell::new(None),
     }
 }
 
-fn parse_field_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<FieldType> {
+fn parse_field_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<TypeItem> {
     let mut items = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {

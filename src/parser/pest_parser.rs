@@ -17,7 +17,7 @@ pub(super) static EXPR_PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::infix(NULLISH_COALESCING, Left))
         .op(Op::infix(OR, Left))
         .op(Op::infix(AND, Left))
-        .op(Op::infix(LT, Left) | Op::infix(RT, Left) | Op::infix(LTE, Left) | Op::infix(GTE, Left) | Op::infix(EQ, Left) | Op::infix(NEQ, Left))
+        .op(Op::infix(LT, Left) | Op::infix(GT, Left) | Op::infix(LTE, Left) | Op::infix(GTE, Left) | Op::infix(EQ, Left) | Op::infix(NEQ, Left))
         .op(Op::infix(BI_OR, Left))
         .op(Op::infix(BI_XOR, Left))
         .op(Op::infix(BI_AND, Left))

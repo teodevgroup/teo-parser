@@ -14,12 +14,12 @@ pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
     let mut parser_context = ParserContext::new(&mut diagnostics, &mut references);
     let mut sources = btreemap!{};
     // std library
-    // let std_source = parse_builtin_source_file(
-    //     include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtin/std.teo")),
-    //     "(builtin)std.teo",
-    //     &mut parser_context
-    // );
-    // sources.insert(std_source.id, std_source);
+    let std_source = parse_builtin_source_file(
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtin/std.teo")),
+        "(builtin)std.teo",
+        &mut parser_context
+    );
+    sources.insert(std_source.id, std_source);
     // user schema
     parse_user_source(
         &mut sources,

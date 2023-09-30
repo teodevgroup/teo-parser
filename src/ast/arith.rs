@@ -64,6 +64,13 @@ pub(crate) struct UnaryOp {
     pub(crate) rhs: Box<ArithExpr>,
 }
 
+impl UnaryOp {
+
+    pub(crate) fn span(&self) -> &Span {
+        &self.span
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct BinaryOp {
     pub(crate) span: Span,
@@ -102,7 +109,7 @@ impl Display for ArithExpr {
             ArithExpr::Expression(e) => Display::fmt(&e, f),
             ArithExpr::UnaryOp(u) => {
                 Display::fmt(&u.op, f)?;
-                Display::fmt(&u, f)
+                Display::fmt(&u.rhs, f)
             },
             ArithExpr::BinaryOp(b) => {
                 Display::fmt(&b.lhs, f)?;

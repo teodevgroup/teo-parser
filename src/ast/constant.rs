@@ -29,8 +29,6 @@ impl Constant {
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
-
-    pub(crate) fn
 }
 
 impl Display for Constant {

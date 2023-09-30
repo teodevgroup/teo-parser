@@ -1,4 +1,4 @@
-use crate::ast::field_type::FieldType;
+use crate::ast::r#type::TypeItem;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -25,8 +25,8 @@ impl ActionGroupDeclaration {
 pub(crate) struct ActionDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier: Identifier,
-    pub(crate) input_type: FieldType,
-    pub(crate) output_type: FieldType,
+    pub(crate) input_type: TypeItem,
+    pub(crate) output_type: TypeItem,
     pub(crate) input_format: ActionInputFormat,
     pub(crate) span: Span,
     pub(crate) resolved_input_interface: Option<(usize, usize)>,
