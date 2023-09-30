@@ -36,6 +36,13 @@ impl Display for Op {
 }
 
 #[derive(Debug)]
+pub(crate) struct UnaryOp {
+    pub(crate) span: Span,
+    pub(crate) op: Op,
+    pub(crate) rhs: Box<ArithExpr>,
+}
+
+#[derive(Debug)]
 pub(crate) struct BinaryOp {
     pub(crate) span: Span,
     pub(crate) lhs: Box<ArithExpr>,
@@ -53,8 +60,7 @@ impl BinaryOp {
 #[derive(Debug)]
 pub(crate) enum ArithExpr {
     Expression(Box<ExpressionKind>),
-    UnaryNeg(Box<ExpressionKind>),
-    UnaryBitNeg(Box<ExpressionKind>),
+    UnaryOp(UnaryOp),
     BinaryOp(BinaryOp),
 }
 
@@ -62,8 +68,7 @@ impl ArithExpr {
     pub(crate) fn span(&self) -> &Span {
         match self {
             ArithExpr::Expression(e) => e.span(),
-            ArithExpr::UnaryNeg(e) => e.span(),
-            ArithExpr::UnaryBitNeg(e) => e.span(),
+            ArithExpr::UnaryOp(u) => u.span(),
             ArithExpr::BinaryOp(b) => b.span(),
         }
     }
@@ -72,15 +77,11 @@ impl ArithExpr {
 impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ArithExpr::UnaryNeg(e) => {
-                f.write_str("-")?;
-                Display::fmt(&e, f)
-            },
-            ArithExpr::UnaryBitNeg(e) => {
-                f.write_str("~")?;
-                Display::fmt(&e, f)
-            },
             ArithExpr::Expression(e) => Display::fmt(&e, f),
+            ArithExpr::UnaryOp(u) => {
+                Display::fmt(&u.op, f)?;
+                Display::fmt(&u, f)
+            },
             ArithExpr::BinaryOp(b) => {
                 Display::fmt(&b.lhs, f)?;
                 f.write_str(" ")?;
@@ -88,7 +89,7 @@ impl Display for ArithExpr {
                 f.write_str(" ")?;
                 Display::fmt(&b.rhs, f)?;
                 Ok(())
-            }
+            },
         }
     }
 }

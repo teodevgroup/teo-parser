@@ -164,9 +164,10 @@ BI_XOR = { "^" }
 BI_OR = { "|" }
 BI_NEG = { "~" }
 NULLISH_COALESCING = { "??" }
-BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | NEG | BI_NEG | NULLISH_COALESCING }
+BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | NULLISH_COALESCING }
+UNARY_OPERATOR = _{ NEG | BI_NEG }
 // OPERATORS = { "!" | "&&" | "||" | ">" | "<" | ">>" | "<<" }
-arith_expr = { operand ~ (BINARY_OPERATOR ~ operand)+ }
+arith_expr = { UNARY_OPERATOR? ~ operand ~ (BINARY_OPERATOR ~ UNARY_OPERATOR? ~ operand)* }
 
 // #############
 // group

@@ -7,7 +7,7 @@ pub(super) struct SchemaParser;
 
 pub(super) type Pair<'a> = pest::iterators::Pair<'a, Rule>;
 
-pub(super) static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
+pub(super) static EXPR_PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
     use pest::pratt_parser::{Assoc::*, Op};
     use Rule::*;
 
@@ -21,4 +21,14 @@ pub(super) static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::infix(MUL, Left) | Op::infix(DIV, Left) | Op::infix(MOD, Left))
         .op(Op::prefix(BI_NEG))
         .op(Op::prefix(NEG))
+});
+
+pub(super) static TYPE_PRATT_PARER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
+    use pest::pratt_parser::{Assoc::*, Op};
+    use Rule::*;
+
+    // Precedence is defined lowest to highest
+    PrattParser::new()
+        // Addition and subtract have equal precedence
+        .op(Op::infix(BI_OR, Left))
 });
