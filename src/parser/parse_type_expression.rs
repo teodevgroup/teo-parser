@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::r#type::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeItem, TypeOp};
+use crate::ast::r#type::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
@@ -10,6 +10,7 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
     let span = parse_span(&pair);
     let kind = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::type_item => TypeExprKind::TypeItem(parse_type_item(primary, context)),
+        Rule::type_group => TypeExprKind::TypeGroup(parse_type_group(primary, context)),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             unreachable!()
@@ -36,16 +37,16 @@ fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
     let span = parse_span(&pair);
     let mut identifier_path = None;
     let mut generics = vec![];
-    let mut item_required = true;
+    let mut item_optional = false;
     let mut arity = Arity::Scalar;
-    let mut collection_required = true;
+    let mut collection_optional = false;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON => {},
             Rule::identifier_path => identifier_path = Some(parse_identifier_path(current, context)),
             Rule::type_generics => generics = parse_type_generics(current, context),
             Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
-            Rule::optionality => if arity == Arity::Scalar { item_required = false; } else { collection_required = false; },
+            Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -53,9 +54,27 @@ fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
         span,
         identifier_path: identifier_path.unwrap(),
         generics,
-        item_required,
+        item_optional,
         arity,
-        collection_required,
+        collection_optional,
+    }
+}
+
+fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
+    let span = parse_span(&pair);
+    let mut kind = None;
+    let mut optional = false;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::type_expression => kind = Some(parse_type_expression(current, context).kind),
+            Rule::OPTIONAL => optional = true,
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    TypeGroup {
+        span,
+        kind: Box::new(kind.unwrap()),
+        optional,
     }
 }
 

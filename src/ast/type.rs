@@ -37,10 +37,30 @@ impl Display for TypeBinaryOp {
 }
 
 #[derive(Debug)]
+pub(crate) struct TypeGroup {
+    pub(crate) span: Span,
+    pub(crate) kind: Box<TypeExprKind>,
+    pub(crate) optional: bool,
+}
+
+impl Display for TypeGroup {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("(")?;
+        Display::fmt(&self.kind, f)?;
+        f.write_str(")")?;
+        if self.optional {
+            f.write_str("?")?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub(crate) enum TypeExprKind {
     Expr(Box<TypeExprKind>),
     BinaryOp(TypeBinaryOp),
     TypeItem(TypeItem),
+    TypeGroup(TypeGroup),
 }
 
 impl Display for TypeExprKind {
@@ -49,6 +69,7 @@ impl Display for TypeExprKind {
             TypeExprKind::BinaryOp(b) => Display::fmt(b, f)?,
             TypeExprKind::Expr(e) => Display::fmt(e, f)?,
             TypeExprKind::TypeItem(t) => Display::fmt(t, f)?,
+            TypeExprKind::TypeGroup(g) => Display::fmt(g, f)?,
         }
         Ok(())
     }
@@ -173,8 +194,8 @@ pub(crate) struct TypeItem {
     pub(crate) identifier_path: IdentifierPath,
     pub(crate) generics: Vec<TypeExpr>,
     pub(crate) arity: Arity,
-    pub(crate) item_required: bool,
-    pub(crate) collection_required: bool,
+    pub(crate) item_optional: bool,
+    pub(crate) collection_optional: bool,
 }
 
 impl Display for TypeItem {
@@ -192,7 +213,7 @@ impl Display for TypeItem {
         if self.generics.len() > 0 {
             f.write_str(">")?;
         }
-        if !self.item_required {
+        if self.item_optional {
             f.write_str("?")?;
         }
         if self.arity != Arity::Scalar {
@@ -201,7 +222,7 @@ impl Display for TypeItem {
                 Arity::Dictionary => f.write_str("{}")?,
                 _ => ()
             };
-            if !self.collection_required {
+            if self.collection_optional {
                 f.write_str("?")?;
             }
         }

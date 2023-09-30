@@ -65,11 +65,11 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-type_expression = { type_item ~ (BI_OR ~ type_item)* }
-type_item = { identifier_path ~ type_generics? ~ optionality? ~ arity? ~ optionality? }
+type_expression = { (type_item | type_group) ~ (BI_OR ~ (type_item | type_group))* }
+type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_generics = { "<" ~ type_expression ~ ("," ~ type_expression)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
-optionality = { "?" }
+type_group = { "(" ~ type_expression ~ ")" ~ OPTIONAL? }
 
 // #############
 // generics
