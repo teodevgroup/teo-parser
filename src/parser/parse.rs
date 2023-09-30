@@ -3,6 +3,7 @@ use std::path::Path;
 use maplit::btreemap;
 use crate::ast::schema::{Schema, SchemaReferences};
 use crate::ast::source::Source;
+use crate::builtin::STD_TEO;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::parser::parse_builtin_source_file::parse_builtin_source_file;
 use crate::parser::parse_source_file::parse_source_file;
@@ -15,7 +16,7 @@ pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
     let mut sources = btreemap!{};
     // std library
     let std_source = parse_builtin_source_file(
-        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtin/std.teo")),
+        STD_TEO,
         "(builtin)std.teo",
         &mut parser_context
     );

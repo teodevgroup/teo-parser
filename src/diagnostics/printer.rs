@@ -1,9 +1,11 @@
+use std::borrow::Cow;
 use std::env;
 use std::process::exit;
 use colored::Colorize;
 use pathdiff::diff_paths;
 use std::fs::read_to_string;
 use std::iter::repeat;
+use crate::builtin::STD_TEO;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsLog};
 
 pub fn print_diagnostics_and_exit(diagnostics: &Diagnostics, print_warnings: bool) {
@@ -27,19 +29,23 @@ pub fn print_diagnostics(diagnostics: &Diagnostics, print_warnings: bool) {
 fn print_diagnostics_log<T>(log: T) where T: DiagnosticsLog {
     let source = log.source_path();
     let current_dir = &env::current_dir().unwrap();
-    let filename = if let Some(path) = diff_paths(source, current_dir) {
-        let result = path.to_str().unwrap().to_owned();
-        if result.starts_with(".") {
-            result
-        } else {
-            if cfg!(windows) {
-                ".\\".to_owned() + result.as_str()
-            } else {
-                "./".to_owned() + result.as_str()
-            }
-        }
-    } else {
+    let filename = if source.starts_with("(builtin)") {
         source.to_owned()
+    } else {
+        if let Some(path) = diff_paths(source, current_dir) {
+            let result = path.to_str().unwrap().to_owned();
+            if result.starts_with(".") {
+                result
+            } else {
+                if cfg!(windows) {
+                    ".\\".to_owned() + result.as_str()
+                } else {
+                    "./".to_owned() + result.as_str()
+                }
+            }
+        } else {
+            source.to_owned()
+        }
     };
     let title = if log.is_warning() {
         "Warning".yellow().bold()
@@ -49,8 +55,12 @@ fn print_diagnostics_log<T>(log: T) where T: DiagnosticsLog {
         "Unknown".yellow().bold()
     };
     let mut code = "".to_owned();
-    let file_content = read_to_string(source).unwrap();
-    let first_line_content: &str = file_content.lines().nth(log.span().start_position.0 - 1).unwrap();
+    let file_content = if source.starts_with("(builtin)") {
+        Cow::Borrowed(STD_TEO)
+    } else {
+        Cow::Owned(read_to_string(source).unwrap())
+    };
+    let first_line_content: &str = file_content.as_ref().lines().nth(log.span().start_position.0 - 1).unwrap();
     code += format!("{} {}\n", "|".blue().bold(), first_line_content).as_str();
     if log.span().start_position.0 == log.span().end_position.0 {
         let before_len = log.span().start_position.1 - 1;

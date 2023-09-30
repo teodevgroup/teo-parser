@@ -29,7 +29,7 @@ impl ConfigKeyword {
     }
 
     pub(crate) fn is_test(&self) -> bool {
-        self.name.as_str() == "test"
+        self.name.as_str() == "tests"
     }
 
     pub(crate) fn is_debug(&self) -> bool {

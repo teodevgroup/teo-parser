@@ -1,0 +1,1 @@
+pub(crate) static STD_TEO: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtin/std.teo"));
