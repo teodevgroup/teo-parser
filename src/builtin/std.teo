@@ -556,13 +556,13 @@ namespace std {
     /// @name randomInt
     /// generate a random integer
     declare pipeline item randomInt {
-        variant(range?: Range<Int, Int>): Ignored -> Int
+        variant(range?: Range<Int>): Ignored -> Int
         variant(length?: Int): Ignored -> Int
     }
 
     /// @name randomFloat
     /// generate a random float
-    declare pipeline item randomFloat(range?: Range<Float, Float>): Ignored -> Float
+    declare pipeline item randomFloat(range?: Range<Float>): Ignored -> Float
 
     /// @name CUID
     /// generate a CUID
@@ -588,11 +588,149 @@ namespace std {
 
     declare pipeline item padStart(width?: Int | Pipeline<InputType, Int>, char?: String): String -> String
 
-    declare pipeline item regexReplace(format?: Regex, substitute?: String): String -> String
+    declare pipeline item regexReplace(format?: RegExp, substitute?: String): String -> String
 
-    declare pipeline item split(separator?: String | Pipeline<InputType, String>) String -> String[]
+    declare pipeline item split(separator?: String | Pipeline<InputType, String>): String -> String[]
 
     declare pipeline item trim: String -> String
 
     declare pipeline item toWordCase: String -> String
+
+    declare pipeline item toLowerCase: String -> String
+
+    declare pipeline item toUpperCase: String -> String
+
+    declare pipeline item toSentenceCase: String -> String
+
+    declare pipeline item toTitleCase: String -> String
+
+    declare pipeline item hasPrefix(prefix?: String | Pipeline<InputType, String>): String -> String
+
+    declare pipeline item hasSuffix(suffix?: String | Pipeline<InputType, String>): String -> String
+
+    declare pipeline item isPrefixOf(value?: String | Pipeline<InputType, String>): String -> String
+
+    declare pipeline item isSuffixOf(value?: String | Pipeline<InputType, String>): String -> String
+
+    declare pipeline item isAlphabetic: String -> String
+
+    declare pipeline item isAlphanumeric: String -> String
+
+    declare pipeline item isEmail: String -> String
+
+    declare pipeline item isHexColor: String -> String
+
+    declare pipeline item isNumeric: String -> String
+
+    declare pipeline item isSecurePassword: String -> String
+
+    declare pipline item regexMatch(regex?: RegExp): String -> String
+
+    declare pipeline item identity: Ignored -> Object<Unknown>?
+
+    declare pipeline item print<T>(label?: String?): T -> T where T: Any
+
+    declare pipeline item bcryptSalt: String -> String
+
+    declare pipeline item bcryptVerify(value?: Pipeline<InputType, String>): String -> String
+
+    declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<InputType, T>): Ignored -> T
+
+    declare pipeline item append {
+        variant(value?: String | Pipeline<InputType, String>): String -> String
+        variant<T>(value?: T | Pipeline<InputType, T>): T[] -> T[]
+    }
+
+    declare pipeline item prepend {
+        variant(value?: String | Pipeline<InputType, String>): String -> String
+        variant<T>(value?: T | Pipeline<InputType, T>): T[] -> T[]
+    }
+
+    declare pipeline item getLength {
+        variant: String -> Int
+        variant<T>: T[] -> Int
+    }
+
+    declare pipeline item hasLength {
+        variant(len?: Int): String -> Int
+        variant(range?: Range<Int>): String -> Int
+        variant<T>(len?: Int): T[] -> Int
+        variant(range?: Range<Int>): T[] -> Int
+    }
+
+    declare pipeline item reverse {
+        variant: String -> String
+        variant<T>: T[] -> T[]
+    }
+
+    declare pipeline item truncate {
+        variant(maxLen?: Int | Pipeline<InputType, Int>): String -> String
+        variant<T>(maxLen?: Int | Pipeline<InputType, Int>): T[] -> T[]
+    }
+
+    declare pipeline item now: Ignored -> DateTime
+
+    declare pipeline item today<T>(tz?: Int | Pipeline<T, Int>): T -> Date
+
+    declare pipeline item toDate(tz?: Int | Pipeline<DateTime, Int>): DateTime -> Date
+
+    /// @name Valid
+    /// This pipeline item is always valid
+    declare pipeline item valid<T>: T -> T
+
+    declare pipeline item invalid<T>: T -> T
+
+    /// @name Passed
+    /// When `pipeline` doesn't throw, returns true
+    declare pipeline item passed<T>(pipeline?: Pipeline<T, Ignored>): T -> Bool
+
+    declare pipeline item if<T, U>(cond?: Pipeline<T, Ignored>, then: Pipeline<T, U>, else: Pipeline<T, U>?): T -> U
+
+    // or, and, not, all, any
+
+    /// @name Self
+    /// Get the current pipeline context object
+    declare pipeline item self: Ignored -> Object<Self>
+
+    /// @name Set
+    /// Set the value on object or map
+    declare pipeline item set {
+        variant<T>(key?: String, value?: T): Map<String, T> -> Map<String, T>
+        variant<T, K>(key?: K, value?: T[K]): Object<T> -> Object<T> where K: ScalarField<T>, T: Model
+    }
+
+    /// @name Get
+    /// Get the value on object or map
+    declare pipeline item get {
+        variant<T>(key?: String): Map<String, T> -> T?
+        variant<T, K>(key?: K): Object<T> -> T[K]? where K: ScalarField<T>, T: Model
+    }
+
+    /// @name Previous
+    /// Get the previous object value
+    declare pipeline item previous<T, K>(key?: K): Object<T> -> T[K]
+
+    /// @name Assign
+    /// Assign value to key on context object
+    declare pipeline item assign<T, K, U>(key?: K, value?: T[K] | Pipeline<U, T[K]>): U -> U where K: ScalarField<T>, T: Model
+
+    // isA, is
+
+    // // value
+    // objects.insert("eq".to_owned(), eq);
+    // objects.insert("gt".to_owned(), gt);
+    // objects.insert("gte".to_owned(), gte);
+    // objects.insert("exists".to_owned(), exists);
+    // objects.insert("isFalse".to_owned(), is_false);
+    // objects.insert("isNull".to_owned(), is_null);
+    // objects.insert("isTrue".to_owned(), is_true);
+    // objects.insert("lt".to_owned(), lt);
+    // objects.insert("lte".to_owned(), lte);
+    // objects.insert("neq".to_owned(), neq);
+    // objects.insert("oneOf".to_owned(), one_of);
+    // // vector
+    // objects.insert("join".to_owned(), join);
+    // objects.insert("at".to_owned(), item_at);
+    // objects.insert("filter".to_owned(), filter);
+    // objects.insert("map".to_owned(), map);        
 }
