@@ -4,7 +4,7 @@ namespace std {
 
     /// @name Action
     /// Represents the predefined actions
-    interface option Action {
+    interface option enum Action {
         create = 1
         update = 1 << 1
         delete = 1 << 2

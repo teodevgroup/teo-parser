@@ -1,6 +1,11 @@
+use std::cell::RefCell;
+use teo_teon::value::Value;
+use crate::ast::arith::ArithExpr;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
+use crate::ast::expr::ExpressionKind;
 use crate::ast::identifier::Identifier;
+use crate::ast::literals::{NumericLiteral, StringLiteral};
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -10,31 +15,13 @@ pub(crate) struct Enum {
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
+    pub(crate) interface: bool,
+    pub(crate) option: bool,
     pub(crate) identifier: Identifier,
     pub(crate) members: Vec<EnumMember>,
 }
 
 impl Enum {
-
-    pub(crate) fn new(
-        path: Vec<usize>,
-        string_path: Vec<String>,
-        comment: Option<Comment>,
-        identifier: Identifier,
-        decorators: Vec<Decorator>,
-        members: Vec<EnumMember>,
-        span: Span
-    ) -> Self {
-        Self {
-            path,
-            string_path,
-            comment,
-            identifier,
-            decorators,
-            members,
-            span,
-        }
-    }
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()
@@ -46,26 +33,45 @@ impl Enum {
 }
 
 #[derive(Debug)]
+pub(crate) struct EnumMemberResolved {
+    value: Value,
+}
+
+#[derive(Debug)]
 pub(crate) struct EnumMember {
-    pub(crate) identifier: Identifier,
+    pub(crate) span: Span,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
-    pub(crate) span: Span,
+    pub(crate) identifier: Identifier,
+    pub(crate) expression: Option<EnumMemberExpression>,
+    pub(crate) resolved: RefCell<Option<EnumMemberResolved>>,
 }
 
 impl EnumMember {
 
-    pub(crate) fn new(
-        identifier: Identifier,
-        comment: Option<Comment>,
-        decorators: Vec<Decorator>,
-        span: Span
-    ) -> Self {
-        Self {
-            identifier,
-            decorators,
-            span,
-            comment,
+    pub(crate) fn resolve(&self, resolved: EnumMemberResolved) {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub(crate) fn resolved(&self) -> &EnumMemberResolved {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum EnumMemberExpression {
+    StringLiteral(StringLiteral),
+    NumericLiteral(NumericLiteral),
+    ArithExpr(ArithExpr),
+}
+
+impl EnumMemberExpression {
+
+    pub(crate) fn span(&self) -> Span {
+        match self {
+            Self::StringLiteral(s) => s.span,
+            Self::NumericLiteral(n) => n.span,
+            Self::ArithExpr(a) => *a.span(),
         }
     }
 }

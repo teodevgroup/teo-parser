@@ -41,7 +41,8 @@ ACTION_KEYWORD = _{ "action" }
 USING_KEYWORD = _{ "using" }
 JSON_KEYWORD = _{ "json" }
 FORM_KEYWORD = _{ "form" }
-INTERFACE_KEYWORD = _{ "interface" }
+INTERFACE_KEYWORD = { "interface" }
+OPTION_KEYWORD = { "option" }
 EXTENDS_KEYWORD = _{ "extends" }
 COLON = { ":" }
 TRAILING_COMMA = @{ "," }
@@ -108,7 +109,7 @@ null_literal = { "null" }
 // #############
 // enum choice literals
 // #############
-enum_choice_literal = { "." ~ identifier ~ argument_list? }
+enum_variant_literal = { "." ~ identifier ~ argument_list? }
 
 // #############
 // range literals
@@ -183,7 +184,7 @@ unit = {
     numeric_literal |
     string_literal |
     regexp_literal |
-    enum_choice_literal |
+    enum_variant_literal |
     tuple_literal |
     array_literal |
     dictionary_literal |
@@ -203,7 +204,7 @@ unit_without_range_literal = {
     numeric_literal |
     string_literal |
     regexp_literal |
-    enum_choice_literal |
+    enum_variant_literal |
     tuple_literal |
     array_literal |
     dictionary_literal |
@@ -267,8 +268,10 @@ config_item = {
 // enum
 // #############
 enum_declaration = {
-    triple_comment_block? ~
-    (item_decorator ~ (NEWLINE | WHITESPACE)*)*
+    triple_comment_block?
+    ~ (item_decorator ~ (NEWLINE | WHITESPACE)*)*
+    ~ INTERFACE_KEYWORD?
+    ~ OPTION_KEYWORD?
     ~ ENUM_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
@@ -279,8 +282,10 @@ enum_declaration = {
 enum_member_declaration = {
     triple_comment_block? ~
     (item_decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
-    identifier
+    identifier ~ ("=" ~ enum_member_expression)?
 }
+
+enum_member_expression = { arith_expr | string_literal | numeric_literal }
 
 // #############
 // model

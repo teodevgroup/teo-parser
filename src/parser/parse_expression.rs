@@ -35,7 +35,7 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
             Rule::numeric_literal => expressions.push(ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context))),
             Rule::string_literal => expressions.push(ExpressionKind::StringLiteral(parse_string_literal(&current))),
             Rule::regexp_literal => expressions.push(ExpressionKind::RegExpLiteral(parse_regexp_literal(current, context))),
-            Rule::enum_choice_literal => expressions.push(ExpressionKind::EnumVariantLiteral(parse_enum_variant_literal(current, context))),
+            Rule::enum_variant_literal => expressions.push(ExpressionKind::EnumVariantLiteral(parse_enum_variant_literal(current, context))),
             Rule::tuple_literal => expressions.push(ExpressionKind::TupleLiteral(parse_tuple_literal(current, context))),
             Rule::array_literal => expressions.push(ExpressionKind::ArrayLiteral(parse_array_literal(current, context))),
             Rule::dictionary_literal => expressions.push(ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context))),
