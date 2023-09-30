@@ -1,5 +1,6 @@
 use crate::ast::action::ActionGroupDeclaration;
 use crate::ast::config::Config;
+use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
 use crate::ast::import::Import;
@@ -13,6 +14,7 @@ use crate::ast::r#enum::Enum;
 pub(crate) enum Top {
     Import(Import),
     Config(Config),
+    ConfigDeclaration(ConfigDeclaration),
     Constant(Constant),
     Enum(Enum),
     Model(Model),
@@ -32,6 +34,7 @@ impl Top {
             Top::Enum(e) => e.id(),
             Top::Model(m) => m.id(),
             Top::Config(c) => c.id(),
+            Top::ConfigDeclaration(c) => c.id(),
             Top::DataSet(d) => d.id(),
             Top::Middleware(m) => m.id(),
             Top::ActionGroup(a) => a.id(),
@@ -94,6 +97,18 @@ impl Top {
     pub(crate) fn is_config(&self) -> bool {
         self.as_config().is_some()
     }
+
+    pub(crate) fn as_config_declaration(&self) -> Option<&ConfigDeclaration> {
+        match self {
+            Top::ConfigDeclaration(c) => Some(c),
+            _ => None
+        }
+    }
+
+    pub(crate) fn is_config_declaration(&self) -> bool {
+        self.as_config_declaration().is_some()
+    }
+
 
     pub(crate) fn as_data_set(&self) -> Option<&DataSet> {
         match self {

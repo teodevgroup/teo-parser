@@ -3,6 +3,7 @@ use pest::Parser;
 use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::ast::top::Top;
 use crate::parser::parse_config_block::parse_config_block;
+use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
@@ -76,6 +77,12 @@ pub(super) fn parse_source(
                 tops.insert(namespace.id(), Top::Namespace(namespace));
             }
             // declares
+            Rule::config_declaration => {
+                let config_declaration = parse_config_declaration(current, context);
+                references.config_declarations.insert(config_declaration.id());
+                context.schema_references.config_declarations.push(config_declaration.path.clone());
+                tops.insert(config_declaration.id(), Top::ConfigDeclaration(config_declaration));
+            }
             // action group
             _ => (),
         }

@@ -16,9 +16,6 @@ pub(crate) struct Source {
     pub(crate) file_path: String,
     pub(crate) tops: BTreeMap<usize, Top>,
     pub(crate) references: SourceReferences,
-    pub(crate) resolved_1: AtomicBool,
-    pub(crate) resolved_2: AtomicBool,
-    pub(crate) resolved_3: AtomicBool,
 }
 
 impl Source {
@@ -30,9 +27,6 @@ impl Source {
             file_path,
             tops,
             references,
-            resolved_1: AtomicBool::new(false),
-            resolved_2: AtomicBool::new(false),
-            resolved_3: AtomicBool::new(false),
         }
     }
 
@@ -54,6 +48,7 @@ pub(crate) struct SourceReferences {
     pub(crate) data_sets: BTreeSet<usize>,
     pub(crate) interfaces: BTreeSet<usize>,
     pub(crate) namespaces: BTreeSet<usize>,
+    pub(crate) config_declarations: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -68,6 +63,7 @@ impl SourceReferences {
             namespaces: btreeset!{},
             interfaces: btreeset!{},
             data_sets: btreeset!{},
+            config_declarations: btreeset!{},
         }
     }
 }

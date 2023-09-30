@@ -29,6 +29,7 @@ pub(crate) struct SchemaReferences {
     pub(crate) data_sets: Vec<Vec<usize>>,
     pub(crate) interfaces: Vec<Vec<usize>>,
     pub(crate) namespaces: Vec<Vec<usize>>,
+    pub(crate) config_declarations: Vec<Vec<usize>>,
 }
 
 impl SchemaReferences {
@@ -49,6 +50,7 @@ impl SchemaReferences {
             test: None,
             interfaces: vec![],
             namespaces: vec![],
+            config_declarations: vec![],
         }
     }
 

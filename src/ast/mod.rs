@@ -2,6 +2,7 @@ pub mod schema;
 pub(crate) mod span;
 pub(crate) mod identifier;
 pub(crate) mod identifier_path;
+pub(crate) mod config_declaration;
 pub(crate) mod config;
 pub(crate) mod config_item;
 pub(crate) mod config_keyword;
