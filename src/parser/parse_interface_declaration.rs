@@ -1,5 +1,5 @@
 use crate::ast::field::Field;
-use crate::ast::generics_declaration::GenericsDeclaration;
+use crate::ast::generics::GenericsDeclaration;
 use crate::ast::generics_extending::InterfaceExtending;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::parser::parse_field::parse_field;

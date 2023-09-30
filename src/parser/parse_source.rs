@@ -6,6 +6,7 @@ use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
+use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
@@ -82,6 +83,13 @@ pub(super) fn parse_source(
                 references.config_declarations.insert(config_declaration.id());
                 context.schema_references.config_declarations.push(config_declaration.path.clone());
                 tops.insert(config_declaration.id(), Top::ConfigDeclaration(config_declaration));
+            }
+            Rule::decorator_declaration => {
+                let decorator_declaration = parse_decorator_declaration(current, context);
+
+            }
+            Rule::pipeline_item_declaration => {
+
             }
             // action group
             _ => (),
