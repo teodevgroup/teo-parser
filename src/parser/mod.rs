@@ -15,7 +15,6 @@ mod parse_enum;
 mod parse_data_set_declaration;
 mod parse_interface_declaration;
 mod parse_comment;
-mod parse_type;
 mod parse_namespace;
 mod parse_decorator;
 mod parse_pipeline;
@@ -29,6 +28,8 @@ mod parse_decorator_declaration;
 mod parse_pipeline_item_declaration;
 mod parse_generics;
 mod parse_argument_list_declaration;
+mod parse_middleware;
+mod parse_action_group;
 
 mod pest_parser;
 mod parser_context;
