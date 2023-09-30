@@ -401,48 +401,48 @@ namespace std {
     /// @name Add
     /// Add a new numeric value 
     declare pipeline item add {
-        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
     }
 
     /// @name Sub
     /// Subtract a numeric value 
     declare pipeline item sub {
-        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
     }
 
     /// @name Mul
     /// Multiply a numeric value 
     declare pipeline item mul {
-        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
     }
 
     /// @name Div
     /// Divide a numeric value 
     declare pipeline item div {
-        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<FieldType<Self>, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<FieldType<Self>, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<FieldType<Self>, Decimal>) Decimal -> Decimal
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
     }
 
     /// @name Mod
     /// Mod a numeric value 
     declare pipeline item mod {
-        variant(value?: Int | Pipeline<FieldType<Self>, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<FieldType<Self>, Int64>): Int64 -> Int64
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
     }
 
     /// @name Floor
@@ -461,5 +461,138 @@ namespace std {
         variant: Decimal -> Decimal
     }
 
-    
+    /// @name Round
+    /// Get the rounded value
+    declare pipeline item round {
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    /// @name Square Root
+    /// Get the square root value
+    decalre pipeline item sqrt {
+        variant: Int -> Int
+        variant: Int64 -> Int64
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    /// @name Cube Root
+    /// Get the cube root value
+    declare pipeline item cbrt {
+        variant: Int -> Int
+        variant: Int64 -> Int64
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    /// @name Absolute Value
+    /// Get the absolute value
+    declare pipeline item abs {
+        variant: Int -> Int
+        variant: Int64 -> Int64
+        variant: Float32 -> Float32
+        variant: Float -> Float
+        variant: Decimal -> Decimal
+    }
+
+    /// @name Power
+    /// Get the power value
+    declare pipeline item pow {
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int | Pipeline<InputType, Int>): Int64 -> Int64
+        variant(value?: Int | Pipeline<InputType, Int>): Float32 -> Float32
+        variant(value?: Int | Pipeline<InputType, Int>): Float -> Float
+        variant(value?: Int | Pipeline<InputType, Int>): Decimal -> Decimal
+    }
+
+    /// @name Root
+    /// Get the root value
+    declare pipeline item root {
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int | Pipeline<InputType, Int>): Int64 -> Int64
+        variant(value?: Int | Pipeline<InputType, Int>): Float32 -> Float32
+        variant(value?: Int | Pipeline<InputType, Int>): Float -> Float
+        variant(value?: Int | Pipeline<InputType, Int>): Decimal -> Decimal
+    }
+
+    /// @name Min
+    /// If current value is less than `value`, set the value to `value`
+    declare pipeline item min {
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 |  | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
+    }
+
+    /// @name Max
+    /// If current value is greater than `value`, set the value to `value`
+    declare pipeline item max {
+        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
+        variant(value?: Float32 |  | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
+    }
+
+    /// @name Is Even
+    /// throws if current value is not even
+    declare pipeline item isEven {
+        variant: Int -> Int
+        variant: Int64 -> Int64
+    }
+
+    /// @name Is Odd
+    /// throws if current value is not odd
+    declare pipeline item isOdd {
+        variant: Int -> Int
+        variant: Int64 -> Int64
+    }
+
+    /// @name randomInt
+    /// generate a random integer
+    declare pipeline item randomInt {
+        variant(range?: Range<Int, Int>): Ignored -> Int
+        variant(length?: Int): Ignored -> Int
+    }
+
+    /// @name randomFloat
+    /// generate a random float
+    declare pipeline item randomFloat(range?: Range<Float, Float>): Ignored -> Float
+
+    /// @name CUID
+    /// generate a CUID
+    declare pipeline item cuid: Ignored -> String
+
+    /// @name UUID
+    /// generate a UUID
+    declare pipeline item uuid: Ignored -> String
+
+    /// @name slug
+    /// generate a slug
+    declare pipeline item slug: Ignored -> String
+
+    /// @name Random Digits
+    /// generate a random digits string
+    declare pipeline item randomDigits(len?: Int): Ignored -> String
+
+    /// @name Ellipsis
+    /// truncate string with ellipsis
+    declare pipeline item ellipsis(ellipsis?: String, width?: Int | Pipeline<InputType, Int>): String -> String
+
+    declare pipeline item padEnd(width?: Int | Pipeline<InputType, Int>, char?: String): String -> String
+
+    declare pipeline item padStart(width?: Int | Pipeline<InputType, Int>, char?: String): String -> String
+
+    declare pipeline item regexReplace(format?: Regex, substitute?: String): String -> String
+
+    declare pipeline item split(separator?: String | Pipeline<InputType, String>) String -> String[]
+
+    declare pipeline item trim: String -> String
+
+    declare pipeline item toWordCase: String -> String
 }
