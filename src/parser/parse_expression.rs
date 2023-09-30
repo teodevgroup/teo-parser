@@ -5,7 +5,7 @@ use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_group::parse_group;
 use crate::parser::parse_identifier::parse_identifier;
-use crate::parser::parse_literals::{parse_array_literal, parse_bool_literal, parse_dictionary_literal, parse_enum_variant_literal, parse_null_literal, parse_numeric_literal, parse_range_literal, parse_regexp_literal, parse_string_literal, parse_tuple_literal};
+use crate::parser::parse_literals::{parse_array_literal, parse_bool_literal, parse_dictionary_literal, parse_enum_variant_literal, parse_null_literal, parse_numeric_literal, parse_regexp_literal, parse_string_literal, parse_tuple_literal};
 use crate::parser::parse_pipeline::parse_pipeline;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_subscript::parse_subscript;
@@ -39,7 +39,6 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
             Rule::tuple_literal => expressions.push(ExpressionKind::TupleLiteral(parse_tuple_literal(current, context))),
             Rule::array_literal => expressions.push(ExpressionKind::ArrayLiteral(parse_array_literal(current, context))),
             Rule::dictionary_literal => expressions.push(ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context))),
-            Rule::range_literal => expressions.push(ExpressionKind::RangeLiteral(parse_range_literal(current, context))),
             Rule::identifier => expressions.push(ExpressionKind::Identifier(parse_identifier(&current))),
             Rule::subscript => expressions.push(ExpressionKind::Subscript(parse_subscript(current, context))),
             Rule::argument_list => expressions.push(ExpressionKind::ArgumentList(parse_argument_list(current, context))),

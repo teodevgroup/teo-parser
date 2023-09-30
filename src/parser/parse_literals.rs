@@ -129,34 +129,3 @@ fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (Expre
     }
     return (key.unwrap(), value.unwrap())
 }
-
-pub(super) fn parse_range_literal(pair: Pair<'_>, context: &mut ParserContext) -> RangeLiteral {
-    let span = parse_span(&pair);
-    let mut start = None;
-    let mut end = None;
-    let mut closed = false;
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::range_end => if start.is_some() {
-                start = Some(parse_range_end(current, context))
-            } else {
-                end = Some(parse_range_end(current, context))
-            },
-            Rule::RANGE_OPEN => closed = false,
-            Rule::RANGE_CLOSE => closed = true,
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    RangeLiteral { span, start: Box::new(start.unwrap()), closed, end: Box::new(end.unwrap()) }
-}
-
-fn parse_range_end(pair: Pair<'_>, context: &mut ParserContext) -> ExpressionKind {
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::numeric_literal => return ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context)),
-            Rule::unit_without_range_literal => return ExpressionKind::Unit(parse_unit(current, context)),
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    unreachable!()
-}

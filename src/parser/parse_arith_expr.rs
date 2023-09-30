@@ -45,6 +45,8 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::LTE => Op::Lte,
             Rule::EQ => Op::Eq,
             Rule::NEQ => Op::Neq,
+            Rule::RANGE_CLOSE => Op::RangeClose,
+            Rule::RANGE_OPEN => Op::RangeOpen,
             _ => unreachable!(),
         };
         ArithExpr::BinaryOp(BinaryOp {

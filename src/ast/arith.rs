@@ -26,6 +26,8 @@ pub enum Op {
     Lte,
     Eq,
     Neq,
+    RangeOpen,
+    RangeClose,
 }
 
 impl Display for Op {
@@ -53,6 +55,8 @@ impl Display for Op {
             Op::Lte => f.write_str("<="),
             Op::Eq => f.write_str("=="),
             Op::Neq => f.write_str("!="),
+            Op::RangeOpen => f.write_str(".."),
+            Op::RangeClose => f.write_str("..."),
         }
     }
 }

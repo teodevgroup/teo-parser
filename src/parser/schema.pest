@@ -50,8 +50,6 @@ OPTION_KEYWORD = { "option" }
 EXTENDS_KEYWORD = _{ "extends" }
 COLON = { ":" }
 TRAILING_COMMA = @{ "," }
-RANGE_OPEN = { ".." }
-RANGE_CLOSE = { "..." }
 OPTIONAL = { "?" }
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
@@ -125,12 +123,6 @@ null_literal = { "null" }
 enum_variant_literal = { "." ~ identifier ~ argument_list? }
 
 // #############
-// range literals
-// #############
-range_literal = { range_end ~ (RANGE_CLOSE | RANGE_OPEN) ~ range_end }
-range_end = { numeric_literal | unit_without_range_literal }
-
-// #############
 // tuple literals
 // #############
 tuple_literal = { "(" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ("," | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ "," ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ("," ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ","?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ")" }
@@ -187,7 +179,9 @@ NOT = { "!" }
 EQ = { "==" }
 NEQ = { "!=" }
 NULLISH_COALESCING = { "??" }
-BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | BI_LS | BI_RS | OR | AND | NOT | NULLISH_COALESCING | EQ | NEQ }
+RANGE_OPEN = { ".." }
+RANGE_CLOSE = { "..." }
+BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | BI_LS | BI_RS | OR | AND | NOT | NULLISH_COALESCING | EQ | NEQ | RANGE_CLOSE | RANGE_OPEN }
 UNARY_OPERATOR = _{ NEG | BI_NEG | NOT }
 arith_expr = { UNARY_OPERATOR? ~ operand ~ (BINARY_OPERATOR ~ UNARY_OPERATOR? ~ operand)* }
 
@@ -204,7 +198,6 @@ unit = {
     group |
     null_literal |
     bool_literal |
-    range_literal |
     numeric_literal |
     string_literal |
     regexp_literal |
@@ -219,21 +212,6 @@ unit = {
 identifier_unit = {
     identifier
     ~ (subscript | argument_list | (NEWLINE | WHITESPACE)* ~ "." ~ (NEWLINE | WHITESPACE)* ~ identifier)*
-}
-
-unit_without_range_literal = {
-    group |
-    null_literal |
-    bool_literal |
-    numeric_literal |
-    string_literal |
-    regexp_literal |
-    enum_variant_literal |
-    tuple_literal |
-    array_literal |
-    dictionary_literal |
-    identifier
-    ~ (subscript | argument_list | "." ~ identifier)*
 }
 
 operand = { unit | pipeline }

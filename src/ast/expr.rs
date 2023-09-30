@@ -71,7 +71,6 @@ pub(crate) enum ExpressionKind {
     BoolLiteral(BoolLiteral),
     NullLiteral(NullLiteral),
     EnumVariantLiteral(EnumVariantLiteral),
-    RangeLiteral(RangeLiteral),
     TupleLiteral(TupleLiteral),
     ArrayLiteral(ArrayLiteral),
     DictionaryLiteral(DictionaryLiteral),
@@ -97,7 +96,6 @@ impl ExpressionKind {
             ExpressionKind::BoolLiteral(e) => &e.span,
             ExpressionKind::NullLiteral(e) => &e.span,
             ExpressionKind::EnumVariantLiteral(e) => &e.span,
-            ExpressionKind::RangeLiteral(e) => &e.span,
             ExpressionKind::TupleLiteral(e) => &e.span,
             ExpressionKind::ArrayLiteral(e) => &e.span,
             ExpressionKind::DictionaryLiteral(e) => &e.span,
@@ -215,20 +213,6 @@ impl ExpressionKind {
 
     pub(crate) fn is_enum_variant_literal(&self) -> bool {
         self.as_enum_variant_literal().is_some()
-    }
-
-    pub(crate) fn as_range_literal(&self) -> Option<&RangeLiteral> {
-        match self {
-            ExpressionKind::RangeLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_range_literal_mut(&mut self) -> Option<&mut RangeLiteral> {
-        match self {
-            ExpressionKind::RangeLiteral(n) => Some(n),
-            _ => None,
-        }
     }
 
     pub(crate) fn as_tuple(&self) -> Option<&TupleLiteral> {
@@ -354,7 +338,6 @@ impl Display for ExpressionKind {
             ExpressionKind::BoolLiteral(b) => Display::fmt(b, f),
             ExpressionKind::NullLiteral(n) => Display::fmt(n, f),
             ExpressionKind::EnumVariantLiteral(e) => Display::fmt(e, f),
-            ExpressionKind::RangeLiteral(r) => Display::fmt(r, f),
             ExpressionKind::TupleLiteral(t) => Display::fmt(t, f),
             ExpressionKind::ArrayLiteral(a) => Display::fmt(a, f),
             ExpressionKind::DictionaryLiteral(d) => Display::fmt(d, f),
