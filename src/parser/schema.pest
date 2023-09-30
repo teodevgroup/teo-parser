@@ -35,6 +35,7 @@ NOTRACK_KEYWORD = { "notrack" }
 GROUP_KEYWORD = _{ "group" }
 RECORD_KEYWORD = _{ "record" }
 DECLARE_KEYWORD = _{ "declare" }
+CONFIG_KEYWORD = _{ "config" }
 MIDDLEWARE_KEYWORD = _{ "middleware" }
 DECORATOR_KEYWORD = _{ "decorator" }
 ACTION_KEYWORD = _{ "action" }
@@ -367,6 +368,16 @@ action_declaration = {
     DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ field_type ~ ")" ~ COLON ~ field_type ~ (USING_KEYWORD ~ req_type)?
 }
 
+config_declaration = {
+  triple_comment_block? ~
+  DECLARE_KEYWORD ~
+  CONFIG_KEYWORD ~
+  identifier ~
+  BLOCK_OPEN ~
+  (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  BLOCK_CLOSE
+}
+
 // #############
 // interface
 // #############
@@ -378,19 +389,16 @@ interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_ex
 generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
 
 interface_declaration = {
-    INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
-    ~ (interface_field | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    triple_comment_block ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
+    ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
-}
-
-interface_field = {
-    identifier ~ COLON ~ field_type
 }
 
 // #############
 // namespace
 // #############
 namespace = {
+    triple_comment_block ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
     ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | model_decorator_declaration | field_decorator_declaration | relation_decorator_declaration | property_decorator_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
