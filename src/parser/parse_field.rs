@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 use crate::ast::field::Field;
-use crate::ast::r#type::TypeItem;
+use crate::ast::r#type::{TypeExpr, TypeItem};
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
-use crate::parser::parse_type::parse_field_type;
+use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
@@ -15,14 +15,14 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
-    let mut field_type: Option<TypeItem> = None;
+    let mut type_expr: Option<TypeExpr> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::EMPTY_LINES => {},
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::item_decorator => decorators.push(parse_decorator(current, context)),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::field_type => field_type = Some(parse_field_type(current, context)),
+            Rule::type_expression => type_expr = Some(parse_type_expression(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -33,7 +33,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         comment,
         decorators,
         identifier: identifier.unwrap(),
-        field_type: field_type.unwrap(),
+        type_expr: type_expr.unwrap(),
         resolved: RefCell::new(None),
     }
 }

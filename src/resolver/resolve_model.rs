@@ -9,11 +9,11 @@ pub(super) fn resolve_model(model: &Model, context: &mut ResolverContext) {
     context.clear_examined_model_fields();
     // decorators
     for decorator in &model.decorators {
-        resolve_decorator(decorator, context, DecoratorClass::ModelDecorator);
+        //resolve_decorator(decorator, context, DecoratorClass::ModelDecorator);
     }
     // fields
     for field in &model.fields {
-        resolve_field(field, context, FieldHint::ModelField)
+        //resolve_field(field, context, FieldHint::ModelField)
     }
     context.add_examined_model_path(model.string_path.clone());
 }

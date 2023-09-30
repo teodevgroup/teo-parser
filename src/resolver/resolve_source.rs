@@ -6,11 +6,11 @@ use crate::resolver::resolver_context::ResolverContext;
 pub(super) fn resolve_source_first(context: &mut ResolverContext) {
     for top in context.source().tops() {
         match top {
-            Top::Import(import) => resolve_import(import, context),
+            Top::Import(import) => (), // resolve_import(import, context),
             Top::Constant(_) => (), // only resolve when used
-            Top::Enum(r#enum) => resolve_enum(r#enum, context),
+            Top::Enum(r#enum) => (), //resolve_enum(r#enum, context),
             Top::Model(model) => resolve_model(model, context),
-            Top::Config(config) => resolve_config(config, context),
+            Top::Config(config) => (), // resolve_config(config, context),
             Top::DataSet(_) => (), // do not resolve yet
             Top::Middleware(middleware) => (),
             Top::Interface(interface) => (),
@@ -23,7 +23,7 @@ pub(super) fn resolve_source_first(context: &mut ResolverContext) {
 pub(super) fn resolve_source_second(context: &mut ResolverContext) {
     for top in context.source().tops() {
         match top {
-            Top::DataSet(data_set) => resolve_data_set(data_set, context),
+            Top::DataSet(data_set) => (), // resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             _ => ()
         }
@@ -33,7 +33,7 @@ pub(super) fn resolve_source_second(context: &mut ResolverContext) {
 pub(super) fn resolve_source_third(context: &mut ResolverContext) {
     for top in context.source().tops() {
         match top {
-            Top::DataSet(data_set) => resolve_data_set_records(data_set, context),
+            Top::DataSet(data_set) => (), //resolve_data_set_records(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_third(namespace, context),
             _ => ()
         }

@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::r#type::TypeItem;
+use crate::ast::r#type::{TypeExpr, TypeItem};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -77,7 +77,7 @@ pub(crate) struct Field {
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) identifier: Identifier,
-    pub(crate) field_type: TypeItem,
+    pub(crate) type_expr: TypeExpr,
     pub(crate) resolved: RefCell<Option<FieldResolved>>,
 }
 

@@ -47,15 +47,15 @@ impl Model {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn sorted_fields(&self) -> Vec<&Field> {
-        self.fields.iter().sorted_by(|a, b| if a.resolved().class.is_primitive_field() {
-            Ordering::Greater
-        } else if b.resolved().class.is_relation() {
-            Ordering::Less
-        } else {
-            Ordering::Less
-        }).collect()
-    }
+    // pub(crate) fn sorted_fields(&self) -> Vec<&Field> {
+    //     self.fields.iter().sorted_by(|a, b| if a.resolved().class.is_primitive_field() {
+    //         Ordering::Greater
+    //     } else if b.resolved().class.is_relation() {
+    //         Ordering::Less
+    //     } else {
+    //         Ordering::Less
+    //     }).collect()
+    // }
 
     pub(crate) fn field_named(&self, key: &str) -> Option<&Field> {
         self.fields.iter().find(|f| f.name() == key)

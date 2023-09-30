@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::constant::Constant;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
@@ -24,5 +25,6 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserConte
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
         identifier: identifier.unwrap(),
         expression: expression.unwrap(),
+        resolved: RefCell::new(None),
     }
 }

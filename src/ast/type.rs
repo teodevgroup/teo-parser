@@ -38,7 +38,7 @@ impl Display for TypeBinaryOp {
 
 #[derive(Debug)]
 pub(crate) enum TypeExprKind {
-    Expression(Box<TypeExprKind>),
+    Expr(Box<TypeExprKind>),
     BinaryOp(TypeBinaryOp),
     TypeItem(TypeItem),
 }
@@ -47,7 +47,7 @@ impl Display for TypeExprKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             TypeExprKind::BinaryOp(b) => Display::fmt(b, f)?,
-            TypeExprKind::Expression(e) => Display::fmt(e, f)?,
+            TypeExprKind::Expr(e) => Display::fmt(e, f)?,
             TypeExprKind::TypeItem(t) => Display::fmt(t, f)?,
         }
         Ok(())
@@ -171,7 +171,7 @@ impl Display for TypeExpr {
 pub(crate) struct TypeItem {
     pub(crate) span: Span,
     pub(crate) identifier_path: IdentifierPath,
-    pub(crate) generics: Vec<TypeItem>,
+    pub(crate) generics: Vec<TypeExpr>,
     pub(crate) arity: Arity,
     pub(crate) item_required: bool,
     pub(crate) collection_required: bool,

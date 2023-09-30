@@ -25,7 +25,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
             },
             Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
             Rule::interface_extending => extends.push(parse_interface_extending(current, context)),
-            Rule::interface_field => fields.push(parse_field(current, context)),
+            Rule::field_declaration => fields.push(parse_field(current, context)),
             _ => (),
         }
     }

@@ -59,7 +59,7 @@ impl<'a> ResolverContext<'a> {
     }
 
     pub(crate) fn current_namespace(&self) -> Option<&Namespace> {
-        *self.namespaces.last()
+        self.namespaces.last().map(|r| *r)
     }
 
     pub(crate) fn add_examined_model_path(&self, model_path: Vec<String>) {

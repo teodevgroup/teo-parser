@@ -65,11 +65,18 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-type_expression = { field_type_item ~ (BI_OR ~ field_type_item)* }
-field_type_item = { identifier_path ~ field_type_generics? ~ optionality? ~ arity? ~ optionality? }
-field_type_generics = { "<" ~ field_type_item ~ ("," ~ field_type_item)* ~ ","? ~ ">" }
+type_expression = { type_item ~ (BI_OR ~ type_item)* }
+type_item = { identifier_path ~ type_generics? ~ optionality? ~ arity? ~ optionality? }
+type_generics = { "<" ~ type_expression ~ ("," ~ type_expression)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
 optionality = { "?" }
+
+// #############
+// generics
+// #############
+generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
+generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ "," }
+generics_constraint_item = { identifier ~ ":" ~ type_expression }
 
 // #############
 // import
@@ -428,11 +435,6 @@ config_declaration = {
 interface_extending = { identifier_path ~ interface_extending_generics? }
 
 interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_extending)* ~ "," ~ ">" }
-
-generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
-
-generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ "," }
-generics_constraint_item = { identifier ~ ":" ~ type_expression }
 
 interface_declaration = {
     triple_comment_block ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN

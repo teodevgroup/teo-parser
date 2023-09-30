@@ -24,6 +24,9 @@ mod parse_argument;
 mod parse_subscript;
 mod parse_group;
 mod parse_arith_expr;
+mod parse_type_expression;
+mod parse_decorator_declaration;
+mod parse_pipeline_item_declaration;
 
 mod pest_parser;
 mod parser_context;
