@@ -3,11 +3,13 @@ use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
+use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::Middleware;
 use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
+use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 
 #[derive(Debug)]
@@ -23,6 +25,8 @@ pub(crate) enum Top {
     ActionGroup(ActionGroupDeclaration),
     Interface(InterfaceDeclaration),
     Namespace(Namespace),
+    DecoratorDeclaration(DecoratorDeclaration),
+    PipelineItemDeclaration(PipelineItemDeclaration),
 }
 
 impl Top {
@@ -40,6 +44,8 @@ impl Top {
             Top::ActionGroup(a) => a.id(),
             Top::Interface(i) => i.id(),
             Top::Namespace(n) => n.id(),
+            Top::DecoratorDeclaration(d) => d.id(),
+            Top::PipelineItemDeclaration(p) => p.id(),
         }
     }
 
@@ -163,5 +169,27 @@ impl Top {
 
     pub(crate) fn is_namespace(&self) -> bool {
         self.as_namespace().is_some()
+    }
+
+    pub(crate) fn as_decorator_declaration(&self) -> Option<&DecoratorDeclaration> {
+        match self {
+            Top::DecoratorDeclaration(d) => Some(d),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_decorator_declaration(&self) -> bool {
+        self.as_decorator_declaration().is_some()
+    }
+
+    pub(crate) fn as_pipeline_item_declaration(&self) -> Option<&PipelineItemDeclaration> {
+        match self {
+            Top::PipelineItemDeclaration(p) => Some(p),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_pipeline_item_declaration(&self) -> bool {
+        self.as_pipeline_item_declaration().is_some()
     }
 }

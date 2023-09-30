@@ -12,6 +12,7 @@ use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
 use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_namespace::parse_namespace;
+use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
 use super::pest_parser::Rule;
@@ -86,11 +87,16 @@ pub(super) fn parse_source(
             }
             Rule::decorator_declaration => {
                 let decorator_declaration = parse_decorator_declaration(current, context);
-
+                references.decorator_declarations.insert(decorator_declaration.id());
+                context.schema_references.decorator_declarations.push(decorator_declaration.path.clone());
+                tops.insert(decorator_declaration.id(), Top::DecoratorDeclaration(decorator_declaration));
             }
             Rule::pipeline_item_declaration => {
-                let pipeline_item_declaration = parse_pip
-            }
+                let pipeline_item_declaration = parse_pipeline_item_declaration(current, context);
+                references.pipeline_item_declarations.insert(pipeline_item_declaration.id());
+                context.schema_references.pipeline_item_declarations.push(pipeline_item_declaration.path.clone());
+                tops.insert(pipeline_item_declaration.id(), Top::PipelineItemDeclaration(pipeline_item_declaration));
+            },
             // action group
             _ => (),
         }

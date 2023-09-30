@@ -156,6 +156,8 @@ pub(crate) struct NamespaceReferences {
     pub(crate) interfaces: BTreeSet<usize>,
     pub(crate) namespaces: BTreeSet<usize>,
     pub(crate) config_declarations: BTreeSet<usize>,
+    pub(crate) decorator_declarations: BTreeSet<usize>,
+    pub(crate) pipeline_item_declarations: BTreeSet<usize>,
 }
 
 impl NamespaceReferences {
@@ -170,6 +172,8 @@ impl NamespaceReferences {
             interfaces: btreeset!{},
             namespaces: btreeset!{},
             config_declarations: btreeset!{},
+            decorator_declarations: btreeset!{},
+            pipeline_item_declarations: btreeset!{},
         }
     }
 }

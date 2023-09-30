@@ -22,6 +22,14 @@ pub(crate) struct PipelineItemDeclaration {
 
 impl PipelineItemDeclaration {
 
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
     pub(crate) fn has_variants(&self) -> bool {
         !self.variants.is_empty()
     }

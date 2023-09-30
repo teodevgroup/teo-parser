@@ -5,10 +5,12 @@ use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
+use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
 use crate::parser::parse_model::parse_model_declaration;
+use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -74,7 +76,19 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 references.config_declarations.insert(config_declaration.id());
                 context.schema_references.config_declarations.push(config_declaration.path.clone());
                 tops.insert(config_declaration.id(), Top::ConfigDeclaration(config_declaration));
+            },
+            Rule::decorator_declaration => {
+                let decorator_declaration = parse_decorator_declaration(current, context);
+                references.decorator_declarations.insert(decorator_declaration.id());
+                context.schema_references.decorator_declarations.push(decorator_declaration.path.clone());
+                tops.insert(decorator_declaration.id(), Top::DecoratorDeclaration(decorator_declaration));
             }
+            Rule::pipeline_item_declaration => {
+                let pipeline_item_declaration = parse_pipeline_item_declaration(current, context);
+                references.pipeline_item_declarations.insert(pipeline_item_declaration.id());
+                context.schema_references.pipeline_item_declarations.push(pipeline_item_declaration.path.clone());
+                tops.insert(pipeline_item_declaration.id(), Top::PipelineItemDeclaration(pipeline_item_declaration));
+            },
             _ => (),
         }
     }

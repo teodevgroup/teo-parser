@@ -48,6 +48,8 @@ pub(crate) struct SourceReferences {
     pub(crate) interfaces: BTreeSet<usize>,
     pub(crate) namespaces: BTreeSet<usize>,
     pub(crate) config_declarations: BTreeSet<usize>,
+    pub(crate) decorator_declarations: BTreeSet<usize>,
+    pub(crate) pipeline_item_declarations: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -63,6 +65,8 @@ impl SourceReferences {
             interfaces: btreeset!{},
             data_sets: btreeset!{},
             config_declarations: btreeset!{},
+            decorator_declarations: btreeset!{},
+            pipeline_item_declarations: btreeset!{},
         }
     }
 }
