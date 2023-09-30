@@ -10,11 +10,22 @@ pub enum Op {
     Mul,
     Div,
     Mod,
+    Not,
+    And,
+    Or,
     BitAnd,
     BitXor,
     BitOr,
     BitNeg,
+    BitLS,
+    BitRS,
     NullishCoalescing,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+    Eq,
+    Neq,
 }
 
 impl Display for Op {
@@ -31,6 +42,17 @@ impl Display for Op {
             Op::BitOr => f.write_str("|"),
             Op::BitNeg => f.write_str("~"),
             Op::NullishCoalescing => f.write_str("??"),
+            Op::Not => f.write_str("!"),
+            Op::And => f.write_str("&&"),
+            Op::Or => f.write_str("||"),
+            Op::BitLS => f.write_str("<<"),
+            Op::BitRS => f.write_str(">>"),
+            Op::Gt => f.write_str(">"),
+            Op::Gte => f.write_str(">="),
+            Op::Lt => f.write_str("<"),
+            Op::Lte => f.write_str("<="),
+            Op::Eq => f.write_str("=="),
+            Op::Neq => f.write_str("!="),
         }
     }
 }

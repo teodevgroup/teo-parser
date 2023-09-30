@@ -16,6 +16,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         let op = match op.as_rule() {
             Rule::BI_NEG => Op::BitNeg,
             Rule::NEG => Op::Neg,
+            Rule::NOT => Op::Not,
             _ => unreachable!(),
         };
         ArithExpr::UnaryOp(UnaryOp {
@@ -34,6 +35,16 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::BI_XOR => Op::BitXor,
             Rule::BI_OR => Op::BitOr,
             Rule::NULLISH_COALESCING => Op::NullishCoalescing,
+            Rule::BI_LS => Op::BitLS,
+            Rule::BI_RS => Op::BitRS,
+            Rule::AND => Op::And,
+            Rule::OR => Op::Or,
+            Rule::GT => Op::Gt,
+            Rule::GTE => Op::Gte,
+            Rule::LT => Op::Lt,
+            Rule::LTE => Op::Lte,
+            Rule::EQ => Op::Eq,
+            Rule::NEQ => Op::Neq,
             _ => unreachable!(),
         };
         ArithExpr::BinaryOp(BinaryOp {

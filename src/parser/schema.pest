@@ -163,10 +163,20 @@ BI_AND = { "&" }
 BI_XOR = { "^" }
 BI_OR = { "|" }
 BI_NEG = { "~" }
+BI_LS = { "<<" }
+BI_RS = { ">>" }
+LT = { "<" }
+LTE = { "<=" }
+GT = { ">" }
+GTE = { ">=" }
+OR = { "||" }
+AND = { "&&" }
+NOT = { "!" }
+EQ = { "==" }
+NEQ = { "!=" }
 NULLISH_COALESCING = { "??" }
-BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | NULLISH_COALESCING }
-UNARY_OPERATOR = _{ NEG | BI_NEG }
-// OPERATORS = { "!" | "&&" | "||" | ">" | "<" | ">>" | "<<" }
+BINARY_OPERATOR = _{ MUL | DIV | MOD | ADD | SUB | BI_AND | BI_XOR | BI_OR | BI_LS | BI_RS | OR | AND | NOT | NULLISH_COALESCING | EQ | NEQ }
+UNARY_OPERATOR = _{ NEG | BI_NEG | NOT }
 arith_expr = { UNARY_OPERATOR? ~ operand ~ (BINARY_OPERATOR ~ UNARY_OPERATOR? ~ operand)* }
 
 // #############
