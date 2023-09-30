@@ -89,7 +89,7 @@ pub(super) fn parse_source(
 
             }
             Rule::pipeline_item_declaration => {
-
+                let pipeline_item_declaration = parse_pip
             }
             // action group
             _ => (),

@@ -15,9 +15,8 @@ pub(crate) struct PipelineItemDeclaration {
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) input_type: TypeExpr,
-    pub(crate) output_type: TypeExpr,
-    pub(crate) has_variants: bool,
+    pub(crate) input_type: Option<TypeExpr>,
+    pub(crate) output_type: Option<TypeExpr>,
     pub(crate) variants: Vec<PipelineItemVariant>,
 }
 
