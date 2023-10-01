@@ -209,7 +209,7 @@ fn resolve_type_item<'a>(
             },
             _ => {
                 if let Some(generics_declaration) = generics_declaration {
-                    if generics_declaration.identifiers.iter().find(|i| i.name() == name) {
+                    if generics_declaration.identifiers.iter().find(|i| i.name() == name).is_some() {
                         Some(Type::GenericItem(name.to_string()))
                     } else {
                         None
@@ -223,8 +223,8 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        resolve_iden
-        type_item.identifier_path
+        //resolve_iden
+        //type_item.identifier_path
     }
     if type_item.item_optional {
         base = Some(Type::Optional(Box::new(base.unwrap())));

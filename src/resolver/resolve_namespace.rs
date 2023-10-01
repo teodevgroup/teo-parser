@@ -1,7 +1,9 @@
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
+use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
 use crate::resolver::resolve_model::resolve_model;
+use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
@@ -19,8 +21,8 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
             Top::ActionGroup(_) => (),
             Top::ConfigDeclaration(_) => {}
-            Top::DecoratorDeclaration(_) => resolve_decorator_declaration
-            Top::PipelineItemDeclaration(_) => {}
+            Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
+            Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
         }
     }
     context.pop_namespace();

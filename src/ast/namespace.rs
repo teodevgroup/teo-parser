@@ -51,8 +51,8 @@ impl Namespace {
         self.tops.get(&id).unwrap().as_model().unwrap()
     }
 
-    pub(crate) fn get_namespace(&self, id: usize) -> &Namespace {
-        self.tops.get(&id).unwrap().as_namespace().unwrap()
+    pub(crate) fn get_namespace(&self, id: usize) -> Option<&Namespace> {
+        self.tops.get(&id).unwrap().as_namespace()
     }
 
     pub(crate) fn get_config(&self, id: usize) -> &Config {
@@ -88,7 +88,7 @@ impl Namespace {
     }
 
     pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
-        self.references.namespaces.iter().map(|m| self.get_namespace(*m)).collect()
+        self.references.namespaces.iter().map(|m| self.get_namespace(*m).unwrap()).collect()
     }
 
     pub(crate) fn data_sets(&self) -> Vec<&DataSet> {
@@ -105,13 +105,17 @@ impl Namespace {
         }).map(|t| *t)
     }
 
+    pub(crate) fn find_top_by_id(&self, id: usize) -> Option<&Top> {
+        self.tops.get(&id)
+    }
+
     pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: fn(&Top) -> bool) -> Option<&Top> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter)
         } else {
             let mut path_for_ns = path.clone();
             path_for_ns.remove(path_for_ns.len() - 1);
-            let child_ns = self.get_namespace_by_path(path_for_ns.clone());
+            let child_ns = self.find_child_namespace_by_string_path(path_for_ns.clone());
             return if let Some(child_ns) = child_ns {
                 child_ns.find_top_by_name(path.last().unwrap(), filter)
             } else {
