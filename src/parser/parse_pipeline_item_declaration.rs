@@ -1,4 +1,4 @@
-use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemVariant};
+use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -54,7 +54,7 @@ pub(super) fn parse_pipeline_item_declaration(pair: Pair<'_>, context: &mut Pars
     }
 }
 
-fn parse_pipeline_item_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> PipelineItemVariant {
+fn parse_pipeline_item_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> PipelineItemDeclarationVariant {
     let span = parse_span(&pair);
     let mut comment = None;
     let mut generics_declaration = None;
@@ -76,7 +76,7 @@ fn parse_pipeline_item_variant_declaration(pair: Pair<'_>, context: &mut ParserC
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    PipelineItemVariant {
+    PipelineItemDeclarationVariant {
         span,
         comment,
         generics_declaration,

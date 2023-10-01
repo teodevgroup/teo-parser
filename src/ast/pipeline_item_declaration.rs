@@ -17,7 +17,7 @@ pub(crate) struct PipelineItemDeclaration {
     pub(crate) generics_constraint: Option<GenericsConstraint>,
     pub(crate) input_type: Option<TypeExpr>,
     pub(crate) output_type: Option<TypeExpr>,
-    pub(crate) variants: Vec<PipelineItemVariant>,
+    pub(crate) variants: Vec<PipelineItemDeclarationVariant>,
 }
 
 impl PipelineItemDeclaration {
@@ -36,7 +36,7 @@ impl PipelineItemDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) struct PipelineItemVariant {
+pub(crate) struct PipelineItemDeclarationVariant {
     pub(crate) span: Span,
     pub(crate) comment: Option<Comment>,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,

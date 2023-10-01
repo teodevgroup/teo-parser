@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::decorator::Decorator;
-use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorVariant};
+use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::unit::Unit;
@@ -68,7 +68,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     }
 }
 
-fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorVariant {
+fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorDeclarationVariant {
     let span = parse_span(&pair);
     let mut comment = None;
     let mut generics_declaration = None;
@@ -83,7 +83,7 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserConte
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    DecoratorVariant {
+    DecoratorDeclarationVariant {
         span,
         comment,
         generics_declaration,

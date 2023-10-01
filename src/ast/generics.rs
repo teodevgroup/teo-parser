@@ -8,6 +8,13 @@ pub struct GenericsDeclaration {
     pub(crate) identifiers: Vec<Identifier>,
 }
 
+impl GenericsDeclaration {
+
+    pub(crate) fn names(&self) -> Vec<&str> {
+        self.identifiers.iter().map(|i| i.name()).collect()
+    }
+}
+
 #[derive(Debug)]
 pub struct GenericsConstraint {
     pub(crate) span: Span,

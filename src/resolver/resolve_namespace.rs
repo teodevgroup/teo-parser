@@ -19,7 +19,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
             Top::ActionGroup(_) => (),
             Top::ConfigDeclaration(_) => {}
-            Top::DecoratorDeclaration(_) => {}
+            Top::DecoratorDeclaration(_) => resolve_decorator_declaration
             Top::PipelineItemDeclaration(_) => {}
         }
     }

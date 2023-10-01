@@ -7,3 +7,7 @@ mod resolve_source;
 mod resolve_decorator;
 mod resolve_identifier;
 mod resolve_constant;
+mod resolve_decorator_declaration;
+mod resolve_pipeline_item_declaration;
+mod resolve_argument_list_declaration;
+mod resolve_type_expr;
