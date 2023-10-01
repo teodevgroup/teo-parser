@@ -18,7 +18,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
     let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::ENUM_KEYWORD | Rule::COLON | Rule::EMPTY_LINES | Rule::BLOCK_CLOSE => {},
+            Rule::MODEL_KEYWORD | Rule::COLON | Rule::EMPTY_LINES | Rule::BLOCK_CLOSE => {},
             Rule::BLOCK_OPEN => string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name())),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::item_decorator => decorators.push(parse_decorator(current, context)),
