@@ -3,7 +3,7 @@ use crate::ast::top::Top;
 use crate::resolver::resolve_model::resolve_model;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a mut ResolverContext<'a>) {
+pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
@@ -18,12 +18,14 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
             Top::ActionGroup(_) => (),
             Top::ConfigDeclaration(_) => {}
+            Top::DecoratorDeclaration(_) => {}
+            Top::PipelineItemDeclaration(_) => {}
         }
     }
     context.pop_namespace();
 }
 
-pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'a mut ResolverContext<'a>) {
+pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
@@ -35,7 +37,7 @@ pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'
     context.pop_namespace();
 }
 
-pub(super) fn resolve_namespace_third<'a>(namespace: &'a Namespace, context: &mut ResolverContext<'a>) {
+pub(super) fn resolve_namespace_third<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
