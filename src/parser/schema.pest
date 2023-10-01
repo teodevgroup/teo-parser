@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | action_group_declaration | comment_block | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | action_group_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -51,6 +51,7 @@ EXTENDS_KEYWORD = _{ "extends" }
 COLON = _{ ":" }
 TRAILING_COMMA = @{ "," }
 OPTIONAL = { "?" }
+HASH_TAG = { "#" }
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
 
@@ -428,7 +429,7 @@ namespace = {
     triple_comment_block ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -437,4 +438,15 @@ namespace = {
 // #############
 static_files_declaration = {
     STATIC_FILES_KEYWORD ~ expression ~ FAT_ARROW_KEYWORD ~ expression
+}
+
+// #############
+// availability
+// #############
+availability_start = {
+    HASH_TAG ~ "available" ~ "(" ~ identifier ~ ")"
+}
+
+availability_end = {
+  HASH_TAG ~ "end"
 }

@@ -38,3 +38,4 @@ pub(crate) mod generics_extending;
 pub(crate) mod decorator_declaration;
 pub(crate) mod pipeline_item_declaration;
 pub(crate) mod argument_declaration;
+pub(crate) mod availability;

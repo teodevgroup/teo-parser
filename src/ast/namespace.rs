@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Debug};
+use std::sync::Arc;
 use maplit::btreeset;
 use crate::ast::action::ActionGroupDeclaration;
 use crate::ast::config::Config;
@@ -95,7 +96,7 @@ impl Namespace {
         self.references.data_sets.iter().map(|m| self.get_data_set(*m)).collect()
     }
 
-    pub(crate) fn find_top_by_name(&self, name: &str, filter: fn(&Top) -> bool) -> Option<&Top> {
+    pub(crate) fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
         self.tops().iter().find(|t| {
             if let Some(n) = t.name() {
                 (n == name) && filter(t)
@@ -109,7 +110,7 @@ impl Namespace {
         self.tops.get(&id)
     }
 
-    pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: fn(&Top) -> bool) -> Option<&Top> {
+    pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter)
         } else {
