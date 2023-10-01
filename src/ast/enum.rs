@@ -33,7 +33,14 @@ impl Enum {
 
 #[derive(Debug)]
 pub(crate) struct EnumMemberResolved {
-    value: Value,
+    pub(crate) value: Value,
+}
+
+impl EnumMemberResolved {
+
+    pub(crate) fn new(value: Value) -> Self {
+        Self { value }
+    }
 }
 
 #[derive(Debug)]
@@ -55,6 +62,10 @@ impl EnumMember {
     pub(crate) fn resolved(&self) -> &EnumMemberResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
+    }
 }
 
 #[derive(Debug)]
@@ -66,11 +77,22 @@ pub(crate) enum EnumMemberExpression {
 
 impl EnumMemberExpression {
 
+    pub(crate) fn is_string_literal(&self) -> bool {
+        self.as_string_literal().is_some()
+    }
+
+    pub(crate) fn as_string_literal(&self) -> Option<&StringLiteral> {
+        match self {
+            Self::StringLiteral(s) => Some(s),
+            _ => None,
+        }
+    }
+
     pub(crate) fn span(&self) -> Span {
         match self {
             Self::StringLiteral(s) => s.span,
             Self::NumericLiteral(n) => n.span,
-            Self::ArithExpr(a) => *a.span(),
+            Self::ArithExpr(a) => a.span(),
         }
     }
 }

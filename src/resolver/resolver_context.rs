@@ -20,8 +20,8 @@ pub(crate) struct ExaminedDataSetRecord {
 }
 
 pub(crate) struct ResolverContext<'a> {
-    pub(crate) examined_model_paths: Mutex<BTreeSet<Vec<String>>>,
-    pub(crate) examined_model_fields: Mutex<BTreeSet<String>>,
+    pub(crate) examined_default_paths: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_fields: Mutex<BTreeSet<String>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
     pub(crate) diagnostics: RefCell<&'a mut Diagnostics>,
     pub(crate) schema: &'a Schema,
@@ -33,8 +33,8 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn new(diagnostics: &'a mut Diagnostics, schema: &'a Schema) -> Self {
         Self {
-            examined_model_paths: Mutex::new(btreeset!{}),
-            examined_model_fields: Mutex::new(btreeset!{}),
+            examined_default_paths: Mutex::new(btreeset!{}),
+            examined_fields: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
             diagnostics: RefCell::new(diagnostics),
             schema,
@@ -63,24 +63,24 @@ impl<'a> ResolverContext<'a> {
         self.namespaces.lock().unwrap().last().map(|r| *r)
     }
 
-    pub(crate) fn add_examined_model_path(&self, model_path: Vec<String>) {
-        self.examined_model_paths.lock().unwrap().insert(model_path);
+    pub(crate) fn add_examined_default_path(&self, path: Vec<String>) {
+        self.examined_default_paths.lock().unwrap().insert(path);
     }
 
-    pub(crate) fn has_examined_model_path(&self, model_path: &Vec<String>) -> bool {
-        self.examined_model_paths.lock().unwrap().contains(model_path)
+    pub(crate) fn has_examined_default_path(&self, path: &Vec<String>) -> bool {
+        self.examined_default_paths.lock().unwrap().contains(path)
     }
 
-    pub(crate) fn add_examined_model_field(&self, field: String) {
-        self.examined_model_fields.lock().unwrap().insert(field);
+    pub(crate) fn add_examined_field(&self, field: String) {
+        self.examined_fields.lock().unwrap().insert(field);
     }
 
-    pub(crate) fn has_examined_model_field(&self, field: &String) -> bool {
-        self.examined_model_fields.lock().unwrap().contains(field)
+    pub(crate) fn has_examined_field(&self, field: &String) -> bool {
+        self.examined_fields.lock().unwrap().contains(field)
     }
 
-    pub(crate) fn clear_examined_model_fields(&self) {
-        self.examined_model_fields.lock().unwrap().clear();
+    pub(crate) fn clear_examined_fields(&self) {
+        self.examined_fields.lock().unwrap().clear();
     }
 
     pub(crate) fn add_examined_data_set_record(&self, record: ExaminedDataSetRecord) {
@@ -95,7 +95,7 @@ impl<'a> ResolverContext<'a> {
         *(unsafe { &mut *self.diagnostics.as_ptr() })
     }
 
-    pub(crate) fn insert_duplicated_model_error(&'a self, model: &Model) {
+    pub(super) fn insert_duplicated_model_error(&'a self, model: &Model) {
         self.diagnostics().insert(DiagnosticsError::new(
             model.identifier.span,
             "Duplicated model definition, identifier is defined",
@@ -103,7 +103,7 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(crate) fn insert_duplicated_model_field_error(&'a self, field: &Field) {
+    pub(super) fn insert_duplicated_model_field_error(&'a self, field: &Field) {
         self.diagnostics().insert(DiagnosticsError::new(
             field.identifier.span,
             "Duplicated model field definition",
@@ -111,79 +111,7 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    fn insert_duplicated_enum_error(&self, r#enum: &Enum) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            r#enum.identifier.span,
-            "Duplicated enum definition, identifier is defined",
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_duplicated_enum_member_error(&self, enum_member: &EnumMember) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            enum_member.identifier.span,
-            "Duplicated enum member definition",
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_duplicated_data_set_record_error(&self, record: &DataSetRecord) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            record.identifier.span,
-            "Duplicated data set record",
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_unresolved_model(&self, span: Span) {
-        self.diagnostics().insert_unresolved_model(span, self.source().file_path.clone())
-    }
-
-    fn insert_unresolved_enum(&self, span: Span) {
-        self.diagnostics().insert_unresolved_enum(span, self.source().file_path.clone())
-    }
-
-    fn insert_data_set_record_key_type_is_not_string(&self, span: Span) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            span,
-            "Data set record key is not string",
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_data_set_record_key_is_duplicated(&self, span: Span) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            span,
-            "Data set record key is duplicated",
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_data_set_record_key_is_undefined(&self, span: Span, key: &str, model: &str) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            span,
-            format!("Field with name '{key}' is undefined on model `{model}'"),
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_data_set_record_key_is_property(&self, span: Span) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            span,
-            format!("Property is not allowed in data set record"),
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_data_set_record_key_is_dropped(&self, span: Span, key: &str, model: &str) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            span,
-            format!("Field with name '{key}' is dropped on model `{model}'"),
-            self.source().file_path.clone()
-        ))
-    }
-
-    fn insert_data_set_record_primitive_value_type_error(&self, span: Span, message: String) {
+    pub(super) fn insert_diagnostics_error(&self, span: Span, message: impl Into<String>) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
             message,
@@ -191,7 +119,87 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    fn insert_data_set_record_relation_value_is_not_array(&self, span: Span) {
+    pub(super) fn insert_duplicated_enum_error(&self, r#enum: &Enum) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            r#enum.identifier.span,
+            "Duplicated enum definition, identifier is defined",
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_duplicated_enum_member_error(&self, enum_member: &EnumMember) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            enum_member.identifier.span,
+            "Duplicated enum member definition",
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_duplicated_data_set_record_error(&self, record: &DataSetRecord) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            record.identifier.span,
+            "Duplicated data set record",
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_unresolved_model(&self, span: Span) {
+        self.diagnostics().insert_unresolved_model(span, self.source().file_path.clone())
+    }
+
+    pub(super) fn insert_unresolved_enum(&self, span: Span) {
+        self.diagnostics().insert_unresolved_enum(span, self.source().file_path.clone())
+    }
+
+    pub(super) fn insert_data_set_record_key_type_is_not_string(&self, span: Span) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            "Data set record key is not string",
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_key_is_duplicated(&self, span: Span) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            "Data set record key is duplicated",
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_key_is_undefined(&self, span: Span, key: &str, model: &str) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            format!("Field with name '{key}' is undefined on model `{model}'"),
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_key_is_property(&self, span: Span) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            format!("Property is not allowed in data set record"),
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_key_is_dropped(&self, span: Span, key: &str, model: &str) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            format!("Field with name '{key}' is dropped on model `{model}'"),
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_primitive_value_type_error(&self, span: Span, message: String) {
+        self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            message,
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_data_set_record_relation_value_is_not_array(&self, span: Span) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
             "Relation value is not array",
@@ -199,7 +207,7 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    fn insert_data_set_record_relation_value_is_not_records_array(&self, span: Span, model_name: &str, dataset_path: &str) {
+    pub(super) fn insert_data_set_record_relation_value_is_not_records_array(&self, span: Span, model_name: &str, dataset_path: &str) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
             format!("Relation value is not array of `{model_name}` records in dataset `{dataset_path}`"),
@@ -207,7 +215,7 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    fn insert_data_set_record_relation_value_is_not_enum_variant(&self, span: Span, model_name: &str, dataset_path: &str) {
+    pub(super) fn insert_data_set_record_relation_value_is_not_enum_variant(&self, span: Span, model_name: &str, dataset_path: &str) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
             format!("Relation value is not enum variant of `{model_name}` records in dataset `{dataset_path}`"),
