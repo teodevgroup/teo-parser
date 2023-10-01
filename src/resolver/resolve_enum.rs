@@ -82,6 +82,12 @@ pub(super) fn resolve_enum_member<'a>(
 
 fn resolve_enum_member_expression<'a>(expression: &ExpressionKind, context: &ResolverContext<'a>, map: &Mutex<BTreeMap<&'a str, i32>>) -> i32 {
     match expression {
+        ExpressionKind::Unit(u) => if u.expressions.len() == 1 {
+            resolve_enum_member_expression(u.expressions.get(0).unwrap(), context, map)
+        } else {
+            context.insert_diagnostics_error(expression.span(), "EnumMemberError: Only number literals and enum variant literals are allowed");
+            0
+        },
         ExpressionKind::NumericLiteral(n) => n.value.as_i32().unwrap(),
         ExpressionKind::Group(g) => resolve_enum_member_expression(g.expression.as_ref(), context, map),
         ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.value.as_str()) {

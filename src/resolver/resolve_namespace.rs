@@ -1,5 +1,6 @@
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
+use crate::resolver::resolve_enum::resolve_enum;
 use crate::resolver::resolve_model::resolve_model;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -9,7 +10,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
         match top {
             Top::Import(_) => (), // no imports in namespace
             Top::Constant(_) => (), // only resolve when used
-            Top::Enum(r#enum) => (),//resolve_enum(r#enum, context),
+            Top::Enum(r#enum) => resolve_enum(r#enum, context),
             Top::Model(model) => resolve_model(model, context),
             Top::Config(config) => (), //resolve_config(config, context),
             Top::DataSet(_) => (), // don't resolve the first time
