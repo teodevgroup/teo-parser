@@ -68,7 +68,7 @@ type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? 
 type_generics = { "<" ~ type_expression ~ ("," ~ type_expression)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
 type_group = { "(" ~ type_expression ~ ")" ~ OPTIONAL? }
-type_tuple = { "(" ~ type_expression ~ "," ~ type_expression? ~ ("," ~ type_expression)* ~ ","? ~ ")"}
+type_tuple = { "(" ~ type_expression ~ "," ~ type_expression? ~ ("," ~ type_expression)* ~ ","? ~ ")" ~ OPTIONAL? }
 
 // #############
 // generics
