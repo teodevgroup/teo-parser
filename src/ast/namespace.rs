@@ -95,54 +95,41 @@ impl Namespace {
         self.references.data_sets.iter().map(|m| self.get_data_set(*m)).collect()
     }
 
-    pub(crate) fn get_model_by_name(&self, name: &str) -> Option<&Model> {
-        self.models().iter().find(|m| m.identifier.name.as_str() == name).map(|r| *r)
+    pub(crate) fn find_top_by_name(&self, name: &str, filter: fn(&Top) -> bool) -> Option<&Top> {
+        self.tops().iter().find(|t| {
+            if let Some(n) = t.name() {
+                (n == name) && filter(t)
+            } else {
+                false
+            }
+        }).map(|t| *t)
     }
 
-    pub(crate) fn get_enum_by_name(&self, name: &str) -> Option<&Enum> {
-        self.enums().iter().find(|m| m.identifier.name.as_str() == name).map(|r| *r)
+    pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: fn(&Top) -> bool) -> Option<&Top> {
+        if path.len() == 1 {
+            self.find_top_by_name(path.get(0).unwrap(), filter)
+        } else {
+            let mut path_for_ns = path.clone();
+            path_for_ns.remove(path_for_ns.len() - 1);
+            let child_ns = self.get_namespace_by_path(path_for_ns.clone());
+            return if let Some(child_ns) = child_ns {
+                child_ns.find_top_by_name(path.last().unwrap(), filter)
+            } else {
+                None
+            }
+        }
     }
 
-    pub(crate) fn get_namespace_by_path(&self, path: Vec<&str>) -> Option<&Namespace> {
+    pub(crate) fn find_child_namespace_by_string_path(&self, path: Vec<&str>) -> Option<&Namespace> {
         let mut retval = self;
-        for item in path {
-            if let Some(child) = retval.namespaces().iter().find(|n| n.identifier.name.as_str() == item) {
+        for name in path {
+            if let Some(child) = retval.namespaces().iter().find(|n| n.identifier.name() == name) {
                 retval = child
             } else {
                 return None
             }
         }
         Some(retval)
-    }
-
-    pub(crate) fn get_model_by_path(&self, path: Vec<&str>) -> Option<&Model> {
-        if path.len() == 1 {
-            self.get_model_by_name(path.get(0).unwrap())
-        } else {
-            let mut path_for_ns = path.clone();
-            path_for_ns.remove(path_for_ns.len() - 1);
-            let child_ns = self.get_namespace_by_path(path_for_ns.clone());
-            return if let Some(child_ns) = child_ns {
-                child_ns.get_model_by_name(path_for_ns.last().unwrap())
-            } else {
-                None
-            }
-        }
-    }
-
-    pub(crate) fn get_enum_by_path(&self, path: Vec<&str>) -> Option<&Enum> {
-        if path.len() == 1 {
-            self.get_enum_by_name(path.get(0).unwrap())
-        } else {
-            let mut path_for_ns = path.clone();
-            path_for_ns.remove(path_for_ns.len() - 1);
-            let child_ns = self.get_namespace_by_path(path_for_ns.clone());
-            return if let Some(child_ns) = child_ns {
-                child_ns.get_enum_by_name(path_for_ns.last().unwrap())
-            } else {
-                None
-            }
-        }
     }
 }
 

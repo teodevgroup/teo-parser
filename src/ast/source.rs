@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use maplit::btreeset;
 use crate::ast::import::Import;
+use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -35,6 +36,53 @@ impl Source {
 
     pub(crate) fn imports(&self) -> Vec<&Import> {
         self.references.imports.iter().map(|id| self.tops.get(id).unwrap().as_import().unwrap()).collect()
+    }
+
+    pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
+        self.references.namespaces.iter().map(|m| self.get_namespace(*m)).collect()
+    }
+
+    pub(crate) fn find_top_by_name(&self, name: &str, filter: fn(&Top) -> bool) -> Option<&Top> {
+        self.tops().iter().find(|t| {
+            if let Some(n) = t.name() {
+                (n == name) && filter(t)
+            } else {
+                false
+            }
+        }).map(|t| *t)
+    }
+
+    pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: fn(&Top) -> bool) -> Option<&Top> {
+        if path.len() == 1 {
+            self.find_top_by_name(path.get(0).unwrap(), filter)
+        } else {
+            let mut path_for_ns = path.clone();
+            path_for_ns.remove(path_for_ns.len() - 1);
+            let child_ns = self.get_namespace_by_path(path_for_ns.clone());
+            return if let Some(child_ns) = child_ns {
+                child_ns.find_top_by_name(path.last().unwrap(), filter)
+            } else {
+                None
+            }
+        }
+    }
+
+    pub(crate) fn find_child_namespace_by_string_path(&self, path: Vec<&str>) -> Option<&Namespace> {
+        if path.len() == 1 {
+            self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|s| *s)
+        } else {
+            let mut ns = self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|r| *r);
+            for (index, item) in path.iter().enumerate() {
+                if index != 0 {
+                    if let Some(ns_ref) = ns {
+                        ns = ns_ref.namespaces().iter().find(|n| n.identifier.name() == *item).map(|r| *r);
+                    } else {
+                        return None;
+                    }
+                }
+            }
+            ns
+        }
     }
 }
 

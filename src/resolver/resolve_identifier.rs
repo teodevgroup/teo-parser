@@ -17,7 +17,7 @@ pub(super) fn resolve_identifier_path(
     context: &mut ResolverContext,
     reference_type: ReferenceType,
 ) -> Option<Reference> {
-    context.current_namespace()
+
 }
 
 fn top_filter_for_reference_type(reference_type: ReferenceType) -> fn(&Top) -> bool {
