@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::r#type::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp};
+use crate::ast::r#type::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
@@ -11,6 +11,7 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
     let kind = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::type_item => TypeExprKind::TypeItem(parse_type_item(primary, context)),
         Rule::type_group => TypeExprKind::TypeGroup(parse_type_group(primary, context)),
+        Rule::type_tuple => TypeExprKind::TypeTuple(parse_type_tuple(primary, context)),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             unreachable!()
@@ -74,6 +75,24 @@ fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
     TypeGroup {
         span,
         kind: Box::new(kind.unwrap()),
+        optional,
+    }
+}
+
+fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
+    let span = parse_span(&pair);
+    let mut kinds = vec![];
+    let mut optional = false;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::type_expression => kinds.push(parse_type_expression(current, context).kind),
+            Rule::OPTIONAL => optional = true,
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    TypeTuple {
+        span,
+        kinds,
         optional,
     }
 }

@@ -56,11 +56,34 @@ impl Display for TypeGroup {
 }
 
 #[derive(Debug)]
+pub(crate) struct TypeTuple {
+    pub(crate) span: Span,
+    pub(crate) kinds: Vec<TypeExprKind>,
+    pub(crate) optional: bool,
+}
+
+impl Display for TypeTuple {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let len = self.kinds.len();
+        for (index, kind) in self.kinds.iter().enumerate() {
+            Display::fmt(kind, f)?;
+            if index != len - 1 {
+                f.write_str(", ")?;
+            } else if index == 0 {
+                f.write_str(",")?;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub(crate) enum TypeExprKind {
     Expr(Box<TypeExprKind>),
     BinaryOp(TypeBinaryOp),
     TypeItem(TypeItem),
     TypeGroup(TypeGroup),
+    TypeTuple(TypeTuple),
 }
 
 impl Display for TypeExprKind {
@@ -68,8 +91,9 @@ impl Display for TypeExprKind {
         match self {
             TypeExprKind::BinaryOp(b) => Display::fmt(b, f)?,
             TypeExprKind::Expr(e) => Display::fmt(e, f)?,
-            TypeExprKind::TypeItem(t) => Display::fmt(t, f)?,
+            TypeExprKind::TypeItem(i) => Display::fmt(i, f)?,
             TypeExprKind::TypeGroup(g) => Display::fmt(g, f)?,
+            TypeExprKind::TypeTuple(t) => Display::fmt(t, f)?,
         }
         Ok(())
     }
