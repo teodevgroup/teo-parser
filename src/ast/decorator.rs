@@ -21,4 +21,8 @@ impl Decorator {
     pub(crate) fn resolved(&self) -> &DecoratorResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
+    }
 }

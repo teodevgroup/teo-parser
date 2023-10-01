@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::sync::atomic::AtomicBool;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
 use crate::parser::parse_arith_expr::parse_arith_expr;
@@ -45,6 +46,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
         option,
         identifier: identifier.unwrap(),
         members,
+        resolved: AtomicBool::new(false),
     }
 }
 

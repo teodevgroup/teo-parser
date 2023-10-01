@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::sync::atomic::AtomicBool;
 use teo_teon::value::Value;
 use crate::ast::arith::ArithExpr;
 use crate::ast::comment::Comment;
@@ -18,6 +19,7 @@ pub(crate) struct Enum {
     pub(crate) option: bool,
     pub(crate) identifier: Identifier,
     pub(crate) members: Vec<EnumMember>,
+    pub(crate) resolved: AtomicBool,
 }
 
 impl Enum {

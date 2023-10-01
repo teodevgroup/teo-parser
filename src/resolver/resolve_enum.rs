@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::sync::atomic::Ordering;
 use std::sync::Mutex;
 use maplit::btreemap;
 use teo_teon::value::Value;
@@ -10,6 +11,9 @@ use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a>) {
+    if r#enum.resolved.load(Ordering::SeqCst) {
+        return
+    }
     if context.has_examined_default_path(&r#enum.string_path) {
         context.insert_duplicated_enum_error(r#enum);
     }
@@ -24,6 +28,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
         resolve_enum_member(member, context, r#enum.option, index, &option_member_map);
     }
     context.add_examined_default_path(r#enum.string_path.clone());
+    r#enum.resolved.store(true, Ordering::SeqCst);
 }
 
 pub(super) fn resolve_enum_member<'a>(
