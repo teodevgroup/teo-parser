@@ -10,7 +10,7 @@ use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
-use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError};
+use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
 
 #[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) struct ExaminedDataSetRecord {
@@ -113,6 +113,14 @@ impl<'a> ResolverContext<'a> {
 
     pub(super) fn insert_diagnostics_error(&self, span: Span, message: impl Into<String>) {
         self.diagnostics().insert(DiagnosticsError::new(
+            span,
+            message,
+            self.source().file_path.clone()
+        ))
+    }
+
+    pub(super) fn insert_diagnostics_warning(&self, span: Span, message: impl Into<String>) {
+        self.diagnostics().insert(DiagnosticsWarning::new(
             span,
             message,
             self.source().file_path.clone()

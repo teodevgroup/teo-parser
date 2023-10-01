@@ -22,4 +22,12 @@ impl Config {
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
+
+    pub(crate) fn name(&self) -> &str {
+        if let Some(identifier) = &self.identifier {
+            identifier.name()
+        } else {
+            self.keyword.name()
+        }
+    }
 }

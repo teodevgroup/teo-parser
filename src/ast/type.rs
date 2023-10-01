@@ -86,6 +86,19 @@ pub(crate) enum TypeExprKind {
     TypeTuple(TypeTuple),
 }
 
+impl TypeExprKind {
+
+    pub(crate) fn span(&self) -> Span {
+        match self {
+            TypeExprKind::Expr(e) => e.span(),
+            TypeExprKind::BinaryOp(b) => b.span,
+            TypeExprKind::TypeItem(t) => t.span,
+            TypeExprKind::TypeGroup(g) => g.span,
+            TypeExprKind::TypeTuple(t) => t.span,
+        }
+    }
+}
+
 impl Display for TypeExprKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -102,29 +115,56 @@ impl Display for TypeExprKind {
 #[derive(Debug)]
 pub(crate) enum Type {
     Any,
-    String,
-    ObjectId,
-    Date,
-    DateTime,
+    Null,
     Bool,
     Int,
     Int64,
     Float32,
     Float,
     Decimal,
+    String,
+    ObjectId,
+    Date,
+    DateTime,
+    File,
     Array(Box<Type>),
-    Map(Box<Type>, Box<Type>),
+    Dictionary(Box<Type>, Box<Type>),
+    Tuple(Vec<Type>),
+    Range(Box<Type>),
+    Union(Vec<Type>),
+    Ignored,
     Enum(Vec<usize>),
     Model(Vec<usize>),
     Interface(Vec<usize>),
-    Union(Vec<Type>),
-    ScalarField(Vec<usize>),
-    ScalarFieldAndCachedProperty(Vec<usize>),
+    ModelScalarField(Vec<usize>),
+    ModelScalarFieldAndCachedProperty(Vec<usize>),
     FieldType(Vec<usize>, String),
-    Ignored,
+    GenericItem(String),
+    Optional(Box<Type>),
 }
 
 impl Type {
+
+    pub(crate) fn is_optional(&self) -> bool {
+        match self {
+            Type::Optional(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_int_32_or_64(&self) -> bool {
+        match self {
+            Type::Int | Type::Int64 => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_float_32_or_64(&self) -> bool {
+        match self {
+            Type::Float32 | Type::Float => true,
+            _ => false,
+        }
+    }
 
     pub(crate) fn is_enum(&self) -> bool {
         match self {
@@ -137,6 +177,7 @@ impl Type {
     pub(crate) fn is_builtin(&self) -> bool {
         use Type::*;
         match self {
+            Null |
             String |
             ObjectId |
             Date |
@@ -147,8 +188,11 @@ impl Type {
             Float32 |
             Float |
             Decimal |
+            File |
             Array(_) |
-            Map(_, _) => true,
+            Dictionary(_, _) |
+            Tuple(_) => true,
+            Optional(inner) => inner.is_builtin(),
             _ => false,
         }
     }
@@ -216,7 +260,7 @@ impl Display for TypeExpr {
 pub(crate) struct TypeItem {
     pub(crate) span: Span,
     pub(crate) identifier_path: IdentifierPath,
-    pub(crate) generics: Vec<TypeExpr>,
+    pub(crate) generics: Vec<TypeExprKind>,
     pub(crate) arity: Arity,
     pub(crate) item_optional: bool,
     pub(crate) collection_optional: bool,

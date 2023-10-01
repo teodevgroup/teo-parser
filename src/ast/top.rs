@@ -49,6 +49,24 @@ impl Top {
         }
     }
 
+    pub(crate) fn name(&self) -> Option<&str> {
+        match self {
+            Top::Import(i) => None,
+            Top::Constant(c) => Some(c.identifier.name()),
+            Top::Enum(e) => Some(e.identifier.name()),
+            Top::Model(m) => Some(m.identifier.name()),
+            Top::Config(c) => Some(c.name()),
+            Top::ConfigDeclaration(c) => Some(c.identifier.name()),
+            Top::DataSet(d) => Some(d.identifier.name()),
+            Top::Middleware(m) => Some(m.identifier.name()),
+            Top::ActionGroup(a) => Some(a.identifier.name()),
+            Top::Interface(i) => Some(i.identifier.name()),
+            Top::Namespace(n) => Some(n.identifier.name()),
+            Top::DecoratorDeclaration(d) => Some(d.identifier.name()),
+            Top::PipelineItemDeclaration(p) => Some(p.identifier.name()),
+        }
+    }
+
     pub(crate) fn as_import(&self) -> Option<&Import> {
         match self {
             Top::Import(i) => Some(i),

@@ -1,4 +1,4 @@
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub(crate) enum ReferenceType {
     EnumDecorator,
     EnumMemberDecorator,

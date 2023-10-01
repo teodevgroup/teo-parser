@@ -10,7 +10,7 @@ pub(crate) struct IdentifierPath {
 
 impl IdentifierPath {
 
-    pub(crate) fn path(&self) -> Vec<&str> {
+    pub(crate) fn names(&self) -> Vec<&str> {
         self.identifiers.iter().map(|i| i.name.as_str()).collect()
     }
 }

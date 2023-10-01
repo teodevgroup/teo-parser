@@ -97,11 +97,11 @@ fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
     }
 }
 
-fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<TypeExpr> {
+fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<TypeExprKind> {
     let mut items = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::type_expression => items.push(parse_type_expression(current, context)),
+            Rule::type_expression => items.push(parse_type_expression(current, context).kind),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
