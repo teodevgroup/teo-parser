@@ -38,7 +38,7 @@ impl DiagnosticsLog for DiagnosticsError {
     }
 
     fn into_warning(self) -> DiagnosticsWarning {
-        unreachable!()
+        panic!("unreachable 8")
     }
 
     fn into_error(self) -> DiagnosticsError {
@@ -69,7 +69,7 @@ impl DiagnosticsLog for &DiagnosticsError {
     }
 
     fn into_warning(self) -> DiagnosticsWarning {
-        unreachable!()
+        panic!("unreachable 9")
     }
 
     fn into_error(self) -> DiagnosticsError {
@@ -116,7 +116,7 @@ impl DiagnosticsLog for DiagnosticsWarning {
     }
 
     fn into_error(self) -> DiagnosticsError {
-        unreachable!()
+        panic!("unreachable 9")
     }
 
     fn is_warning(&self) -> bool {
@@ -146,7 +146,7 @@ impl DiagnosticsLog for &DiagnosticsWarning {
     }
 
     fn into_error(self) -> DiagnosticsError {
-        unreachable!()
+        panic!("unreachable 10")
     }
 
     fn is_warning(&self) -> bool {

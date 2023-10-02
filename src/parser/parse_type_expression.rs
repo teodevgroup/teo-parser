@@ -14,12 +14,12 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
         Rule::type_tuple => TypeExprKind::TypeTuple(parse_type_tuple(primary, context)),
         _ => {
             context.insert_unparsed(parse_span(&primary));
-            unreachable!()
+            panic!("unreachable 6")
         },
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
             Rule::BI_OR => TypeOp::BitOr,
-            _ => unreachable!(),
+            _ => panic!("unreachable 7"),
         };
         TypeExprKind::BinaryOp(TypeBinaryOp {
             span,

@@ -10,14 +10,14 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         Rule::operand => ArithExpr::Expression(Box::new(parse_expression_kind(primary, context))),
         _ => {
             context.insert_unparsed(parse_span(&primary));
-            unreachable!()
+            panic!("unreachable 3")
         },
     }).map_prefix(|op, rhs| {
         let op = match op.as_rule() {
             Rule::BI_NEG => Op::BitNeg,
             Rule::NEG => Op::Neg,
             Rule::NOT => Op::Not,
-            _ => unreachable!(),
+            _ => panic!("unreachable 4"),
         };
         ArithExpr::UnaryOp(UnaryOp {
             span,
@@ -47,7 +47,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::NEQ => Op::Neq,
             Rule::RANGE_CLOSE => Op::RangeClose,
             Rule::RANGE_OPEN => Op::RangeOpen,
-            _ => unreachable!(),
+            _ => panic!("unreachable 5"),
         };
         ArithExpr::BinaryOp(BinaryOp {
             span,

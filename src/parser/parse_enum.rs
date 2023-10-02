@@ -82,8 +82,8 @@ fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> 
             Rule::arith_expr => return EnumMemberExpression::ArithExpr(parse_arith_expr(current, context)),
             Rule::string_literal => return EnumMemberExpression::StringLiteral(parse_string_literal(&current)),
             Rule::numeric_literal => return EnumMemberExpression::NumericLiteral(parse_numeric_literal(&current, context)),
-            _ => unreachable!(),
+            _ => panic!("unreachable 1"),
         }
     }
-    unreachable!()
+    panic!("unreachable 2")
 }

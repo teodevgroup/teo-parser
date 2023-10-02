@@ -56,7 +56,7 @@ impl From<&DiagnosticsWarning> for DiagnosticsJsonItem {
 }
 
 pub(crate) fn format_to_json(diagnostics: &Diagnostics, include_warnings: bool) -> String {
-    let mut result = vec![];
+    let mut result: Vec<DiagnosticsJsonItem> = vec![];
     for error in diagnostics.errors() {
         result.push(error.into());
     }
