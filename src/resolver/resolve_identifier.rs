@@ -1,11 +1,9 @@
 use std::sync::Arc;
-use array_tool::vec::Shift;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference::{Reference, ReferenceType};
 use crate::ast::source::Source;
 use crate::ast::top::Top;
-use crate::ast::top::Top::PipelineItemDeclaration;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_identifier(
