@@ -30,7 +30,7 @@ pub fn parse(
     parse_user_source(
         &mut sources,
         main.as_ref(),
-        &utils::path::parent_directory(main.as_ref()),
+        &(parser_context.file_util.parent_directory)(main.as_ref()),
         &mut parser_context
     );
     let schema = Schema { sources, references };

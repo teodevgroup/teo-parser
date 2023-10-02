@@ -6,7 +6,6 @@ use crate::parser::parse_literals::parse_string_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
-use crate::utils::path::import_path;
 
 pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context: &mut ParserContext) -> Import {
     let span = parse_span(&pair);
@@ -19,7 +18,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    let file_path = import_path(source_path, source.as_ref().unwrap().value.as_str());
+    let file_path = context.file_util.import_path(source_path, source.as_ref().unwrap().value.as_str());
     if !(context.file_util.file_exists)(&file_path) {
         context.insert_error(source.as_ref().unwrap().span.clone(), "ImportError: file doesn't exist")
     }
