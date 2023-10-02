@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::StringLiteral;
 use crate::ast::span::Span;
@@ -8,13 +7,13 @@ pub(crate) struct Import {
     pub(crate) path: Vec<usize>,
     pub(crate) identifiers: Vec<Identifier>,
     pub(crate) source: StringLiteral,
-    pub(crate) file_path: PathBuf,
+    pub(crate) file_path: String,
     pub(crate) span: Span,
 }
 
 impl Import {
 
-    pub(crate) fn new(path: Vec<usize>, identifiers: Vec<Identifier>, source: StringLiteral, file_path: PathBuf, span: Span) -> Self {
+    pub(crate) fn new(path: Vec<usize>, identifiers: Vec<Identifier>, source: StringLiteral, file_path: String, span: Span) -> Self {
         Self {
             path,
             identifiers,

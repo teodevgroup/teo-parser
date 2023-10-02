@@ -9,7 +9,7 @@ use crate::ast::schema::Schema;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::diagnostics::formatter::format_to_json;
 
-pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
+pub fn parse(main: impl AsRef<str> + Copy) -> (Schema, Diagnostics) {
     let (schema, mut diagnostics) = parser::parse::parse(main);
     resolver::resolve::resolve(&schema, &mut diagnostics);
     (schema, diagnostics)

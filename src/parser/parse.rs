@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::path::Path;
 use maplit::btreemap;
 use crate::ast::schema::{Schema, SchemaReferences};
 use crate::ast::source::Source;
@@ -8,8 +7,9 @@ use crate::diagnostics::diagnostics::Diagnostics;
 use crate::parser::parse_builtin_source_file::parse_builtin_source_file;
 use crate::parser::parse_source_file::parse_source_file;
 use crate::parser::parser_context::ParserContext;
+use crate::utils;
 
-pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
+pub fn parse(main: impl AsRef<str> + Copy) -> (Schema, Diagnostics) {
     let mut diagnostics = Diagnostics::new();
     let mut references = SchemaReferences::new();
     let mut parser_context = ParserContext::new(&mut diagnostics, &mut references);
@@ -25,7 +25,7 @@ pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
     parse_user_source(
         &mut sources,
         main,
-        &std::env::current_dir().unwrap(),
+        &utils::path::parent_directory(main.as_ref()),
         &mut parser_context
     );
     let schema = Schema { sources, references };
@@ -35,7 +35,7 @@ pub fn parse(main: impl AsRef<str>) -> (Schema, Diagnostics) {
 fn parse_user_source(
     sources: &mut BTreeMap<usize, Source>,
     path: impl AsRef<str>,
-    base: &Path,
+    base: &str,
     parser_context: &mut ParserContext
 ) {
     let source = parse_source_file(path, base, parser_context);

@@ -1,22 +1,20 @@
 use std::borrow::Cow;
 use std::fs;
-use std::path::Path;
-use path_clean::PathClean;
 use crate::ast::source::Source;
 use crate::parser::parse_source::parse_source;
 use crate::parser::parser_context::ParserContext;
+use crate::utils;
 
-pub(super) fn parse_source_file(path: impl AsRef<str>, base_path: &Path, context: &mut ParserContext) -> Source {
+pub(super) fn parse_source_file(path: impl AsRef<str>, base_path: &str, context: &mut ParserContext) -> Source {
     let path_str = path.as_ref();
-    let rel_path = Path::new(path_str);
-    let abs_path = if rel_path.is_absolute() {
-        Cow::Borrowed(rel_path)
+    let abs_path = if utils::path::is_absolute(path_str) {
+        Cow::Borrowed(path_str)
     } else {
-        Cow::Owned(base_path.join(rel_path).clean())
+        Cow::Owned(utils::path::join_path(base_path, path_str))
     };
-    let content = match fs::read_to_string(&abs_path) {
+    let content = match fs::read_to_string(abs_path) {
         Ok(content) => content,
-        Err(err) => panic!("Cannot read schema file content at '{}': {}", abs_path.as_os_str().to_str().unwrap(), err)
+        Err(err) => panic!("Cannot read schema file content at '{}': {}", abs_path, err)
     };
-    parse_source(&content, path.as_ref().to_string(), false, context)
+    parse_source(&content, abs_path.as_ref(), false, context)
 }
