@@ -7,7 +7,6 @@ use crate::diagnostics::diagnostics::Diagnostics;
 use crate::parser::parse_builtin_source_file::parse_builtin_source_file;
 use crate::parser::parse_source_file::parse_source_file;
 use crate::parser::parser_context::ParserContext;
-use crate::utils;
 use crate::utils::path::FileUtility;
 
 pub fn parse(
