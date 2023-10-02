@@ -76,13 +76,13 @@ impl Source {
         }
     }
 
-    pub(crate) fn find_top_by_string_path(&self, path: Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
+    pub(crate) fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter)
         } else {
             let mut path_for_ns = path.clone();
             path_for_ns.remove(path_for_ns.len() - 1);
-            let child_ns = self.find_child_namespace_by_string_path(path_for_ns.clone());
+            let child_ns = self.find_child_namespace_by_string_path(&path_for_ns);
             if let Some(child_ns) = child_ns {
                 child_ns.find_top_by_name(path.last().unwrap(), filter)
             } else {
@@ -108,7 +108,7 @@ impl Source {
         ns
     }
 
-    pub(crate) fn find_child_namespace_by_string_path(&self, path: Vec<&str>) -> Option<&Namespace> {
+    pub(crate) fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
         let mut ns = self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|r| *r);
         for (index, item) in path.iter().enumerate() {
             if index > 0 {

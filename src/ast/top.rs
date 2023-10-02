@@ -67,6 +67,24 @@ impl Top {
         }
     }
 
+    pub(crate) fn path(&self) -> &Vec<usize> {
+        match self {
+            Top::Import(i) => &i.path,
+            Top::Constant(c) => &c.path,
+            Top::Enum(e) => &e.path,
+            Top::Model(m) => &m.path,
+            Top::Config(c) => &c.path,
+            Top::ConfigDeclaration(c) => &c.path,
+            Top::DataSet(d) => &d.path,
+            Top::Middleware(m) => &m.path,
+            Top::ActionGroup(a) => &a.path,
+            Top::Interface(i) => &i.path,
+            Top::Namespace(n) => &n.path,
+            Top::DecoratorDeclaration(d) => &d.path,
+            Top::PipelineItemDeclaration(p) => &p.path,
+        }
+    }
+
     pub(crate) fn as_import(&self) -> Option<&Import> {
         match self {
             Top::Import(i) => Some(i),

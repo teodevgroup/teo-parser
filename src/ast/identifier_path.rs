@@ -4,14 +4,21 @@ use super::identifier::Identifier;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct IdentifierPath {
-    pub(crate) identifiers: Vec<Identifier>,
     pub(crate) span: Span,
+    pub(crate) identifiers: Vec<Identifier>,
 }
 
 impl IdentifierPath {
 
     pub(crate) fn names(&self) -> Vec<&str> {
         self.identifiers.iter().map(|i| i.name.as_str()).collect()
+    }
+
+    pub(crate) fn from_identifier(identifier: Identifier) -> Self {
+        Self {
+            span: identifier.span,
+            identifiers: vec![identifier],
+        }
     }
 }
 

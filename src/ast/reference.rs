@@ -14,6 +14,6 @@ pub(crate) enum ReferenceType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Reference {
-    path: Vec<usize>,
-    r#type: ReferenceType,
+    pub(crate) path: Vec<usize>,
+    pub(crate) r#type: ReferenceType,
 }
