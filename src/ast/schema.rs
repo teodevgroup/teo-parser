@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use crate::ast::config::Config;
 use crate::ast::source::Source;
+use crate::ast::top::Top;
 
 pub struct Schema {
     pub(crate) sources: BTreeMap<usize, Source>,
@@ -11,6 +12,21 @@ impl Schema {
 
     pub(crate) fn sources(&self) -> Vec<&Source> {
         self.sources.values().collect()
+    }
+
+    pub(crate) fn source(&self, id: usize) -> Option<&Source> {
+        self.sources.get(&id)
+    }
+
+    pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
+        if path.len() < 2 {
+            return None;
+        }
+        if let Some(source) = self.source(*path.get(0).unwrap()) {
+            source.find_top_by_path(path)
+        } else {
+            None
+        }
     }
 }
 

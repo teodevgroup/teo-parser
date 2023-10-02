@@ -141,6 +141,7 @@ pub(crate) enum Type {
     FieldType(Vec<usize>, String),
     GenericItem(String),
     Optional(Box<Type>),
+    Unresolved,
 }
 
 impl Type {

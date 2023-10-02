@@ -1,7 +1,10 @@
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeOp};
+use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
+use crate::ast::top::Top;
+use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_type_expr<'a>(
@@ -223,8 +226,19 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        //resolve_iden
-        //type_item.identifier_path
+        if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default) {
+            let top = context.schema.find_top_by_path(&reference.path).unwrap();
+            base = match top {
+                Top::Model(m) => Some(Type::Model(m.path.clone())),
+                Top::Enum(e) => Some(Type::Enum(e.path.clone())),
+                Top::Interface(i) => Some(Type::Interface(i.path.clone())),
+                _ => None,
+            }
+        }
+        if base.is_none() {
+            context.insert_diagnostics_error(type_item.identifier_path.span, "TypeError: Unresolved type");
+            base = Some(Type::Unresolved);
+        }
     }
     if type_item.item_optional {
         base = Some(Type::Optional(Box::new(base.unwrap())));

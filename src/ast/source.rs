@@ -62,8 +62,13 @@ impl Source {
     }
 
     pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
-        if path.len() == 1 {
-            self.find_top_by_id(*path.first().unwrap())
+        if *path.first().unwrap() != self.id {
+            return None;
+        }
+        if path.len() < 2 {
+            return None;
+        } else if path.len() == 2 {
+            self.find_top_by_id(*path.get(1).unwrap())
         } else {
             let mut path_for_ns = path.clone();
             path_for_ns.remove(path_for_ns.len() - 1);

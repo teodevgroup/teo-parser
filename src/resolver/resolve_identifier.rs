@@ -8,7 +8,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_identifier(
     identifier: &Identifier,
-    context: &mut ResolverContext,
+    context: &ResolverContext,
     reference_type: ReferenceType,
 ) -> Option<Reference> {
     resolve_identifier_path(
@@ -20,7 +20,7 @@ pub(super) fn resolve_identifier(
 
 pub(super) fn resolve_identifier_path(
     identifier_path: &IdentifierPath,
-    context: &mut ResolverContext,
+    context: &ResolverContext,
     reference_type: ReferenceType,
 ) -> Option<Reference> {
     let mut used_sources = vec![];
