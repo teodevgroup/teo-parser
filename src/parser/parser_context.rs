@@ -3,10 +3,12 @@ use maplit::btreemap;
 use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
+use crate::utils::path::FileUtility;
 
 pub(super) struct ParserContext<'a> {
     pub(super) diagnostics: &'a mut Diagnostics,
     pub(super) schema_references: &'a mut SchemaReferences,
+    pub(crate) file_util: FileUtility,
     source_lookup: BTreeMap<usize, String>,
     current_source_id: usize,
     current_id: usize,
@@ -18,11 +20,13 @@ impl<'a> ParserContext<'a> {
 
     pub(crate) fn new(
         diagnostics: &'a mut Diagnostics,
-        schema_references: &'a mut SchemaReferences
+        schema_references: &'a mut SchemaReferences,
+        file_util: FileUtility,
     ) -> ParserContext<'a> {
         Self {
             diagnostics,
             schema_references,
+            file_util,
             source_lookup: btreemap!{},
             current_source_id: 0,
             current_id: 0,

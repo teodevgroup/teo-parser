@@ -8,9 +8,13 @@ pub mod utils;
 use crate::ast::schema::Schema;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::diagnostics::formatter::format_to_json;
+use crate::utils::path::FileUtility;
 
-pub fn parse(main: impl AsRef<str> + Copy) -> (Schema, Diagnostics) {
-    let (schema, mut diagnostics) = parser::parse::parse(main);
+pub fn parse(main: impl AsRef<str>, mut file_util: Option<FileUtility>) -> (Schema, Diagnostics) {
+    if file_util.is_none() {
+        file_util = Some(FileUtility::default());
+    }
+    let (schema, mut diagnostics) = parser::parse::parse(main, file_util.unwrap());
     resolver::resolve::resolve(&schema, &mut diagnostics);
     (schema, diagnostics)
 }

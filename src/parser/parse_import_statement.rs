@@ -20,7 +20,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
         }
     }
     let file_path = import_path(source_path, source.as_ref().unwrap().value.as_str());
-    if !file_path.exists() {
+    if !(context.file_util.file_exists)(&file_path) {
         context.insert_error(source.as_ref().unwrap().span.clone(), "ImportError: file doesn't exist")
     }
     Import {
