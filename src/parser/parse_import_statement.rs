@@ -18,8 +18,10 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    let file_path = context.file_util.import_path(source_path, source.as_ref().unwrap().value.as_str());
-    if !(context.file_util.file_exists)(&file_path) {
+    let mut file_path = context.file_util.import_path(source_path, source.as_ref().unwrap().value.as_str());
+    if let Some(file_found) = match_import_file(&file_path, context) {
+        file_path = file_found;
+    } else {
         context.insert_error(source.as_ref().unwrap().span.clone(), "ImportError: file doesn't exist")
     }
     Import {
@@ -41,4 +43,22 @@ fn parse_import_identifier_list(pair: Pair<'_>, context: &mut ParserContext) -> 
         }
     }
     identifiers
+}
+
+fn match_import_file(original: &str, context: &mut ParserContext) -> Option<String> {
+    if (context.file_util.file_exists)(original) {
+        Some(original.to_string())
+    } else {
+        let append_extension = format!("{original}.teo");
+        if (context.file_util.file_exists)(&append_extension) {
+            Some(append_extension)
+        } else {
+            let index_teo = (context.file_util.path_join)(original, "index.teo");
+            if (context.file_util.file_exists)(&index_teo) {
+                Some(index_teo)
+            } else {
+                None
+            }
+        }
+    }
 }
