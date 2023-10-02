@@ -89,11 +89,12 @@ fn resolve_identifier_path_in_source(
     }
     for import in source.imports() {
         // find with imports
-        let from_source = context.schema.sources().iter().find(|source| {
+        if let Some(from_source) = context.schema.sources().iter().find(|source| {
             import.file_path.as_str() == source.file_path.as_str()
-        }).map(|s| *s).unwrap();
-        if let Some(found) = resolve_identifier_path_in_source(identifier_path, context, reference_type, from_source, used_sources, &ns_str_path) {
-            return Some(found)
+        }).map(|s| *s) {
+            if let Some(found) = resolve_identifier_path_in_source(identifier_path, context, reference_type, from_source, used_sources, &ns_str_path) {
+                return Some(found)
+            }
         }
     }
     None
