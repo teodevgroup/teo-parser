@@ -1,9 +1,11 @@
 use std::sync::Arc;
+use array_tool::vec::Shift;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference::{Reference, ReferenceType};
 use crate::ast::source::Source;
 use crate::ast::top::Top;
+use crate::ast::top::Top::PipelineItemDeclaration;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_identifier(
@@ -25,7 +27,29 @@ pub(super) fn resolve_identifier_path(
 ) -> Option<Reference> {
     let mut used_sources = vec![];
     let ns_str_path = context.current_namespace().map_or(vec![], |n| n.str_path());
-    resolve_identifier_path_in_source(identifier_path, context, reference_type, context.source(), &mut used_sources, &ns_str_path)
+    let reference = resolve_identifier_path_in_source(
+        identifier_path,
+        context,
+        reference_type,
+        context.source(),
+        &mut used_sources,
+        &ns_str_path
+    );
+    if reference.is_none() {
+        for builtin_source in context.schema.builtin_sources() {
+            if let Some(reference) = resolve_identifier_path_in_source(
+                &identifier_path,
+                context,
+                reference_type,
+                builtin_source,
+                &mut used_sources,
+                &vec!["std"],
+            ) {
+                return Some(reference);
+            }
+        }
+    }
+    reference
 }
 
 fn resolve_identifier_path_in_source(

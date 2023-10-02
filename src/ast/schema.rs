@@ -18,6 +18,10 @@ impl Schema {
         self.sources.get(&id)
     }
 
+    pub(crate) fn builtin_sources(&self) -> Vec<&Source> {
+        self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
+    }
+
     pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
         if path.len() < 2 {
             return None;
