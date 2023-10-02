@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use maplit::btreemap;
 use crate::ast::schema::{Schema, SchemaReferences};
 use crate::ast::source::Source;
@@ -10,10 +10,14 @@ use crate::parser::parser_context::ParserContext;
 use crate::utils;
 use crate::utils::path::FileUtility;
 
-pub fn parse(main: impl AsRef<str>, file_util: FileUtility) -> (Schema, Diagnostics) {
+pub fn parse(
+    main: impl AsRef<str>,
+    file_util: FileUtility,
+    unsaved_files: Option<HashMap<String, String>>
+) -> (Schema, Diagnostics) {
     let mut diagnostics = Diagnostics::new();
     let mut references = SchemaReferences::new();
-    let mut parser_context = ParserContext::new(&mut diagnostics, &mut references, file_util);
+    let mut parser_context = ParserContext::new(&mut diagnostics, &mut references, file_util, unsaved_files);
     let mut sources = btreemap!{};
     // std library
     let std_source = parse_builtin_source_file(

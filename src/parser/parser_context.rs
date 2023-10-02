@@ -1,4 +1,5 @@
-use std::collections::{BTreeMap, HashSet};
+use std::borrow::Cow;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use maplit::btreemap;
 use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
@@ -9,6 +10,7 @@ pub(super) struct ParserContext<'a> {
     pub(super) diagnostics: &'a mut Diagnostics,
     pub(super) schema_references: &'a mut SchemaReferences,
     pub(crate) file_util: FileUtility,
+    pub(crate) unsaved_files: Option<HashMap<String, String>>,
     source_lookup: BTreeMap<usize, String>,
     current_source_id: usize,
     current_id: usize,
@@ -22,17 +24,28 @@ impl<'a> ParserContext<'a> {
         diagnostics: &'a mut Diagnostics,
         schema_references: &'a mut SchemaReferences,
         file_util: FileUtility,
+        unsaved_files: Option<HashMap<String, String>>,
     ) -> ParserContext<'a> {
         Self {
             diagnostics,
             schema_references,
             file_util,
+            unsaved_files,
             source_lookup: btreemap!{},
             current_source_id: 0,
             current_id: 0,
             current_path: vec![],
             current_string_path: vec![],
         }
+    }
+
+    pub(super) fn read_file(&self, file_path: &str) -> Option<String> {
+        if let Some(unsaved_files) = &self.unsaved_files {
+            if let Some(file_content) = unsaved_files.get(file_path) {
+                return Some(file_content.clone());
+            }
+        }
+        (self.file_util.read_file)(file_path)
     }
 
     pub(super) fn start_next_source(&mut self, path: String) -> usize {
