@@ -113,10 +113,10 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
         ArithExpr::Expression(expression) => {
             resolve_enum_member_expression(expression, context, map)
         },
-        ArithExpr::BinaryOp(biOp) => {
-            let lhs = resolve_enum_member_expr(biOp.lhs.as_ref(), context, map);
-            let rhs = resolve_enum_member_expr(biOp.rhs.as_ref(), context, map);
-            match biOp.op {
+        ArithExpr::BinaryOp(bi_op) => {
+            let lhs = resolve_enum_member_expr(bi_op.lhs.as_ref(), context, map);
+            let rhs = resolve_enum_member_expr(bi_op.rhs.as_ref(), context, map);
+            match bi_op.op {
                 Op::Add => lhs + rhs,
                 Op::Sub => lhs - rhs,
                 Op::Mul => lhs * rhs,
@@ -136,19 +136,19 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
                 Op::Eq => if lhs == rhs { 1 } else { 0 },
                 Op::Neq => if lhs != rhs { 1 } else { 0 },
                 _ => {
-                    context.insert_diagnostics_error(biOp.span, "EnumMemberError: This binary operation is not allowed in enum member definition");
+                    context.insert_diagnostics_error(bi_op.span, "EnumMemberError: This binary operation is not allowed in enum member definition");
                     0
                 }
             }
         }
-        ArithExpr::UnaryOp(uOp) => {
-            let rhs = resolve_enum_member_expr(uOp.rhs.as_ref(), context, map);
-            match uOp.op {
+        ArithExpr::UnaryOp(u_op) => {
+            let rhs = resolve_enum_member_expr(u_op.rhs.as_ref(), context, map);
+            match u_op.op {
                 Op::Neg => -rhs,
                 Op::Not => if rhs == 0 { 1 } else { 0 }
                 Op::BitNeg => !rhs,
                 _ => {
-                    context.insert_diagnostics_error(uOp.span, "EnumMemberError: This unary operation is not allowed in enum member definition");
+                    context.insert_diagnostics_error(u_op.span, "EnumMemberError: This unary operation is not allowed in enum member definition");
                     0
                 }
             }

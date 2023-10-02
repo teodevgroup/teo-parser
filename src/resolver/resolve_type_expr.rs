@@ -38,17 +38,17 @@ fn resolve_type_expr_kind<'a>(
                 context
             )
         }
-        TypeExprKind::BinaryOp(binaryOp) => {
-            match binaryOp.op {
+        TypeExprKind::BinaryOp(binary_op) => {
+            match binary_op.op {
                 TypeOp::BitOr => {
                     let lhs = resolve_type_expr_kind(
-                        binaryOp.lhs.as_ref(),
+                        binary_op.lhs.as_ref(),
                         generics_declaration,
                         generics_constraint,
                         context
                     );
                     let rhs = resolve_type_expr_kind(
-                        binaryOp.lhs.as_ref(),
+                        binary_op.lhs.as_ref(),
                         generics_declaration,
                         generics_constraint,
                         context
