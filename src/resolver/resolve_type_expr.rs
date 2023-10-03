@@ -305,6 +305,8 @@ pub(super) fn resolve_type_shape<'a>(r#type: &'a Type, context: &'a ResolverCont
         let interface = context.schema.find_top_by_path(r#type.interface_path().unwrap()).unwrap().as_interface().unwrap();
         let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
         TypeShape::Map(fetch_all_interface_fields(interface, generics_map, context))
+    } else if r#type.is_builtin() {
+        TypeShape::Builtin(r#type.clone())
     } else {
         TypeShape::Undetermined
     }
@@ -324,19 +326,20 @@ fn calculate_generics_map<'a>(
 
 fn fetch_all_interface_fields<'a>(
     interface: &'a InterfaceDeclaration,
-    generics_map: HashMap<String, &'a Type>,
+    generics_map: HashMap<String, &Type>,
     context: &'a ResolverContext<'a>,
 ) -> HashMap<String, Type> {
     let mut retval = hashmap!{};
     for extend in &interface.extends {
         if extend.resolved().is_interface() {
-            let interface = context.schema.find_top_by_path(extend.interface_path().unwrap()).unwrap().as_interface().unwrap();
-            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
+            let interface = context.schema.find_top_by_path(extend.resolved().interface_path().unwrap()).unwrap().as_interface().unwrap();
+            let types = extend.resolved().replace_generics(&generics_map);
+            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types.interface_generics().unwrap());
             retval.extend(fetch_all_interface_fields(interface, generics_map, context));
         }
     }
     for field in &interface.fields {
-        retval.insert(field.name().to_owned(), field.type_expr.resolved().replace_generics(&generics_map))
+        retval.insert(field.name().to_owned(), field.type_expr.resolved().replace_generics(&generics_map));
     }
     retval
 }

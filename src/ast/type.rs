@@ -227,7 +227,7 @@ impl Type {
             Type::ModelScalarField(_) => self.clone(),
             Type::ModelScalarFieldAndCachedProperty(_) => self.clone(),
             Type::FieldType(_, _) => self.clone(),
-            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(Type::Unresolved),
+            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Unresolved).clone(),
             Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
             Type::Unresolved => self.clone(),
         }
@@ -427,6 +427,7 @@ impl Display for TypeItem {
 pub(crate) enum TypeShape {
     Any,
     Map(HashMap<String, Type>),
+    Builtin(Type),
     Undetermined,
 }
 
@@ -446,6 +447,17 @@ impl TypeShape {
     pub(crate) fn as_map(&self) -> Option<&HashMap<String, Type>> {
         match self {
             TypeShape::Map(m) => Some(m),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_builtin(&self) -> bool {
+        self.as_builtin().is_some()
+    }
+
+    pub(crate) fn as_builtin(&self) -> Option<&Type> {
+        match self {
+            TypeShape::Builtin(t) => Some(t),
             _ => None,
         }
     }
