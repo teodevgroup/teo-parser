@@ -381,7 +381,7 @@ pipeline_item_variant_declaration = {
 }
 
 action_group_declaration = {
-    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ GROUP_KEYWORD ~ identifier ~ BLOCK_OPEN
+    triple_comment_block? ~ DECLARE_KEYWORD ~ ACTION_KEYWORD ~ GROUP_KEYWORD ~ identifier ~ BLOCK_OPEN
     ~ (comment_block | action_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
@@ -391,7 +391,7 @@ req_type = {
 }
 
 action_declaration = {
-    DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
+    triple_comment_block? ~ DECLARE_KEYWORD ~ ACTION_KEYWORD ~ identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
 }
 
 middleware_declaration = {
