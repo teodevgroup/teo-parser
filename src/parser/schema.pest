@@ -417,7 +417,7 @@ interface_extending = { identifier_path ~ interface_extending_generics? }
 interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_extending)* ~ "," ~ ">" }
 
 interface_declaration = {
-    triple_comment_block ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
+    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
     ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
@@ -426,7 +426,7 @@ interface_declaration = {
 // namespace
 // #############
 namespace = {
-    triple_comment_block ~
+    triple_comment_block? ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
     ~ (namespace | config_block | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | action_group_declaration | static_files_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*

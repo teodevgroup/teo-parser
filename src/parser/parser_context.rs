@@ -95,10 +95,6 @@ impl<'a> ParserContext<'a> {
         self.current_string_path.clone()
     }
 
-    pub(super) fn push_string_path(&mut self, item: impl Into<String>) {
-        self.current_string_path.push(item.into())
-    }
-
     pub(super) fn pop_string_path(&mut self) {
         self.current_string_path.pop();
     }

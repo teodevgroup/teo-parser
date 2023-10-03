@@ -30,7 +30,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
         match current.as_rule() {
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
+                string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
             },
             Rule::constant_statement => { // let a = 5
                 let constant = parse_constant_statement(current, context);

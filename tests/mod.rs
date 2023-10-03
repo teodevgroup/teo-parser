@@ -9,8 +9,14 @@ mod test {
 
     #[test]
     fn lint_to_json() {
-        let (_, diagnostics) = parse("/Users/victor/Developer/teo-namespace-example/data.teo", None, None);
+        let (_, diagnostics) = parse("/Users/victor/Developer/teo-namespace-example/schema.teo", None, None);
         let result = generate_json_diagnostics(&diagnostics, true);
         println!("{}", result)
+    }
+
+    #[test]
+    fn print_dup() {
+        let (_, diagnostics) = parse("/Users/victor/Developer/teo-namespace-example/schema.teo", None, None);
+        print_to_terminal(&diagnostics)
     }
 }
