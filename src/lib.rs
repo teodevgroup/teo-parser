@@ -38,6 +38,6 @@ pub fn generate_json_diagnostics(diagnostics: &Diagnostics, include_warnings: bo
     format_to_json(diagnostics, include_warnings)
 }
 
-pub fn jump_to_definition(schema: &Schema, file_path: &str, position: ((usize, usize), (usize, usize))) -> Vec<Definition> {
-    definition::definition::jump_to_definition(schema, file_path, position)
+pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<Definition> {
+    definition::definition::jump_to_definition(schema, file_path, line_col)
 }

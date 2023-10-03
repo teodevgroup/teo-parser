@@ -130,10 +130,10 @@ impl Source {
         ns
     }
 
-    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col_range: ((usize, usize), (usize, usize))) -> Vec<Definition> {
+    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col: (usize, usize)) -> Vec<Definition> {
         for top in self.tops() {
-            if top.span().contains_line_col_range(line_col_range) {
-                return top.jump_to_definition(context, line_col_range);
+            if top.span().contains_line_col(line_col) {
+                return top.jump_to_definition(context, line_col);
             }
         }
         vec![]

@@ -27,9 +27,11 @@ impl Span {
         position >= self.start && position <= self.end
     }
 
-    pub(crate) fn contains_line_col_range(&self, range: ((usize, usize), (usize, usize))) -> bool {
-        range.0.0 >= self.start_position.0 && range.0.1 >= self.start_position.1 &&
-            range.1.0 <= self.end_position.0 && range.1.1 <= self.end_position.1
+    pub(crate) fn contains_line_col(&self, line_col: (usize, usize)) -> bool {
+        line_col.0 >= self.start_position.0 &&
+            line_col.0 <= self.end_position.0 &&
+            if line_col.0 == self.start_position.0 { line_col.1 >= self.start_position.1 } else { true } &&
+            if line_col.0 == self.end_position.0 { line_col.1 <= self.end_position.1 } else { true }
     }
 
     pub(crate) fn overlaps(&self, other: Span) -> bool {

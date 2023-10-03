@@ -250,9 +250,9 @@ impl Top {
         self.as_pipeline_item_declaration().is_some()
     }
 
-    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col_range: ((usize, usize), (usize, usize))) -> Vec<Definition> {
+    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col: (usize, usize)) -> Vec<Definition> {
         match self {
-            Top::Import(t) => t.jump_to_definition(context, line_col_range),
+            Top::Import(t) => t.jump_to_definition(context, line_col),
             _ => vec![],
             // Top::Config(t) => t.jump_to_definition(context, line_col_range),
             // Top::ConfigDeclaration(_) => vec![],
