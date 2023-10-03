@@ -74,7 +74,7 @@ type_tuple = { "(" ~ type_expression ~ "," ~ type_expression? ~ ("," ~ type_expr
 // #############
 // generics
 // #############
-generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ "," ~ ">" }
+generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ ","? ~ ">" }
 generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ "," }
 generics_constraint_item = { identifier ~ ":" ~ type_expression }
 
