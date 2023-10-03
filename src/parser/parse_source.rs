@@ -15,6 +15,7 @@ use crate::parser::parse_middleware::parse_middleware;
 use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_namespace::parse_namespace;
 use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
+use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
 use super::pest_parser::Rule;
@@ -111,6 +112,7 @@ pub(super) fn parse_source(
                 context.schema_references.action_groups.push(action_group_declaration.path.clone());
                 tops.insert(action_group_declaration.id(), Top::ActionGroup(action_group_declaration));
             },
+            Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }
     }

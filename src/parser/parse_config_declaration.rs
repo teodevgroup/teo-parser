@@ -16,6 +16,9 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
     let mut fields: Vec<Field> = vec![];
     let path = context.next_parent_path();
     let mut string_path = None;
+    if context.current_string_path() != vec!["std".to_owned()] {
+        context.insert_error(identifier.as_ref().unwrap().span, "ConfigError: Invalid config declaration, config declarations are builtin thus cannot be declared")
+    }
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name())),
@@ -26,9 +29,6 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
-    }
-    if context.current_string_path() != vec!["std".to_owned()] {
-        context.insert_error(identifier.as_ref().unwrap().span, "ConfigError: Invalid config declaration, config declarations are builtin thus cannot be declared")
     }
     context.pop_parent_id();
     context.pop_string_path();

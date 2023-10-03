@@ -17,7 +17,7 @@ pub(super) fn parse_action_group_declaration(pair: Pair<'_>, context: &mut Parse
     let mut action_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_OPEN | Rule::COLON | Rule::BLOCK_CLOSE => (),
+            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
@@ -60,7 +60,7 @@ fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Acti
             } else {
                 input_type = Some(parse_type_expression(current, context));
             },
-            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE => (),
+            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
             Rule::req_type => if current.as_str() == "form" {
                 input_format = ActionInputFormat::Form
             },

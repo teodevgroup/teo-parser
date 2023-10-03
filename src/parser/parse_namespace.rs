@@ -103,6 +103,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 context.schema_references.action_groups.push(action_group_declaration.path.clone());
                 tops.insert(action_group_declaration.id(), Top::ActionGroup(action_group_declaration));
             },
+            Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }
     }
