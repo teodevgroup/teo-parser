@@ -1,9 +1,9 @@
-
+use serde::Serialize;
 use crate::ast::schema::Schema;
 use crate::ast::span::Span;
 use crate::definition::definition_context::DefinitionContext;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Definition {
     pub(crate) path: String,
     pub(crate) target_span: Span,
