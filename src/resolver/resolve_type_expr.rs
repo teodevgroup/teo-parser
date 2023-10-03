@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+use maplit::hashmap;
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
+use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeOp, TypeShape};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
@@ -294,5 +297,46 @@ fn preferred_name<'a>(span: Span, prefer: &str, current: &str, context: &'a Reso
 }
 
 pub(super) fn resolve_type_shape<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> TypeShape {
+    if r#type.is_any() {
+        TypeShape::Any
+    } else if r#type.is_ignored() {
+        TypeShape::Any
+    } else if r#type.is_interface() {
+        let interface = context.schema.find_top_by_path(r#type.interface_path().unwrap()).unwrap().as_interface().unwrap();
+        let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
+        TypeShape::Map(fetch_all_interface_fields(interface, generics_map, context))
+    } else {
+        TypeShape::Undetermined
+    }
+}
 
+fn calculate_generics_map<'a>(
+    generics_declaration: Option<&'a GenericsDeclaration>,
+    types: &'a Vec<Type>
+) -> HashMap<String, &'a Type> {
+    if let Some(generics_declaration) = generics_declaration {
+        if generics_declaration.identifiers.len() == types.len() {
+            return generics_declaration.identifiers.iter().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap())).collect();
+        }
+    }
+    hashmap!{}
+}
+
+fn fetch_all_interface_fields<'a>(
+    interface: &'a InterfaceDeclaration,
+    generics_map: HashMap<String, &'a Type>,
+    context: &'a ResolverContext<'a>,
+) -> HashMap<String, Type> {
+    let mut retval = hashmap!{};
+    for extend in &interface.extends {
+        if extend.resolved().is_interface() {
+            let interface = context.schema.find_top_by_path(extend.interface_path().unwrap()).unwrap().as_interface().unwrap();
+            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
+            retval.extend(fetch_all_interface_fields(interface, generics_map, context));
+        }
+    }
+    for field in &interface.fields {
+        retval.insert(field.name().to_owned(), field.type_expr.resolved().replace_generics(&generics_map))
+    }
+    retval
 }

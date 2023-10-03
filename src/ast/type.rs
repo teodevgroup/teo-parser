@@ -114,7 +114,7 @@ impl Display for TypeExprKind {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Type {
     Any,
     Null,
@@ -200,6 +200,39 @@ impl Type {
         }
     }
 
+    pub(crate) fn replace_generics(&self, map: &HashMap<String, &Type>) -> Self {
+        match self {
+            Type::Any => self.clone(),
+            Type::Null => self.clone(),
+            Type::Bool => self.clone(),
+            Type::Int => self.clone(),
+            Type::Int64 => self.clone(),
+            Type::Float32 => self.clone(),
+            Type::Float => self.clone(),
+            Type::Decimal => self.clone(),
+            Type::String => self.clone(),
+            Type::ObjectId => self.clone(),
+            Type::Date => self.clone(),
+            Type::DateTime => self.clone(),
+            Type::File => self.clone(),
+            Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
+            Type::Dictionary(k, v) => Type::Dictionary(Box::new(k.replace_generics(map)), Box::new(v.replace_generics(map))),
+            Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
+            Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::Ignored => self.clone(),
+            Type::Enum(_) => self.clone(),
+            Type::Model(_) => self.clone(),
+            Type::Interface(path, generics) => Type::Interface(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::ModelScalarField(_) => self.clone(),
+            Type::ModelScalarFieldAndCachedProperty(_) => self.clone(),
+            Type::FieldType(_, _) => self.clone(),
+            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(Type::Unresolved),
+            Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+            Type::Unresolved => self.clone(),
+        }
+    }
+
     pub(crate) fn is_optional(&self) -> bool {
         match self {
             Type::Optional(_) => true,
@@ -210,6 +243,13 @@ impl Type {
     pub(crate) fn is_any(&self) -> bool {
         match self {
             Type::Any => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_ignored(&self) -> bool {
+        match self {
+            Type::Ignored => true,
             _ => false,
         }
     }
@@ -300,6 +340,13 @@ impl Type {
             _ => None,
         }
     }
+
+    pub(crate) fn interface_generics(&self) -> Option<&Vec<Type>> {
+        match self {
+            Type::Interface(_, generics) => Some(generics),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -380,6 +427,7 @@ impl Display for TypeItem {
 pub(crate) enum TypeShape {
     Any,
     Map(HashMap<String, Type>),
+    Undetermined,
 }
 
 impl TypeShape {

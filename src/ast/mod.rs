@@ -34,7 +34,6 @@ pub(crate) mod pipeline;
 pub(crate) mod subscript;
 pub(crate) mod unit;
 pub(crate) mod generics;
-pub(crate) mod generics_extending;
 pub(crate) mod decorator_declaration;
 pub(crate) mod pipeline_item_declaration;
 pub(crate) mod argument_declaration;

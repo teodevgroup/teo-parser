@@ -1,4 +1,3 @@
-use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::field::{FieldClass, FieldResolved};
 use crate::ast::interface::InterfaceDeclaration;
 use crate::resolver::resolve_generics::resolve_generics_declaration;
@@ -11,6 +10,17 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
     }
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context)
+    }
+    for extend in &interface_declaration.extends {
+        resolve_type_expr(
+            extend,
+            interface_declaration.generics_declaration.as_ref(),
+            interface_declaration.generics_constraint.as_ref(),
+            context
+        );
+        if !extend.resolved().is_interface() {
+            context.insert_diagnostics_error(extend.span(), "TypeError: type is not interface");
+        }
     }
     for field in &interface_declaration.fields {
         resolve_type_expr(
