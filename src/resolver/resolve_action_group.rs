@@ -40,7 +40,7 @@ fn validate_form_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a R
         TypeShape::Any => (),
         TypeShape::Map(map) => {
             for r#type in map.values() {
-                if let Some(msg) = is_valid_form_input_type(r#type, context) {
+                if let Some(msg) = is_valid_form_input_shape(r#type, context) {
                     context.insert_diagnostics_error(span, msg);
                     return
                 }
@@ -56,13 +56,22 @@ fn validate_json_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a R
         TypeShape::Any => (),
         TypeShape::Map(map) => {
             for r#type in map.values() {
-                if let Some(msg) = is_valid_json_input_type(r#type, context) {
+                if let Some(msg) = is_valid_json_input_shape(r#type, context) {
                     context.insert_diagnostics_error(span, msg);
                     return
                 }
             }
         }
         _ => context.insert_diagnostics_error(span, "TypeError: action input type should be interface or any")
+    }
+}
+
+fn is_valid_form_input_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+    match shape {
+        TypeShape::Any => None,
+        TypeShape::Type(t) => is_valid_form_input_type(t, context),
+        TypeShape::Map(map) => map.values().find_map(|s| is_valid_form_input_shape(s, context)),
+        TypeShape::Undetermined => Some("TypeError: action input type should be interface or any"),
     }
 }
 
@@ -105,6 +114,15 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_input_type(inner.as_ref(), context),
         Type::Unresolved => Some("TypeError: found unresolved type"),
+    }
+}
+
+fn is_valid_json_input_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+    match shape {
+        TypeShape::Any => None,
+        TypeShape::Type(t) => is_valid_json_input_type(t, context),
+        TypeShape::Map(map) => map.values().find_map(|s| is_valid_json_input_shape(s, context)),
+        TypeShape::Undetermined => Some("TypeError: action input type should be interface or any"),
     }
 }
 

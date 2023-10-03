@@ -296,7 +296,7 @@ fn preferred_name<'a>(span: Span, prefer: &str, current: &str, context: &'a Reso
     context.insert_diagnostics_warning(span, format!("TypeWarning: Prefer '{prefer}' over '{current}'"))
 }
 
-pub(super) fn resolve_type_shape<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> TypeShape {
+pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext<'a>) -> TypeShape {
     if r#type.is_any() {
         TypeShape::Any
     } else if r#type.is_ignored() {
@@ -305,10 +305,8 @@ pub(super) fn resolve_type_shape<'a>(r#type: &'a Type, context: &'a ResolverCont
         let interface = context.schema.find_top_by_path(r#type.interface_path().unwrap()).unwrap().as_interface().unwrap();
         let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
         TypeShape::Map(fetch_all_interface_fields(interface, generics_map, context))
-    } else if r#type.is_builtin() {
-        TypeShape::Builtin(r#type.clone())
     } else {
-        TypeShape::Undetermined
+        TypeShape::Type(r#type.clone())
     }
 }
 
@@ -328,7 +326,7 @@ fn fetch_all_interface_fields<'a>(
     interface: &'a InterfaceDeclaration,
     generics_map: HashMap<String, &Type>,
     context: &'a ResolverContext<'a>,
-) -> HashMap<String, Type> {
+) -> HashMap<String, TypeShape> {
     let mut retval = hashmap!{};
     for extend in &interface.extends {
         if extend.resolved().is_interface() {
@@ -339,7 +337,10 @@ fn fetch_all_interface_fields<'a>(
         }
     }
     for field in &interface.fields {
-        retval.insert(field.name().to_owned(), field.type_expr.resolved().replace_generics(&generics_map));
+        retval.insert(
+            field.name().to_owned(),
+            resolve_type_shape(&field.type_expr.resolved().replace_generics(&generics_map), context)
+        );
     }
     retval
 }

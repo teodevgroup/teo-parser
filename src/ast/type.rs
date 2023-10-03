@@ -426,8 +426,8 @@ impl Display for TypeItem {
 #[derive(Debug)]
 pub(crate) enum TypeShape {
     Any,
-    Map(HashMap<String, Type>),
-    Builtin(Type),
+    Map(HashMap<String, TypeShape>),
+    Type(Type),
     Undetermined,
 }
 
@@ -444,20 +444,20 @@ impl TypeShape {
         self.as_map().is_some()
     }
 
-    pub(crate) fn as_map(&self) -> Option<&HashMap<String, Type>> {
+    pub(crate) fn as_map(&self) -> Option<&HashMap<String, TypeShape>> {
         match self {
             TypeShape::Map(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_builtin(&self) -> bool {
-        self.as_builtin().is_some()
+    pub(crate) fn is_type(&self) -> bool {
+        self.as_type().is_some()
     }
 
-    pub(crate) fn as_builtin(&self) -> Option<&Type> {
+    pub(crate) fn as_type(&self) -> Option<&Type> {
         match self {
-            TypeShape::Builtin(t) => Some(t),
+            TypeShape::Type(t) => Some(t),
             _ => None,
         }
     }
