@@ -28,7 +28,8 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::type_expression => extends.push(parse_type_expression(current, context)),
             Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
-            _ => (),
+            Rule::BLOCK_OPEN | Rule::COLON | Rule::BLOCK_CLOSE | Rule::EMPTY_LINES | Rule::WHITESPACE | Rule::INTERFACE_KEYWORD => (),
+            _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     context.pop_parent_id();
