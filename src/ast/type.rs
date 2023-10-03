@@ -135,7 +135,7 @@ pub(crate) enum Type {
     Ignored,
     Enum(Vec<usize>),
     Model(Vec<usize>),
-    Interface(Vec<usize>),
+    Interface(Vec<usize>, Vec<Type>),
     ModelScalarField(Vec<usize>),
     ModelScalarFieldAndCachedProperty(Vec<usize>),
     FieldType(Vec<usize>, String),
@@ -207,7 +207,7 @@ impl Type {
 
     pub(crate) fn is_interface(&self) -> bool {
         match self {
-            Type::Interface(_) => true,
+            Type::Interface(_, __) => true,
             _ => false,
         }
     }
@@ -228,7 +228,7 @@ impl Type {
 
     pub(crate) fn interface_path(&self) -> Option<&Vec<usize>> {
         match self {
-            Type::Interface(path) => Some(path),
+            Type::Interface(path, _) => Some(path),
             _ => None,
         }
     }

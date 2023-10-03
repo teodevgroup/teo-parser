@@ -23,6 +23,7 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) examined_default_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_fields: Mutex<BTreeSet<String>>,
     pub(crate) examined_middleware_paths: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_action_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
     pub(crate) diagnostics: RefCell<&'a mut Diagnostics>,
     pub(crate) schema: &'a Schema,
@@ -37,6 +38,7 @@ impl<'a> ResolverContext<'a> {
             examined_default_paths: Mutex::new(btreeset!{}),
             examined_fields: Mutex::new(btreeset!{}),
             examined_middleware_paths: Mutex::new(btreeset!{}),
+            examined_action_paths: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
             diagnostics: RefCell::new(diagnostics),
             schema,
@@ -71,6 +73,22 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn has_examined_default_path(&self, path: &Vec<String>) -> bool {
         self.examined_default_paths.lock().unwrap().contains(path)
+    }
+
+    pub(crate) fn add_examined_middleware_path(&self, path: Vec<String>) {
+        self.examined_middleware_paths.lock().unwrap().insert(path);
+    }
+
+    pub(crate) fn has_examined_middleware_path(&self, path: &Vec<String>) -> bool {
+        self.examined_middleware_paths.lock().unwrap().contains(path)
+    }
+
+    pub(crate) fn add_examined_action_path(&self, path: Vec<String>) {
+        self.examined_action_paths.lock().unwrap().insert(path);
+    }
+
+    pub(crate) fn has_examined_action_path(&self, path: &Vec<String>) -> bool {
+        self.examined_action_paths.lock().unwrap().contains(path)
     }
 
     pub(crate) fn add_examined_field(&self, field: String) {

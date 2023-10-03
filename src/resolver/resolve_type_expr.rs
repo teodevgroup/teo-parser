@@ -231,7 +231,7 @@ fn resolve_type_item<'a>(
             base = match top {
                 Top::Model(m) => Some(Type::Model(m.path.clone())),
                 Top::Enum(e) => Some(Type::Enum(e.path.clone())),
-                Top::Interface(i) => Some(Type::Interface(i.path.clone())),
+                Top::Interface(i) => Some(Type::Interface(i.path.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect())),
                 _ => None,
             }
         }

@@ -1,4 +1,5 @@
 use crate::ast::top::Top;
+use crate::resolver::resolve_action_group::resolve_action_group;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;

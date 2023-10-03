@@ -15,7 +15,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
         return
     }
     if context.has_examined_default_path(&r#enum.string_path) {
-        context.insert_duplicated_identifier(r#enum);
+        context.insert_duplicated_identifier(r#enum.span);
     }
     context.clear_examined_fields();
     // decorators

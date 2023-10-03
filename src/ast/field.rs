@@ -35,13 +35,6 @@ impl FieldClass {
         }
     }
 
-    pub(crate) fn is_model_dropped_primitive_field(&self) -> bool {
-        match self {
-            FieldClass::ModelDroppedPrimitiveField => true,
-            _ => false,
-        }
-    }
-
     pub(crate) fn is_model_property(&self) -> bool {
         match self {
             FieldClass::ModelProperty => true,
@@ -58,7 +51,6 @@ impl FieldClass {
 
     pub(crate) fn is_model_field(&self) -> bool {
         self.is_model_field() ||
-        self.is_model_dropped_primitive_field() ||
         self.is_model_relation() ||
         self.is_model_property()
     }

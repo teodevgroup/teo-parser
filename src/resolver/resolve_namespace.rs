@@ -1,5 +1,6 @@
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
+use crate::resolver::resolve_action_group::resolve_action_group;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
@@ -22,7 +23,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::Middleware(middleware) => resolve_middleware(middleware, context),
             Top::Interface(interface) => resolve_interface(interface, context),
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
-            Top::ActionGroup(_) => (),
+            Top::ActionGroup(action_group) => resolve_action_group(action_group, context),
             Top::ConfigDeclaration(config_declaration) => resolve_config_declaration(config_declaration, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
