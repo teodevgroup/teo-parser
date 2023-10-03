@@ -3,7 +3,7 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::generics_extending::InterfaceExtending;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::parser::parse_field::parse_field;
-use crate::parser::parse_generics::parse_generics_declaration;
+use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
@@ -14,6 +14,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
     let span = parse_span(&pair);
     let mut identifier = None;
     let mut generics_declaration = None;
+    let mut generics_constraint = None;
     let mut extends: Vec<InterfaceExtending> = vec![];
     let mut fields: Vec<Field> = vec![];
     let path = context.next_parent_path();
@@ -22,10 +23,11 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         match current.as_rule() {
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
+                string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
             },
             Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
             Rule::interface_extending => extends.push(parse_interface_extending(current, context)),
+            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
             _ => (),
         }
@@ -38,6 +40,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         string_path: string_path.unwrap(),
         identifier: identifier.unwrap(),
         generics_declaration,
+        generics_constraint,
         extends,
         fields,
     }

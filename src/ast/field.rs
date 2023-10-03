@@ -14,10 +14,10 @@ pub(crate) enum FieldHint {
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum FieldClass {
     ModelPrimitiveField,
-    ModelDroppedPrimitiveField,
     ModelRelation,
     ModelProperty,
     InterfaceField,
+    ConfigDeclarationField,
 }
 
 impl FieldClass {

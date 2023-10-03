@@ -4,7 +4,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_model<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&model.string_path) {
-        context.insert_duplicated_model_error(model);
+        context.insert_duplicated_identifier(model.identifier.span);
     }
     context.clear_examined_fields();
     // decorators

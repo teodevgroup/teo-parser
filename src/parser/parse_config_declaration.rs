@@ -27,6 +27,9 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    if context.current_string_path() != vec!["std".to_owned()] {
+        context.insert_error(identifier.as_ref().unwrap().span, "ConfigError: Invalid config declaration, config declarations are builtin thus cannot be declared")
+    }
     context.pop_parent_id();
     context.pop_string_path();
     ConfigDeclaration {

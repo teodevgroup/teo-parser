@@ -417,7 +417,7 @@ interface_extending = { identifier_path ~ interface_extending_generics? }
 interface_extending_generics = { "<" ~ interface_extending ~ ("," ~ interface_extending)* ~ "," ~ ">" }
 
 interface_declaration = {
-    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ BLOCK_OPEN
+    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration ~ (EXTENDS_KEYWORD ~ interface_extending ~ ("," ~ interface_extending)* ~ ","?)? ~ generics_constraint? ~ BLOCK_OPEN
     ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }

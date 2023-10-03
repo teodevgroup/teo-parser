@@ -22,6 +22,7 @@ pub(crate) struct ExaminedDataSetRecord {
 pub(crate) struct ResolverContext<'a> {
     pub(crate) examined_default_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_fields: Mutex<BTreeSet<String>>,
+    pub(crate) examined_middleware_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
     pub(crate) diagnostics: RefCell<&'a mut Diagnostics>,
     pub(crate) schema: &'a Schema,
@@ -35,6 +36,7 @@ impl<'a> ResolverContext<'a> {
         Self {
             examined_default_paths: Mutex::new(btreeset!{}),
             examined_fields: Mutex::new(btreeset!{}),
+            examined_middleware_paths: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
             diagnostics: RefCell::new(diagnostics),
             schema,
@@ -95,14 +97,6 @@ impl<'a> ResolverContext<'a> {
         *(unsafe { &mut *self.diagnostics.as_ptr() })
     }
 
-    pub(super) fn insert_duplicated_model_error(&'a self, model: &Model) {
-        self.diagnostics().insert(DiagnosticsError::new(
-            model.identifier.span,
-            "Duplicated model definition, identifier is defined",
-            self.source().file_path.clone()
-        ))
-    }
-
     pub(super) fn insert_duplicated_model_field_error(&'a self, field: &Field) {
         self.diagnostics().insert(DiagnosticsError::new(
             field.identifier.span,
@@ -127,10 +121,10 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(super) fn insert_duplicated_enum_error(&self, r#enum: &Enum) {
+    pub(super) fn insert_duplicated_identifier(&self, span: Span) {
         self.diagnostics().insert(DiagnosticsError::new(
-            r#enum.identifier.span,
-            "Duplicated enum definition, identifier is defined",
+            span,
+            "TypeError: identifier is duplicated",
             self.source().file_path.clone()
         ))
     }

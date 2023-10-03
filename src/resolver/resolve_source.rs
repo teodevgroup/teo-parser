@@ -1,6 +1,9 @@
 use crate::ast::top::Top;
+use crate::resolver::resolve_config_declaration::resolve_config_declaration;
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
+use crate::resolver::resolve_interface::resolve_interface;
+use crate::resolver::resolve_middleware::resolve_middleware;
 use crate::resolver::resolve_model::resolve_model;
 use crate::resolver::resolve_namespace::{resolve_namespace_first, resolve_namespace_second, resolve_namespace_third};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration;
@@ -15,11 +18,11 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::Model(model) => resolve_model(model, context),
             Top::Config(config) => (), // resolve_config(config, context),
             Top::DataSet(_) => (), // do not resolve yet
-            Top::Middleware(middleware) => (),
-            Top::Interface(interface) => (),
+            Top::Middleware(middleware) => resolve_middleware(middleware, context),
+            Top::Interface(interface) => resolve_interface(interface, context),
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
-            Top::ConfigDeclaration(_) => {}
-            Top::ActionGroup(_) => {}
+            Top::ConfigDeclaration(config_declaration) => resolve_config_declaration(config_declaration, context),
+            Top::ActionGroup(action_group) => resolve_action_group(action_group, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
         }

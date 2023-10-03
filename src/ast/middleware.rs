@@ -6,6 +6,7 @@ use crate::ast::span::Span;
 pub(crate) struct Middleware {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
 }

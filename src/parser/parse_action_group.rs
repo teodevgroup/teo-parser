@@ -9,19 +9,25 @@ use crate::parser::pest_parser::{Pair, Rule};
 pub(super) fn parse_action_group_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ActionGroupDeclaration {
     let span = parse_span(&pair);
     let path = context.next_parent_path();
+    let mut string_path = None;
     let mut identifier = None;
     let mut action_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
+            Rule::identifier => {
+                identifier = Some(parse_identifier(&current));
+                string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
+            },
             Rule::action_declaration => action_declarations.push(parse_action_declaration(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     context.pop_parent_id();
+    context.pop_string_path();
     ActionGroupDeclaration {
         span,
         path,
+        string_path: string_path.unwrap(),
         identifier: identifier.unwrap(),
         action_declarations,
     }
@@ -30,13 +36,17 @@ pub(super) fn parse_action_group_declaration(pair: Pair<'_>, context: &mut Parse
 fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ActionDeclaration {
     let span = parse_span(&pair);
     let path = context.next_path();
+    let mut string_path = None;
     let mut identifier = None;
     let mut input_type: Option<TypeExpr> = None;
     let mut output_type: Option<TypeExpr> = None;
     let mut input_format: ActionInputFormat = ActionInputFormat::Json;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
+            Rule::identifier => {
+                identifier = Some(parse_identifier(&current));
+                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
+            },
             Rule::type_expression => if input_type.is_some() {
                 output_type = Some(parse_type_expression(current, context));
             } else {
@@ -52,6 +62,7 @@ fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Acti
     ActionDeclaration {
         span,
         path,
+        string_path: string_path.unwrap(),
         identifier: identifier.unwrap(),
         input_type: input_type.unwrap(),
         output_type: output_type.unwrap(),

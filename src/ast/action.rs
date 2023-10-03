@@ -6,6 +6,7 @@ use crate::ast::span::Span;
 pub(crate) struct ActionGroupDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) action_declarations: Vec<ActionDeclaration>,
 }
@@ -25,6 +26,7 @@ impl ActionGroupDeclaration {
 pub(crate) struct ActionDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
     pub(crate) input_type: TypeExpr,
     pub(crate) output_type: TypeExpr,
