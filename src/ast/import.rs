@@ -1,6 +1,8 @@
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::StringLiteral;
 use crate::ast::span::Span;
+use crate::definition::definition::Definition;
+use crate::definition::definition_context::DefinitionContext;
 
 #[derive(Debug)]
 pub(crate) struct Import {
@@ -29,5 +31,23 @@ impl Import {
 
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
+    }
+
+    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col_range: ((usize, usize), (usize, usize))) -> Vec<Definition> {
+        if self.source.span.contains_line_col_range(line_col_range) {
+            if !self.file_path.starts_with("(builtin)") {
+                vec![
+                    Definition {
+                        path: self.file_path.clone(),
+                        target_span: Span::default(),
+                        identifier_span: Span::default(),
+                    }
+                ]
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        }
     }
 }

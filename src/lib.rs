@@ -4,9 +4,11 @@ mod builtin;
 pub mod resolver;
 pub mod diagnostics;
 pub mod utils;
+pub(crate) mod definition;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;
+use crate::definition::definition::Definition;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::diagnostics::formatter::format_to_json;
 use crate::utils::path::FileUtility;
@@ -34,4 +36,8 @@ pub fn print_to_terminal(diagnostics: &Diagnostics) {
 
 pub fn generate_json_diagnostics(diagnostics: &Diagnostics, include_warnings: bool) -> String {
     format_to_json(diagnostics, include_warnings)
+}
+
+pub fn jump_to_definition(schema: &Schema, file_path: &str, position: ((usize, usize), (usize, usize))) -> Vec<Definition> {
+    definition::definition::jump_to_definition(schema, file_path, position)
 }

@@ -26,6 +26,11 @@ impl Span {
         position >= self.start && position <= self.end
     }
 
+    pub(crate) fn contains_line_col_range(&self, range: ((usize, usize), (usize, usize))) -> bool {
+        range.0.0 >= self.start_position.0 && range.0.1 >= self.start_position.1 &&
+            range.1.0 <= self.end_position.0 && range.1.1 <= self.end_position.1
+    }
+
     pub(crate) fn overlaps(&self, other: Span) -> bool {
         self.contains(other.start) || self.contains(other.end)
     }

@@ -11,6 +11,9 @@ use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
+use crate::ast::span::Span;
+use crate::definition::definition::Definition;
+use crate::definition::definition_context::DefinitionContext;
 
 #[derive(Debug)]
 pub(crate) enum Top {
@@ -82,6 +85,24 @@ impl Top {
             Top::Namespace(n) => &n.path,
             Top::DecoratorDeclaration(d) => &d.path,
             Top::PipelineItemDeclaration(p) => &p.path,
+        }
+    }
+
+    pub(crate) fn span(&self) -> Span {
+        match self {
+            Top::Import(i) => i.span,
+            Top::Constant(c) => c.span,
+            Top::Enum(e) => e.span,
+            Top::Model(m) => m.span,
+            Top::Config(c) => c.span,
+            Top::ConfigDeclaration(c) => c.span,
+            Top::DataSet(d) => d.span,
+            Top::Middleware(m) => m.span,
+            Top::ActionGroup(a) => a.span,
+            Top::Interface(i) => i.span,
+            Top::Namespace(n) => n.span,
+            Top::DecoratorDeclaration(d) => d.span,
+            Top::PipelineItemDeclaration(p) => p.span,
         }
     }
 
@@ -227,5 +248,24 @@ impl Top {
 
     pub(crate) fn is_pipeline_item_declaration(&self) -> bool {
         self.as_pipeline_item_declaration().is_some()
+    }
+
+    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col_range: ((usize, usize), (usize, usize))) -> Vec<Definition> {
+        match self {
+            Top::Import(t) => t.jump_to_definition(context, line_col_range),
+            _ => vec![],
+            // Top::Config(t) => t.jump_to_definition(context, line_col_range),
+            // Top::ConfigDeclaration(_) => vec![],
+            // Top::Constant(t) => t.jump_to_definition(context, line_col_range),
+            // Top::Enum(t) => t.jump_to_definition(context, line_col_range),
+            // Top::Model(t) => t.jump_to_definition(context, line_col_range),
+            // Top::DataSet(t) => t.jump_to_definition(context, line_col_range),
+            // Top::Middleware(t) => t.jump_to_definition(context, line_col_range),
+            // Top::ActionGroup(t) => t.jump_to_definition(context, line_col_range),
+            // Top::Interface(t) => t.jump_to_definition(context, line_col_range),
+            // Top::Namespace(t) => t.jump_to_definition(context, line_col_range),
+            // Top::DecoratorDeclaration(t) => t.jump_to_definition(context, line_col_range),
+            // Top::PipelineItemDeclaration(t) => t.jump_to_definition(context, line_col_range),
+        }
     }
 }
