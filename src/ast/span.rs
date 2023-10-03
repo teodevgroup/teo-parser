@@ -15,8 +15,8 @@ impl Default for Span {
         Self {
             start: 0,
             end: 0,
-            start_position: (0, 0),
-            end_position: (0, 0),
+            start_position: (1, 1),
+            end_position: (1, 1),
         }
     }
 }
