@@ -1,5 +1,7 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use itertools::Itertools;
 use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::span::Span;
@@ -146,9 +148,68 @@ pub(crate) enum Type {
 
 impl Type {
 
+    pub(crate) fn contains<F>(&self, f: F) -> bool where F: Fn(&Self) -> bool {
+        if self.is_container() {
+            match self {
+                Type::Array(t) => t.as_ref().contains(f),
+                Type::Dictionary(k, v) => {
+                    let matcher = |f: &dyn Fn(&Self) -> bool, t: &Type | { f(t) };
+                    matcher(&f, k.as_ref()) || matcher(&f, v.as_ref())
+                },
+                Type::Tuple(t) => t.iter().find(|t| f(*t)).is_some(),
+                Type::Range(t) => t.as_ref().contains(f),
+                Type::Union(u) => u.iter().find(|t| f(*t)).is_some(),
+                Type::Optional(o) => o.as_ref().contains(f),
+                _ => false,
+            }
+        } else {
+            f(self)
+        }
+    }
+
+    pub(crate) fn is_container(&self) -> bool {
+        match self {
+            Type::Any => false,
+            Type::Null => false,
+            Type::Bool => false,
+            Type::Int => false,
+            Type::Int64 => false,
+            Type::Float32 => false,
+            Type::Float => false,
+            Type::Decimal => false,
+            Type::String => false,
+            Type::ObjectId => false,
+            Type::Date => false,
+            Type::DateTime => false,
+            Type::File => false,
+            Type::Array(_) => true,
+            Type::Dictionary(_, _) => true,
+            Type::Tuple(_) => true,
+            Type::Range(_) => true,
+            Type::Union(_) => true,
+            Type::Ignored => false,
+            Type::Enum(_) => false,
+            Type::Model(_) => false,
+            Type::Interface(_, _) => false,
+            Type::ModelScalarField(_) => false,
+            Type::ModelScalarFieldAndCachedProperty(_) => false,
+            Type::FieldType(_, _) => false,
+            Type::GenericItem(_) => false,
+            Type::Optional(_) => true,
+            Type::Unresolved => false,
+        }
+    }
+
     pub(crate) fn is_optional(&self) -> bool {
         match self {
             Type::Optional(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_any(&self) -> bool {
+        match self {
+            Type::Any => true,
             _ => false,
         }
     }
@@ -170,6 +231,13 @@ impl Type {
     pub(crate) fn is_enum(&self) -> bool {
         match self {
             Type::Enum(_) => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_file(&self) -> bool {
+        match self {
+            Type::File => true,
             _ => false,
         }
     }
@@ -242,6 +310,15 @@ pub(crate) struct TypeExpr {
 
 impl TypeExpr {
 
+    pub(crate) fn span(&self) -> Span {
+        match &self.kind {
+            TypeExprKind::Expr(e) => e.span(),
+            TypeExprKind::BinaryOp(b) => b.span,
+            TypeExprKind::TypeItem(i) => i.span,
+            TypeExprKind::TypeGroup(g) => g.span,
+            TypeExprKind::TypeTuple(t) => t.span,
+        }
+    }
     pub(crate) fn resolve(&self, resolved: Type) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
@@ -296,5 +373,32 @@ impl Display for TypeItem {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum TypeShape {
+    Any,
+    Map(HashMap<String, Type>),
+}
+
+impl TypeShape {
+
+    pub(crate) fn is_any(&self) -> bool {
+        match self {
+            TypeShape::Any => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_map(&self) -> bool {
+        self.as_map().is_some()
+    }
+
+    pub(crate) fn as_map(&self) -> Option<&HashMap<String, Type>> {
+        match self {
+            TypeShape::Map(m) => Some(m),
+            _ => None,
+        }
     }
 }

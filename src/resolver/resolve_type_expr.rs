@@ -1,6 +1,6 @@
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
-use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeOp};
+use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeOp, TypeShape};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
@@ -122,7 +122,7 @@ fn resolve_type_item<'a>(
             },
             "Int32" => {
                 request_zero_generics("Int", type_item, context);
-                prefered_name(
+                preferred_name(
                     type_item.identifier_path.identifiers.get(0).unwrap().span,
                     "Int", "Int32", context
                 );
@@ -142,7 +142,7 @@ fn resolve_type_item<'a>(
             },
             "Float64" => {
                 request_zero_generics("Float", type_item, context);
-                prefered_name(
+                preferred_name(
                     type_item.identifier_path.identifiers.get(0).unwrap().span,
                     "Float", "Float64", context
                 );
@@ -289,6 +289,10 @@ fn request_double_generics<'a>(name: &'a str, type_item: &'a TypeItem, context: 
     }
 }
 
-fn prefered_name<'a>(span: Span, prefer: &str, current: &str, context: &'a ResolverContext<'a>) {
+fn preferred_name<'a>(span: Span, prefer: &str, current: &str, context: &'a ResolverContext<'a>) {
     context.insert_diagnostics_warning(span, format!("TypeWarning: Prefer '{prefer}' over '{current}'"))
+}
+
+pub(super) fn resolve_type_shape<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> TypeShape {
+
 }

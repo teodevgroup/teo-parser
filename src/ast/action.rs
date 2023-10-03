@@ -1,4 +1,5 @@
-use crate::ast::r#type::{TypeExpr, TypeItem};
+use std::cell::RefCell;
+use crate::ast::r#type::{TypeExpr, TypeItem, TypeShape};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -31,6 +32,7 @@ pub(crate) struct ActionDeclaration {
     pub(crate) input_type: TypeExpr,
     pub(crate) output_type: TypeExpr,
     pub(crate) input_format: ActionInputFormat,
+    pub(crate) resolved: RefCell<Option<ActionDeclarationResolved>>,
 }
 
 impl ActionDeclaration {
@@ -45,6 +47,18 @@ impl ActionDeclaration {
 
     pub(crate) fn action_group_id(&self) -> usize {
         *self.path.get(self.path.len() - 2).unwrap()
+    }
+
+    pub(crate) fn resolve(&self, resolved: ActionDeclarationResolved) {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub(crate) fn resolved(&self) -> &ActionDeclarationResolved {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
     }
 }
 
@@ -69,4 +83,10 @@ impl ActionInputFormat {
             _ => false,
         }
     }
+}
+
+#[derive(Debug)]
+pub(crate) struct ActionDeclarationResolved {
+    pub(crate) input_shape: TypeShape,
+    pub(crate) output_shape: TypeShape,
 }

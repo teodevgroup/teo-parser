@@ -1,6 +1,6 @@
-use crate::ast::action::{ActionDeclaration, ActionGroupDeclaration, ActionInputFormat};
-use crate::ast::r#type::Type;
-use crate::resolver::resolve_type_expr::resolve_type_expr;
+use crate::ast::action::{ActionDeclaration, ActionDeclarationResolved, ActionGroupDeclaration, ActionInputFormat};
+use crate::ast::r#type::{Type, TypeExpr, TypeShape};
+use crate::resolver::resolve_type_expr::{resolve_type_expr, resolve_type_shape};
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_action_group<'a>(
@@ -23,21 +23,45 @@ pub(super) fn resolve_action_declaration<'a>(
     }
     resolve_type_expr(&action_declaration.input_type, None, None, context);
     resolve_type_expr(&action_declaration.output_type, None, None, context);
+    action_declaration.resolve(ActionDeclarationResolved {
+        input_shape: resolve_type_shape(action_declaration.input_type.resolved(), context),
+        output_shape: resolve_type_shape(action_declaration.output_type.resolved(), context),
+    });
     match action_declaration.input_format {
-        ActionInputFormat::Form => validate_form_input_type(action_declaration.input_type.resolved(), context),
-        ActionInputFormat::Json => validate_json_input_type(action_declaration.input_type.resolved(), context),
+        ActionInputFormat::Form => validate_form_input_type(&action_declaration.resolved().input_shape, context),
+        ActionInputFormat::Json => validate_json_input_type(&action_declaration.resolved().input_shape, context),
     }
-    validate_json_output_type(action_declaration.output_type.resolved(), context);
+    validate_json_output_type(&action_declaration.resolved().output_shape, context);
 }
 
-fn validate_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) {
+fn validate_form_input_type<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) {
+    let r#type = type_expr.resolved();
+    if r#type.is_any() {
+        return
+    } else if r#type.is_interface() {
+        let interface = context.schema.find_top_by_path(r#type.interface_path().unwrap()).unwrap().as_interface().unwrap();
+        for extend in interface.extends() {
 
+        }
+    } else {
+        context.insert_diagnostics_error(type_expr.span(), "TypeError: form action input type should be interface or any")
+    }
 }
 
-fn validate_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) {
+fn validate_json_input_type<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) {
+    let r#type = type_expr.resolved();
+    if r#type.is_any() {
+        return
+    } else if r#type.is_interface() {
 
+    } else {
+        context.insert_diagnostics_error(type_expr.span(), "TypeError: action input type should be interface or any")
+    }
 }
 
-fn validate_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) {
+fn validate_json_output_type<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) {
+    let r#type = type_expr.resolved();
+    if r#type.contains(|t| t.is_file()) {
 
+    }
 }

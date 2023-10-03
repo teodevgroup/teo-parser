@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::action::{ActionDeclaration, ActionGroupDeclaration, ActionInputFormat};
 use crate::ast::r#type::TypeExpr;
 use crate::parser::parse_identifier::parse_identifier;
@@ -67,5 +68,6 @@ fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Acti
         input_type: input_type.unwrap(),
         output_type: output_type.unwrap(),
         input_format,
+        resolved: RefCell::new(None),
     }
 }
