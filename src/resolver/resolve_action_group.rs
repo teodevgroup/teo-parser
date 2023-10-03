@@ -32,7 +32,7 @@ pub(super) fn resolve_action_declaration<'a>(
         ActionInputFormat::Form => validate_form_input_type(&action_declaration.resolved().input_shape, action_declaration.input_type.span(), context),
         ActionInputFormat::Json => validate_json_input_type(&action_declaration.resolved().input_shape, action_declaration.input_type.span(), context),
     }
-    validate_json_output_type(&action_declaration.resolved().output_shape, context);
+    validate_json_output_type(&action_declaration.resolved().output_shape, action_declaration.output_type.span(), context);
 }
 
 fn validate_form_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {
@@ -112,7 +112,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::ModelScalarFieldAndCachedProperty(_) => Some("TypeError: invalid form action input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid form action input type: FieldType is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
-        Type::Optional(inner) => is_valid_json_input_type(inner.as_ref(), context),
+        Type::Optional(inner) => is_valid_form_input_type(inner.as_ref(), context),
         Type::Unresolved => Some("TypeError: found unresolved type"),
     }
 }
@@ -176,6 +176,77 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
     }
 }
 
-fn validate_json_output_type<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) {
+fn is_valid_json_output_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+    match shape {
+        TypeShape::Any => None,
+        TypeShape::Type(t) => is_valid_json_output_type(t, context),
+        TypeShape::Map(map) => map.values().find_map(|s| is_valid_json_output_shape(s, context)),
+        TypeShape::Undetermined => Some("TypeError: action output type should be interface or any"),
+    }
+}
 
+fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+    match r#type {
+        Type::Any => None,
+        Type::Null => None,
+        Type::Bool => None,
+        Type::Int => None,
+        Type::Int64 => None,
+        Type::Float32 => None,
+        Type::Float => None,
+        Type::Decimal => None,
+        Type::String => None,
+        Type::ObjectId => None,
+        Type::Date => None,
+        Type::DateTime => None,
+        Type::File => Some("TypeError: invalid form action output type: file is not supported in json output"),
+        Type::Array(inner) => is_valid_json_output_type(inner.as_ref(), context),
+        Type::Dictionary(k, v) => {
+            if let Some(msg) = is_valid_json_output_type(k.as_ref(), context) {
+                return Some(msg);
+            }
+            if let Some(msg) = is_valid_json_output_type(v.as_ref(), context) {
+                return Some(msg);
+            }
+            None
+        }
+        Type::Tuple(_) => Some("TypeError: invalid action output type: Tuple is not supported"),
+        Type::Range(_) => Some("TypeError: invalid action output type: Range is not supported"),
+        Type::Union(_) => Some("TypeError: invalid action output type: Union is not supported"),
+        Type::Ignored => None,
+        Type::Enum(path) => {
+            let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
+            if r#enum.interface {
+                Some("TypeError: invalid action output type: Interface enum is not supported")
+            } else if r#enum.option {
+                Some("TypeError: invalid action output type: Option enum is not supported")
+            } else {
+                None
+            }
+        }
+        Type::Model(_) => Some("TypeError: invalid form action output type: Model is not supported"),
+        Type::Interface(_, __) => None,
+        Type::ModelScalarField(_) => Some("TypeError: invalid action output type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldAndCachedProperty(_) => Some("TypeError: invalid action output type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::FieldType(_, _) => Some("TypeError: invalid action output type: FieldType is not supported"),
+        Type::GenericItem(_) => Some("TypeError: invalid form action output type: GenericsItem is not supported"),
+        Type::Optional(inner) => is_valid_json_output_type(inner.as_ref(), context),
+        Type::Unresolved => Some("TypeError: found unresolved type"),
+    }
+}
+
+
+fn validate_json_output_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {
+    match shape {
+        TypeShape::Any => (),
+        TypeShape::Map(map) => {
+            for r#type in map.values() {
+                if let Some(msg) = is_valid_json_output_shape(r#type, context) {
+                    context.insert_diagnostics_error(span, msg);
+                    return
+                }
+            }
+        }
+        _ => context.insert_diagnostics_error(span, "TypeError: action output type should be interface or any")
+    }
 }
