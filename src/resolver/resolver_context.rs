@@ -2,11 +2,12 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 use maplit::btreeset;
+use teo_teon::value::Value;
 use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
-use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
 use crate::ast::r#enum::{Enum, EnumMember};
+use crate::ast::r#type::Type;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
@@ -110,6 +111,171 @@ impl<'a> ResolverContext<'a> {
     pub(crate) fn has_examined_data_set_record(&self, record: &ExaminedDataSetRecord) -> bool {
         self.examined_data_set_records.lock().unwrap().contains(record)
     }
+
+    pub(crate) fn check_value_type(&self, r#type: &Type, value: &Value) -> bool {
+        match r#type {
+            Type::Any => true,
+            Type::Null => value.is_null(),
+            Type::Bool => value.is_bool(),
+            Type::Int => value.is_i(),
+            Type::Int64 => value.is_i(),
+            Type::Float32 => value.is_f(),
+            Type::Float => value.is_f(),
+            Type::Decimal => value.is_decimal(),
+            Type::String => value.is_string(),
+            Type::ObjectId => value.is_object_id(),
+            Type::Date => value.is_date(),
+            Type::DateTime => value.is_datetime(),
+            Type::File => value.is_file(),
+            Type::Array(inner) => {
+                if !value.is_vec() {
+                    return false;
+                }
+                value.as_vec().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
+            }
+            Type::Dictionary(k, vt) => {
+                if !k.is_string() {
+                    return false;
+                }
+                if !value.is_hashmap() {
+                    return false;
+                }
+                value.as_hashmap().unwrap().values().find(|v| !self.check_value_type(vt.as_ref(), v)).is_none()
+            }
+            Type::Tuple(v) => {
+                if !value.is_tuple() {
+                    return false;
+                }
+                let tuple = value.as_tuple().unwrap();
+                if v.len() != tuple.len() {
+                    return false;
+                }
+                tuple.iter().enumerate().find(|(index, val)| !self.check_value_type(v.get(*index).unwrap(), val)).is_none()
+            }
+            Type::Range(inner) => {
+                if !value.is_range() {
+                    return false;
+                }
+                let range = value.as_range().unwrap();
+                if !self.check_value_type(inner.as_ref(), range.start.as_ref()) {
+                    return false;
+                }
+                if !self.check_value_type(inner.as_ref(), range.end.as_ref()) {
+                    return false;
+                }
+                true
+            }
+            Type::Union(u) => {
+                for t in u {
+                    if self.check_value_type(t, value) {
+                        return true;
+                    }
+                }
+                false
+            }
+            Type::Ignored => true,
+            Type::Enum(enum_path) => {
+                if !value.is_raw_enum_variant() {
+                    return false;
+                }
+                let e = self.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
+                let name = value.as_raw_enum_variant().unwrap();
+                for member in &e.members {
+                    if member.identifier.name() == name {
+                        return true;
+                    }
+                }
+                false
+            },
+            Type::Model(_) => false,
+            Type::Interface(_, __) => false,
+            Type::ModelScalarField(_) => false,
+            Type::ModelScalarFieldAndCachedProperty(_) => false,
+            Type::FieldType(_, _) => false,
+            Type::GenericItem(_) => false,
+            Type::Optional(inner) => {
+                if value.is_null() {
+                    return true;
+                }
+                self.check_value_type(inner.as_ref(), value)
+            }
+            Type::Keyword(k) => false,
+            Type::Object(o) => false,
+            Type::Unresolved => false,
+        }
+
+    }
+
+    // pub(crate) fn display_type(&self, r#type: &Type) -> String {
+    //     match self {
+    //         Type::Any => f.write_str("Any"),
+    //         Type::Null => f.write_str("Null"),
+    //         Type::Bool => f.write_str("Bool"),
+    //         Type::Int => f.write_str("Int"),
+    //         Type::Int64 => f.write_str("Int64"),
+    //         Type::Float32 => f.write_str("Float32"),
+    //         Type::Float => f.write_str("Float"),
+    //         Type::Decimal => f.write_str("Decimal"),
+    //         Type::String => f.write_str("String"),
+    //         Type::ObjectId => f.write_str("ObjectId"),
+    //         Type::Date => f.write_str("Date"),
+    //         Type::DateTime => f.write_str("DateTime"),
+    //         Type::File => f.write_str("File"),
+    //         Type::Array(inner) => {
+    //             Display::fmt(inner.as_ref(), f)?;
+    //             f.write_str("[]")
+    //         }
+    //         Type::Dictionary(k, v) => {
+    //             if k.is_string() {
+    //                 Display::fmt(v.as_ref(), f)?;
+    //                 f.write_str("{}")
+    //             } else {
+    //                 f.write_str("Dictionary<")?;
+    //                 Display::fmt(k.as_ref(), f)?;
+    //                 f.write_str(", ")?;
+    //                 Display::fmt(v.as_ref(), f)?;
+    //                 f.write_str(">")
+    //             }
+    //         }
+    //         Type::Tuple(v) => {
+    //             f.write_str("(")?;
+    //             for (i, t) in v.iter().enumerate() {
+    //                 Display::fmt(t, f)?;
+    //                 if i != v.len() - 1 {
+    //                     f.write_str(", ")?;
+    //                 }
+    //             }
+    //             f.write_str(")")
+    //         }
+    //         Type::Range(inner) => {
+    //             f.write_str("Range<")?;
+    //             Display::fmt(inner.as_ref(), f)?;
+    //             f.write_str(">")
+    //         }
+    //         Type::Union(v) => {
+    //             for (i, t) in v.iter().enumerate() {
+    //                 Display::fmt(t, f)?;
+    //                 if i != v.len() - 1 {
+    //                     f.write_str(" | ")?;
+    //                 }
+    //             }
+    //         }
+    //         Type::Ignored => f.write_str("Ignored"),
+    //         Type::Enum(e) => {
+    //
+    //         }
+    //         Type::Model(_) => {}
+    //         Type::Interface(_, _) => {}
+    //         Type::ModelScalarField(_) => {}
+    //         Type::ModelScalarFieldAndCachedProperty(_) => {}
+    //         Type::FieldType(_, _) => {}
+    //         Type::GenericItem(_) => {}
+    //         Type::Optional(_) => {}
+    //         Type::Keyword(_) => {}
+    //         Type::Object(_) => {}
+    //         Type::Unresolved => {}
+    //     }
+    // }
     
     pub(crate) fn diagnostics(&self) -> &'a mut Diagnostics {
         *(unsafe { &mut *self.diagnostics.as_ptr() })

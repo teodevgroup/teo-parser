@@ -239,6 +239,13 @@ impl Type {
         }
     }
 
+    pub(crate) fn is_string(&self) -> bool {
+        match self {
+            Type::String => true,
+            _ => false,
+        }
+    }
+
     pub(crate) fn is_keyword(&self) -> bool {
         self.as_keyword().is_some()
     }

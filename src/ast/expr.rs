@@ -358,8 +358,25 @@ pub(crate) struct Expression {
 }
 
 impl Expression {
+
     pub(crate) fn new(kind: ExpressionKind) -> Self {
         Self { kind, resolved: RefCell::new(None) }
+    }
+
+    pub(crate) fn span(&self) -> Span {
+        self.kind.span()
+    }
+
+    pub(crate) fn resolve(&self, resolved: Accessible) {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub(crate) fn resolved(&self) -> &Accessible {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
     }
 }
 

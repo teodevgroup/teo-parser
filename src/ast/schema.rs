@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use crate::ast::config::Config;
+use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 
@@ -20,6 +21,19 @@ impl Schema {
 
     pub(crate) fn builtin_sources(&self) -> Vec<&Source> {
         self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
+    }
+
+    pub(crate) fn config_declarations(&self) -> Vec<&ConfigDeclaration> {
+        self.references.config_declarations.iter().map(|path| self.find_top_by_path(path).unwrap().as_config_declaration().unwrap()).collect()
+    }
+
+    pub(crate) fn find_config_declaration_by_name(&self, name: &str) -> Option<&ConfigDeclaration> {
+        for config_declarations in self.config_declarations() {
+            if config_declarations.identifier.name() == name {
+                return Some(config_declarations)
+            }
+        }
+        None
     }
 
     pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
