@@ -15,6 +15,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut comment = None;
+    let mut execlusive: bool = false;
     let mut unique: bool = false;
     let mut model: bool = false;
     let mut r#enum: bool = false;
@@ -39,6 +40,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::RELATION_KEYWORD => relation = true,
             Rule::PROPERTY_KEYWORD => property = true,
             Rule::MEMBER_KEYWORD => member = true,
+            Rule::EXECLUSIVE_KEYWORD => execlusive = true,
             Rule::UNIQUE_KEYWORD => unique = true,
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
@@ -56,6 +58,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
         path,
         string_path: string_path.unwrap(),
         comment,
+        exclusive: execlusive,
         unique,
         decorator_class: parse_decorator_class(model, r#enum, interface, field, relation, property, member, &span, context),
         identifier: identifier.unwrap(),

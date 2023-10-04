@@ -11,6 +11,7 @@ pub(crate) struct DecoratorDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
+    pub(crate) exclusive: bool,
     pub(crate) unique: bool,
     pub(crate) decorator_class: ReferenceType,
     pub(crate) identifier: Identifier,

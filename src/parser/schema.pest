@@ -14,6 +14,7 @@ BLOCK_CLOSE = { "}" }
 ENUM_KEYWORD = { "enum" }
 MODEL_KEYWORD = { "model" }
 UNIQUE_KEYWORD = { "unique" }
+EXCLUSIVE_KEYWORD = { "exclusive" }
 VARIANT_KEYWORD = { "variant" }
 FIELD_KEYWORD = { "field" }
 RELATION_KEYWORD = { "relation" }
@@ -336,6 +337,7 @@ dataset_group_record_declaration = {
 decorator_declaration = {
     triple_comment_block? ~
     DECLARE_KEYWORD ~
+    EXCLUSIVE_KEYWORD? ~
     UNIQUE_KEYWORD? ~
     (MODEL_KEYWORD | ENUM_KEYWORD | INTERFACE_KEYWORD) ~
     (FIELD_KEYWORD | RELATION_KEYWORD | PROPERTY_KEYWORD | MEMBER_KEYWORD)? ~

@@ -12,7 +12,6 @@ pub struct Definition {
 }
 
 pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<Definition> {
-
     if let Some(source) = schema.sources().iter().find(|s| s.file_path.as_str() == file_path) {
         let mut context = DefinitionContext::new(schema, source);
         return source.jump_to_definition(&mut context, line_col);
