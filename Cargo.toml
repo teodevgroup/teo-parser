@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pest = "2.7.3"
-pest_derive = "2.7.3"
+pest = "2.7.4"
+pest_derive = "2.7.4"
 teo-teon = { path = "../teo-teon" }
 colored = "2.0.4"
 pathdiff = "0.2.1"
@@ -16,7 +16,7 @@ maplit = "1.0.2"
 array_tool = "1.0.3"
 itertools = "0.11.0"
 snailquote = "0.3.1"
-regex = "1.9.5"
+regex = "1.9.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 path-clean = "1.0.1"
