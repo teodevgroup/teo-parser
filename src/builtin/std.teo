@@ -254,7 +254,7 @@ namespace std {
 
     /// @name Present If
     /// Specify when some condition passes, this field is required
-    declare unique model field decorator presentIf(cond?: Pipeline<Object<Self>, Ignored>>)
+    declare unique model field decorator presentIf(cond?: Pipeline<Object<Self>, Ignored>)
 
     /// @name Atomic
     /// This field can be updated with atomic updator

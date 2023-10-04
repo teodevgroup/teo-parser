@@ -32,6 +32,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut variants = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE => (),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::MODEL_KEYWORD => model = true,
             Rule::ENUM_KEYWORD => r#enum = true,
@@ -40,7 +41,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::RELATION_KEYWORD => relation = true,
             Rule::PROPERTY_KEYWORD => property = true,
             Rule::MEMBER_KEYWORD => member = true,
-            Rule::EXECLUSIVE_KEYWORD => execlusive = true,
+            Rule::EXCLUSIVE_KEYWORD => execlusive = true,
             Rule::UNIQUE_KEYWORD => unique = true,
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
