@@ -3,7 +3,7 @@ use maplit::hashmap;
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeOp, TypeShape};
+use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeKeyword, TypeOp, TypeShape};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
@@ -212,6 +212,17 @@ fn resolve_type_item<'a>(
             },
             "Ignored" => {
                 Some(Type::Ignored)
+            },
+            "Object" => {
+                Some(Type::Object(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
+                    resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
+                }))))
+            },
+            "Self" => {
+                Some(Type::Keyword(TypeKeyword::SelfIdentifier))
+            },
+            "FieldType" => {
+                Some(Type::Keyword(TypeKeyword::FieldType))
             },
             _ => {
                 if let Some(generics_declaration) = generics_declaration {
