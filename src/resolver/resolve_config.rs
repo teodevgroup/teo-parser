@@ -23,7 +23,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
         // check each field
         for field in &config_declaration.fields {
             if let Some(item) = config.items.iter().find(|i| i.identifier.name() == field.identifier.name()) {
-                //resolve_expression_and_unwrap_value(&item.expression, context);
+                resolve_expression_and_unwrap_value(&item.expression, context);
                 if let Some(value) = item.expression.resolved().as_value() {
                     if !context.check_value_type(field.type_expr.resolved(), value) {
                         context.insert_diagnostics_error(item.expression.span(), "ValueError: value is of wrong type");

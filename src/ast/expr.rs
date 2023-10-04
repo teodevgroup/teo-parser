@@ -61,9 +61,6 @@ impl Display for NullishCoalescing {
 #[derive(Debug)]
 pub(crate) enum ExpressionKind {
     Group(Group),
-    NullishCoalescing(NullishCoalescing),
-    Negation(Negation),
-    BitwiseNegation(BitwiseNegation),
     ArithExpr(ArithExpr),
     NumericLiteral(NumericLiteral),
     StringLiteral(StringLiteral),
@@ -86,9 +83,6 @@ impl ExpressionKind {
     pub(crate) fn span(&self) -> Span {
         match self {
             ExpressionKind::Group(e) => e.span,
-            ExpressionKind::NullishCoalescing(e) => e.span,
-            ExpressionKind::Negation(e) => e.span,
-            ExpressionKind::BitwiseNegation(e) => e.span,
             ExpressionKind::ArithExpr(e) => e.span(),
             ExpressionKind::NumericLiteral(e) => e.span,
             ExpressionKind::StringLiteral(e) => e.span,
@@ -329,9 +323,6 @@ impl Display for ExpressionKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ExpressionKind::Group(g) => Display::fmt(g, f),
-            ExpressionKind::NullishCoalescing(n) => Display::fmt(n, f),
-            ExpressionKind::Negation(n) => Display::fmt(n, f),
-            ExpressionKind::BitwiseNegation(n) => Display::fmt(n, f),
             ExpressionKind::NumericLiteral(e) => Display::fmt(e, f),
             ExpressionKind::StringLiteral(s) => Display::fmt(s, f),
             ExpressionKind::RegExpLiteral(r) => Display::fmt(r, f),
