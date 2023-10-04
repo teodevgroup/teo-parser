@@ -110,7 +110,7 @@ namespace std {
     declare config server {
         /// @name bind
         /// On which IP and port the HTTP server binds
-        bind: (String, Int32)
+        bind: (String, Int)
         /// @name path prefix
         /// The request URL path prefix
         pathPrefix: String?
@@ -403,9 +403,9 @@ namespace std {
     declare pipeline item add {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
 
     /// @name Sub
@@ -413,9 +413,9 @@ namespace std {
     declare pipeline item sub {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
 
     /// @name Mul
@@ -423,9 +423,9 @@ namespace std {
     declare pipeline item mul {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
 
     /// @name Div
@@ -433,9 +433,9 @@ namespace std {
     declare pipeline item div {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<InputType, Float32>) Float32 -> Float32
-        variant(value?: Float | Pipeline<InputType, Float>) Float -> Float
-        variant(value?: Decimal | Pipeline<InputType, Decimal>) Decimal -> Decimal
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
 
     /// @name Mod
@@ -471,7 +471,7 @@ namespace std {
 
     /// @name Square Root
     /// Get the square root value
-    decalre pipeline item sqrt {
+    declare pipeline item sqrt {
         variant: Int -> Int
         variant: Int64 -> Int64
         variant: Float32 -> Float32
@@ -524,7 +524,7 @@ namespace std {
     declare pipeline item min {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 |  | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
         variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
         variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
@@ -534,7 +534,7 @@ namespace std {
     declare pipeline item max {
         variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
         variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 |  | Pipeline<InputType, Float32>): Float32 -> Float32
+        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
         variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
         variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
     }
@@ -624,7 +624,7 @@ namespace std {
 
     declare pipeline item isSecurePassword: String -> String
 
-    declare pipline item regexMatch(regex?: RegExp): String -> String
+    declare pipeline item regexMatch(regex?: RegExp): String -> String
 
     declare pipeline item identity: Ignored -> Object<Unknown>?
 

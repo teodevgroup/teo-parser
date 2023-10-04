@@ -345,7 +345,7 @@ decorator_declaration = {
     identifier ~
     (generics_declaration? ~ argument_list_declaration ~ generics_constraint?)? ~
     (BLOCK_OPEN ~
-    decorator_variant_declaration ~
+    (comment_block | decorator_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
     BLOCK_CLOSE)?
 }
 
@@ -367,7 +367,9 @@ pipeline_item_declaration = {
         "->" ~
         type_expression ~ generics_constraint?
       ) | (
-        BLOCK_OPEN ~ pipeline_item_variant_declaration ~ BLOCK_CLOSE
+        BLOCK_OPEN ~
+        (comment_block | pipeline_item_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+        BLOCK_CLOSE
       )
     )
 }
@@ -375,7 +377,7 @@ pipeline_item_declaration = {
 pipeline_item_variant_declaration = {
     triple_comment_block? ~
     VARIANT_KEYWORD ~
-    generics_declaration? ~ argument_list_declaration ~
+    generics_declaration? ~ argument_list_declaration? ~
     COLON ~
     type_expression ~
     "->" ~

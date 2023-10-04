@@ -22,6 +22,7 @@ pub(super) fn parse_pipeline_item_declaration(pair: Pair<'_>, context: &mut Pars
     let mut variants = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
