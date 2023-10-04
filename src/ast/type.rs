@@ -144,6 +144,7 @@ pub(crate) enum Type {
     GenericItem(String),
     Optional(Box<Type>),
     Keyword(TypeKeyword),
+    Object(Box<Type>),
     Unresolved,
 }
 
@@ -198,6 +199,8 @@ impl Type {
             Type::GenericItem(_) => false,
             Type::Optional(_) => true,
             Type::Unresolved => false,
+            Type::Object(_) => false,
+            Type::Keyword(_) => false,
         }
     }
 
@@ -231,6 +234,8 @@ impl Type {
             Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Unresolved).clone(),
             Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
             Type::Unresolved => self.clone(),
+            Type::Keyword(_) => self.clone(),
+            Type::Object(_) => self.clone(),
         }
     }
 
@@ -241,7 +246,7 @@ impl Type {
     pub(crate) fn as_keyword(&self) -> Option<&TypeKeyword> {
         match self {
             Self::Keyword(k) => Some(k),
-            _ => false,
+            _ => None,
         }
     }
 
@@ -475,9 +480,9 @@ impl TypeShape {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum TypeKeyword {
-    r#Self,
+    SelfIdentifier,
     FieldType,
 }
 
@@ -485,7 +490,7 @@ impl TypeKeyword {
 
     pub(crate) fn is_self(&self) -> bool {
         match self {
-            TypeKeyword::r#Self => true,
+            TypeKeyword::SelfIdentifier => true,
             _ => false,
         }
     }

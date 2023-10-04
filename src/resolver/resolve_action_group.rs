@@ -114,6 +114,8 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_form_input_type(inner.as_ref(), context),
         Type::Unresolved => Some("TypeError: found unresolved type"),
+        Type::Object(_) => Some("TypeError: invalid form action input type: Object is not supported"),
+        Type::Keyword(_) => Some("TypeError: found keyword type"),
     }
 }
 
@@ -173,6 +175,9 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_input_type(inner.as_ref(), context),
         Type::Unresolved => Some("TypeError: found unresolved type"),
+        Type::Object(_) => Some("TypeError: invalid action input type: Object is not supported"),
+        Type::Keyword(_) => Some("TypeError: found keyword type"),
+
     }
 }
 
@@ -232,6 +237,8 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::GenericItem(_) => Some("TypeError: invalid form action output type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_output_type(inner.as_ref(), context),
         Type::Unresolved => Some("TypeError: found unresolved type"),
+        Type::Object(_) => Some("TypeError: invalid action output type: Object is not supported"),
+        Type::Keyword(_) => Some("TypeError: found keyword type"),
     }
 }
 
