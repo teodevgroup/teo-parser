@@ -143,6 +143,7 @@ pub(crate) enum Type {
     FieldType(Vec<usize>, String),
     GenericItem(String),
     Optional(Box<Type>),
+    Keyword(TypeKeyword),
     Unresolved,
 }
 
@@ -230,6 +231,17 @@ impl Type {
             Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Unresolved).clone(),
             Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
             Type::Unresolved => self.clone(),
+        }
+    }
+
+    pub(crate) fn is_keyword(&self) -> bool {
+        self.as_keyword().is_some()
+    }
+
+    pub(crate) fn as_keyword(&self) -> Option<&TypeKeyword> {
+        match self {
+            Self::Keyword(k) => Some(k),
+            _ => false,
         }
     }
 
@@ -459,6 +471,29 @@ impl TypeShape {
         match self {
             TypeShape::Type(t) => Some(t),
             _ => None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum TypeKeyword {
+    r#Self,
+    FieldType,
+}
+
+impl TypeKeyword {
+
+    pub(crate) fn is_self(&self) -> bool {
+        match self {
+            TypeKeyword::r#Self => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_field_type(&self) -> bool {
+        match self {
+            TypeKeyword::FieldType => true,
+            _ => false,
         }
     }
 }
