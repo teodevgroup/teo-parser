@@ -1,4 +1,4 @@
-use std::ops::Neg;
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use maplit::hashmap;
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::value::Value;
@@ -134,7 +134,7 @@ fn resolve_tuple_literal<'a>(t: &TupleLiteral, context: &'a ResolverContext<'a>,
     let types = expected.as_tuple();
     let mut retval = vec![];
     let undetermined = Type::Undetermined;
-    for (i, e) in &t.expressions.iter().enumerate() {
+    for (i, e) in t.expressions.iter().enumerate() {
         retval.push(resolve_expression_kind_and_unwrap_value(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined)));
     }
     Value::Tuple(retval)
@@ -144,7 +144,7 @@ fn resolve_array_literal<'a>(a: &ArrayLiteral, context: &'a ResolverContext<'a>,
     let r#type = expected.as_array();
     let mut retval = vec![];
     let undetermined = Type::Undetermined;
-    for (i, e) in &a.expressions.iter().enumerate() {
+    for (i, e) in a.expressions.iter().enumerate() {
         retval.push(resolve_expression_kind_and_unwrap_value(e, context, r#type.unwrap_or(&undetermined)));
     }
     Value::Array(retval)
@@ -183,12 +183,7 @@ fn resolve_arith_expr<'a>(arith_expr: &ArithExpr, context: &'a ResolverContext<'
                         context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
                         Value::Undetermined
                     }
-                    Op::Not => if let Ok(result) = v.normal_not() {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
-                        Value::Undetermined
-                    }
+                    Op::Not => v.normal_not(),
                     Op::BitNeg => if let Ok(result) = v.not() {
                         result
                     } else {
@@ -197,8 +192,92 @@ fn resolve_arith_expr<'a>(arith_expr: &ArithExpr, context: &'a ResolverContext<'
                     }
                     _ => unreachable!(),
                 }
+            } else {
+                v
+            }
+
+        }
+        ArithExpr::BinaryOp(binary) => {
+            let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected);
+            let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected);
+            if !lhs.is_undetermined() && !rhs.is_undetermined() {
+                match binary.op {
+                    Op::Add => if let Ok(result) = lhs.add(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::Sub => if let Ok(result) = lhs.sub(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::Mul => if let Ok(result) = lhs.mul(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::Div => if let Ok(result) = lhs.div(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::Mod => if let Ok(result) = lhs.rem(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::And => if lhs.normal_not().as_bool().unwrap() { lhs } else { rhs }
+                    Op::Or => if lhs.normal_not().as_bool().unwrap() { rhs } else { lhs }
+                    Op::BitAnd => if let Ok(result) = lhs.bitand(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::BitXor => if let Ok(result) = lhs.bitxor(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::BitOr => if let Ok(result) = lhs.bitor(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::BitLS => if let Ok(result) = lhs.shl(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::BitRS => if let Ok(result) = lhs.shr(&rhs) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::NullishCoalescing => if lhs.is_null() { rhs } else { lhs }
+                    Op::Gt => Value::Bool(lhs > rhs),
+                    Op::Gte => Value::Bool(lhs >= rhs),
+                    Op::Lt => Value::Bool(lhs < rhs),
+                    Op::Lte => Value::Bool(lhs <= rhs),
+                    Op::Eq => Value::Bool(lhs == rhs),
+                    Op::Neq => Value::Bool(lhs != rhs),
+                    Op::RangeOpen => {}
+                    Op::RangeClose => {}
+                    _ => unreachable!()
+                }
+            } else {
+                Value::Undetermined
             }
         }
-        ArithExpr::BinaryOp(_) => {}
     }
 }
