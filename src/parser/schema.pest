@@ -208,9 +208,12 @@ unit = {
     tuple_literal |
     array_literal |
     dictionary_literal |
+    call |
     identifier
-    ~ (subscript | argument_list | "." ~ identifier)*
+    ~ (subscript | argument_list | "." ~  (call | identifier))*
 }
+
+call = { identifier ~ argument_list }
 
 identifier_unit = {
     identifier

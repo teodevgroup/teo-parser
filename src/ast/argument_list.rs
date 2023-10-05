@@ -4,8 +4,8 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct ArgumentList {
-    pub(crate) arguments: Vec<Argument>,
     pub(crate) span: Span,
+    pub(crate) arguments: Vec<Argument>,
 }
 
 impl Default for ArgumentList {

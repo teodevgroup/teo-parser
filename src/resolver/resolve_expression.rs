@@ -332,7 +332,7 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
         let expected = Type::Undetermined;
         let mut current = resolve_expression_kind(unit.expressions.get(0).unwrap(), context, &expected);
         if current.is_undetermined() {
-            Accessible::Value(Value::Undetermined)
+            return current;
         } else {
             for (index, item) in unit.expressions.iter().enumerate() {
                 if index == 0 { continue }
