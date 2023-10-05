@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use maplit::hashmap;
 use teo_teon::types::enum_variant::EnumVariant;
@@ -10,6 +11,9 @@ use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::ast::r#type::Type;
 use crate::ast::reference::ReferenceType;
+use crate::ast::span::Span;
+use crate::ast::top::Top;
+use crate::ast::unit::Unit;
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -42,8 +46,8 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
         }
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
-        ExpressionKind::Unit(_) => {}
-        ExpressionKind::Pipeline(_) => {}
+        ExpressionKind::Unit(u) => resolve_unit(u, context, expected),
+        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected),
     }
 }
 
@@ -196,7 +200,6 @@ fn resolve_arith_expr<'a>(arith_expr: &ArithExpr, context: &'a ResolverContext<'
             } else {
                 v
             }
-
         }
         ArithExpr::BinaryOp(binary) => {
             let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected);
@@ -319,5 +322,123 @@ fn build_range(lhs: Value, rhs: Value, closed: bool) -> Option<Value> {
         }))
     } else {
         None
+    }
+}
+
+fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Type) -> Accessible {
+    if unit.expressions.len() == 1 {
+        resolve_expression_kind(unit.expressions.get(0).unwrap(), context, expected)
+    } else {
+        let expected = Type::Undetermined;
+        let mut current = resolve_expression_kind(unit.expressions.get(0).unwrap(), context, &expected);
+        if current.is_undetermined() {
+            Accessible::Value(Value::Undetermined)
+        } else {
+            for (index, item) in unit.expressions.iter().enumerate() {
+                if index == 0 { continue }
+                match current {
+                    Accessible::Value(current_value) => {
+                        context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
+                        current = Accessible::Value(Value::Undetermined)
+                    }
+                    Accessible::Reference(current_reference) => {
+                        match context.schema.find_top_by_path(&current_reference.path).unwrap() {
+                            Top::Config(config) => {
+                                match item {
+                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Config cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Config cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            Top::Constant(constant) => {
+                                match item {
+                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Constant cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Constant cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            Top::Enum(r#enum) => {
+                                match item {
+                                    ExpressionKind::Identifier(i) => {
+                                        current = Accessible::Value(resolve_enum_variant_literal(&EnumVariantLiteral {
+                                            span: Span::default(),
+                                            identifier: i.clone(),
+                                            argument_list: None,
+                                        }, context, &Type::Enum(r#enum.path.clone())))
+                                    }
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Enum cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Enum cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            Top::Model(_) => {
+                                match item {
+                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Model cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Model cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            Top::Interface(_) => {
+                                match item {
+                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Interface cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Interface cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            Top::Namespace(_) => {
+                                match item {
+                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::ArgumentList(a) => {
+                                        context.insert_diagnostics_error(a.span, "Namespace cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Subscript(s) => {
+                                        context.insert_diagnostics_error(s.span, "Namespace cannot be subscript");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    _ => unreachable!()
+                                }
+                            }
+                            _ => unreachable!()
+                        }
+                    }
+                }
+            }
+            current
+        }
     }
 }

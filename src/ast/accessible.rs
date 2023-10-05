@@ -48,4 +48,8 @@ impl Accessible {
             _ => None,
         }
     }
+
+    pub(crate) fn is_undetermined(&self) -> bool {
+        self.is_value() && self.as_value().unwrap().is_undetermined()
+    }
 }
