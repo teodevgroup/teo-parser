@@ -116,6 +116,7 @@ impl Display for TypeExprKind {
 
 #[derive(Debug, Clone)]
 pub(crate) enum Type {
+    Undetermined,
     Any,
     Null,
     Bool,
@@ -145,7 +146,6 @@ pub(crate) enum Type {
     Optional(Box<Type>),
     Keyword(TypeKeyword),
     Object(Box<Type>),
-    Unresolved,
 }
 
 impl Type {
@@ -198,7 +198,7 @@ impl Type {
             Type::FieldType(_, _) => false,
             Type::GenericItem(_) => false,
             Type::Optional(_) => true,
-            Type::Unresolved => false,
+            Type::Undetermined => false,
             Type::Object(_) => false,
             Type::Keyword(_) => false,
         }
@@ -231,9 +231,9 @@ impl Type {
             Type::ModelScalarField(_) => self.clone(),
             Type::ModelScalarFieldAndCachedProperty(_) => self.clone(),
             Type::FieldType(_, _) => self.clone(),
-            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Unresolved).clone(),
+            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Undetermined).clone(),
             Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
-            Type::Unresolved => self.clone(),
+            Type::Undetermined => self.clone(),
             Type::Keyword(_) => self.clone(),
             Type::Object(_) => self.clone(),
         }
@@ -253,6 +253,28 @@ impl Type {
     pub(crate) fn as_keyword(&self) -> Option<&TypeKeyword> {
         match self {
             Self::Keyword(k) => Some(k),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_tuple(&self) -> bool {
+        self.as_tuple().is_some()
+    }
+
+    pub(crate) fn as_tuple(&self) -> Option<&Vec<Type>> {
+        match self {
+            Self::Tuple(types) => Some(types),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_array(&self) -> bool {
+        self.as_array().is_some()
+    }
+
+    pub(crate) fn as_array(&self) -> Option<&Type> {
+        match self {
+            Self::Array(inner) => Some(inner.as_ref()),
             _ => None,
         }
     }

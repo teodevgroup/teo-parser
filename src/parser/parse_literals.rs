@@ -7,6 +7,7 @@ use crate::ast::expr::ExpressionKind;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RangeLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_expression::{parse_expression_kind, parse_unit};
+use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -64,15 +65,15 @@ pub(super) fn parse_numeric_literal(pair: &Pair<'_>, _context: &mut ParserContex
 pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
     let span = parse_span(&pair);
     let mut argument_list: Option<ArgumentList> = None;
-    let mut value: Option<String> = None;
+    let mut identifier = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => value = Some(current.as_str().to_owned()),
+            Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::argument_list => argument_list = Some(parse_argument_list(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    EnumVariantLiteral { span, value: value.unwrap(), argument_list }
+    EnumVariantLiteral { span, identifier: identifier.unwrap(), argument_list }
 }
 
 pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -> ArrayLiteral {

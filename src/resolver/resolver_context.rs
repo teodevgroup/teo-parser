@@ -195,7 +195,7 @@ impl<'a> ResolverContext<'a> {
             }
             Type::Keyword(k) => false,
             Type::Object(o) => false,
-            Type::Unresolved => false,
+            Type::Undetermined => false,
         }
 
     }

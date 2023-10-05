@@ -21,11 +21,27 @@ impl Accessible {
         }
     }
 
+    pub(crate) fn into_value(self) -> Option<Value> {
+        use Accessible::*;
+        match self {
+            Value(v) => Some(v),
+            _ => None,
+        }
+    }
+
     pub(crate) fn is_reference(&self) -> bool {
         self.as_reference().is_some()
     }
 
     pub(crate) fn as_reference(&self) -> Option<&Reference> {
+        use Accessible::*;
+        match self {
+            Reference(r) => Some(r),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn into_reference(self) -> Option<Reference> {
         use Accessible::*;
         match self {
             Reference(r) => Some(r),

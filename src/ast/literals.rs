@@ -3,6 +3,7 @@ use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
+use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -12,6 +13,7 @@ pub(crate) struct NumericLiteral {
 }
 
 impl Display for NumericLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.value, f)
     }
@@ -25,6 +27,7 @@ pub(crate) struct StringLiteral {
 }
 
 impl Display for StringLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.value)
     }
@@ -37,6 +40,7 @@ pub(crate) struct RegExpLiteral {
 }
 
 impl Display for RegExpLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("/")?;
         f.write_str(self.value.as_str())?;
@@ -51,6 +55,7 @@ pub(crate) struct BoolLiteral {
 }
 
 impl Display for BoolLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.value, f)
     }
@@ -62,6 +67,7 @@ pub(crate) struct NullLiteral {
 }
 
 impl Display for NullLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("null")
     }
@@ -69,15 +75,16 @@ impl Display for NullLiteral {
 
 #[derive(Debug)]
 pub(crate) struct EnumVariantLiteral {
-    pub(crate) value: String,
     pub(crate) span: Span,
+    pub(crate) identifier: Identifier,
     pub(crate) argument_list: Option<ArgumentList>,
 }
 
 impl Display for EnumVariantLiteral {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(".")?;
-        f.write_str(&self.value)?;
+        Display::fmt(&self.identifier, f)?;
         if let Some(argument_list) = &self.argument_list {
             Display::fmt(argument_list, f)?;
         }

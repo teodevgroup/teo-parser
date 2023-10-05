@@ -251,7 +251,7 @@ fn resolve_type_item<'a>(
         }
         if base.is_none() {
             context.insert_diagnostics_error(type_item.identifier_path.span, "TypeError: Unresolved type");
-            base = Some(Type::Unresolved);
+            base = Some(Type::Undetermined);
         }
     }
     if type_item.item_optional {
