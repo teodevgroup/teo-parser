@@ -10,7 +10,7 @@ pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a Re
     expression.resolve(resolve_expression_kind(&expression.kind, context, expected))
 }
 
-pub(super) fn resolve_expression_and_unwrap_value<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, , expected: &Type) {
+pub(super) fn resolve_expression_and_unwrap_value<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
     resolve_expression(expression, context, expected);
     if expression.resolved().is_reference() {
         // do things here
@@ -45,33 +45,33 @@ fn resolve_group<'a>(group: &Group, context: &'a ResolverContext<'a>, expected: 
 fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Value {
     match expected {
         Type::Unresolved => n.value.clone(),
-        Type::Int => if n.value.is_i() {
-            Value::I32(n.value.as_i32().unwrap())
+        Type::Int => if n.value.is_any_int() {
+            Value::Int(n.value.to_int().unwrap())
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            Value::Invalid
+            Value::Undetermined
         },
-        Type::Int64 => if n.value.is_i() {
-            Value::I64(n.value.as_i64().unwrap())
+        Type::Int64 => if n.value.is_any_int() {
+            Value::Int64(n.value.to_int64().unwrap())
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            Value::Invalid
+            Value::Undetermined
         },
-        Type::Float32 => if n.value.is_f() {
-            Value::F32(n.value.as_f32().unwrap())
+        Type::Float32 => if n.value.is_any_float() {
+            Value::Float32(n.value.to_float32().unwrap())
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            Value::Invalid
+            Value::Undetermined
         },
-        Type::Float => if n.value.is_f() {
-            Value::F64(n.value.as_f64().unwrap())
+        Type::Float => if n.value.is_any_float() {
+            Value::Float(n.value.to_float().unwrap())
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            Value::Invalid
+            Value::Undetermined
         },
         _ => {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            Value::Invalid
+            Value::Undetermined
         }
     }
 }

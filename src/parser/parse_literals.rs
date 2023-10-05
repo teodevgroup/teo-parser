@@ -52,11 +52,11 @@ pub(super) fn parse_numeric_literal(pair: &Pair<'_>, _context: &mut ParserContex
     NumericLiteral {
         span: parse_span(&pair),
         value: if str_value.contains(".") { // default to float64
-            Value::F64(f64::from_str(&str_value).unwrap())
+            Value::Float(f64::from_str(&str_value).unwrap())
         } else if let Ok(i32v) = i32::from_str(str_value) {
-            Value::I32(i32v)
+            Value::Int(i32v)
         } else {
-            Value::I64(i64::from_str(str_value).unwrap())
+            Value::Int64(i64::from_str(str_value).unwrap())
         }
     }
 }

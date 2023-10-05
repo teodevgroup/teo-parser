@@ -47,20 +47,20 @@ pub(super) fn resolve_enum_member<'a>(
         if option {
             match member_expression {
                 EnumMemberExpression::StringLiteral(s) => {
-                    member.resolve(EnumMemberResolved::new(Value::I32(1 << index)));
+                    member.resolve(EnumMemberResolved::new(Value::Int(1 << index)));
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Option value expression should be numeric or defined member expression"
                     )
                 },
                 EnumMemberExpression::NumericLiteral(n) => {
-                    let value = n.value.as_i32().unwrap();
-                    member.resolve(EnumMemberResolved::new(Value::I32(value)));
+                    let value = n.value.as_int().unwrap();
+                    member.resolve(EnumMemberResolved::new(Value::Int(value)));
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 },
                 EnumMemberExpression::ArithExpr(expr) => {
                     let value = resolve_enum_member_expr(expr, context, map);
-                    member.resolve(EnumMemberResolved::new(Value::I32(value)));
+                    member.resolve(EnumMemberResolved::new(Value::Int(value)));
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 }
             }
@@ -78,7 +78,7 @@ pub(super) fn resolve_enum_member<'a>(
         }
     } else {
         if option {
-            member.resolve(EnumMemberResolved::new(Value::I32(1 << index)));
+            member.resolve(EnumMemberResolved::new(Value::Int(1 << index)));
         } else {
             member.resolve(EnumMemberResolved::new(Value::String(member.identifier.name.clone())))
         }
@@ -93,7 +93,7 @@ fn resolve_enum_member_expression<'a>(expression: &ExpressionKind, context: &Res
             context.insert_diagnostics_error(expression.span(), "EnumMemberError: Only number literals and enum variant literals are allowed");
             0
         },
-        ExpressionKind::NumericLiteral(n) => n.value.as_i32().unwrap(),
+        ExpressionKind::NumericLiteral(n) => n.value.as_int().unwrap(),
         ExpressionKind::Group(g) => resolve_enum_member_expression(g.expression.as_ref(), context, map),
         ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.value.as_str()) {
             *v

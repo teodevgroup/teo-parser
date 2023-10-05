@@ -117,10 +117,10 @@ impl<'a> ResolverContext<'a> {
             Type::Any => true,
             Type::Null => value.is_null(),
             Type::Bool => value.is_bool(),
-            Type::Int => value.is_i(),
-            Type::Int64 => value.is_i(),
-            Type::Float32 => value.is_f(),
-            Type::Float => value.is_f(),
+            Type::Int => value.is_int(),
+            Type::Int64 => value.is_int64(),
+            Type::Float32 => value.is_float32(),
+            Type::Float => value.is_float(),
             Type::Decimal => value.is_decimal(),
             Type::String => value.is_string(),
             Type::ObjectId => value.is_object_id(),
@@ -128,19 +128,19 @@ impl<'a> ResolverContext<'a> {
             Type::DateTime => value.is_datetime(),
             Type::File => value.is_file(),
             Type::Array(inner) => {
-                if !value.is_vec() {
+                if !value.is_array() {
                     return false;
                 }
-                value.as_vec().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
+                value.as_array().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
             }
             Type::Dictionary(k, vt) => {
                 if !k.is_string() {
                     return false;
                 }
-                if !value.is_hashmap() {
+                if !value.is_dictionary() {
                     return false;
                 }
-                value.as_hashmap().unwrap().values().find(|v| !self.check_value_type(vt.as_ref(), v)).is_none()
+                value.as_dictionary().unwrap().values().find(|v| !self.check_value_type(vt.as_ref(), v)).is_none()
             }
             Type::Tuple(v) => {
                 if !value.is_tuple() {
@@ -175,17 +175,11 @@ impl<'a> ResolverContext<'a> {
             }
             Type::Ignored => true,
             Type::Enum(enum_path) => {
-                if !value.is_raw_enum_variant() {
+                if !value.is_enum_variant() {
                     return false;
                 }
                 let e = self.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
-                let name = value.as_raw_enum_variant().unwrap();
-                for member in &e.members {
-                    if member.identifier.name() == name {
-                        return true;
-                    }
-                }
-                false
+                enum_path == &e.path
             },
             Type::Model(_) => false,
             Type::Interface(_, __) => false,
