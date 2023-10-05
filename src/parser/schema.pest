@@ -232,7 +232,7 @@ expression = {
 // variable & constant declaration
 // #############
 
-constant_statement = { "let" ~ identifier ~ "=" ~ expression }
+constant_statement = { "let" ~ identifier ~ (":" ~ type_expression)? ~ "=" ~ expression }
 
 // #############
 // arguments

@@ -100,7 +100,7 @@ fn resolve_identifier_path_in_source(
     None
 }
 
-fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn Fn(&Top) -> bool> {
+pub(super) fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn Fn(&Top) -> bool> {
     match reference_type {
         ReferenceType::EnumDecorator |
         ReferenceType::EnumMemberDecorator |

@@ -10,11 +10,12 @@ use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::ast::r#type::Type;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference::{Reference, ReferenceType};
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
-use crate::resolver::resolve_identifier::resolve_identifier;
+use crate::resolver::resolve_constant::resolve_constant;
+use crate::resolver::resolve_identifier::{resolve_identifier, top_filter_for_reference_type};
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
@@ -350,6 +351,10 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                                         context.insert_diagnostics_error(a.span, "Config cannot be called");
                                         return Accessible::Value(Value::Undetermined)
                                     }
+                                    ExpressionKind::Call(c) => {
+                                        context.insert_diagnostics_error(c.span, "Config cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
                                     ExpressionKind::Subscript(s) => {
                                         context.insert_diagnostics_error(s.span, "Config cannot be subscript");
                                         return Accessible::Value(Value::Undetermined)
@@ -358,11 +363,17 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                                 }
                             }
                             Top::Constant(constant) => {
+                                if !constant.is_resolved() {
+                                    resolve_constant(constant, context);
+                                }
                                 match item {
                                     ExpressionKind::Identifier(_) => todo!("return model field here"),
                                     ExpressionKind::ArgumentList(a) => {
                                         context.insert_diagnostics_error(a.span, "Constant cannot be called");
                                         return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Call(c) => {
+                                        todo!("resolve and call");
                                     }
                                     ExpressionKind::Subscript(s) => {
                                         context.insert_diagnostics_error(s.span, "Constant cannot be subscript");
@@ -380,6 +391,13 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                                             argument_list: None,
                                         }, context, &Type::Enum(r#enum.path.clone())))
                                     }
+                                    ExpressionKind::Call(c) => {
+                                        current = Accessible::Value(resolve_enum_variant_literal(&EnumVariantLiteral {
+                                            span: Span::default(),
+                                            identifier: c.identifier.clone(),
+                                            argument_list: None,
+                                        }, context, &Type::Enum(r#enum.path.clone())))
+                                    }
                                     ExpressionKind::ArgumentList(a) => {
                                         context.insert_diagnostics_error(a.span, "Enum cannot be called");
                                         return Accessible::Value(Value::Undetermined)
@@ -393,9 +411,13 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                             }
                             Top::Model(_) => {
                                 match item {
-                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::Identifier(_) => todo!("return model field enum here"),
                                     ExpressionKind::ArgumentList(a) => {
                                         context.insert_diagnostics_error(a.span, "Model cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Call(c) => {
+                                        context.insert_diagnostics_error(c.span, "Model cannot be called");
                                         return Accessible::Value(Value::Undetermined)
                                     }
                                     ExpressionKind::Subscript(s) => {
@@ -407,9 +429,13 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                             }
                             Top::Interface(_) => {
                                 match item {
-                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::Identifier(_) => todo!("return interface field enum here"),
                                     ExpressionKind::ArgumentList(a) => {
                                         context.insert_diagnostics_error(a.span, "Interface cannot be called");
+                                        return Accessible::Value(Value::Undetermined)
+                                    }
+                                    ExpressionKind::Call(c) => {
+                                        context.insert_diagnostics_error(c.span, "Interface cannot be called");
                                         return Accessible::Value(Value::Undetermined)
                                     }
                                     ExpressionKind::Subscript(s) => {
@@ -419,9 +445,22 @@ fn resolve_unit<'a>(unit: &Unit, context: &'a ResolverContext<'a>, expected: &Ty
                                     _ => unreachable!()
                                 }
                             }
-                            Top::Namespace(_) => {
+                            Top::Namespace(namespace) => {
                                 match item {
-                                    ExpressionKind::Identifier(_) => todo!("return model field here"),
+                                    ExpressionKind::Identifier(identifier) => {
+                                        if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
+                                            current = Accessible::Reference(Reference {
+                                                path: top.path().clone(),
+                                                r#type: ReferenceType::Default,
+                                            })
+                                        } else {
+                                            context.insert_diagnostics_error(identifier.span, "Invalid reference");
+                                            return Accessible::Value(Value::Undetermined)
+                                        }
+                                    },
+                                    ExpressionKind::Call(c) => {
+                                        todo!("resolve and call")
+                                    }
                                     ExpressionKind::ArgumentList(a) => {
                                         context.insert_diagnostics_error(a.span, "Namespace cannot be called");
                                         return Accessible::Value(Value::Undetermined)
