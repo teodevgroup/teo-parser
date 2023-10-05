@@ -95,7 +95,7 @@ fn resolve_enum_member_expression<'a>(expression: &ExpressionKind, context: &Res
         },
         ExpressionKind::NumericLiteral(n) => n.value.as_int().unwrap(),
         ExpressionKind::Group(g) => resolve_enum_member_expression(g.expression.as_ref(), context, map),
-        ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.value.as_str()) {
+        ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.identifier.name()) {
             *v
         } else {
             context.insert_diagnostics_error(e.span, "EnumMemberError: Enum member is not defined");

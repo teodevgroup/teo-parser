@@ -91,7 +91,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::DateTime => None,
         Type::File => None,
         Type::Array(_) => None,
-        Type::Dictionary(_, _) => Some("TypeError: invalid form action input type: Dictionary is not supported"),
+        Type::Dictionary(_) => Some("TypeError: invalid form action input type: Dictionary is not supported"),
         Type::Tuple(_) => Some("TypeError: invalid form action input type: Tuple is not supported"),
         Type::Range(_) => Some("TypeError: invalid form action input type: Range is not supported"),
         Type::Union(_) => Some("TypeError: invalid form action input type: Union is not supported"),
@@ -144,10 +144,7 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::DateTime => None,
         Type::File => Some("TypeError: invalid form action input type: file is not supported in json input"),
         Type::Array(inner) => is_valid_json_input_type(inner.as_ref(), context),
-        Type::Dictionary(k, v) => {
-            if let Some(msg) = is_valid_json_input_type(k.as_ref(), context) {
-                return Some(msg);
-            }
+        Type::Dictionary(v) => {
             if let Some(msg) = is_valid_json_input_type(v.as_ref(), context) {
                 return Some(msg);
             }
@@ -206,10 +203,7 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::DateTime => None,
         Type::File => Some("TypeError: invalid form action output type: file is not supported in json output"),
         Type::Array(inner) => is_valid_json_output_type(inner.as_ref(), context),
-        Type::Dictionary(k, v) => {
-            if let Some(msg) = is_valid_json_output_type(k.as_ref(), context) {
-                return Some(msg);
-            }
+        Type::Dictionary(v) => {
             if let Some(msg) = is_valid_json_output_type(v.as_ref(), context) {
                 return Some(msg);
             }

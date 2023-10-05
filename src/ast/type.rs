@@ -12,6 +12,7 @@ pub enum TypeOp {
 }
 
 impl Display for TypeOp {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             TypeOp::BitOr => f.write_str("|"),
@@ -28,6 +29,7 @@ pub(crate) struct TypeBinaryOp {
 }
 
 impl Display for TypeBinaryOp {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.lhs, f)?;
         f.write_str(" ")?;
@@ -131,7 +133,7 @@ pub(crate) enum Type {
     DateTime,
     File,
     Array(Box<Type>),
-    Dictionary(Box<Type>, Box<Type>),
+    Dictionary(Box<Type>),
     Tuple(Vec<Type>),
     Range(Box<Type>),
     Union(Vec<Type>),
@@ -154,9 +156,9 @@ impl Type {
         if self.is_container() {
             match self {
                 Type::Array(t) => t.as_ref().contains(f),
-                Type::Dictionary(k, v) => {
+                Type::Dictionary(v) => {
                     let matcher = |f: &dyn Fn(&Self) -> bool, t: &Type | { f(t) };
-                    matcher(&f, k.as_ref()) || matcher(&f, v.as_ref())
+                    matcher(&f, v.as_ref())
                 },
                 Type::Tuple(t) => t.iter().find(|t| f(*t)).is_some(),
                 Type::Range(t) => t.as_ref().contains(f),
@@ -185,7 +187,7 @@ impl Type {
             Type::DateTime => false,
             Type::File => false,
             Type::Array(_) => true,
-            Type::Dictionary(_, _) => true,
+            Type::Dictionary(_) => true,
             Type::Tuple(_) => true,
             Type::Range(_) => true,
             Type::Union(_) => true,
@@ -220,7 +222,7 @@ impl Type {
             Type::DateTime => self.clone(),
             Type::File => self.clone(),
             Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
-            Type::Dictionary(k, v) => Type::Dictionary(Box::new(k.replace_generics(map)), Box::new(v.replace_generics(map))),
+            Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_generics(map))),
             Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
             Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
             Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
@@ -275,6 +277,17 @@ impl Type {
     pub(crate) fn as_array(&self) -> Option<&Type> {
         match self {
             Self::Array(inner) => Some(inner.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_dictionary(&self) -> bool {
+        self.as_dictionary().is_some()
+    }
+
+    pub(crate) fn as_dictionary(&self) -> Option<&Type> {
+        match self {
+            Self::Dictionary(v) => Some(v.as_ref()),
             _ => None,
         }
     }
@@ -345,7 +358,7 @@ impl Type {
             Decimal |
             File |
             Array(_) |
-            Dictionary(_, _) |
+            Dictionary(_) |
             Tuple(_) => true,
             Optional(inner) => inner.is_builtin(),
             _ => false,

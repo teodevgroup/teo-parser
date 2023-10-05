@@ -133,10 +133,7 @@ impl<'a> ResolverContext<'a> {
                 }
                 value.as_array().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
             }
-            Type::Dictionary(k, vt) => {
-                if !k.is_string() {
-                    return false;
-                }
+            Type::Dictionary(vt) => {
                 if !value.is_dictionary() {
                     return false;
                 }

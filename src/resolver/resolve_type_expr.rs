@@ -183,9 +183,7 @@ fn resolve_type_item<'a>(
             },
             "Map" => {
                 request_double_generics("Map", type_item, context);
-                Some(Type::Dictionary(Box::new(type_item.generics.get(0).map_or(Type::String, |t| {
-                    resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
-                })), Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
+                Some(Type::Dictionary(Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
                     resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
                 }))))
             },
@@ -260,7 +258,7 @@ fn resolve_type_item<'a>(
     if !type_item.arity.is_scalar() {
         match type_item.arity {
             Arity::Array => base = Some(Type::Array(Box::new(base.unwrap()))),
-            Arity::Dictionary => base = Some(Type::Dictionary(Box::new(Type::String), Box::new(base.unwrap()))),
+            Arity::Dictionary => base = Some(Type::Dictionary(Box::new(base.unwrap()))),
             _ => (),
         }
         if type_item.collection_optional {

@@ -1,10 +1,15 @@
+use std::ops::Neg;
+use maplit::hashmap;
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::value::Value;
 use crate::ast::accessible::Accessible;
+use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
-use crate::ast::literals::{ArrayLiteral, BoolLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::ast::r#type::Type;
+use crate::ast::reference::ReferenceType;
+use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
@@ -12,13 +17,13 @@ pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a Re
 }
 
 pub(super) fn resolve_expression_and_unwrap_value<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
-    expression.resolve(resolve_expression_kind_and_unwrap_value(&expression.kind, context, expected))
+    expression.resolve(Accessible::Value(resolve_expression_kind_and_unwrap_value(&expression.kind, context, expected)))
 }
 
 pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type) -> Accessible {
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected),
-        ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected),
+        ExpressionKind::ArithExpr(e) => Accessible::Value(resolve_arith_expr(e, context, expected)),
         ExpressionKind::NumericLiteral(n) => Accessible::Value(resolve_numeric_literal(n, context, expected)),
         ExpressionKind::StringLiteral(e) => Accessible::Value(resolve_string_literal(e, context, expected)),
         ExpressionKind::RegExpLiteral(e) => Accessible::Value(resolve_regexp_literal(e, context, expected)),
@@ -27,10 +32,15 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
         ExpressionKind::EnumVariantLiteral(e) => Accessible::Value(resolve_enum_variant_literal(e, context, expected)),
         ExpressionKind::TupleLiteral(t) => Accessible::Value(resolve_tuple_literal(t, context, expected)),
         ExpressionKind::ArrayLiteral(a) => Accessible::Value(resolve_array_literal(a, context, expected)),
-        ExpressionKind::DictionaryLiteral(_) => {}
-        ExpressionKind::Identifier(_) => {}
-        ExpressionKind::ArgumentList(_) => {}
-        ExpressionKind::Subscript(_) => {}
+        ExpressionKind::DictionaryLiteral(d) => Accessible::Value(resolve_dictionary_literal(d, context, expected)),
+        ExpressionKind::Identifier(i) => if let Some(reference) = resolve_identifier(i, context, ReferenceType::Default) {
+            Accessible::Reference(reference.clone())
+        } else {
+            context.insert_diagnostics_error(i.span, "ReferenceError: undefined identifier");
+            Accessible::Value(Value::Undetermined)
+        }
+        ExpressionKind::ArgumentList(_) => unreachable!(),
+        ExpressionKind::Subscript(_) => unreachable!(),
         ExpressionKind::Unit(_) => {}
         ExpressionKind::Pipeline(_) => {}
     }
@@ -131,5 +141,64 @@ fn resolve_tuple_literal<'a>(t: &TupleLiteral, context: &'a ResolverContext<'a>,
 }
 
 fn resolve_array_literal<'a>(a: &ArrayLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Value {
+    let r#type = expected.as_array();
+    let mut retval = vec![];
+    let undetermined = Type::Undetermined;
+    for (i, e) in &a.expressions.iter().enumerate() {
+        retval.push(resolve_expression_kind_and_unwrap_value(e, context, r#type.unwrap_or(&undetermined)));
+    }
+    Value::Array(retval)
+}
 
+fn resolve_dictionary_literal<'a>(a: &DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Value {
+    let undetermined = Type::Undetermined;
+    let r#type = if let Some(v) = expected.as_dictionary() {
+        v
+    } else {
+        &undetermined
+    };
+    let mut retval = hashmap!{};
+    for (k, v) in a.expressions.iter() {
+        let k_value = resolve_expression_kind_and_unwrap_value(k, context, &Type::String);
+        if !k_value.is_string() {
+            context.insert_diagnostics_error(k.span(), "ValueError: dictionary key is not String");
+        }
+        let k_str = k_value.as_str().unwrap().to_owned();
+        let v_value = resolve_expression_kind_and_unwrap_value(v, context, r#type);
+        retval.insert(k_str, v_value);
+    }
+    Value::Dictionary(retval)
+}
+
+fn resolve_arith_expr<'a>(arith_expr: &ArithExpr, context: &'a ResolverContext<'a>, expected: &Type) -> Value {
+    match arith_expr {
+        ArithExpr::Expression(e) => resolve_expression_kind_and_unwrap_value(e.as_ref(), context, expected),
+        ArithExpr::UnaryOp(unary) => {
+            let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected);
+            if !v.is_undetermined() {
+                match unary.op {
+                    Op::Neg => if let Ok(result) = v.neg() {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::Not => if let Ok(result) = v.normal_not() {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::BitNeg => if let Ok(result) = v.not() {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
+        ArithExpr::BinaryOp(_) => {}
+    }
 }
