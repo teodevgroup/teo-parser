@@ -1,6 +1,7 @@
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use maplit::hashmap;
 use teo_teon::types::enum_variant::EnumVariant;
+use teo_teon::types::range::Range;
 use teo_teon::value::Value;
 use crate::ast::accessible::Accessible;
 use crate::ast::arith::{ArithExpr, Op};
@@ -271,13 +272,52 @@ fn resolve_arith_expr<'a>(arith_expr: &ArithExpr, context: &'a ResolverContext<'
                     Op::Lte => Value::Bool(lhs <= rhs),
                     Op::Eq => Value::Bool(lhs == rhs),
                     Op::Neq => Value::Bool(lhs != rhs),
-                    Op::RangeOpen => {}
-                    Op::RangeClose => {}
+                    Op::RangeOpen => if let Some(result) = build_range(lhs, rhs, false) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
+                    Op::RangeClose => if let Some(result) = build_range(lhs, rhs, true) {
+                        result
+                    } else {
+                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        Value::Undetermined
+                    }
                     _ => unreachable!()
                 }
             } else {
                 Value::Undetermined
             }
         }
+    }
+}
+
+fn build_range(lhs: Value, rhs: Value, closed: bool) -> Option<Value> {
+    let valid = if lhs.is_int() && rhs.is_int() {
+        true
+    } else if lhs.is_int64() && rhs.is_int64() {
+        true
+    } else if lhs.is_float32() && rhs.is_float32() {
+        true
+    } else if lhs.is_float() && rhs.is_float() {
+        true
+    } else if lhs.is_decimal() && rhs.is_decimal() {
+        true
+    } else if lhs.is_date() && rhs.is_date() {
+        true
+    } else if lhs.is_datetime() && rhs.is_datetime() {
+        true
+    } else {
+        false
+    };
+    if valid {
+        Some(Value::Range(Range {
+            closed,
+            start: Box::new(lhs),
+            end: Box::new(rhs),
+        }))
+    } else {
+        None
     }
 }
