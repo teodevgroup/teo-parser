@@ -16,6 +16,7 @@ use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolve_identifier::{resolve_identifier, top_filter_for_reference_type};
+use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
@@ -48,7 +49,7 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected),
-        ExpressionKind::Pipeline(p) => unreachable!(), // resolve_pipeline(p, context, expected),
+        ExpressionKind::Pipeline(p) => Accessible::Value(resolve_pipeline(p, context)),
         ExpressionKind::Call(_) => unreachable!(),
     }
 }

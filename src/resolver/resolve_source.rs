@@ -1,6 +1,8 @@
 use crate::ast::top::Top;
 use crate::resolver::resolve_action_group::resolve_action_group;
+use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
+use crate::resolver::resolve_data_set::{resolve_data_set, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
 use crate::resolver::resolve_interface::resolve_interface;
@@ -13,11 +15,11 @@ use crate::resolver::resolver_context::ResolverContext;
 pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
     for top in context.source().tops() {
         match top {
-            Top::Import(import) => (), // resolve_import(import, context),
+            Top::Import(_) => (), // resolved when parsing,
             Top::Constant(_) => (), // only resolve when used
             Top::Enum(r#enum) => resolve_enum(r#enum, context),
             Top::Model(model) => resolve_model(model, context),
-            Top::Config(config) => (), // resolve_config(config, context),
+            Top::Config(config) => resolve_config(config, context),
             Top::DataSet(_) => (), // do not resolve yet
             Top::Middleware(middleware) => resolve_middleware(middleware, context),
             Top::Interface(interface) => resolve_interface(interface, context),
@@ -33,7 +35,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
 pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
     for top in context.source().tops() {
         match top {
-            Top::DataSet(data_set) => (), // resolve_data_set(data_set, context),
+            Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             _ => ()
         }
@@ -43,7 +45,7 @@ pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
 pub(super) fn resolve_source_third<'a>(context: &'a ResolverContext<'a>) {
     for top in context.source().tops() {
         match top {
-            Top::DataSet(data_set) => (), //resolve_data_set_records(data_set, context),
+            Top::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_third(namespace, context),
             _ => ()
         }

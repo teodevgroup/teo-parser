@@ -3,6 +3,7 @@ use crate::ast::top::Top;
 use crate::resolver::resolve_action_group::resolve_action_group;
 use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
+use crate::resolver::resolve_data_set::{resolve_data_set, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
 use crate::resolver::resolve_interface::resolve_interface;
@@ -37,7 +38,7 @@ pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
-            Top::DataSet(data_set) => (), //resolve_data_set(data_set, context),
+            Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             _ => ()
         }
@@ -49,7 +50,7 @@ pub(super) fn resolve_namespace_third<'a>(namespace: &'a Namespace, context: &'a
     context.push_namespace(namespace);
     for top in namespace.tops() {
         match top {
-            Top::DataSet(data_set) => (), // resolve_data_set_records(data_set, context),
+            Top::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_third(namespace, context),
             _ => ()
         }
