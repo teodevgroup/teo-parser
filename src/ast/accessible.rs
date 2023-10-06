@@ -1,7 +1,7 @@
 use teo_teon::value::Value;
 use crate::ast::reference::Reference;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Accessible {
     Value(Value),
     Reference(Reference),
