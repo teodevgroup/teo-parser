@@ -245,7 +245,7 @@ named_argument = { identifier ~ ":" ~ expression }
 // #############
 // function call, decorator and pipeline
 // #############
-item_decorator = { "@" ~ identifier_unit }
+item_decorator = { "@" ~ identifier_path ~ argument_list? }
 pipeline = { "$" ~ identifier_unit }
 
 // #############

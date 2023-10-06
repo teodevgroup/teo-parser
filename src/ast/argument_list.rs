@@ -9,6 +9,7 @@ pub struct ArgumentList {
 }
 
 impl Default for ArgumentList {
+
     fn default() -> Self {
         Self { arguments: Vec::default(), span: Span::default(), }
     }
