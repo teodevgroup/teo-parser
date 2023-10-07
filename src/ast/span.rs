@@ -37,6 +37,15 @@ impl Span {
     pub(crate) fn overlaps(&self, other: Span) -> bool {
         self.contains(other.start) || self.contains(other.end)
     }
+
+    pub(crate) fn merge(&self, other: &Span) -> Span {
+        Span {
+            start: if self.start < other.start { self.start } else { other.start },
+            end: if self.end < other.end { other.end } else { self.end },
+            start_position: if self.start < other.start { self.start_position } else { other.start_position },
+            end_position: if self.end < other.end { other.end_position } else { self.end_position },
+        }
+    }
 }
 
 impl Display for Span {
