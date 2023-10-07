@@ -280,20 +280,28 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(super) fn insert_diagnostics_error(&self, span: Span, message: impl Into<String>) {
-        self.diagnostics().insert(DiagnosticsError::new(
+    pub(super) fn generate_diagnostics_error(&self, span: Span, message: impl Into<String>) -> DiagnosticsError {
+        DiagnosticsError::new(
             span,
             message,
             self.source().file_path.clone()
-        ))
+        )
+    }
+
+    pub(super) fn insert_diagnostics_error(&self, span: Span, message: impl Into<String>) {
+        self.diagnostics().insert(self.generate_diagnostics_error(span, message))
+    }
+
+    pub(super) fn generate_diagnostics_warning(&self, span: Span, message: impl Into<String>) -> DiagnosticsWarning {
+        DiagnosticsWarning::new(
+            span,
+            message,
+            self.source().file_path.clone()
+        )
     }
 
     pub(super) fn insert_diagnostics_warning(&self, span: Span, message: impl Into<String>) {
-        self.diagnostics().insert(DiagnosticsWarning::new(
-            span,
-            message,
-            self.source().file_path.clone()
-        ))
+        self.diagnostics().insert(self.generate_diagnostics_warning(span, message))
     }
 
     pub(super) fn insert_duplicated_identifier(&self, span: Span) {

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::argument::Argument;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::{Expression, ExpressionKind};
@@ -38,5 +39,6 @@ pub(super) fn parse_argument(pair: Pair<'_>, context: &mut ParserContext) -> Arg
         span,
         name,
         value: Expression::new(value.unwrap_or(ExpressionKind::NullLiteral(NullLiteral::default()))),
+        resolved: RefCell::new(None),
     }
 }

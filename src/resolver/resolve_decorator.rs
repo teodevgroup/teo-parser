@@ -13,6 +13,7 @@ pub(super) fn resolve_decorator<'a>(
         decorator.resolve(DecoratorResolved { path: reference.path });
         let decorator_declaration = context.schema.find_top_by_path(&decorator.resolved().path).unwrap().as_decorator_declaration().unwrap();
         resolve_argument_list(
+            decorator.identifier_path.identifiers.last().unwrap(),
             decorator.argument_list.as_ref(),
             if decorator_declaration.has_variants() {
                 decorator_declaration.variants.iter().map(|variant| {
