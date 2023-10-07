@@ -1,4 +1,3 @@
-use std::ops::Index;
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::argument_list::ArgumentList;
