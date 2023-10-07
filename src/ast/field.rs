@@ -3,6 +3,7 @@ use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::r#type::{TypeExpr, TypeItem};
 use crate::ast::identifier::Identifier;
+use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 
 #[derive(Debug, Copy, Clone)]
@@ -53,6 +54,16 @@ impl FieldClass {
         self.is_model_field() ||
         self.is_model_relation() ||
         self.is_model_property()
+    }
+
+    pub(crate) fn reference_type(&self) -> ReferenceType {
+        match self {
+            FieldClass::ModelPrimitiveField => ReferenceType::ModelFieldDecorator,
+            FieldClass::ModelRelation => ReferenceType::ModelRelationDecorator,
+            FieldClass::ModelProperty => ReferenceType::ModelPropertyDecorator,
+            FieldClass::InterfaceField => ReferenceType::InterfaceFieldDecorator,
+            FieldClass::ConfigDeclarationField => ReferenceType::Default,
+        }
     }
 }
 
