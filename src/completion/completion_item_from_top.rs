@@ -36,7 +36,7 @@ pub(super) fn completion_item_from_decorator_declaration(decorator_declaration: 
         label: decorator_declaration.identifier.name.clone(),
         namespace_path: Some(readable_namespace_path(&decorator_declaration.string_path)),
         documentation: decorator_declaration.comment.as_ref().map(|c| {
-            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("## {}\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
+            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
         }),
         detail: None,
     }
