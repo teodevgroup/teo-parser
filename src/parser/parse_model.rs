@@ -22,6 +22,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
             Rule::BLOCK_OPEN => string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name())),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::item_decorator => decorators.push(parse_decorator(current, context)),
+            Rule::empty_item_decorator => (),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),

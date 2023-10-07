@@ -116,6 +116,9 @@ pub(super) fn parse_source(
             _ => (),
         }
     }
+    if builtin {
+        context.schema_references.builtin_sources.push(id);
+    }
     Source::new(
         id,
         if builtin { SourceType::Builtin } else { SourceType::Normal },

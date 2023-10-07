@@ -246,6 +246,7 @@ named_argument = { identifier ~ ":" ~ expression }
 // function call, decorator and pipeline
 // #############
 item_decorator = { "@" ~ identifier_path ~ argument_list? }
+empty_item_decorator = { "@" }
 pipeline = { "$" ~ identifier_unit }
 
 // #############
@@ -313,7 +314,7 @@ model_declaration = {
 // #############
 field_declaration = {
     triple_comment_block? ~
-    (item_decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)*
+    (item_decorator | double_comment_block | empty_item_decorator | (NEWLINE | WHITESPACE))*
     ~ identifier
     ~ COLON
     ~ type_expression
