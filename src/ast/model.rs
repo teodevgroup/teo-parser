@@ -1,13 +1,8 @@
-use std::cmp::Ordering;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
-use itertools::Itertools;
-use crate::ast::reference::ReferenceType;
-use crate::completion::completion::CompletionItem;
-use crate::completion::completion_context::CompletionContext;
 
 #[derive(Debug)]
 pub struct Model {
@@ -62,19 +57,5 @@ impl Model {
 
     pub(crate) fn field_named(&self, key: &str) -> Option<&Field> {
         self.fields.iter().find(|f| f.name() == key)
-    }
-
-    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
-        for field in &self.fields {
-            if field.span.contains_line_col(line_col) {
-                return field.find_auto_complete_items(context, line_col);
-            }
-        }
-        for decorator in &self.decorators {
-            if decorator.span.contains_line_col(line_col) {
-                return decorator.find_auto_complete_items(context, line_col, ReferenceType::ModelDecorator);
-            }
-        }
-        vec![]
     }
 }

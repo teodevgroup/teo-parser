@@ -1,12 +1,10 @@
 use std::cell::RefCell;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::r#type::{TypeExpr, TypeItem};
+use crate::ast::r#type::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
-use crate::completion::completion::CompletionItem;
-use crate::completion::completion_context::CompletionContext;
 
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum FieldHint {
@@ -97,12 +95,5 @@ impl Field {
 
     pub(crate) fn resolved(&self) -> &FieldResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
-        for decorator in &self.decorators {
-            return decorator.find_auto_complete_items(context, line_col, self.resolved().class.reference_type());
-        }
-        vec![]
     }
 }

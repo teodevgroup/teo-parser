@@ -6,10 +6,11 @@ pub mod diagnostics;
 pub mod utils;
 pub(crate) mod completion;
 pub(crate) mod definition;
+pub(crate) mod search;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;
-use crate::completion::completion::CompletionItem;
+use crate::completion::completion_item::CompletionItem;
 use crate::definition::definition::Definition;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::diagnostics::formatter::format_to_json;
@@ -45,5 +46,5 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
 }
 
 pub fn auto_complete_items(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<CompletionItem> {
-    completion::completion::find_auto_complete_items(schema, file_path, line_col)
+    completion::find_completion::find_completion(schema, file_path, line_col)
 }

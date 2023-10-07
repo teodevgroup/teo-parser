@@ -15,9 +15,10 @@ use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::resolver::resolve_constant::resolve_constant;
-use crate::resolver::resolve_identifier::{resolve_identifier, top_filter_for_reference_type};
+use crate::resolver::resolve_identifier::{resolve_identifier};
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
     expression.resolve(resolve_expression_kind(&expression.kind, context, expected))

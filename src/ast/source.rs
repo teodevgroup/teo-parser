@@ -3,10 +3,7 @@ use std::sync::Arc;
 use maplit::btreeset;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
-use crate::ast::schema::Schema;
 use crate::ast::top::Top;
-use crate::completion::completion::CompletionItem;
-use crate::completion::completion_context::CompletionContext;
 use crate::definition::definition::Definition;
 use crate::definition::definition_context::DefinitionContext;
 
@@ -119,6 +116,7 @@ impl Source {
     }
 
     pub(crate) fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
+        if path.len() == 0 { return None }
         let mut ns = self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|r| *r);
         for (index, item) in path.iter().enumerate() {
             if index > 0 {
@@ -136,15 +134,6 @@ impl Source {
         for top in self.tops() {
             if top.span().contains_line_col(line_col) {
                 return top.jump_to_definition(context, line_col);
-            }
-        }
-        vec![]
-    }
-
-    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
-        for top in self.tops() {
-            if top.span().contains_line_col(line_col) {
-                return top.find_auto_complete_items(context, line_col);
             }
         }
         vec![]

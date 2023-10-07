@@ -19,6 +19,10 @@ impl Schema {
         self.sources.get(&id)
     }
 
+    pub(crate) fn source_at_path(&self, path: &str) -> Option<&Source> {
+        self.sources().iter().find_map(|s| if s.file_path.as_str() == path { Some(*s) } else { None })
+    }
+
     pub(crate) fn builtin_sources(&self) -> Vec<&Source> {
         self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
     }

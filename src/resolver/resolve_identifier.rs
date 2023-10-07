@@ -5,6 +5,7 @@ use crate::ast::reference::{Reference, ReferenceType};
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_identifier(
     identifier: &Identifier,
@@ -98,25 +99,4 @@ fn resolve_identifier_path_in_source(
         }
     }
     None
-}
-
-pub(super) fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn Fn(&Top) -> bool> {
-    match reference_type {
-        ReferenceType::EnumDecorator |
-        ReferenceType::EnumMemberDecorator |
-        ReferenceType::ModelDecorator |
-        ReferenceType::ModelFieldDecorator |
-        ReferenceType::ModelRelationDecorator |
-        ReferenceType::ModelPropertyDecorator |
-        ReferenceType::InterfaceDecorator |
-        ReferenceType::InterfaceFieldDecorator => Arc::new(move |top: &Top| {
-            top.as_decorator_declaration().map_or(false, |d| d.decorator_class == reference_type)
-        }),
-        ReferenceType::PipelineItem => Arc::new(|top: &Top| {
-            top.as_pipeline_item_declaration().is_some()
-        }),
-        ReferenceType::Default => Arc::new(|top: &Top| {
-            top.is_enum() || top.is_model() || top.is_interface() || top.is_config() || top.is_constant() || top.is_namespace()
-        }),
-    }
 }
