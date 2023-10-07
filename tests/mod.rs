@@ -1,5 +1,5 @@
 mod test {
-    use teo_parser::{parse, print_to_terminal, generate_json_diagnostics};
+    use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items};
 
     #[test]
     fn print() {
@@ -18,5 +18,13 @@ mod test {
     fn print_dup() {
         let (_, diagnostics) = parse("/Users/victor/Developer/teo-namespace-example/schema.teo", None, None);
         print_to_terminal(&diagnostics)
+    }
+
+    #[test]
+    fn auto_completion() {
+        let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
+        let (schema, _) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (4, 6));
+        println!("{:?}", completions);
     }
 }

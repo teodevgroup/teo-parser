@@ -2,6 +2,7 @@ use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
+use crate::utils::output::readable_namespace_path;
 
 pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
     match top {
@@ -24,7 +25,7 @@ pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
 pub(super) fn completion_item_from_namespace(namespace: &Namespace) -> CompletionItem {
     CompletionItem {
         label: namespace.identifier.name.clone(),
-        label_detail: Some("label detail".to_owned()),
+        namespace_path: Some(readable_namespace_path(&namespace.string_path)),
         documentation: Some("namespace doc".to_owned()),
         detail: Some("detail".to_owned()),
     }
@@ -33,8 +34,10 @@ pub(super) fn completion_item_from_namespace(namespace: &Namespace) -> Completio
 pub(super) fn completion_item_from_decorator_declaration(decorator_declaration: &DecoratorDeclaration) -> CompletionItem {
     CompletionItem {
         label: decorator_declaration.identifier.name.clone(),
-        label_detail: Some("label detail".to_owned()),
-        documentation: decorator_declaration.comment.as_ref().map(|c| c.desc.clone()).flatten(),
-        detail: Some("detail".to_owned()),
+        namespace_path: Some(readable_namespace_path(&decorator_declaration.string_path)),
+        documentation: decorator_declaration.comment.as_ref().map(|c| {
+            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("## {}\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
+        }),
+        detail: None,
     }
 }

@@ -32,6 +32,7 @@ pub(super) fn resolve_field<'a>(
             for decorator in &field.decorators {
                 resolve_decorator(decorator, context, field_class.reference_type());
             }
+            field.resolve(FieldResolved { class: field_class });
         }
     }
     resolve_type_expr(

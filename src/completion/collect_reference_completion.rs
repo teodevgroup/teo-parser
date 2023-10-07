@@ -38,9 +38,11 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
         }
     }
     for builtin_source in schema.builtin_sources() {
-        result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, filter, examined_sources));
-        if let Some(namespace) = builtin_source.find_child_namespace_by_string_path(&vec!["std"]) {
-            result.extend(collect_reference_completion_in_namespace(namespace, filter));
+        if !examined_sources.contains(&builtin_source.file_path.as_str()) {
+            result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, filter, examined_sources));
+            if let Some(namespace) = builtin_source.find_child_namespace_by_string_path(&vec!["std"]) {
+                result.extend(collect_reference_completion_in_namespace(namespace, filter));
+            }
         }
     }
     result
