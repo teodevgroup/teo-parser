@@ -5,6 +5,7 @@ use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use itertools::Itertools;
+use crate::ast::reference::ReferenceType;
 use crate::completion::completion::CompletionItem;
 use crate::completion::completion_context::CompletionContext;
 
@@ -63,7 +64,17 @@ impl Model {
         self.fields.iter().find(|f| f.name() == key)
     }
 
-    pub(crate) fn find_auto_complete_items(&self, context: &CompletionContext, line_col: (usize, usize)) -> Vec<CompletionItem> {
+    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
+        for field in &self.fields {
+            if field.span.contains_line_col(line_col) {
+                return field.find_auto_complete_items(context, line_col);
+            }
+        }
+        for decorator in &self.decorators {
+            if decorator.span.contains_line_col(line_col) {
+                return decorator.find_auto_complete_items(context, line_col, ReferenceType::ModelDecorator);
+            }
+        }
         vec![]
     }
 }

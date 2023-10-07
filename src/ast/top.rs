@@ -271,8 +271,9 @@ impl Top {
         }
     }
 
-    pub(crate) fn find_auto_complete_items(&self, context: &CompletionContext, line_col: (usize, usize)) -> Vec<CompletionItem> {
+    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
         match self {
+            Top::Namespace(n) => n.find_auto_complete_items(context, line_col),
             Top::Model(m) => m.find_auto_complete_items(context, line_col),
             _ => vec![],
         }

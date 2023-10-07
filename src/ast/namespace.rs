@@ -13,6 +13,8 @@ use crate::ast::model::Model;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
+use crate::completion::completion::CompletionItem;
+use crate::completion::completion_context::CompletionContext;
 
 #[derive(Debug)]
 pub(crate) struct Namespace {
@@ -139,6 +141,16 @@ impl Namespace {
             }
         }
         Some(retval)
+    }
+
+    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
+        context.push_namespace(self);
+        for top in self.tops() {
+            if top.span().contains_line_col(line_col) {
+                return top.find_auto_complete_items(context, line_col);
+            }
+        }
+        vec![]
     }
 }
 

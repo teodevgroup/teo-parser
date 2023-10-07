@@ -141,7 +141,7 @@ impl Source {
         vec![]
     }
 
-    pub(crate) fn find_auto_complete_items(&self, context: &CompletionContext, line_col: (usize, usize)) -> Vec<CompletionItem> {
+    pub(crate) fn find_auto_complete_items<'a>(&'a self, context: &mut CompletionContext<'a>, line_col: (usize, usize)) -> Vec<CompletionItem> {
         for top in self.tops() {
             if top.span().contains_line_col(line_col) {
                 return top.find_auto_complete_items(context, line_col);
