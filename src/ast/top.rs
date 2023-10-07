@@ -12,6 +12,8 @@ use crate::ast::namespace::Namespace;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
+use crate::completion::completion::CompletionItem;
+use crate::completion::completion_context::CompletionContext;
 use crate::definition::definition::Definition;
 use crate::definition::definition_context::DefinitionContext;
 
@@ -266,6 +268,13 @@ impl Top {
             // Top::Namespace(t) => t.jump_to_definition(context, line_col_range),
             // Top::DecoratorDeclaration(t) => t.jump_to_definition(context, line_col_range),
             // Top::PipelineItemDeclaration(t) => t.jump_to_definition(context, line_col_range),
+        }
+    }
+
+    pub(crate) fn find_auto_complete_items(&self, context: &CompletionContext, line_col: (usize, usize)) -> Vec<CompletionItem> {
+        match self {
+            Top::Model(m) => m.find_auto_complete_items(context, line_col),
+            _ => vec![],
         }
     }
 }

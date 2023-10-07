@@ -4,10 +4,12 @@ mod builtin;
 pub mod resolver;
 pub mod diagnostics;
 pub mod utils;
+pub(crate) mod completion;
 pub(crate) mod definition;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;
+use crate::completion::completion::CompletionItem;
 use crate::definition::definition::Definition;
 use crate::diagnostics::diagnostics::Diagnostics;
 use crate::diagnostics::formatter::format_to_json;
@@ -40,4 +42,8 @@ pub fn generate_json_diagnostics(diagnostics: &Diagnostics, include_warnings: bo
 
 pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<Definition> {
     definition::definition::jump_to_definition(schema, file_path, line_col)
+}
+
+pub fn auto_complete_items(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<CompletionItem> {
+    completion::completion::find_auto_complete_items(schema, file_path, line_col)
 }

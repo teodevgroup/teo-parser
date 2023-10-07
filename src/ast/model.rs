@@ -5,6 +5,8 @@ use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use itertools::Itertools;
+use crate::completion::completion::CompletionItem;
+use crate::completion::completion_context::CompletionContext;
 
 #[derive(Debug)]
 pub struct Model {
@@ -59,5 +61,9 @@ impl Model {
 
     pub(crate) fn field_named(&self, key: &str) -> Option<&Field> {
         self.fields.iter().find(|f| f.name() == key)
+    }
+
+    pub(crate) fn find_auto_complete_items(&self, context: &CompletionContext, line_col: (usize, usize)) -> Vec<CompletionItem> {
+        vec![]
     }
 }
