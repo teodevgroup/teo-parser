@@ -14,7 +14,7 @@ namespace std {
     let ENV = EnvVars()
 
     declare struct Bool {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct String {
@@ -22,35 +22,35 @@ namespace std {
     }
 
     declare struct Int {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct Int64 {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct Float {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct Float32 {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct Decimal {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct Date {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct DateTime {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     declare struct ObjectId {
-        declare static function new(from?: String): Self?
+        declare static function new(from?: String): Result<Self>
     }
 
     /// @name Action

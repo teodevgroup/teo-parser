@@ -31,6 +31,8 @@ mod parse_generics;
 mod parse_argument_list_declaration;
 mod parse_middleware;
 mod parse_action_group;
+mod parse_struct_declaration;
+mod parse_function_declaration;
 
 mod pest_parser;
 mod parser_context;
