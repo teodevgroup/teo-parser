@@ -2,6 +2,57 @@
 /// The Teo standard library
 namespace std {
 
+    /// @name EnvVars
+    /// The environment variables
+    declare struct EnvVars {
+        declare static function new(): Self
+        declare function subscript(key?: String): String?
+    }
+
+    /// @name ENV
+    /// The environment variables
+    let ENV = EnvVars()
+
+    declare struct Bool {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct String {
+        declare static function new(from?: Int | Int64 | Float | Float32 | Bool | ObjectId): Self
+    }
+
+    declare struct Int {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct Int64 {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct Float {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct Float32 {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct Decimal {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct Date {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct DateTime {
+        declare static function new(from?: String): Self?
+    }
+
+    declare struct ObjectId {
+        declare static function new(from?: String): Self?
+    }
+
     /// @name Action
     /// Represents the predefined actions
     interface option enum Action {

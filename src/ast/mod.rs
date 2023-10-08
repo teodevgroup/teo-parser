@@ -39,3 +39,5 @@ pub(crate) mod pipeline_item_declaration;
 pub(crate) mod argument_declaration;
 pub(crate) mod call;
 pub(crate) mod availability;
+pub(crate) mod struct_declaration;
+pub(crate) mod function_declaration;
