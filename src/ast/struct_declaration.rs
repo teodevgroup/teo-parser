@@ -15,3 +15,14 @@ pub(crate) struct StructDeclaration {
     pub(crate) functions: Vec<FunctionDeclaration>,
     pub(crate) span: Span,
 }
+
+impl StructDeclaration {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+}

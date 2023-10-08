@@ -29,6 +29,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::ConfigDeclaration(config_declaration) => resolve_config_declaration(config_declaration, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
+            Top::StructDeclaration(s) => (), // resolve_struct_declaration(s, context)
         }
     }
     context.pop_namespace();

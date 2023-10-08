@@ -1,5 +1,4 @@
 use crate::ast::argument_declaration::ArgumentListDeclaration;
-use crate::ast::argument_list::ArgumentList;
 use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
@@ -16,4 +15,15 @@ pub(crate) struct FunctionDeclaration {
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
     pub(crate) span: Span,
+}
+
+impl FunctionDeclaration {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
 }

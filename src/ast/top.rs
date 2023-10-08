@@ -12,6 +12,7 @@ use crate::ast::namespace::Namespace;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
+use crate::ast::struct_declaration::StructDeclaration;
 use crate::definition::definition::Definition;
 use crate::definition::definition_context::DefinitionContext;
 
@@ -30,6 +31,7 @@ pub(crate) enum Top {
     Namespace(Namespace),
     DecoratorDeclaration(DecoratorDeclaration),
     PipelineItemDeclaration(PipelineItemDeclaration),
+    StructDeclaration(StructDeclaration),
 }
 
 impl Top {
@@ -49,6 +51,7 @@ impl Top {
             Top::Namespace(n) => n.id(),
             Top::DecoratorDeclaration(d) => d.id(),
             Top::PipelineItemDeclaration(p) => p.id(),
+            Top::StructDeclaration(s) => s.id(),
         }
     }
 
@@ -67,6 +70,7 @@ impl Top {
             Top::Namespace(n) => Some(n.identifier.name()),
             Top::DecoratorDeclaration(d) => Some(d.identifier.name()),
             Top::PipelineItemDeclaration(p) => Some(p.identifier.name()),
+            Top::StructDeclaration(s) => Some(s.identifier.name()),
         }
     }
 
@@ -85,6 +89,7 @@ impl Top {
             Top::Namespace(n) => &n.path,
             Top::DecoratorDeclaration(d) => &d.path,
             Top::PipelineItemDeclaration(p) => &p.path,
+            Top::StructDeclaration(s) => &s.path,
         }
     }
 
@@ -103,6 +108,7 @@ impl Top {
             Top::Namespace(n) => n.span,
             Top::DecoratorDeclaration(d) => d.span,
             Top::PipelineItemDeclaration(p) => p.span,
+            Top::StructDeclaration(s) => s.span,
         }
     }
 
@@ -248,6 +254,17 @@ impl Top {
 
     pub(crate) fn is_pipeline_item_declaration(&self) -> bool {
         self.as_pipeline_item_declaration().is_some()
+    }
+
+    pub(crate) fn as_struct_declaration(&self) -> Option<&StructDeclaration> {
+        match self {
+            Top::StructDeclaration(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_struct_declaration(&self) -> bool {
+        self.as_struct_declaration().is_some()
     }
 
     pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col: (usize, usize)) -> Vec<Definition> {

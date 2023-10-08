@@ -28,6 +28,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::ActionGroup(action_group) => resolve_action_group(action_group, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
+            Top::StructDeclaration(s) => (), // resolve_struct_declaration(s, context)
         }
     }
 }

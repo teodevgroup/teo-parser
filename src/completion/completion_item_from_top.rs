@@ -19,6 +19,7 @@ pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
         Top::Namespace(namespace) => completion_item_from_namespace(namespace),
         Top::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),
         Top::PipelineItemDeclaration(_) => unreachable!(),
+        Top::StructDeclaration(_) => unreachable!(),
     }
 }
 
