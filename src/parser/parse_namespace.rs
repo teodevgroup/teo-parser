@@ -2,6 +2,7 @@ use maplit::btreemap;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::top::Top;
 use crate::parser::parse_action_group::parse_action_group_declaration;
+use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
@@ -22,12 +23,14 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
     let parent_path = context.current_path();
     let parent_string_path = context.current_string_path();
     let path = context.next_parent_path();
+    let mut comment = None;
     let mut identifier = None;
     let mut string_path = None;
     let mut references = NamespaceReferences::new();
     let mut tops = btreemap!{};
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
                 string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
@@ -115,6 +118,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
         parent_path,
         string_path: string_path.unwrap(),
         parent_string_path,
+        comment,
         identifier: identifier.unwrap(),
         tops,
         references,
