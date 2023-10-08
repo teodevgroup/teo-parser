@@ -317,7 +317,7 @@ namespace std {
 
     /// @name Id
     /// Specify this field as the model's primary index
-    declare exclusive unique model field decorator id(sort: Sort?, length: Int?, map: String?)
+    declare exclusive model field decorator id(sort: Sort?, length: Int?, map: String?)
 
     /// @name Index
     /// Index this field
