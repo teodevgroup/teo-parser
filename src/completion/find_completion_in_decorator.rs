@@ -3,7 +3,6 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::collect_reference_completion::collect_reference_completion_in_source;
-use crate::completion::completion_context::CompletionContext;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::completion_item_from_top::completion_item_from_top;
 use crate::utils::top_filter::top_filter_for_reference_type;
