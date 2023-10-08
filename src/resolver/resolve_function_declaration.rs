@@ -1,8 +1,6 @@
-use crate::ast::field::{Field, FieldClass, FieldResolved};
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
-use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
