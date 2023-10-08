@@ -22,3 +22,5 @@ mod resolve_expression;
 mod resolve_argument_list;
 mod resolve_data_set;
 mod resolve_field;
+mod resolve_struct_declaration;
+mod resolve_function_declaration;

@@ -10,6 +10,7 @@ use crate::resolver::resolve_middleware::resolve_middleware;
 use crate::resolver::resolve_model::resolve_model;
 use crate::resolver::resolve_namespace::{resolve_namespace_first, resolve_namespace_second, resolve_namespace_third};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration;
+use crate::resolver::resolve_struct_declaration::resolve_struct_declaration;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
@@ -28,7 +29,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::ActionGroup(action_group) => resolve_action_group(action_group, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
-            Top::StructDeclaration(s) => (), // resolve_struct_declaration(s, context)
+            Top::StructDeclaration(s) => resolve_struct_declaration(s, context),
         }
     }
 }
