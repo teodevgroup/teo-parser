@@ -21,8 +21,8 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         match current.as_rule() {
             Rule::COLON | Rule::EMPTY_LINES => {},
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::item_decorator => decorators.push(parse_decorator(current, context)),
-            Rule::empty_item_decorator => empty_decorators_spans.push(parse_span(&current)),
+            Rule::decorator => decorators.push(parse_decorator(current, context)),
+            Rule::empty_decorator => empty_decorators_spans.push(parse_span(&current)),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::type_expression => type_expr = Some(parse_type_expression(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),

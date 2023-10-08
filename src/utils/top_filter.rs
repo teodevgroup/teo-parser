@@ -22,3 +22,14 @@ pub(crate) fn top_filter_for_reference_type(reference_type: ReferenceType) -> Ar
         }),
     }
 }
+
+pub(crate) fn top_filter_for_any_model_field_decorators() -> Arc<dyn Fn(&Top) -> bool> {
+    Arc::new(|top: &Top| {
+        top.as_decorator_declaration().map_or(false, |d| match d.decorator_class {
+            ReferenceType::ModelFieldDecorator => true,
+            ReferenceType::ModelRelationDecorator => true,
+            ReferenceType::ModelPropertyDecorator => true,
+            _ => false,
+        })
+    })
+}

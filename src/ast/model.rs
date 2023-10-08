@@ -11,31 +11,14 @@ pub struct Model {
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
+    pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) identifier: Identifier,
     pub(crate) fields: Vec<Field>,
+    pub(crate) empty_field_decorator_spans: Vec<Span>,
+    pub(crate) unattached_field_decorators: Vec<Decorator>,
 }
 
 impl Model {
-
-    pub(crate) fn new(
-        path: Vec<usize>,
-        string_path: Vec<String>,
-        identifier: Identifier,
-        comment: Option<Comment>,
-        fields: Vec<Field>,
-        decorators: Vec<Decorator>,
-        span: Span
-    ) -> Self {
-        Self {
-            path,
-            string_path,
-            identifier,
-            comment,
-            fields,
-            decorators,
-            span,
-        }
-    }
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()

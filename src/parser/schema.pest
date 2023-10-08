@@ -245,8 +245,8 @@ named_argument = { identifier ~ ":" ~ expression }
 // #############
 // function call, decorator and pipeline
 // #############
-item_decorator = { "@" ~ identifier_path ~ argument_list? }
-empty_item_decorator = { "@" }
+decorator = { "@" ~ identifier_path ~ argument_list? }
+empty_decorator = { "@" }
 pipeline = { "$" ~ identifier_unit }
 
 // #############
@@ -278,7 +278,7 @@ config_item = {
 // #############
 enum_declaration = {
     triple_comment_block?
-    ~ (item_decorator ~ (NEWLINE | WHITESPACE)*)*
+    ~ (decorator ~ (NEWLINE | WHITESPACE)*)*
     ~ INTERFACE_KEYWORD?
     ~ OPTION_KEYWORD?
     ~ ENUM_KEYWORD
@@ -290,7 +290,7 @@ enum_declaration = {
 
 enum_member_declaration = {
     triple_comment_block? ~
-    (item_decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
+    (decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
     identifier ~ ("=" ~ enum_member_expression)?
 }
 
@@ -301,11 +301,11 @@ enum_member_expression = { arith_expr | string_literal | numeric_literal }
 // #############
 model_declaration = {
     triple_comment_block? ~
-    (item_decorator ~ (NEWLINE | WHITESPACE)*)*
+    (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))*
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | decorator | empty_decorator | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -314,7 +314,7 @@ model_declaration = {
 // #############
 field_declaration = {
     triple_comment_block? ~
-    (item_decorator | double_comment_block | empty_item_decorator | (NEWLINE | WHITESPACE))*
+    (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))*
     ~ identifier
     ~ COLON
     ~ type_expression
