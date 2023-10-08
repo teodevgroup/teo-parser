@@ -12,7 +12,7 @@ pub(crate) struct StructDeclaration {
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) functions: Vec<FunctionDeclaration>,
+    pub(crate) function_declarations: Vec<FunctionDeclaration>,
     pub(crate) span: Span,
 }
 
