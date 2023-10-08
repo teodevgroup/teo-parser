@@ -79,6 +79,7 @@ pub(crate) struct Field {
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
+    pub(crate) empty_decorators_spans: Vec<Span>,
     pub(crate) identifier: Identifier,
     pub(crate) type_expr: TypeExpr,
     pub(crate) resolved: RefCell<Option<FieldResolved>>,

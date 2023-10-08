@@ -14,6 +14,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
     let span = parse_span(&pair);
     let mut comment = None;
     let mut decorators = vec![];
+    let mut empty_decorators_spans = vec![];
     let mut identifier: Option<Identifier> = None;
     let mut type_expr: Option<TypeExpr> = None;
     for current in pair.into_inner() {
@@ -21,7 +22,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
             Rule::COLON | Rule::EMPTY_LINES => {},
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::item_decorator => decorators.push(parse_decorator(current, context)),
-            Rule::empty_item_decorator => (),
+            Rule::empty_item_decorator => empty_decorators_spans.push(parse_span(&current)),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::type_expression => type_expr = Some(parse_type_expression(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
@@ -33,6 +34,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
         comment,
         decorators,
+        empty_decorators_spans,
         identifier: identifier.unwrap(),
         type_expr: type_expr.unwrap(),
         resolved: RefCell::new(None),
