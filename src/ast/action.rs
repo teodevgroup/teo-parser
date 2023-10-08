@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::comment::Comment;
-use crate::ast::r#type::{TypeExpr, TypeItem, TypeShape};
+use crate::ast::r#type::{TypeExpr, TypeShape};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 

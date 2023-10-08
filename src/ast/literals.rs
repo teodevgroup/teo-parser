@@ -93,22 +93,6 @@ impl Display for EnumVariantLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct RangeLiteral {
-    pub(crate) span: Span,
-    pub(crate) start: Box<ExpressionKind>,
-    pub(crate) closed: bool,
-    pub(crate) end: Box<ExpressionKind>,
-}
-
-impl Display for RangeLiteral {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.start, f)?;
-        f.write_str(if self.closed { "..." } else { ".." })?;
-        Display::fmt(&self.end, f)
-    }
-}
-
-#[derive(Debug)]
 pub(crate) struct TupleLiteral {
     pub(crate) expressions: Vec<ExpressionKind>,
     pub(crate) span: Span,

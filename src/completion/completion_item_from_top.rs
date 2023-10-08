@@ -26,8 +26,10 @@ pub(super) fn completion_item_from_namespace(namespace: &Namespace) -> Completio
     CompletionItem {
         label: namespace.identifier.name.clone(),
         namespace_path: Some(readable_namespace_path(&namespace.string_path)),
-        documentation: Some("namespace doc".to_owned()),
-        detail: Some("detail".to_owned()),
+        documentation: namespace.comment.as_ref().map(|c| {
+            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
+        }),
+        detail: None,
     }
 }
 
