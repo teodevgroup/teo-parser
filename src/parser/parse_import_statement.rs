@@ -46,15 +46,15 @@ fn parse_import_identifier_list(pair: Pair<'_>, context: &mut ParserContext) -> 
 }
 
 fn match_import_file(original: &str, context: &mut ParserContext) -> Option<String> {
-    if (context.file_util.file_exists)(original) {
+    if (context.file_util.file_exists)(original) && !(context.file_util.file_is_directory)(original) {
         Some(original.to_string())
     } else {
         let append_extension = format!("{original}.teo");
-        if (context.file_util.file_exists)(&append_extension) {
+        if (context.file_util.file_exists)(&append_extension) && !(context.file_util.file_is_directory)(&append_extension) {
             Some(append_extension)
         } else {
             let index_teo = (context.file_util.path_join)(original, "index.teo");
-            if (context.file_util.file_exists)(&index_teo) {
+            if (context.file_util.file_exists)(&index_teo) && !(context.file_util.file_is_directory)(&index_teo) {
                 Some(index_teo)
             } else {
                 None

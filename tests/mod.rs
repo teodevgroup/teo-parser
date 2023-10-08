@@ -24,7 +24,7 @@ mod test {
     fn auto_completion() {
         let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
         let (schema, _) = parse(path, None, None);
-        let completions = auto_complete_items(&schema, path, (4, 6));
+        let completions = auto_complete_items(&schema, path, (4, 13));
         println!("{:?}", completions);
     }
 }

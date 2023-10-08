@@ -37,8 +37,15 @@ pub(super) fn parse_source(
         match current.as_rule() {
             Rule::import_statement => { // import { a, b } from './some.schema'
                 let import = parse_import_statement(current, path.as_ref(), context);
+                let import_span = import.source.span;
+                let import_file_path = import.file_path.clone();
                 references.imports.insert(import.id());
                 tops.insert(import.id(), Top::Import(import));
+                if context.is_import_file_path_examined(&import_file_path) {
+                    context.insert_error(import_span, "Duplicated import")
+                } else {
+                    context.add_examined_import_file(import_file_path);
+                }
             },
             Rule::constant_statement => { // let a = 5
                 let constant = parse_constant_statement(current, context);

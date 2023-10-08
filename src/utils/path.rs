@@ -5,6 +5,7 @@ use path_clean::PathClean;
 pub struct FileUtility {
     pub read_file: fn(file_path: &str) -> Option<String>,
     pub file_exists: fn(file_path: &str) -> bool,
+    pub file_is_directory: fn(file_path: &str) -> bool,
     pub path_join: fn(base: &str, path: &str) -> String,
     pub parent_directory: fn(file_path: &str) -> String,
     pub path_is_absolute: fn(file_path: &str) -> bool,
@@ -23,6 +24,7 @@ impl Default for FileUtility {
         Self {
             read_file,
             file_exists,
+            file_is_directory,
             path_join,
             parent_directory,
             path_is_absolute,
@@ -53,4 +55,8 @@ fn path_is_absolute(path: &str) -> bool {
 
 fn path_join(base: &str, path: &str) -> String {
     Path::new(base).join(Path::new(path)).clean().to_str().unwrap().to_string()
+}
+
+fn file_is_directory(file_path: &str) -> bool {
+    Path::new(file_path).is_dir()
 }

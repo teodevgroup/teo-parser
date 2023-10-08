@@ -48,7 +48,7 @@ fn parse_user_source(
     let import_paths: Vec<String> = sources.get(&source_id).unwrap().imports().iter().map(|i| i.file_path.clone()).collect();
     for import in import_paths {
         if !parser_context.is_source_parsing_or_parsed(&import) {
-            if (parser_context.file_util.file_exists)(&import) {
+            if (parser_context.file_util.file_exists)(&import) && (!(parser_context.file_util.file_is_directory)(&import)) {
                 parse_user_source(sources, &import, base, parser_context);
             }
         }

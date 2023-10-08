@@ -16,6 +16,7 @@ pub(super) struct ParserContext<'a> {
     current_id: usize,
     current_path: Vec<usize>,
     current_string_path: Vec<String>,
+    examined_import_file_paths: Vec<String>,
 }
 
 impl<'a> ParserContext<'a> {
@@ -36,6 +37,7 @@ impl<'a> ParserContext<'a> {
             current_id: 0,
             current_path: vec![],
             current_string_path: vec![],
+            examined_import_file_paths: vec![],
         }
     }
 
@@ -54,6 +56,7 @@ impl<'a> ParserContext<'a> {
         self.current_source_id = source_id;
         self.current_path = vec![source_id];
         self.current_string_path = vec![];
+        self.examined_import_file_paths = vec![];
         source_id
     }
 
@@ -110,6 +113,14 @@ impl<'a> ParserContext<'a> {
     pub(super) fn is_source_parsing_or_parsed(&self, path: &str) -> bool {
         let set: HashSet<&String> = self.source_lookup.values().collect();
         set.iter().find(|p| p.as_str() == path).is_some()
+    }
+
+    pub(super) fn add_examined_import_file(&mut self, path: String) {
+        self.examined_import_file_paths.push(path)
+    }
+
+    pub(super) fn is_import_file_path_examined(&self, path: &String) -> bool {
+        self.examined_import_file_paths.contains(path)
     }
 
     pub(super) fn insert_unparsed(&mut self, span: Span) {
