@@ -36,6 +36,7 @@ pub enum Type {
     GenericItem(String),
     Keyword(Keyword),
     Optional(Box<Type>),
+    Pipeline((Box<Type>, Box<Type>)),
 }
 
 impl Type {
@@ -335,6 +336,17 @@ impl Type {
         }
     }
 
+    pub(crate) fn is_pipeline(&self) -> bool {
+        self.as_pipeline().is_some()
+    }
+
+    pub(crate) fn as_pipeline(&self) -> Option<(&Type, &Type)> {
+        match self {
+            Type::Pipeline((a, b)) => Some((a.as_ref(), b.as_ref())),
+            _ => None,
+        }
+    }
+
     pub(crate) fn is_int_32_or_64(&self) -> bool {
         match self {
             Type::Int | Type::Int64 => true,
@@ -388,6 +400,7 @@ impl Type {
             Type::GenericItem(_) => false,
             Type::Keyword(_) => false,
             Type::Optional(_) => true,
+            Type::Pipeline(_) => false,
         }
     }
 
@@ -407,6 +420,7 @@ impl Type {
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+                Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
                 _ => unreachable!(),
             }
         } else {
@@ -430,6 +444,7 @@ impl Type {
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_keywords(map)).collect()),
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))),
+                Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
                 _ => unreachable!(),
             }
         } else {
@@ -472,6 +487,7 @@ impl Type {
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed),
+            Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
         }
     }
 }

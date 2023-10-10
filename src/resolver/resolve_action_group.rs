@@ -120,6 +120,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Regex => Some("TypeError: invalid form action input type: Regex is not supported"),
         Type::StructObject(_) => Some("TypeError: invalid form action input type: StructObject is not supported"),
         Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid form action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::Pipeline(_) => Some("invalid form action input type: Pipeline is not supported"),
     }
 }
 
@@ -181,6 +182,7 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Regex => Some("TypeError: invalid action input type: Regex is not supported"),
         Type::StructObject(_) => Some("TypeError: invalid action input type: StructObject is not supported"),
         Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::Pipeline(_) => Some("invalid action input type: Pipeline is not supported"),
     }
 }
 
@@ -242,6 +244,7 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::Regex => Some("TypeError: invalid action output type: Regex is not supported"),
         Type::StructObject(_) => Some("TypeError: invalid action output type: StructObject is not supported"),
         Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action output type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::Pipeline(_) => Some("invalid action output type: Pipeline is not supported"),
     }
 }
 
