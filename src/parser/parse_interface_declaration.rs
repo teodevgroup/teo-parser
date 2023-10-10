@@ -1,6 +1,6 @@
 use crate::ast::field::Field;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::r#type::TypeExpr;
+use crate::ast::type_expr::TypeExpr;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_identifier::parse_identifier;

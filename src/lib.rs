@@ -1,7 +1,8 @@
+pub mod r#type;
 pub mod ast;
 pub mod parser;
 mod builtin;
-pub mod resolver;
+pub(crate) mod resolver;
 pub mod diagnostics;
 pub mod utils;
 pub(crate) mod completion;

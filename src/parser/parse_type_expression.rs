@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::r#type::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};

@@ -3,7 +3,7 @@ use maplit::hashmap;
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::r#type::{Type, TypeExpr, TypeExprKind, TypeItem, TypeKeyword, TypeOp, TypeShape};
+use crate::ast::type_expr::{Type, TypeExpr, TypeExprKind, TypeItem, TypeKeyword, TypeOp, TypeShape};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;

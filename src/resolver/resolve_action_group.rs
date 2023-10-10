@@ -1,5 +1,5 @@
 use crate::ast::action::{ActionDeclaration, ActionDeclarationResolved, ActionGroupDeclaration, ActionInputFormat};
-use crate::ast::r#type::{Type, TypeExpr, TypeShape};
+use crate::ast::type_expr::{Type, TypeExpr, TypeShape};
 use crate::ast::span::Span;
 use crate::resolver::resolve_type_expr::{resolve_type_expr, resolve_type_shape};
 use crate::resolver::resolver_context::ResolverContext;

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::field::Field;
-use crate::ast::r#type::{TypeExpr};
+use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;

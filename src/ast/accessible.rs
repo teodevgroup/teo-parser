@@ -1,30 +1,31 @@
 use teo_teon::value::Value;
+use crate::ast::type_expr::Type;
 use crate::ast::reference::Reference;
 
 #[derive(Debug, Clone)]
 pub(crate) enum Accessible {
-    Value(Value),
+    Type(Type),
     Reference(Reference),
 }
 
 impl Accessible {
 
-    pub(crate) fn is_value(&self) -> bool {
-        self.as_value().is_some()
+    pub(crate) fn is_type(&self) -> bool {
+        self.as_type().is_some()
     }
 
-    pub(crate) fn as_value(&self) -> Option<&Value> {
+    pub(crate) fn as_type(&self) -> Option<&Type> {
         use Accessible::*;
         match self {
-            Value(v) => Some(v),
+            Type(v) => Some(v),
             _ => None,
         }
     }
 
-    pub(crate) fn into_value(self) -> Option<Value> {
+    pub(crate) fn into_type(self) -> Option<Type> {
         use Accessible::*;
         match self {
-            Value(v) => Some(v),
+            Type(v) => Some(v),
             _ => None,
         }
     }
@@ -50,6 +51,6 @@ impl Accessible {
     }
 
     pub(crate) fn is_undetermined(&self) -> bool {
-        self.is_value() && self.as_value().unwrap().is_undetermined()
+        self.is_type() && self.as_type().unwrap().is_undetermined()
     }
 }

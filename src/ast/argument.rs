@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use teo_teon::value::Value;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
+use crate::ast::type_expr::Type;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -15,9 +16,9 @@ pub struct Argument {
 
 impl Argument {
 
-    pub fn get_value(&self) -> &Value {
+    pub fn get_type(&self) -> &Type {
         let r = unsafe { &*self.value.resolved.as_ptr() };
-        r.as_ref().unwrap().as_value().unwrap()
+        r.as_ref().unwrap().as_type().unwrap()
     }
 
     pub(crate) fn resolve(&self, resolved: ArgumentResolved) {

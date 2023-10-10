@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::action::{ActionDeclaration, ActionGroupDeclaration, ActionInputFormat};
-use crate::ast::r#type::TypeExpr;
+use crate::ast::type_expr::TypeExpr;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;

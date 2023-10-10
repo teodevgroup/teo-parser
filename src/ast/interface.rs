@@ -1,7 +1,7 @@
 use crate::ast::field::Field;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
-use crate::ast::r#type::TypeExpr;
+use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 
 #[derive(Debug)]

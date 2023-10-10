@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use crate::ast::accessible::Accessible;
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;
-use crate::ast::r#type::TypeExpr;
+use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 
 #[derive(Debug)]

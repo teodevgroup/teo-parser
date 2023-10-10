@@ -1,5 +1,5 @@
 use crate::ast::constant::{Constant, ConstantResolved};
-use crate::ast::r#type::Type;
+use crate::ast::type_expr::Type;
 use crate::resolver::resolve_expression::resolve_expression_kind;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;

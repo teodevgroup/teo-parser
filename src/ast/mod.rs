@@ -18,7 +18,7 @@ pub(crate) mod reference;
 pub(crate) mod accessible;
 pub(crate) mod action;
 pub(crate) mod interface;
-pub(crate) mod r#type;
+pub(crate) mod type_expr;
 pub(crate) mod arity;
 pub(crate) mod argument;
 pub(crate) mod argument_list;

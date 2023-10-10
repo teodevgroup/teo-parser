@@ -7,7 +7,7 @@ use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
 use crate::ast::namespace::Namespace;
 use crate::ast::r#enum::{Enum, EnumMember};
-use crate::ast::r#type::Type;
+use crate::ast::type_expr::Type;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
@@ -112,88 +112,89 @@ impl<'a> ResolverContext<'a> {
         self.examined_data_set_records.lock().unwrap().contains(record)
     }
 
-    pub(crate) fn check_value_type(&self, r#type: &Type, value: &Value) -> bool {
-        match r#type {
-            Type::Any => true,
-            Type::Null => value.is_null(),
-            Type::Bool => value.is_bool(),
-            Type::Int => value.is_int(),
-            Type::Int64 => value.is_int64(),
-            Type::Float32 => value.is_float32(),
-            Type::Float => value.is_float(),
-            Type::Decimal => value.is_decimal(),
-            Type::String => value.is_string(),
-            Type::ObjectId => value.is_object_id(),
-            Type::Date => value.is_date(),
-            Type::DateTime => value.is_datetime(),
-            Type::File => value.is_file(),
-            Type::Array(inner) => {
-                if !value.is_array() {
-                    return false;
-                }
-                value.as_array().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
-            }
-            Type::Dictionary(vt) => {
-                if !value.is_dictionary() {
-                    return false;
-                }
-                value.as_dictionary().unwrap().values().find(|v| !self.check_value_type(vt.as_ref(), v)).is_none()
-            }
-            Type::Tuple(v) => {
-                if !value.is_tuple() {
-                    return false;
-                }
-                let tuple = value.as_tuple().unwrap();
-                if v.len() != tuple.len() {
-                    return false;
-                }
-                tuple.iter().enumerate().find(|(index, val)| !self.check_value_type(v.get(*index).unwrap(), val)).is_none()
-            }
-            Type::Range(inner) => {
-                if !value.is_range() {
-                    return false;
-                }
-                let range = value.as_range().unwrap();
-                if !self.check_value_type(inner.as_ref(), range.start.as_ref()) {
-                    return false;
-                }
-                if !self.check_value_type(inner.as_ref(), range.end.as_ref()) {
-                    return false;
-                }
-                true
-            }
-            Type::Union(u) => {
-                for t in u {
-                    if self.check_value_type(t, value) {
-                        return true;
-                    }
-                }
-                false
-            }
-            Type::Ignored => true,
-            Type::Enum(enum_path) => {
-                if !value.is_enum_variant() {
-                    return false;
-                }
-                let e = self.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
-                enum_path == &e.path
-            },
-            Type::Model(_) => false,
-            Type::Interface(_, __) => false,
-            Type::ModelScalarField(_) => false,
-            Type::ModelScalarFieldAndCachedProperty(_) => false,
-            Type::FieldType(_, _) => false,
-            Type::GenericItem(_) => false,
-            Type::Optional(inner) => {
-                if value.is_null() {
-                    return true;
-                }
-                self.check_value_type(inner.as_ref(), value)
-            }
-            Type::Keyword(k) => false,
-            Type::Object(o) => false,
-            Type::Undetermined => false,
-        }
+    pub(crate) fn check_value_type(&self, r#type: &Type, value: &Type) -> bool {
+        return false;
+        // match r#type {
+        //     Type::Any => true,
+        //     Type::Null => value.is_null(),
+        //     Type::Bool => value.is_bool(),
+        //     Type::Int => value.is_int(),
+        //     Type::Int64 => value.is_int64(),
+        //     Type::Float32 => value.is_float32(),
+        //     Type::Float => value.is_float(),
+        //     Type::Decimal => value.is_decimal(),
+        //     Type::String => value.is_string(),
+        //     Type::ObjectId => value.is_object_id(),
+        //     Type::Date => value.is_date(),
+        //     Type::DateTime => value.is_datetime(),
+        //     Type::File => value.is_file(),
+        //     Type::Array(inner) => {
+        //         if !value.is_array() {
+        //             return false;
+        //         }
+        //         value.as_array().unwrap().iter().find(|v| !self.check_value_type(inner.as_ref(), v)).is_none()
+        //     }
+        //     Type::Dictionary(vt) => {
+        //         if !value.is_dictionary() {
+        //             return false;
+        //         }
+        //         value.as_dictionary().unwrap().values().find(|v| !self.check_value_type(vt.as_ref(), v)).is_none()
+        //     }
+        //     Type::Tuple(v) => {
+        //         if !value.is_tuple() {
+        //             return false;
+        //         }
+        //         let tuple = value.as_tuple().unwrap();
+        //         if v.len() != tuple.len() {
+        //             return false;
+        //         }
+        //         tuple.iter().enumerate().find(|(index, val)| !self.check_value_type(v.get(*index).unwrap(), val)).is_none()
+        //     }
+        //     Type::Range(inner) => {
+        //         if !value.is_range() {
+        //             return false;
+        //         }
+        //         let range = value.as_range().unwrap();
+        //         if !self.check_value_type(inner.as_ref(), range.start.as_ref()) {
+        //             return false;
+        //         }
+        //         if !self.check_value_type(inner.as_ref(), range.end.as_ref()) {
+        //             return false;
+        //         }
+        //         true
+        //     }
+        //     Type::Union(u) => {
+        //         for t in u {
+        //             if self.check_value_type(t, value) {
+        //                 return true;
+        //             }
+        //         }
+        //         false
+        //     }
+        //     Type::Ignored => true,
+        //     Type::Enum(enum_path) => {
+        //         if !value.is_enum_variant() {
+        //             return false;
+        //         }
+        //         let e = self.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
+        //         enum_path == &e.path
+        //     },
+        //     Type::Model(_) => false,
+        //     Type::Interface(_, __) => false,
+        //     Type::ModelScalarField(_) => false,
+        //     Type::ModelScalarFieldAndCachedProperty(_) => false,
+        //     Type::FieldType(_, _) => false,
+        //     Type::GenericItem(_) => false,
+        //     Type::Optional(inner) => {
+        //         if value.is_null() {
+        //             return true;
+        //         }
+        //         self.check_value_type(inner.as_ref(), value)
+        //     }
+        //     Type::Keyword(k) => false,
+        //     Type::Object(o) => false,
+        //     Type::Undetermined => false,
+        // }
 
     }
 

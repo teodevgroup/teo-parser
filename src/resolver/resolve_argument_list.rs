@@ -3,7 +3,7 @@ use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
-use crate::ast::r#type::Type;
+use crate::ast::type_expr::Type;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
 use crate::resolver::resolve_expression::resolve_expression_and_unwrap_value;
 use crate::resolver::resolver_context::ResolverContext;

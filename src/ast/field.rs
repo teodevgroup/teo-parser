@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::r#type::TypeExpr;
+use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
