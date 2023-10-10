@@ -207,15 +207,15 @@ namespace std {
 
     /// @name Id
     /// Specify the model's primary index
-    declare unique model decorator id(fields?: ScalarField<Self> | ScalarField<Self>[], map?: String?)
+    declare unique model decorator id(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
 
     /// @name Index
     /// Add an index to the model
-    declare model decorator index(fields?: ScalarField<Self> | ScalarField<Self>[], map?: String?)
+    declare model decorator index(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
 
     /// @name Unique
     /// Add a unique constraint to the model
-    declare model decorator unique(fields?: ScalarField<Self> | ScalarField<Self>[], map?: String?)
+    declare model decorator unique(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
 
     /// @name Migration
     /// Specify the migration operations for the model
@@ -223,25 +223,25 @@ namespace std {
 
     /// @name Before Save
     /// Specify the action to trigger before an object is saved
-    declare unique model decorator beforeSave(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator beforeSave(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name After Save
     /// Specify the action to trigger after an object is saved
-    declare unique model decorator afterSave(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator afterSave(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Before Delete
     /// Specify the action to trigger before an object is deleted
-    declare unique model decorator beforeDelete(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator beforeDelete(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name After Delete
     /// Specify the action to trigger after an object is deleted
-    declare unique model decorator afterDelete(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator afterDelete(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Can Read
-    declare unique model decorator canRead(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator canRead(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Can Mutate
-    declare unique model decorator canWrite(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model decorator canWrite(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Disable
     /// Specify disabled actions
@@ -257,7 +257,7 @@ namespace std {
 
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType<CurrentConnector>)
+    declare unique model field decorator db(type?: DatabaseType)
 
     /// @name Readonly
     /// Disallow this field to be written by the client
@@ -285,11 +285,11 @@ namespace std {
 
     /// @name Read If
     /// This field can be read by the client if the pipeline passes
-    declare unique model field decorator readIf(cond?: Pipeline<Object<Self>, Ignored>)
+    declare unique model field decorator readIf(cond?: Pipeline<Self, Ignored>)
 
     /// @name Write If
     /// This field can be written by the client if the pipeline passes
-    declare unique model field decorator writeIf(cond?: Pipeline<Object<Self>, Ignored>)
+    declare unique model field decorator writeIf(cond?: Pipeline<Self, Ignored>)
 
     /// @name Read Write
     /// This field can be written and read by the client, this is the default behavior
@@ -297,15 +297,15 @@ namespace std {
 
     /// @name Present With
     /// Specify when some other field are not null, this field is required
-    declare unique model field decorator presentWith(fields?: ScalarField<Self> | ScalarField<Self>[])
+    declare unique model field decorator presentWith(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[])
 
     /// @name Present Without
     /// Specify when some other field are null, this field is required
-    declare unique model field decorator presentWithout(fields?: ScalarField<Self> | ScalarField<Self>[])
+    declare unique model field decorator presentWithout(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[])
 
     /// @name Present If
     /// Specify when some condition passes, this field is required
-    declare unique model field decorator presentIf(cond?: Pipeline<Object<Self>, Ignored>)
+    declare unique model field decorator presentIf(cond?: Pipeline<Self, Ignored>)
 
     /// @name Atomic
     /// This field can be updated with atomic updator
@@ -353,7 +353,7 @@ namespace std {
 
     /// @name Default
     /// Specify a default value for this field
-    declare unique model field decorator default(value?: FieldType<Self> | Pipeline<Null, FieldType>)
+    declare unique model field decorator default(value?: ThisFieldType | Pipeline<Null, ThisFieldType>)
 
     /// @name Foreign Key
     /// This field is used as foreign key
@@ -361,15 +361,15 @@ namespace std {
 
     /// @name On Set
     /// This pipeline is triggered when value is set
-    declare unique model field decorator onSet(pipeline?: Pipeline<FieldType<Self>?, InputType>)
+    declare unique model field decorator onSet(pipeline?: Pipeline<ThisFieldType?, ThisFieldType>)
 
     /// @name On Save
     /// This pipeline is triggered before the value is saving into the database
-    declare unique model field decorator onSave(pipeline?: Pipeline<FieldType<Self>?, FieldType<Self>>)
+    declare unique model field decorator onSave(pipeline?: Pipeline<ThisFieldType?, ThisFieldType>)
 
     /// @name On Output
     /// This pipeline is triggered on output
-    declare unique model field decorator onOutput(pipeline?: Pipeline<FieldType<Self>, InputType>)
+    declare unique model field decorator onOutput(pipeline?: Pipeline<ThisFieldType, ThisFieldType>)
 
     /// @name Auth Identity
     /// This field is used as auth identity
@@ -377,7 +377,7 @@ namespace std {
 
     /// @name Auth By
     /// This field is used as signing in identity checker
-    declare unique model field decorator authBy(pipeline?: Pipeline<FieldType<Self>, Ignored>)
+    declare unique model field decorator authBy(pipeline?: Pipeline<ThisFieldType, Ignored>)
 
     /// @name Queryable
     /// This field can be queried by the client
@@ -397,11 +397,11 @@ namespace std {
 
     /// @name Can Read
     /// Specify the permission checker for read on this field
-    declare unique model field decorator canRead(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model field decorator canRead(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Can Mutate
     /// Specify the permission checker for write on this field
-    declare unique model field decorator canMutate(pipeline?: Pipeline<Object<Self>, Ignored>)
+    declare unique model field decorator canMutate(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Migration
     /// Specify the migration operation for this field
@@ -420,18 +420,18 @@ namespace std {
     /// Define a model relation
     declare unique model relation decorator relation {
         /// Define a normal relation
-        variant(fields: ScalarField<Self>, references: ScalarField<Relation>)
+        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>, references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Relation>)
         /// Define a through relation
-        variant(through: Model, local: ScalarField<Through>, foreign: ScalarField<Through>)
+        variant(through: Model, local: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>, foreign: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
     }
 
     /// @name Getter
     /// Define a property with getter
-    declare unique model property decorator getter(pipeline?: Pipeline<Object<Self>, FieldType<Self>>)
+    declare unique model property decorator getter(pipeline?: Pipeline<Self, ThisFieldType>)
 
     /// @name Setter
     /// Define a property with setter
-    declare unique model property decorator setter(pipeline?: Pipeline<FieldType<Self>, Ignored>)
+    declare unique model property decorator setter(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Cache
     /// Define a cached property, a cached property is saved into the database
@@ -439,7 +439,7 @@ namespace std {
 
     /// @name Dependencies
     /// Define dependencies for a cached property
-    declare unique model property decorator deps(deps?: ScalarField<Self> | ScalarField<Self>[])
+    declare unique model property decorator deps(deps?: ModelScalarFieldsWithoutVituals<Self> | ModelScalarFieldsWithoutVituals<Self>[])
 
     /// @name Index
     /// Define index for this cached property
@@ -452,11 +452,11 @@ namespace std {
     /// @name Add
     /// Add a new numeric value 
     declare pipeline item add {
-        variant(value?: Int | Pipeline<InputType, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<InputType, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<InputType, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<InputType, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<InputType, Decimal>): Decimal -> Decimal
+        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
+        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
+        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
+        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
+        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
     }
 
     /// @name Sub
@@ -639,7 +639,7 @@ namespace std {
 
     declare pipeline item padStart(width?: Int | Pipeline<InputType, Int>, char?: String): String -> String
 
-    declare pipeline item regexReplace(format?: RegExp, substitute?: String): String -> String
+    declare pipeline item regexReplace(format?: Regex, substitute?: String): String -> String
 
     declare pipeline item split(separator?: String | Pipeline<InputType, String>): String -> String[]
 
@@ -675,7 +675,7 @@ namespace std {
 
     declare pipeline item isSecurePassword: String -> String
 
-    declare pipeline item regexMatch(regex?: RegExp): String -> String
+    declare pipeline item regexMatch(regex?: Regex): String -> String
 
     declare pipeline item identity: Ignored -> Object<Unknown>?
 
@@ -683,7 +683,7 @@ namespace std {
 
     declare pipeline item bcryptSalt: String -> String
 
-    declare pipeline item bcryptVerify(value?: Pipeline<InputType, String>): String -> String
+    declare pipeline item bcryptVerify(value?: Pipeline<String, String>): String -> String
 
     declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<InputType, T>): Ignored -> T
 
@@ -706,7 +706,7 @@ namespace std {
         variant(len?: Int): String -> Int
         variant(range?: Range<Int>): String -> Int
         variant<T>(len?: Int): T[] -> Int
-        variant(range?: Range<Int>): T[] -> Int
+        variant<T>(range?: Range<Int>): T[] -> Int
     }
 
     declare pipeline item reverse {
