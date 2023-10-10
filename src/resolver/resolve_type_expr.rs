@@ -302,11 +302,21 @@ fn resolve_type_item<'a>(
                 }
             },
             "Self" => {
+                request_zero_generics("Self", type_item, context);
                 Some(Type::Keyword(Keyword::SelfIdentifier))
             },
             "ThisFieldType" => {
+                request_zero_generics("ThisFieldType", type_item, context);
                 Some(Type::Keyword(Keyword::ThisFieldType))
             },
+            "Pipeline" => {
+                request_double_generics("Pipeline", type_item, context);
+                Some(Type::Pipeline((Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
+                    resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
+                })), Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
+                    resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
+                })))))
+            }
             _ => {
                 if let Some(generics_declaration) = generics_declaration {
                     if generics_declaration.identifiers.iter().find(|i| i.name() == name).is_some() {
