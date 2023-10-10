@@ -1,4 +1,5 @@
-use crate::r#type::keyword::TypeKeyword;
+use std::collections::BTreeMap;
+use crate::r#type::keyword::Keyword;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub(crate) enum Type {
@@ -316,7 +317,7 @@ impl Type {
         self.as_keyword().is_some()
     }
 
-    pub(crate) fn as_keyword(&self) -> Option<&TypeKeyword> {
+    pub(crate) fn as_keyword(&self) -> Option<&Keyword> {
         match self {
             Self::Keyword(kw) => Some(kw),
             _ => None,
@@ -334,103 +335,6 @@ impl Type {
         }
     }
 
-
-
-
-
-
-
-
-
-    pub(crate) fn contains<F>(&self, f: F) -> bool where F: Fn(&Self) -> bool {
-        if self.is_container() {
-            match self {
-                Type::Array(t) => t.as_ref().contains(f),
-                Type::Dictionary(v) => {
-                    let matcher = |f: &dyn Fn(&Self) -> bool, t: &Type | { f(t) };
-                    matcher(&f, v.as_ref())
-                },
-                Type::Tuple(t) => t.iter().find(|t| f(*t)).is_some(),
-                Type::Range(t) => t.as_ref().contains(f),
-                Type::Union(u) => u.iter().find(|t| f(*t)).is_some(),
-                Type::Optional(o) => o.as_ref().contains(f),
-                _ => false,
-            }
-        } else {
-            f(self)
-        }
-    }
-
-    pub(crate) fn is_container(&self) -> bool {
-        match self {
-            Type::Any => false,
-            Type::Null => false,
-            Type::Bool => false,
-            Type::Int => false,
-            Type::Int64 => false,
-            Type::Float32 => false,
-            Type::Float => false,
-            Type::Decimal => false,
-            Type::String => false,
-            Type::ObjectId => false,
-            Type::Date => false,
-            Type::DateTime => false,
-            Type::File => false,
-            Type::Array(_) => true,
-            Type::Dictionary(_) => true,
-            Type::Tuple(_) => true,
-            Type::Range(_) => true,
-            Type::Union(_) => true,
-            Type::Ignored => false,
-            Type::Enum(_) => false,
-            Type::Model(_) => false,
-            Type::Interface(_, _) => false,
-            Type::ModelScalarField(_) => false,
-            Type::ModelScalarFieldAndCachedProperty(_) => false,
-            Type::FieldType(_, _) => false,
-            Type::GenericItem(_) => false,
-            Type::Optional(_) => true,
-            Type::Undetermined => false,
-            Type::Object(_) => false,
-            Type::Keyword(_) => false,
-        }
-    }
-
-    pub(crate) fn replace_generics(&self, map: &HashMap<String, &Type>) -> Self {
-        match self {
-            Type::Any => self.clone(),
-            Type::Null => self.clone(),
-            Type::Bool => self.clone(),
-            Type::Int => self.clone(),
-            Type::Int64 => self.clone(),
-            Type::Float32 => self.clone(),
-            Type::Float => self.clone(),
-            Type::Decimal => self.clone(),
-            Type::String => self.clone(),
-            Type::ObjectId => self.clone(),
-            Type::Date => self.clone(),
-            Type::DateTime => self.clone(),
-            Type::File => self.clone(),
-            Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
-            Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_generics(map))),
-            Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
-            Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::Ignored => self.clone(),
-            Type::Enum(_) => self.clone(),
-            Type::Model(_) => self.clone(),
-            Type::Interface(path, generics) => Type::Interface(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::ModelScalarField(_) => self.clone(),
-            Type::ModelScalarFieldAndCachedProperty(_) => self.clone(),
-            Type::FieldType(_, _) => self.clone(),
-            Type::GenericItem(name) => map.get(name).cloned().unwrap_or(&Type::Undetermined).clone(),
-            Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
-            Type::Undetermined => self.clone(),
-            Type::Keyword(_) => self.clone(),
-            Type::Object(_) => self.clone(),
-        }
-    }
-
     pub(crate) fn is_int_32_or_64(&self) -> bool {
         match self {
             Type::Int | Type::Int64 => true,
@@ -445,69 +349,87 @@ impl Type {
         }
     }
 
-    pub(crate) fn is_enum(&self) -> bool {
+    pub(crate) fn is_container(&self) -> bool {
         match self {
-            Type::Enum(_) => true,
-            _ => false,
+            Type::Undetermined => false,
+            Type::Ignored => false,
+            Type::Any => false,
+            Type::Null => false,
+            Type::Bool => false,
+            Type::Int => false,
+            Type::Int64 => false,
+            Type::Float32 => false,
+            Type::Float => false,
+            Type::Decimal => false,
+            Type::String => false,
+            Type::ObjectId => false,
+            Type::Date => false,
+            Type::DateTime => false,
+            Type::File => false,
+            Type::RegExp => false,
+            Type::Model => false,
+            Type::Array(_) => true,
+            Type::Dictionary(_) => true,
+            Type::Tuple(_) => true,
+            Type::Range(_) => true,
+            Type::Union(_) => true,
+            Type::EnumVariant(_) => false,
+            Type::InterfaceObject(_, _) => true,
+            Type::ModelObject(_) => false,
+            Type::StructObject(_) => false,
+            Type::ModelScalarFields(_) => false,
+            Type::ModelScalarFieldsWithoutVirtuals(_) => false,
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => false,
+            Type::FieldType(_, _) => false,
+            Type::GenericItem(_) => false,
+            Type::Keyword(_) => false,
+            Type::Optional(_) => true,
         }
     }
 
-    /// is standard builtin types
-    pub(crate) fn is_builtin(&self) -> bool {
-        use Type::*;
-        match self {
-            Null |
-            String |
-            ObjectId |
-            Date |
-            DateTime |
-            Bool |
-            Int |
-            Int64 |
-            Float32 |
-            Float |
-            Decimal |
-            File |
-            Array(_) |
-            Dictionary(_) |
-            Tuple(_) => true,
-            Optional(inner) => inner.is_builtin(),
-            _ => false,
+    pub(crate) fn replace_generics(&self, map: &BTreeMap<String, &Type>) -> Self {
+        if let Some(name) = self.as_generic_item() {
+            if let Some(t) = map.get(name) {
+                (*t).clone()
+            } else {
+                self.clone()
+            }
+        } else if self.is_container() {
+            match self {
+                Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
+                Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_generics(map))),
+                Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
+                Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
+                Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
+                Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
+                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+                _ => unreachable!(),
+            }
+        } else {
+            self.clone()
         }
     }
 
-    pub(crate) fn is_interface(&self) -> bool {
-        match self {
-            Type::Interface(_, __) => true,
-            _ => false,
-        }
-    }
-
-    pub(crate) fn model_path(&self) -> Option<&Vec<usize>> {
-        match self {
-            Type::Model(path) => Some(path),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn enum_path(&self) -> Option<&Vec<usize>> {
-        match self {
-            Type::Enum(path) => Some(path),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn interface_path(&self) -> Option<&Vec<usize>> {
-        match self {
-            Type::Interface(path, _) => Some(path),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn interface_generics(&self) -> Option<&Vec<Type>> {
-        match self {
-            Type::Interface(_, generics) => Some(generics),
-            _ => None,
+    pub(crate) fn replace_keywords(&self, map: &BTreeMap<Keyword, &Type>) -> Self {
+        if let Some(name) = self.as_keyword() {
+            if let Some(t) = map.get(name) {
+                (*t).clone()
+            } else {
+                self.clone()
+            }
+        } else if self.is_container() {
+            match self {
+                Type::Array(inner) => Type::Array(Box::new(inner.replace_keywords(map))),
+                Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_keywords(map))),
+                Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_keywords(map)).collect()),
+                Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
+                Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_keywords(map)).collect()),
+                Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect()),
+                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))),
+                _ => unreachable!(),
+            }
+        } else {
+            self.clone()
         }
     }
 }

@@ -1,11 +1,43 @@
-use std::sync::Arc;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference::{Reference, ReferenceType};
 use crate::ast::source::Source;
 use crate::ast::top::Top;
+use crate::r#type::r#type::Type;
+use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
+
+pub(super) fn resolve_identifier_into_type(
+    identifier: &Identifier,
+    context: &ResolverContext,
+) -> Type {
+    if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
+        // maybe add error here
+        track_path_upwards_into_type(&reference.path, context)
+    } else {
+        context.insert_diagnostics_error(identifier.span, "undefined identifier");
+        Type::Undetermined
+    }
+}
+
+fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverContext<'a>) -> Type {
+    let top = context.schema.find_top_by_path(path).unwrap();
+    match top {
+        Top::Config(c) => Type::Undetermined,
+        Top::Constant(c) => {
+            if !c.is_resolved() {
+                resolve_constant(c, context);
+            }
+            c.resolved().r#type.clone()
+        }
+        Top::Enum(e) => Type::Undetermined,
+        Top::Model(m) => Type::Model,
+        Top::Interface(i) => Type::Undetermined,
+        Top::Namespace(n) => Type::Undetermined,
+        _ => unreachable!(),
+    }
+}
 
 pub(super) fn resolve_identifier(
     identifier: &Identifier,

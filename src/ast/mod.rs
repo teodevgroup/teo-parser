@@ -15,7 +15,6 @@ pub(crate) mod namespace;
 pub(crate) mod import;
 pub(crate) mod expr;
 pub(crate) mod reference;
-pub(crate) mod accessible;
 pub(crate) mod action;
 pub(crate) mod interface;
 pub(crate) mod type_expr;

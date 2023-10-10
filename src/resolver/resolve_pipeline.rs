@@ -1,6 +1,6 @@
 use crate::ast::pipeline::Pipeline;
-use crate::ast::type_expr::Type;
 use crate::ast::unit::Unit;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>) -> Type {

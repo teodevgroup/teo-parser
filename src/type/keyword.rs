@@ -1,21 +1,21 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum TypeKeyword {
+pub(crate) enum Keyword {
     SelfIdentifier,
     FieldType,
 }
 
-impl TypeKeyword {
+impl Keyword {
 
     pub(crate) fn is_self(&self) -> bool {
         match self {
-            TypeKeyword::SelfIdentifier => true,
+            Keyword::SelfIdentifier => true,
             _ => false,
         }
     }
 
     pub(crate) fn is_field_type(&self) -> bool {
         match self {
-            TypeKeyword::FieldType => true,
+            Keyword::FieldType => true,
             _ => false,
         }
     }

@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use crate::ast::accessible::Accessible;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;
 use crate::ast::call::Call;
@@ -11,6 +10,7 @@ use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVar
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
+use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
 pub(crate) struct Negation {
@@ -363,7 +363,7 @@ impl Display for ExpressionKind {
 #[derive(Debug)]
 pub(crate) struct Expression {
     pub(crate) kind: ExpressionKind,
-    pub(crate) resolved: RefCell<Option<Accessible>>,
+    pub(crate) resolved: RefCell<Option<Type>>,
 }
 
 impl Expression {
@@ -376,11 +376,11 @@ impl Expression {
         self.kind.span()
     }
 
-    pub(crate) fn resolve(&self, resolved: Accessible) {
+    pub(crate) fn resolve(&self, resolved: Type) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &Accessible {
+    pub(crate) fn resolved(&self) -> &Type {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 

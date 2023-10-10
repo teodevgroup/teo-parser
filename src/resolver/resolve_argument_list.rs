@@ -3,9 +3,9 @@ use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
-use crate::ast::type_expr::Type;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
-use crate::resolver::resolve_expression::resolve_expression_and_unwrap_value;
+use crate::r#type::r#type::Type;
+use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) struct CallableVariant<'a> {
@@ -82,7 +82,7 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
                 declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
             } else {
                 let undetermined = Type::Undetermined;
-                resolve_expression_and_unwrap_value(&named_argument.value, context, &undetermined);
+                resolve_expression(&named_argument.value, context, &undetermined);
                 errors.push(context.generate_diagnostics_error(named_argument.name.as_ref().unwrap().span, "Undefined argument"))
             }
         }
@@ -101,7 +101,7 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
         for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
             if let Some(name) = declaration_names.last() {
                 if let Some(argument_declaration) = argument_list_declaration.get(name) {
-                    resolve_expression_and_unwrap_value(&unnamed_argument.value, context, argument_declaration.type_expr.resolved());
+                    resolve_expression(&unnamed_argument.value, context, argument_declaration.type_expr.resolved());
                     if !context.check_value_type(argument_declaration.type_expr.resolved(), unnamed_argument.value.resolved().as_value().unwrap()) {
                         errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), "Argument value is of wrong type"))
                     }

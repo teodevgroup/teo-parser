@@ -1,10 +1,9 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use teo_teon::value::Value;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
-use crate::ast::type_expr::Type;
 use crate::ast::span::Span;
+use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
 pub struct Argument {

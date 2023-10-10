@@ -7,6 +7,7 @@ use crate::ast::type_expr::{Type, TypeExpr, TypeExprKind, TypeItem, TypeKeyword,
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
+use crate::r#type::keyword::Keyword;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -217,7 +218,7 @@ fn resolve_type_item<'a>(
                 }))))
             },
             "Self" => {
-                Some(Type::Keyword(TypeKeyword::SelfIdentifier))
+                Some(Type::Keyword(Keyword::SelfIdentifier))
             },
             "FieldType" => {
                 Some(Type::Keyword(TypeKeyword::FieldType))
@@ -317,18 +318,6 @@ pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext
     } else {
         TypeShape::Type(r#type.clone())
     }
-}
-
-fn calculate_generics_map<'a>(
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    types: &'a Vec<Type>
-) -> HashMap<String, &'a Type> {
-    if let Some(generics_declaration) = generics_declaration {
-        if generics_declaration.identifiers.len() == types.len() {
-            return generics_declaration.identifiers.iter().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap())).collect();
-        }
-    }
-    hashmap!{}
 }
 
 fn fetch_all_interface_fields<'a>(

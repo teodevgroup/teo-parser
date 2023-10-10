@@ -1,14 +1,14 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use crate::ast::accessible::Accessible;
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::expr::ExpressionKind;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
+use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
 pub(crate) struct ConstantResolved {
-    pub(crate) accessible: Accessible,
+    pub(crate) r#type: Type,
 }
 
 #[derive(Debug)]
