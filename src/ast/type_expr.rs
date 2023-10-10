@@ -1,10 +1,11 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use itertools::Itertools;
 use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
+use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;
+use crate::r#type::r#type::Type;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TypeOp {
@@ -48,6 +49,7 @@ pub(crate) struct TypeGroup {
 }
 
 impl Display for TypeGroup {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("(")?;
         Display::fmt(&self.kind, f)?;
@@ -88,6 +90,7 @@ pub(crate) enum TypeExprKind {
     TypeItem(TypeItem),
     TypeGroup(TypeGroup),
     TypeTuple(TypeTuple),
+    FieldReference(EnumVariantLiteral),
 }
 
 impl TypeExprKind {
@@ -99,11 +102,24 @@ impl TypeExprKind {
             TypeExprKind::TypeItem(t) => t.span,
             TypeExprKind::TypeGroup(g) => g.span,
             TypeExprKind::TypeTuple(t) => t.span,
+            TypeExprKind::FieldReference(e) => e.span,
+        }
+    }
+
+    pub(crate) fn is_field_reference(&self) -> bool {
+        self.as_field_reference().is_some()
+    }
+
+    pub(crate) fn as_field_reference(&self) -> Option<&EnumVariantLiteral> {
+        match self {
+            Self::FieldReference(e) => Some(e),
+            _ => None,
         }
     }
 }
 
 impl Display for TypeExprKind {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             TypeExprKind::BinaryOp(b) => Display::fmt(b, f)?,
@@ -111,6 +127,7 @@ impl Display for TypeExprKind {
             TypeExprKind::TypeItem(i) => Display::fmt(i, f)?,
             TypeExprKind::TypeGroup(g) => Display::fmt(g, f)?,
             TypeExprKind::TypeTuple(t) => Display::fmt(t, f)?,
+            TypeExprKind::FieldReference(e) => Display::fmt(e, f)?,
         }
         Ok(())
     }
@@ -125,14 +142,9 @@ pub(crate) struct TypeExpr {
 impl TypeExpr {
 
     pub(crate) fn span(&self) -> Span {
-        match &self.kind {
-            TypeExprKind::Expr(e) => e.span(),
-            TypeExprKind::BinaryOp(b) => b.span,
-            TypeExprKind::TypeItem(i) => i.span,
-            TypeExprKind::TypeGroup(g) => g.span,
-            TypeExprKind::TypeTuple(t) => t.span,
-        }
+        self.kind.span()
     }
+
     pub(crate) fn resolve(&self, resolved: Type) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }

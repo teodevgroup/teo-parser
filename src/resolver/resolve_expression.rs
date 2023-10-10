@@ -96,7 +96,7 @@ fn resolve_string_literal<'a>(s: &StringLiteral, context: &'a ResolverContext<'a
 }
 
 fn resolve_regexp_literal<'a>(r: &RegExpLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
-    Type::RegExp
+    Type::Regex
 }
 
 fn resolve_bool_literal<'a>(r: &BoolLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {

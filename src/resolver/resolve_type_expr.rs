@@ -1,14 +1,16 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use maplit::hashmap;
 use crate::ast::arity::Arity;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::type_expr::{Type, TypeExpr, TypeExprKind, TypeItem, TypeKeyword, TypeOp, TypeShape};
+use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp, TypeShape};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::r#type::keyword::Keyword;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
+use crate::resolver::resolve_type::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_type_expr<'a>(
@@ -108,6 +110,9 @@ fn resolve_type_item<'a>(
     let mut base = if names.len() == 1 {
         let name = *names.get(0).unwrap();
         match name {
+            "Ignored" => {
+                Some(Type::Ignored)
+            },
             "Any" => {
                 request_zero_generics("Any", type_item, context);
                 Some(Type::Any)
@@ -176,17 +181,28 @@ fn resolve_type_item<'a>(
                 request_zero_generics("File", type_item, context);
                 Some(Type::File)
             },
+            "Regex" => {
+                request_zero_generics("Regex", type_item, context);
+                Some(Type::Regex)
+            },
+            "Model" => {
+                request_zero_generics("Model", type_item, context);
+                Some(Type::Model)
+            }
             "Array" => {
                 request_single_generics("Array", type_item, context);
                 Some(Type::Array(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
                     resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
                 }))))
             },
-            "Map" => {
-                request_double_generics("Map", type_item, context);
+            "Dictionary" => {
+                request_single_generics("Dictionary", type_item, context);
                 Some(Type::Dictionary(Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
                     resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
                 }))))
+            },
+            "Tuple" => {
+                Some(Type::Tuple(type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect()))
             },
             "Range" => {
                 request_single_generics("Range", type_item, context);
@@ -203,25 +219,92 @@ fn resolve_type_item<'a>(
                     }
                 }))))
             },
-            "Tuple" => {
-                Some(Type::Tuple(type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect()))
-            },
             "Union" => {
                 Some(Type::Union(type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect()))
             },
-            "Ignored" => {
-                Some(Type::Ignored)
+            "ModelScalarFields" => {
+                request_single_generics("ModelScalarFields", type_item, context);
+                if let Some(t) = type_item.generics.get(0) {
+                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    if let Some(model_path) = model_object.as_model_object() {
+                        Some(Type::ModelScalarFields(model_path.clone()))
+                    } else {
+                        context.insert_diagnostics_error(t.span(), "model not found");
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
             },
-            "Object" => {
-                Some(Type::Object(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
-                    resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)
-                }))))
+            "ModelScalarFieldsWithoutVirtuals" => {
+                request_single_generics("ModelScalarFieldsWithoutVirtuals", type_item, context);
+                if let Some(t) = type_item.generics.get(0) {
+                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    if let Some(model_path) = model_object.as_model_object() {
+                        Some(Type::ModelScalarFieldsWithoutVirtuals(model_path.clone()))
+                    } else {
+                        context.insert_diagnostics_error(t.span(), "model not found");
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            },
+            "ModelScalarFieldsAndCachedPropertiesWithoutVirtuals" => {
+                request_single_generics("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals", type_item, context);
+                if let Some(t) = type_item.generics.get(0) {
+                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    if let Some(model_path) = model_object.as_model_object() {
+                        Some(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(model_path.clone()))
+                    } else {
+                        context.insert_diagnostics_error(t.span(), "model not found");
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            },
+            "FieldType" => {
+                request_double_generics("FieldType", type_item, context);
+                if type_item.generics.len() != 2 {
+                    Type::Undetermined
+                } else {
+                    let t = type_item.generics.get(0).unwrap();
+                    let f = type_item.generics.get(1).unwrap();
+                    if let Some(field_ref) = f.as_field_reference() {
+                        let inner_type = resolve_type_expr_kind(t, None, None, context);
+                        if let Some(model_path) = inner_type.as_model_object() {
+                            let model = context.schema.find_top_by_path(model_path).unwrap().as_model().unwrap();
+                            if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
+                                Some(field.type_expr.resolved().clone())
+                            } else {
+                                context.insert_diagnostics_error(f.span(), "field not found");
+                                Some(Type::Undetermined)
+                            }
+                        } else if let Some((interface_path, interface_generics)) = inner_type.as_interface_object() {
+                            let interface = context.schema.find_top_by_path(interface_path).unwrap().as_interface().unwrap();
+                            let map = calculate_generics_map(interface.generics_declaration.as_ref(), interface_generics);
+                            if let Some(field) = interface.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
+                                Some(field.type_expr.resolved().replace_generics(&map))
+                            } else {
+                                context.insert_diagnostics_error(f.span(), "field not found");
+                                Some(Type::Undetermined)
+                            }
+                        } else {
+                            context.insert_diagnostics_error(t.span(), "model or interface not found");
+                            Some(Type::Undetermined)
+                        }
+                    } else {
+                        context.insert_diagnostics_error(f.span(), "type is not field reference");
+                        Some(Type::Undetermined)
+                    }
+                }
             },
             "Self" => {
                 Some(Type::Keyword(Keyword::SelfIdentifier))
             },
-            "FieldType" => {
-                Some(Type::Keyword(TypeKeyword::FieldType))
+            "ThisFieldType" => {
+                Some(Type::Keyword(Keyword::ThisFieldType))
             },
             _ => {
                 if let Some(generics_declaration) = generics_declaration {
@@ -242,14 +325,15 @@ fn resolve_type_item<'a>(
         if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default) {
             let top = context.schema.find_top_by_path(&reference.path).unwrap();
             base = match top {
-                Top::Model(m) => Some(Type::Model(m.path.clone())),
-                Top::Enum(e) => Some(Type::Enum(e.path.clone())),
-                Top::Interface(i) => Some(Type::Interface(i.path.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect())),
+                Top::Model(m) => Some(Type::ModelObject(m.path.clone())),
+                Top::Enum(e) => Some(Type::EnumVariant(e.path.clone())),
+                Top::Interface(i) => Some(Type::InterfaceObject(i.path.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect())),
+                Top::StructDeclaration(s) => Some(Type::StructObject(s.path.clone())),
                 _ => None,
             }
         }
         if base.is_none() {
-            context.insert_diagnostics_error(type_item.identifier_path.span, "TypeError: Unresolved type");
+            context.insert_diagnostics_error(type_item.identifier_path.span, "unknown type");
             base = Some(Type::Undetermined);
         }
     }
@@ -322,7 +406,7 @@ pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext
 
 fn fetch_all_interface_fields<'a>(
     interface: &'a InterfaceDeclaration,
-    generics_map: HashMap<String, &Type>,
+    generics_map: BTreeMap<String, &Type>,
     context: &'a ResolverContext<'a>,
 ) -> HashMap<String, TypeShape> {
     let mut retval = hashmap!{};

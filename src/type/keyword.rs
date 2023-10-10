@@ -1,7 +1,7 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Keyword {
     SelfIdentifier,
-    FieldType,
+    ThisFieldType,
 }
 
 impl Keyword {
@@ -13,9 +13,9 @@ impl Keyword {
         }
     }
 
-    pub(crate) fn is_field_type(&self) -> bool {
+    pub(crate) fn is_this_field_type(&self) -> bool {
         match self {
-            Keyword::FieldType => true,
+            Keyword::ThisFieldType => true,
             _ => false,
         }
     }

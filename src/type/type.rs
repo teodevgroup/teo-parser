@@ -18,7 +18,7 @@ pub(crate) enum Type {
     Date,
     DateTime,
     File,
-    RegExp,
+    Regex,
     Model,
     Array(Box<Type>),
     Dictionary(Box<Type>),
@@ -34,7 +34,7 @@ pub(crate) enum Type {
     ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Vec<usize>),
     FieldType(Vec<usize>, String),
     GenericItem(String),
-    Keyword(TypeKeyword),
+    Keyword(Keyword),
     Optional(Box<Type>),
 }
 
@@ -145,9 +145,9 @@ impl Type {
         }
     }
 
-    pub(crate) fn is_regexp(&self) -> bool {
+    pub(crate) fn is_regex(&self) -> bool {
         match self {
-            Type::RegExp => true,
+            Type::Regex => true,
             _ => false,
         }
     }
@@ -366,7 +366,7 @@ impl Type {
             Type::Date => false,
             Type::DateTime => false,
             Type::File => false,
-            Type::RegExp => false,
+            Type::Regex => false,
             Type::Model => false,
             Type::Array(_) => true,
             Type::Dictionary(_) => true,
