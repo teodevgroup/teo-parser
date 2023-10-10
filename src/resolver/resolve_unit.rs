@@ -88,7 +88,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
     }
 }
 
-fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &ExpressionKind, context: &'a ResolverContext<'a>) -> UnitResolveResult {
+fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a ExpressionKind, context: &'a ResolverContext<'a>) -> UnitResolveResult {
     match current {
         UnitResolveResult::Type(current_value) => {
             if let Some(path) = current_value.as_struct_object() {

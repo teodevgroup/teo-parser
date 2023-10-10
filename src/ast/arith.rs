@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use crate::ast::expr::ExpressionKind;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Op {
     Neg,
     Add,

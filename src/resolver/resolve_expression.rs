@@ -182,18 +182,22 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
             let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected);
             if !v.is_undetermined() {
                 match unary.op {
-                    Op::Neg => if let Ok(result) = v.neg() {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
-                        Type::Undetermined
+                    Op::Neg => {
+                        match v {
+                            Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => v,
+                            _ => {
+                                context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                                Type::Undetermined
+                            }
+                        }
                     }
-                    Op::Not => v.normal_not(),
-                    Op::BitNeg => if let Ok(result) = v.not() {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
-                        Type::Undetermined
+                    Op::Not => Type::Bool,
+                    Op::BitNeg => match v {
+                        Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => v,
+                        _ => {
+                            context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                            Type::Undetermined
+                        }
                     }
                     _ => unreachable!(),
                 }
@@ -206,75 +210,43 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
             let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected);
             if !lhs.is_undetermined() && !rhs.is_undetermined() {
                 match binary.op {
-                    Op::Add => if let Ok(result) = lhs.add(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
+                    Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Mod => {
+                        if lhs.is_int64() && rhs.is_int_32_or_64() {
+                            lhs
+                        } else if lhs.is_int() && rhs.is_int_32_or_64() {
+                            lhs
+                        } else if lhs.is_float() && rhs.is_any_int_or_float() {
+                            lhs
+                        } else if lhs.is_float32() && rhs.is_any_int_or_float() {
+                            lhs
+                        } else if binary.op == Op::Add && lhs.is_string() && rhs.is_string() {
+                            lhs
+                        } else if lhs.is_decimal() && rhs.is_decimal() {
+                            lhs
+                        } else {
+                            context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                            Type::Undetermined
+                        }
                     }
-                    Op::Sub => if let Ok(result) = lhs.sub(&rhs) {
-                        result
+                    Op::And | Op::Or => if lhs.test(&rhs) {
+                        lhs
+                    } else if rhs.test(&lhs) {
+                        rhs
                     } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
+                        Type::Union(vec![lhs, rhs])
                     }
-                    Op::Mul => if let Ok(result) = lhs.mul(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
+                    Op::BitAnd | Op::BitXor | Op::BitOr | Op::BitLS | Op::BitRS => {
+                        if lhs.is_int64() && rhs.is_int_32_or_64() {
+                            lhs
+                        } else if lhs.is_int() && rhs.is_int_32_or_64() {
+                            lhs
+                        } else {
+                            context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                            Type::Undetermined
+                        }
                     }
-                    Op::Div => if let Ok(result) = lhs.div(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::Mod => if let Ok(result) = lhs.rem(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::And => if lhs.normal_not().as_bool().unwrap() { lhs } else { rhs }
-                    Op::Or => if lhs.normal_not().as_bool().unwrap() { rhs } else { lhs }
-                    Op::BitAnd => if let Ok(result) = lhs.bitand(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::BitXor => if let Ok(result) = lhs.bitxor(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::BitOr => if let Ok(result) = lhs.bitor(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::BitLS => if let Ok(result) = lhs.shl(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::BitRS => if let Ok(result) = lhs.shr(&rhs) {
-                        result
-                    } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
-                        Type::Undetermined
-                    }
-                    Op::NullishCoalescing => if lhs.is_null() { rhs } else { lhs }
-                    Op::Gt => Value::Bool(lhs > rhs),
-                    Op::Gte => Value::Bool(lhs >= rhs),
-                    Op::Lt => Value::Bool(lhs < rhs),
-                    Op::Lte => Value::Bool(lhs <= rhs),
-                    Op::Eq => Value::Bool(lhs == rhs),
-                    Op::Neq => Value::Bool(lhs != rhs),
+                    Op::NullishCoalescing => if lhs.is_optional() { rhs } else { lhs },
+                    Op::Gt | Op::Gte | Op::Lt | Op::Lte | Op::Eq | Op::Neq => Type::Bool,
                     Op::RangeOpen => if let Some(result) = build_range(&lhs, &rhs) {
                         result
                     } else {

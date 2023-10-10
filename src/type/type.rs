@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use crate::r#type::keyword::Keyword;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub(crate) enum Type {
+pub enum Type {
     Undetermined,
     Ignored,
     Any,
@@ -347,6 +347,10 @@ impl Type {
             Type::Float32 | Type::Float => true,
             _ => false,
         }
+    }
+
+    pub(crate) fn is_any_int_or_float(&self) -> bool {
+        self.is_int_32_or_64() || self.is_float_32_or_64()
     }
 
     pub(crate) fn is_container(&self) -> bool {

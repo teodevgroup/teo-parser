@@ -8,9 +8,9 @@ use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
-pub(super) fn resolve_identifier_into_type(
+pub(super) fn resolve_identifier_into_type<'a>(
     identifier: &Identifier,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
 ) -> Type {
     if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
         // maybe add error here

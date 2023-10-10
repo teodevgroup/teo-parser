@@ -97,6 +97,7 @@ fn resolve_type_expr_kind<'a>(
                 resolved
             }
         }
+        _ => unreachable!()
     }
 }
 

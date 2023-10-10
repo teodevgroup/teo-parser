@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub(crate) enum Keyword {
+pub enum Keyword {
     SelfIdentifier,
     ThisFieldType,
 }
