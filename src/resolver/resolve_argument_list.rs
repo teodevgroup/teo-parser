@@ -2,7 +2,7 @@ use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
-use crate::ast::identifier::Identifier;
+use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;
@@ -15,7 +15,7 @@ pub(super) struct CallableVariant<'a> {
 }
 
 pub(super) fn resolve_argument_list<'a>(
-    callable_identifier: &Identifier,
+    callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variants: Vec<CallableVariant<'a>>,
     context: &'a ResolverContext<'a>,
@@ -59,7 +59,7 @@ pub(super) fn resolve_argument_list<'a>(
                 return
             }
         }
-        context.insert_diagnostics_error(callable_identifier.span, "Callable requires arguments");
+        context.insert_diagnostics_error(callable_span, "Callable requires arguments");
     }
 }
 

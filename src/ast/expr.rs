@@ -111,25 +111,11 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_numeric_literal_mut(&mut self) -> Option<&mut NumericLiteral> {
-        match self {
-            ExpressionKind::NumericLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
     pub(crate) fn is_numeric_literal(&self) -> bool {
         self.as_numeric_literal().is_some()
     }
 
     pub(crate) fn as_string_literal(&self) -> Option<&StringLiteral> {
-        match self {
-            ExpressionKind::StringLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_string_literal_mut(&mut self) -> Option<&mut StringLiteral> {
         match self {
             ExpressionKind::StringLiteral(n) => Some(n),
             _ => None,
@@ -147,25 +133,11 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_regexp_literal_mut(&mut self) -> Option<&mut RegExpLiteral> {
-        match self {
-            ExpressionKind::RegExpLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
     pub(crate) fn is_regexp_literal(&self) -> bool {
         self.as_regexp_literal().is_some()
     }
 
     pub(crate) fn as_bool_literal(&self) -> Option<&BoolLiteral> {
-        match self {
-            ExpressionKind::BoolLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_bool_literal_mut(&mut self) -> Option<&mut BoolLiteral> {
         match self {
             ExpressionKind::BoolLiteral(n) => Some(n),
             _ => None,
@@ -183,25 +155,11 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_null_literal_mut(&mut self) -> Option<&mut NullLiteral> {
-        match self {
-            ExpressionKind::NullLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
     pub(crate) fn is_null_literal(&self) -> bool {
         self.as_null_literal().is_some()
     }
 
     pub(crate) fn as_enum_variant_literal(&self) -> Option<&EnumVariantLiteral> {
-        match self {
-            ExpressionKind::EnumVariantLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_enum_variant_literal_mut(&mut self) -> Option<&mut EnumVariantLiteral> {
         match self {
             ExpressionKind::EnumVariantLiteral(n) => Some(n),
             _ => None,
@@ -219,21 +177,7 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_tuple_mut(&mut self) -> Option<&mut TupleLiteral> {
-        match self {
-            ExpressionKind::TupleLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
     pub(crate) fn as_array_literal(&self) -> Option<&ArrayLiteral> {
-        match self {
-            ExpressionKind::ArrayLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_array_literal_mut(&mut self) -> Option<&mut ArrayLiteral> {
         match self {
             ExpressionKind::ArrayLiteral(n) => Some(n),
             _ => None,
@@ -251,18 +195,15 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_dictionary_mut(&mut self) -> Option<&mut DictionaryLiteral> {
-        match self {
-            ExpressionKind::DictionaryLiteral(n) => Some(n),
-            _ => None,
-        }
-    }
-
     pub(crate) fn as_identifier(&self) -> Option<&Identifier> {
         match self {
             ExpressionKind::Identifier(i) => Some(i),
             _ => None,
         }
+    }
+
+    pub(crate) fn is_identifier(&self) -> bool {
+        self.as_identifier().is_some()
     }
 
     pub(crate) fn as_unit(&self) -> Option<&Unit> {

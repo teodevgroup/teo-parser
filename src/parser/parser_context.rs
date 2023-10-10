@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use maplit::btreemap;
 use crate::ast::schema::SchemaReferences;

@@ -1,7 +1,6 @@
 use crate::ast::field::Field;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::completion::completion_context::CompletionContext;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_decorator::{find_completion_in_decorator, find_completion_in_empty_decorator};
 

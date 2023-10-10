@@ -1,7 +1,16 @@
+use crate::ast::expr::ExpressionKind;
+use crate::ast::literals::EnumVariantLiteral;
+use crate::ast::reference::ReferenceType;
+use crate::ast::span::Span;
+use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::resolver::resolve_expression::resolve_expression_kind;
+use crate::resolver::resolve_argument_list::{CallableVariant, resolve_argument_list};
+use crate::resolver::resolve_constant::resolve_constant;
+use crate::resolver::resolve_expression::{resolve_enum_variant_literal, resolve_expression_kind};
+use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) enum UnitResolveResult {
     Reference(Vec<usize>),
@@ -31,63 +40,169 @@ impl UnitResolveResult {
             _ => None,
         }
     }
+
+    pub(super) fn is_undetermined(&self) -> bool {
+        self.is_type() && self.as_type().unwrap().is_undetermined()
+    }
+
+    pub(super) fn into_type<'a>(self, context: &'a ResolverContext<'a>) -> Type {
+        match self {
+            Self::Type(t) => t,
+            Self::Reference(path) => {
+                let top = context.schema.find_top_by_path(&path).unwrap();
+                if top.is_model() {
+                    Type::Model
+                } else {
+                    Type::Undetermined
+                }
+            }
+        }
+    }
 }
 
 pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
     if unit.expressions.len() == 1 {
         resolve_expression_kind(unit.expressions.get(0).unwrap(), context, expected)
     } else {
+        let first_expression = unit.expressions.get(0).unwrap();
         let expected = Type::Undetermined;
-        let mut current = resolve_expression_kind(unit.expressions.get(0).unwrap(), context, &expected);
+        let mut current = if let Some(identifier) = first_expression.as_identifier() {
+            if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
+                UnitResolveResult::Reference(reference.path)
+            } else {
+                context.insert_diagnostics_error(identifier.span, "reference is not found");
+                UnitResolveResult::Type(Type::Undetermined)
+            }
+        } else {
+            UnitResolveResult::Type(resolve_expression_kind(first_expression, context, &expected))
+        };
         if current.is_undetermined() {
-            return current;
+            return current.as_type().unwrap().clone();
         } else {
             for (index, item) in unit.expressions.iter().enumerate() {
                 if index == 0 { continue }
-                current = resolve_current_item_for_unit(&current, item, context);
+                current = resolve_current_item_for_unit(unit.expressions.get(index - 1).unwrap().span(), &current, item, context);
             }
-            current
         }
+        current.into_type(context)
     }
 }
 
-fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind, context: &'a ResolverContext<'a>) -> Accessible {
+fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &ExpressionKind, context: &'a ResolverContext<'a>) -> UnitResolveResult {
     match current {
-        Accessible::Type(current_value) => {
-            context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
-            Accessible::Type(Type::Undetermined)
-
-            // if current_value.is_reference() {
-            //     resolve_current_item_for_unit(&Accessible::Reference(Reference {
-            //         path: current_value.as_reference().unwrap().clone(),
-            //         r#type: ReferenceType::Default,
-            //     }), item, context)
-            // } else {
-            // }
+        UnitResolveResult::Type(current_value) => {
+            if let Some(path) = current_value.as_struct_object() {
+                match item {
+                    ExpressionKind::Identifier(_) => {
+                        context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
+                        UnitResolveResult::Type(Type::Undetermined)
+                    }
+                    ExpressionKind::Call(call) => {
+                        let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
+                        if let Some(new) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == call.identifier.name()) {
+                            resolve_argument_list(last_span, Some(&call.argument_list), vec![
+                                CallableVariant {
+                                    generics_declaration: new.generics_declaration.as_ref(),
+                                    argument_list_declaration: new.argument_list_declaration.as_ref(),
+                                    generics_contraint: new.generics_constraint.as_ref(),
+                                }
+                            ], context);
+                            UnitResolveResult::Type(new.return_type.resolved().clone())
+                        } else {
+                            context.insert_diagnostics_error(last_span, "struct function is not found");
+                            return UnitResolveResult::Type(Type::Undetermined)
+                        }
+                    }
+                    ExpressionKind::Subscript(subscript) => {
+                        let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
+                        if let Some(subscript_function) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == "subscript") {
+                            //subscript_function.argument_list_declaration.unwrap().
+                            // resolve_argument_list(last_span, Some(&call.argument_list), vec![
+                            //     CallableVariant {
+                            //         generics_declaration: subscript_function.generics_declaration.as_ref(),
+                            //         argument_list_declaration: subscript_function.argument_list_declaration.as_ref(),
+                            //         generics_contraint: subscript_function.generics_constraint.as_ref(),
+                            //     }
+                            // ], context);
+                            UnitResolveResult::Type(subscript_function.return_type.resolved().clone())
+                        } else {
+                            context.insert_diagnostics_error(subscript.span, "cannot subscript");
+                            return UnitResolveResult::Type(Type::Undetermined)
+                        }
+                    }
+                    _ => unreachable!(),
+                }
+            } else {
+                context.insert_diagnostics_error(last_span, "This feature is not implemented yet");
+                return UnitResolveResult::Type(Type::Undetermined)
+            }
         }
-        Accessible::Reference(current_reference) => {
-            match context.schema.find_top_by_path(&current_reference.path).unwrap() {
+        UnitResolveResult::Reference(path) => {
+            match context.schema.find_top_by_path(path).unwrap() {
+                Top::StructDeclaration(struct_declaration) => {
+                    match item {
+                        ExpressionKind::ArgumentList(argument_list) => {
+                            if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
+                                resolve_argument_list(last_span, Some(argument_list), vec![
+                                    CallableVariant {
+                                        generics_declaration: new.generics_declaration.as_ref(),
+                                        argument_list_declaration: new.argument_list_declaration.as_ref(),
+                                        generics_contraint: new.generics_constraint.as_ref(),
+                                    }
+                                ], context);
+                                UnitResolveResult::Type(new.return_type.resolved().clone())
+                            } else {
+                                context.insert_diagnostics_error(last_span, "Constructor is not found");
+                                return UnitResolveResult::Type(Type::Undetermined)
+                            }
+                        }
+                        ExpressionKind::Call(call) => {
+                            if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
+                                resolve_argument_list(last_span, Some(&call.argument_list), vec![
+                                    CallableVariant {
+                                        generics_declaration: new.generics_declaration.as_ref(),
+                                        argument_list_declaration: new.argument_list_declaration.as_ref(),
+                                        generics_contraint: new.generics_constraint.as_ref(),
+                                    }
+                                ], context);
+                                UnitResolveResult::Type(new.return_type.resolved().clone())
+                            } else {
+                                context.insert_diagnostics_error(last_span, "static struct function is not found");
+                                return UnitResolveResult::Type(Type::Undetermined)
+                            }
+                        }
+                        ExpressionKind::Subscript(s) => {
+                            context.insert_diagnostics_error(s.span, "Struct cannot be subscript");
+                            return UnitResolveResult::Type(Type::Undetermined)
+                        }
+                        ExpressionKind::Identifier(i) => {
+                            context.insert_diagnostics_error(i.span, "Struct fields are not accessible");
+                            return UnitResolveResult::Type(Type::Undetermined)
+                        }
+                        _ => unreachable!()
+                    }
+                },
                 Top::Config(config) => {
                     match item {
                         ExpressionKind::Identifier(identifier) => {
                             if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
-                                return item.expression.resolved().clone();
+                                return UnitResolveResult::Type(item.expression.resolved().clone());
                             } else {
                                 context.insert_diagnostics_error(item.span(), "Undefined field");
-                                return Accessible::Type(Type::Undetermined)
+                                return UnitResolveResult::Type(Type::Undetermined)
                             }
                         },
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Config cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Config cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Config cannot be subscript");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         _ => unreachable!()
                     }
@@ -96,31 +211,31 @@ fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind
                     if !constant.is_resolved() {
                         resolve_constant(constant, context);
                     }
-                    resolve_current_item_for_unit(&Accessible::Type(track_accessible_upwards(&current, context)), item, context)
+                    UnitResolveResult::Type(constant.resolved().r#type.clone())
                 }
                 Top::Enum(r#enum) => {
                     match item {
                         ExpressionKind::Identifier(i) => {
-                            return Accessible::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
+                            return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
                                 span: Span::default(),
                                 identifier: i.clone(),
                                 argument_list: None,
-                            }, context, &Type::Enum(r#enum.path.clone())))
+                            }, context, &Type::EnumVariant(r#enum.path.clone())))
                         }
                         ExpressionKind::Call(c) => {
-                            return Accessible::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
+                            return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
                                 span: Span::default(),
                                 identifier: c.identifier.clone(),
                                 argument_list: None,
-                            }, context, &Type::Enum(r#enum.path.clone())))
+                            }, context, &Type::EnumVariant(r#enum.path.clone())))
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Enum cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Enum cannot be subscript");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         _ => unreachable!()
                     }
@@ -130,15 +245,15 @@ fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind
                         ExpressionKind::Identifier(_) => todo!("return model field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Model cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Model cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Model cannot be subscript");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         _ => unreachable!()
                     }
@@ -148,15 +263,15 @@ fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind
                         ExpressionKind::Identifier(_) => todo!("return interface field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Interface cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Interface cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Interface cannot be subscript");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         _ => unreachable!()
                     }
@@ -165,13 +280,10 @@ fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind
                     match item {
                         ExpressionKind::Identifier(identifier) => {
                             if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
-                                return Accessible::Reference(Reference {
-                                    path: top.path().clone(),
-                                    r#type: ReferenceType::Default,
-                                })
+                                return UnitResolveResult::Reference(top.path().clone())
                             } else {
                                 context.insert_diagnostics_error(identifier.span, "Invalid reference");
-                                return Accessible::Type(Type::Undetermined)
+                                return UnitResolveResult::Type(Type::Undetermined)
                             }
                         },
                         ExpressionKind::Call(c) => {
@@ -179,11 +291,11 @@ fn resolve_current_item_for_unit<'a>(current: &Accessible, item: &ExpressionKind
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Namespace cannot be called");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Namespace cannot be subscript");
-                            return Accessible::Type(Type::Undetermined)
+                            return UnitResolveResult::Type(Type::Undetermined)
                         }
                         _ => unreachable!()
                     }

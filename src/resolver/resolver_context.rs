@@ -5,7 +5,7 @@ use maplit::btreeset;
 use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
 use crate::ast::namespace::Namespace;
-use crate::ast::r#enum::{Enum, EnumMember};
+use crate::ast::r#enum::EnumMember;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
