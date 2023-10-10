@@ -108,7 +108,7 @@ fn resolve_null_literal<'a>(r: &NullLiteral, context: &'a ResolverContext<'a>, e
 }
 
 fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
-    if let Some(enum_path) = expected.enum_path() {
+    if let Some(enum_path) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
         if let Some(_) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) {
             Type::EnumVariant(enum_path.clone())

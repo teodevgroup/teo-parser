@@ -1,6 +1,7 @@
 use crate::ast::action::{ActionDeclaration, ActionDeclarationResolved, ActionGroupDeclaration, ActionInputFormat};
-use crate::ast::type_expr::{Type, TypeExpr, TypeShape};
+use crate::ast::type_expr::{TypeShape};
 use crate::ast::span::Span;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_type_expr::{resolve_type_expr, resolve_type_shape};
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -96,7 +97,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Range(_) => Some("TypeError: invalid form action input type: Range is not supported"),
         Type::Union(_) => Some("TypeError: invalid form action input type: Union is not supported"),
         Type::Ignored => None,
-        Type::Enum(path) => {
+        Type::EnumVariant(path) => {
             let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
             if r#enum.interface {
                 Some("TypeError: invalid action input type: Interface enum is not supported")
@@ -106,16 +107,19 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
                 None
             }
         }
-        Type::Model(_) => Some("TypeError: invalid form action input type: Model is not supported"),
-        Type::Interface(path, items) => None,
-        Type::ModelScalarField(_) => Some("TypeError: invalid form action input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldAndCachedProperty(_) => Some("TypeError: invalid form action input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::Model => Some("TypeError: invalid form action input type: Model is not supported"),
+        Type::InterfaceObject(path, items) => None,
+        Type::ModelScalarFields(_) => Some("TypeError: invalid form action input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid form action input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid form action input type: FieldType is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_form_input_type(inner.as_ref(), context),
         Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::Object(_) => Some("TypeError: invalid form action input type: Object is not supported"),
+        Type::ModelObject(_) => Some("TypeError: invalid form action input type: Object is not supported"),
         Type::Keyword(_) => Some("TypeError: found keyword type"),
+        Type::Regex => Some("TypeError: invalid form action input type: Regex is not supported"),
+        Type::StructObject(_) => Some("TypeError: invalid form action input type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid form action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
     }
 }
 
@@ -154,7 +158,7 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Range(_) => Some("TypeError: invalid action input type: Range is not supported"),
         Type::Union(_) => Some("TypeError: invalid action input type: Union is not supported"),
         Type::Ignored => None,
-        Type::Enum(path) => {
+        Type::EnumVariant(path) => {
             let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
             if r#enum.interface {
                 Some("TypeError: invalid action input type: Interface enum is not supported")
@@ -164,17 +168,19 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
                 None
             }
         }
-        Type::Model(_) => Some("TypeError: invalid form action input type: Model is not supported"),
-        Type::Interface(_, __) => None,
-        Type::ModelScalarField(_) => Some("TypeError: invalid action input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldAndCachedProperty(_) => Some("TypeError: invalid action input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::Model => Some("TypeError: invalid form action input type: Model is not supported"),
+        Type::InterfaceObject(_, __) => None,
+        Type::ModelScalarFields(_) => Some("TypeError: invalid action input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid action input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid action input type: FieldType is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_input_type(inner.as_ref(), context),
         Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::Object(_) => Some("TypeError: invalid action input type: Object is not supported"),
+        Type::ModelObject(_) => Some("TypeError: invalid action input type: Object is not supported"),
         Type::Keyword(_) => Some("TypeError: found keyword type"),
-
+        Type::Regex => Some("TypeError: invalid action input type: Regex is not supported"),
+        Type::StructObject(_) => Some("TypeError: invalid action input type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
     }
 }
 
@@ -213,7 +219,7 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::Range(_) => Some("TypeError: invalid action output type: Range is not supported"),
         Type::Union(_) => Some("TypeError: invalid action output type: Union is not supported"),
         Type::Ignored => None,
-        Type::Enum(path) => {
+        Type::EnumVariant(path) => {
             let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
             if r#enum.interface {
                 Some("TypeError: invalid action output type: Interface enum is not supported")
@@ -223,16 +229,19 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
                 None
             }
         }
-        Type::Model(_) => Some("TypeError: invalid form action output type: Model is not supported"),
-        Type::Interface(_, __) => None,
-        Type::ModelScalarField(_) => Some("TypeError: invalid action output type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldAndCachedProperty(_) => Some("TypeError: invalid action output type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::Model => Some("TypeError: invalid form action output type: Model is not supported"),
+        Type::InterfaceObject(_, __) => None,
+        Type::ModelScalarFields(_) => Some("TypeError: invalid action output type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid action output type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid action output type: FieldType is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action output type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_output_type(inner.as_ref(), context),
         Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::Object(_) => Some("TypeError: invalid action output type: Object is not supported"),
+        Type::ModelObject(_) => Some("TypeError: invalid action output type: Object is not supported"),
         Type::Keyword(_) => Some("TypeError: found keyword type"),
+        Type::Regex => Some("TypeError: invalid action output type: Regex is not supported"),
+        Type::StructObject(_) => Some("TypeError: invalid action output type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action output type: ModelScalarFieldsWithoutVirtuals is not supported"),
     }
 }
 

@@ -11,24 +11,24 @@ pub(crate) fn resolve_type_contains_type<'a, F>(r#type: &Type, f: F, context: &'
         Type::Array(t) => matcher(t.as_ref(), &f),
         Type::Dictionary(t) => matcher(t.as_ref(), &f) || matcher(&Type::String, &f),
         Type::Tuple(t) => t.iter().find(|t| matcher(*t, &f)).is_some(),
-        Type::Range(t) => matcher(t.as_ref(), f),
-        Type::Union(u) => u.iter().find(|t| matcher(*t, f)).is_some(),
+        Type::Range(t) => matcher(t.as_ref(), &f),
+        Type::Union(u) => u.iter().find(|t| matcher(*t, &f)).is_some(),
         Type::InterfaceObject(path, types) => {
             let interface = context.schema.find_top_by_path(path).unwrap().as_interface().unwrap();
             let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types);
             for field in &interface.fields {
-                if matcher(field.type_expr.resolved().replace_generics(&generics_map), &f) {
+                if matcher(&field.type_expr.resolved().replace_generics(&generics_map), &f) {
                     return true;
                 }
             }
             for extend in &interface.extends {
-                if matcher(&f, extend.resolved()) {
+                if matcher(extend.resolved(), &f) {
                     return true;
                 }
             }
             return false;
         },
-        Type::Optional(t) => matcher(t.as_ref(), f),
+        Type::Optional(t) => matcher(t.as_ref(), &f),
         _ => false,
     }
 }

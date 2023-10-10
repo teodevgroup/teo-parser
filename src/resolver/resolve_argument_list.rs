@@ -75,8 +75,8 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
         // match named arguments
         for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
             if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
-                resolve_expression_and_unwrap_value(&named_argument.value, context, argument_declaration.type_expr.resolved());
-                if !context.check_value_type(argument_declaration.type_expr.resolved(), named_argument.value.resolved().as_value().unwrap()) {
+                resolve_expression(&named_argument.value, context, argument_declaration.type_expr.resolved());
+                if !argument_declaration.type_expr.resolved().test(named_argument.value.resolved()) {
                     errors.push(context.generate_diagnostics_error(named_argument.value.span(), "Argument value is of wrong type"))
                 }
                 declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
@@ -102,7 +102,7 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
             if let Some(name) = declaration_names.last() {
                 if let Some(argument_declaration) = argument_list_declaration.get(name) {
                     resolve_expression(&unnamed_argument.value, context, argument_declaration.type_expr.resolved());
-                    if !context.check_value_type(argument_declaration.type_expr.resolved(), unnamed_argument.value.resolved().as_value().unwrap()) {
+                    if !argument_declaration.type_expr.resolved().test(unnamed_argument.value.resolved()) {
                         errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), "Argument value is of wrong type"))
                     }
                     unnamed_argument.resolve(ArgumentResolved {

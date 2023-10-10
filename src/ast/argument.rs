@@ -16,8 +16,7 @@ pub struct Argument {
 impl Argument {
 
     pub fn get_type(&self) -> &Type {
-        let r = unsafe { &*self.value.resolved.as_ptr() };
-        r.as_ref().unwrap().as_type().unwrap()
+        self.value.resolved()
     }
 
     pub(crate) fn resolve(&self, resolved: ArgumentResolved) {

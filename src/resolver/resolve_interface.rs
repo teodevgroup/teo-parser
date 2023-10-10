@@ -18,7 +18,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
             interface_declaration.generics_constraint.as_ref(),
             context
         );
-        if !extend.resolved().is_interface() {
+        if !extend.resolved().is_interface_object() {
             context.insert_diagnostics_error(extend.span(), "TypeError: type is not interface");
         }
     }

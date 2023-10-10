@@ -432,4 +432,42 @@ impl Type {
             self.clone()
         }
     }
+
+    pub(crate) fn test(&self, passed: &Type) -> bool {
+        match self {
+            Type::Undetermined => false,
+            Type::Ignored => true,
+            Type::Any => true,
+            Type::Null => passed.is_null(),
+            Type::Bool => passed.is_bool(),
+            Type::Int => passed.is_int(),
+            Type::Int64 => passed.is_int64(),
+            Type::Float32 => passed.is_float32(),
+            Type::Float => passed.is_float(),
+            Type::Decimal => passed.is_decimal(),
+            Type::String => passed.is_string(),
+            Type::ObjectId => passed.is_object_id(),
+            Type::Date => passed.is_date(),
+            Type::DateTime => passed.is_datetime(),
+            Type::File => passed.is_file(),
+            Type::Regex => passed.is_regex(),
+            Type::Model => passed.is_model(),
+            Type::Array(inner) => passed.is_array() && inner.as_ref().test(passed.as_array().unwrap()),
+            Type::Dictionary(inner) => passed.is_dictionary() && inner.as_ref().test(passed.as_dictionary().unwrap()),
+            Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
+            Type::Range(inner) => passed.is_range() && inner.as_ref().test(passed.as_range().unwrap()),
+            Type::Union(u) => u.iter().any(|t| t.test(passed)),
+            Type::EnumVariant(path) => passed.is_enum_variant() && passed.as_enum_variant().unwrap() == path,
+            Type::InterfaceObject(path, generics) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
+            Type::ModelObject(path) => passed.is_model_object() && passed.as_model_object().unwrap() == path,
+            Type::StructObject(path) => passed.is_struct_object() && passed.as_struct_object().unwrap() == path,
+            Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap() == path,
+            Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap() == path,
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap() == path,
+            Type::FieldType(path, field) => passed.is_field_type() && path == passed.as_field_type().unwrap().0 && field == passed.as_field_type().unwrap().1,
+            Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
+            Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
+            Type::Optional(inner) => passed.is_null() || inner.test(passed),
+        }
+    }
 }

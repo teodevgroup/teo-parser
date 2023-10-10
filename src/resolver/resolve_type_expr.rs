@@ -267,7 +267,7 @@ fn resolve_type_item<'a>(
             "FieldType" => {
                 request_double_generics("FieldType", type_item, context);
                 if type_item.generics.len() != 2 {
-                    Type::Undetermined
+                    Some(Type::Undetermined)
                 } else {
                     let t = type_item.generics.get(0).unwrap();
                     let f = type_item.generics.get(1).unwrap();
@@ -395,9 +395,9 @@ pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext
         TypeShape::Any
     } else if r#type.is_ignored() {
         TypeShape::Any
-    } else if r#type.is_interface() {
-        let interface = context.schema.find_top_by_path(r#type.interface_path().unwrap()).unwrap().as_interface().unwrap();
-        let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.interface_generics().unwrap());
+    } else if r#type.is_interface_object() {
+        let interface = context.schema.find_top_by_path(r#type.as_interface_object().unwrap().0).unwrap().as_interface().unwrap();
+        let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.as_interface_object().unwrap().1);
         TypeShape::Map(fetch_all_interface_fields(interface, generics_map, context))
     } else {
         TypeShape::Type(r#type.clone())
@@ -411,10 +411,10 @@ fn fetch_all_interface_fields<'a>(
 ) -> HashMap<String, TypeShape> {
     let mut retval = hashmap!{};
     for extend in &interface.extends {
-        if extend.resolved().is_interface() {
-            let interface = context.schema.find_top_by_path(extend.resolved().interface_path().unwrap()).unwrap().as_interface().unwrap();
+        if extend.resolved().is_interface_object() {
+            let interface = context.schema.find_top_by_path(extend.resolved().as_interface_object().unwrap().0).unwrap().as_interface().unwrap();
             let types = extend.resolved().replace_generics(&generics_map);
-            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types.interface_generics().unwrap());
+            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types.as_interface_object().unwrap().1);
             retval.extend(fetch_all_interface_fields(interface, generics_map, context));
         }
     }
