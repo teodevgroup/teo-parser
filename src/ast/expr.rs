@@ -213,21 +213,7 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_unit_mut(&mut self) -> Option<&mut Unit> {
-        match self {
-            ExpressionKind::Unit(u) => Some(u),
-            _ => None,
-        }
-    }
-
     pub(crate) fn as_argument_list(&self) -> Option<&ArgumentList> {
-        match self {
-            ExpressionKind::ArgumentList(a) => Some(a),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_argument_list_mut(&mut self) -> Option<&mut ArgumentList> {
         match self {
             ExpressionKind::ArgumentList(a) => Some(a),
             _ => None,
@@ -241,13 +227,6 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_subscript_mut(&mut self) -> Option<&mut Subscript> {
-        match self {
-            ExpressionKind::Subscript(s) => Some(s),
-            _ => None,
-        }
-    }
-
     pub(crate) fn as_call(&self) -> Option<&Call> {
         match self {
             ExpressionKind::Call(c) => Some(c),
@@ -255,21 +234,7 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_call_mut(&mut self) -> Option<&mut Call> {
-        match self {
-            ExpressionKind::Call(c) => Some(c),
-            _ => None,
-        }
-    }
-
     pub(crate) fn as_pipeline(&self) -> Option<&Pipeline> {
-        match self {
-            ExpressionKind::Pipeline(p) => Some(p),
-            _ => None,
-        }
-    }
-
-    pub(crate) fn as_pipeline_mut(&mut self) -> Option<&mut Pipeline> {
         match self {
             ExpressionKind::Pipeline(p) => Some(p),
             _ => None,

@@ -33,3 +33,9 @@ pub(crate) fn top_filter_for_any_model_field_decorators() -> Arc<dyn Fn(&Top) ->
         })
     })
 }
+
+pub(crate) fn top_filter_for_pipeline() -> Arc<dyn Fn(&Top) -> bool> {
+    Arc::new(|top: &Top| {
+        top.is_pipeline_item_declaration() || top.is_namespace()
+    })
+}
