@@ -227,8 +227,8 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFields", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, None, None, context);
-                    if let Some(model_path) = model_object.as_model_object() {
-                        Some(Type::ModelScalarFields(model_path.clone()))
+                    if model_object.is_model_object() || model_object.is_keyword() {
+                        Some(Type::ModelScalarFields(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)
@@ -241,8 +241,8 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFieldsWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, None, None, context);
-                    if let Some(model_path) = model_object.as_model_object() {
-                        Some(Type::ModelScalarFieldsWithoutVirtuals(model_path.clone()))
+                    if model_object.is_model_object() || model_object.is_keyword() {
+                        Some(Type::ModelScalarFields(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)
@@ -255,9 +255,9 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, None, None, context);
-                    if let Some(model_path) = model_object.as_model_object() {
-                        Some(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(model_path.clone()))
-                    } else {
+                    if model_object.is_model_object() || model_object.is_keyword() {
+                        Some(Type::ModelScalarFields(Box::new(model_object)))
+                    }else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)
                     }

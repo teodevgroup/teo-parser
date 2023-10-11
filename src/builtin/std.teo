@@ -207,15 +207,15 @@ namespace std {
 
     /// @name Id
     /// Specify the model's primary index
-    declare unique model decorator id(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
+    declare unique model decorator id(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
 
     /// @name Index
     /// Add an index to the model
-    declare model decorator index(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
+    declare model decorator index(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
 
     /// @name Unique
     /// Add a unique constraint to the model
-    declare model decorator unique(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[], map?: String?)
+    declare model decorator unique(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
 
     /// @name Migration
     /// Specify the migration operations for the model

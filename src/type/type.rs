@@ -29,10 +29,10 @@ pub enum Type {
     InterfaceObject(Vec<usize>, Vec<Type>),
     ModelObject(Vec<usize>),
     StructObject(Vec<usize>),
-    ModelScalarFields(Vec<usize>),
-    ModelScalarFieldsWithoutVirtuals(Vec<usize>),
-    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Vec<usize>),
-    FieldType(Vec<usize>, String),
+    ModelScalarFields(Box<Type>),
+    ModelScalarFieldsWithoutVirtuals(Box<Type>),
+    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>),
+    FieldType(Box<Type>, String),
     GenericItem(String),
     Keyword(Keyword),
     Optional(Box<Type>),
@@ -263,7 +263,7 @@ impl Type {
         self.as_model_scalar_fields().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_model_scalar_fields(&self) -> Option<&Type> {
         match self {
             Self::ModelScalarFields(path) => Some(path),
             _ => None,
@@ -274,7 +274,7 @@ impl Type {
         self.as_model_scalar_fields_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_without_virtuals(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_model_scalar_fields_without_virtuals(&self) -> Option<&Type> {
         match self {
             Self::ModelScalarFieldsWithoutVirtuals(path) => Some(path),
             _ => None,
@@ -285,7 +285,7 @@ impl Type {
         self.as_model_scalar_fields_and_cached_properties_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<&Type> {
         match self {
             Self::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => Some(path),
             _ => None,
@@ -296,7 +296,7 @@ impl Type {
         self.as_field_type().is_some()
     }
 
-    pub(crate) fn as_field_type(&self) -> Option<(&Vec<usize>, &str)> {
+    pub(crate) fn as_field_type(&self) -> Option<(&Type, &str)> {
         match self {
             Self::FieldType(path, field) => Some((path, field)),
             _ => None,
@@ -480,10 +480,10 @@ impl Type {
             Type::InterfaceObject(path, generics) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
             Type::ModelObject(path) => passed.is_model_object() && passed.as_model_object().unwrap() == path,
             Type::StructObject(path) => passed.is_struct_object() && passed.as_struct_object().unwrap() == path,
-            Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap() == path,
-            Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap() == path,
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap() == path,
-            Type::FieldType(path, field) => passed.is_field_type() && path == passed.as_field_type().unwrap().0 && field == passed.as_field_type().unwrap().1,
+            Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().test(path),
+            Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().test(path),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().test(path),
+            Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field == passed.as_field_type().unwrap().1,
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed),
