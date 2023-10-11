@@ -584,9 +584,6 @@ namespace std {
     declare pipeline item root {
         variant(value?: Int | Pipeline<Int, Int>): Int -> Int
         variant(value?: Int | Pipeline<Int64, Int>): Int64 -> Int64
-        variant(value?: Int | Pipeline<Float32, Int>): Float32 -> Float32
-        variant(value?: Int | Pipeline<Float, Int>): Float -> Float
-        variant(value?: Int | Pipeline<Decimal, Int>): Decimal -> Decimal
     }
 
     /// @name Min
