@@ -42,6 +42,20 @@ fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expecte
 }
 
 fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+    let mut expected = expected;
+    if expected.is_optional() {
+        expected = expected.unwrap_optional();
+    }
+    let undetermined = Type::Undetermined;
+    expected = if let Some(types) = expected.as_union() {
+        types.iter().find_map(|t| if t.is_int_32_or_64() || t.is_float_32_or_64() {
+            Some(t)
+        } else {
+            None
+        }).unwrap_or(&undetermined)
+    } else {
+        &undetermined
+    };
     match expected {
         Type::Undetermined => if n.value.is_int64() {
             Type::Int64

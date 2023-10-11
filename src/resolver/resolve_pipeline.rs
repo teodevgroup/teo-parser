@@ -55,6 +55,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
                         };
                         let argument_list = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten();
                         current_input_type = resolve_argument_list(identifier.span, argument_list, pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context)).unwrap();
+                        println!("here inner see current input type: {:?}", current_input_type);
                         current_space = None;
                     }
                     _ => unreachable!()
@@ -66,14 +67,21 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
         }
     }
     if let Some((_, output)) = expected.as_pipeline() {
+        println!("see output and current input: {:?} {:?}", output, current_input_type);
         if !output.test(&current_input_type) {
+            println!("here happens");
             context.insert_diagnostics_error(span, "Output type is unexpected");
             has_errors = true;
         }
     }
     if has_errors {
+        println!("see actual goes here has errors");
         expected.clone()
+    } else if let Some((input, output)) = expected.as_pipeline() {
+        println!("see actual: {:?}", Type::Pipeline((Box::new(input.clone()), Box::new(current_input_type.clone()))));
+        Type::Pipeline((Box::new(input.clone()), Box::new(current_input_type)))
     } else {
+        println!("see actual goes here");
         Type::Undetermined
     }
 }

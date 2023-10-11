@@ -541,7 +541,7 @@ impl Type {
             Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
-            Type::Optional(inner) => passed.is_null() || inner.test(passed),
+            Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
         }
     }
