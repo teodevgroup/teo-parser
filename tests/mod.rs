@@ -27,4 +27,12 @@ mod test {
         let completions = auto_complete_items(&schema, path, (4, 13));
         println!("{:?}", completions);
     }
+
+    #[test]
+    fn type_expr() {
+        let path = "/Users/victor/Developer/teo-parser/src/builtin/std.teo";
+        let (schema, _) = parse(path, None, None);
+        //let completions = auto_complete_items(&schema, path, (4, 13));
+        //println!("{:?}", completions);
+    }
 }

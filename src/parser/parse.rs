@@ -18,13 +18,15 @@ pub fn parse(
     let mut references = SchemaReferences::new();
     let mut parser_context = ParserContext::new(&mut diagnostics, &mut references, file_util, unsaved_files);
     let mut sources = btreemap!{};
-    // std library
-    let std_source = parse_builtin_source_file(
-        STD_TEO,
-        "(builtin)std.teo",
-        &mut parser_context
-    );
-    sources.insert(std_source.id, std_source);
+    if !main.as_ref().ends_with("builtin/std.teo") {
+        // std library
+        let std_source = parse_builtin_source_file(
+            STD_TEO,
+            "(builtin)std.teo",
+            &mut parser_context
+        );
+        sources.insert(std_source.id, std_source);
+    }
     // user schema
     parse_user_source(
         &mut sources,

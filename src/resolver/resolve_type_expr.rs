@@ -54,12 +54,14 @@ fn resolve_type_expr_kind<'a>(
                         context
                     );
                     let rhs = resolve_type_expr_kind(
-                        binary_op.lhs.as_ref(),
+                        binary_op.rhs.as_ref(),
                         generics_declaration,
                         generics_constraint,
                         context
                     );
-                    Type::Union(vec![lhs, rhs])
+                    let retval = Type::Union(vec![lhs, rhs]);
+                    println!("see type union: {:?}", retval);
+                    retval
                 }
             }
         }

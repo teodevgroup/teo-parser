@@ -219,7 +219,7 @@ namespace std {
 
     /// @name Migration
     /// Specify the migration operations for the model
-    declare unique model decorator migration(renamed: (String | Vec<String>)?, version: String?, drop: Bool?)
+    declare unique model decorator migration(renamed: (String | Array<String>)?, version: String?, drop: Bool?)
 
     /// @name Before Save
     /// Specify the action to trigger before an object is saved
@@ -406,9 +406,9 @@ namespace std {
     /// @name Migration
     /// Specify the migration operation for this field
     declare unique model field decorator migration(
-        renamed: (String | Vec<String>)?, 
+        renamed: (String | Array<String>)?, 
         version: String?, 
-        default: FieldType<Self>?,
+        default: ThisFieldType?,
         priority: Int?
     )
 
@@ -420,7 +420,7 @@ namespace std {
     /// Define a model relation
     declare unique model relation decorator relation {
         /// Define a normal relation
-        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>, references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Relation>)
+        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>, references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
         /// Define a through relation
         variant(through: Model, local: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>, foreign: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
     }
@@ -439,7 +439,7 @@ namespace std {
 
     /// @name Dependencies
     /// Define dependencies for a cached property
-    declare unique model property decorator deps(deps?: ModelScalarFieldsWithoutVituals<Self> | ModelScalarFieldsWithoutVituals<Self>[])
+    declare unique model property decorator deps(deps?: ModelScalarFieldsWithoutVirtuals<Self> | ModelScalarFieldsWithoutVirtuals<Self>[])
 
     /// @name Index
     /// Define index for this cached property
@@ -677,7 +677,7 @@ namespace std {
 
     declare pipeline item regexMatch(regex?: Regex): String -> String
 
-    declare pipeline item identity: Ignored -> Object<Unknown>?
+    declare pipeline item identity<T>: Ignored -> T? where T: ModelObject
 
     declare pipeline item print<T>(label?: String?): T -> T where T: Any
 
@@ -685,7 +685,7 @@ namespace std {
 
     declare pipeline item bcryptVerify(value?: Pipeline<String, String>): String -> String
 
-    declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<InputType, T>): Ignored -> T
+    declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<T, T>): T -> T
 
     declare pipeline item append {
         variant(value?: String | Pipeline<InputType, String>): String -> String
@@ -715,8 +715,8 @@ namespace std {
     }
 
     declare pipeline item truncate {
-        variant(maxLen?: Int | Pipeline<InputType, Int>): String -> String
-        variant<T>(maxLen?: Int | Pipeline<InputType, Int>): T[] -> T[]
+        variant(maxLen?: Int | Pipeline<String, Int>): String -> String
+        variant<T>(maxLen?: Int | Pipeline<T[], Int>): T[] -> T[]
     }
 
     declare pipeline item now: Ignored -> DateTime
