@@ -1,7 +1,7 @@
 use maplit::btreemap;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
-use crate::ast::pipeline_type_context::PipelineTypeContext;
+use crate::ast::type_info::TypeInfo;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
@@ -49,7 +49,7 @@ pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverCon
                         current_space = Some(namespace);
                     }
                     Top::PipelineItemDeclaration(pipeline_item_declaration) => {
-                        let pipeline_type_context = PipelineTypeContext {
+                        let pipeline_type_context = TypeInfo {
                             passed_in: current_input_type.clone()
                         };
                         if let Some(argument_list) = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten() {

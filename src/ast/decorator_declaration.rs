@@ -39,17 +39,33 @@ impl DecoratorDeclaration {
     pub(crate) fn callable_variants(&self) -> Vec<CallableVariant> {
         if self.has_variants() {
             self.variants.iter().map(|v| CallableVariant {
-                generics_declaration: v.generics_declaration.as_ref(),
+                generics_declarations: if let Some(generics_declaration) = v.generics_declaration.as_ref() {
+                    vec![generics_declaration]
+                } else {
+                    vec![]
+                },
                 argument_list_declaration: v.argument_list_declaration.as_ref(),
-                generics_constraint: v.generics_constraint.as_ref(),
+                generics_constraints: if let Some(generics_constraint) = v.generics_constraint.as_ref() {
+                    vec![generics_constraint]
+                } else {
+                    vec![]
+                },
                 pipeline_input: None,
                 pipeline_output: None,
             }).collect()
         } else {
             vec![CallableVariant {
-                generics_declaration: self.generics_declaration.as_ref(),
+                generics_declarations: if let Some(generics_declaration) = self.generics_declaration.as_ref() {
+                    vec![generics_declaration]
+                } else {
+                    vec![]
+                },
                 argument_list_declaration: self.argument_list_declaration.as_ref(),
-                generics_constraint: self.generics_constraint.as_ref(),
+                generics_constraints: if let Some(generics_constraint) = self.generics_constraint.as_ref() {
+                    vec![generics_constraint]
+                } else {
+                    vec![]
+                },
                 pipeline_input: None,
                 pipeline_output: None,
             }]

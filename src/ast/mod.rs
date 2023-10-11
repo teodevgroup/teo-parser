@@ -41,4 +41,4 @@ pub(crate) mod availability;
 pub(crate) mod struct_declaration;
 pub(crate) mod function_declaration;
 pub(crate) mod callable_variant;
-pub(crate) mod pipeline_type_context;
+pub(crate) mod type_info;

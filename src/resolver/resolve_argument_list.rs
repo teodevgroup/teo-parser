@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::pipeline_type_context::PipelineTypeContext;
+use crate::ast::type_info::TypeInfo;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
 use crate::r#type::keyword::Keyword;
@@ -16,7 +16,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
     callable_variants: Vec<CallableVariant<'a>>,
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
-    pipeline_type_context: Option<&'b PipelineTypeContext>,
+    pipeline_type_context: Option<&'b TypeInfo>,
 ) -> Option<Type> {
     if let Some(argument_list) = argument_list {
         if callable_variants.len() == 1 {
@@ -73,7 +73,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     callable_variant: &CallableVariant<'a>,
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
-    pipeline_type_context: Option<&'b PipelineTypeContext>,
+    pipeline_type_context: Option<&'b TypeInfo>,
 ) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>) {
     let mut errors = vec![];
     let mut warnings = vec![];

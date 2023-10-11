@@ -104,7 +104,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
                         let struct_object = Type::StructObject(struct_declaration.path.clone());
                         if let Some(new) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == call.identifier.name()) {
-                            resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(), &btreemap!{
+                            resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration), &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
                             }, context, None);
                             UnitResolveResult::Type(new.return_type.resolved().clone())
@@ -144,7 +144,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     match item {
                         ExpressionKind::ArgumentList(argument_list) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
-                                resolve_argument_list(last_span, Some(argument_list), new.callable_variants(), &btreemap!{
+                                resolve_argument_list(last_span, Some(argument_list), new.callable_variants(struct_declaration), &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 },  context, None);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
@@ -155,7 +155,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         }
                         ExpressionKind::Call(call) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
-                                resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(),  &btreemap!{
+                                resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration),  &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 }, context, None);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
