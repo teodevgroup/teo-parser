@@ -106,7 +106,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         if let Some(new) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == call.identifier.name()) {
                             resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(), &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
-                            }, context);
+                            }, context, None);
                             UnitResolveResult::Type(new.return_type.resolved().clone())
                         } else {
                             context.insert_diagnostics_error(last_span, "struct function is not found");
@@ -146,7 +146,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
                                 resolve_argument_list(last_span, Some(argument_list), new.callable_variants(), &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
-                                },  context);
+                                },  context, None);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
                             } else {
                                 context.insert_diagnostics_error(last_span, "Constructor is not found");
@@ -157,7 +157,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
                                 resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(),  &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
-                                }, context);
+                                }, context, None);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
                             } else {
                                 context.insert_diagnostics_error(last_span, "static struct function is not found");

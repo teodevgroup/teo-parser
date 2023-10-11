@@ -1,6 +1,7 @@
 use maplit::btreemap;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
+use crate::ast::pipeline_type_context::PipelineTypeContext;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
@@ -48,12 +49,20 @@ pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverCon
                         current_space = Some(namespace);
                     }
                     Top::PipelineItemDeclaration(pipeline_item_declaration) => {
+                        let pipeline_type_context = PipelineTypeContext {
+                            passed_in: current_input_type.clone()
+                        };
                         if let Some(argument_list) = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten() {
-                            resolve_argument_list(identifier.span, Some(argument_list), pipeline_item_declaration.callable_variants(), &btreemap!{}, context);
+                            resolve_argument_list(identifier.span, Some(argument_list), pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context));
                         } else {
-                            resolve_argument_list(identifier.span, None, pipeline_item_declaration.callable_variants(), &btreemap!{}, context);
+                            resolve_argument_list(identifier.span, None, pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context));
                         }
                         current_space = None;
+                        // if !pipeline_item_declaration.input_type.resolved().test(&current_input_type) {
+                        //     context.insert_diagnostics_error(identifier.span, "Input type does not match passed in type");
+                        //     has_errors = true;
+                        // }
+                        // pipeline_item_declaration.output_type.resolved()
                     }
                     _ => unreachable!()
                 }

@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::callable_variant::CallableVariant;
+use crate::ast::pipeline_type_context::PipelineTypeContext;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
 use crate::r#type::keyword::Keyword;
@@ -9,12 +10,13 @@ use crate::r#type::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_argument_list<'a>(
+pub(super) fn resolve_argument_list<'a, 'b>(
     callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variants: Vec<CallableVariant<'a>>,
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
+    pipeline_type_context: Option<&'b PipelineTypeContext>,
 ) {
     if let Some(argument_list) = argument_list {
         if callable_variants.len() == 1 {
@@ -22,7 +24,8 @@ pub(super) fn resolve_argument_list<'a>(
                 argument_list,
                 callable_variants.first().unwrap(),
                 keywords_map,
-                context
+                context,
+                pipeline_type_context,
             );
             for error in errors {
                 context.insert_diagnostics_error(*error.span(), error.message());
@@ -36,7 +39,8 @@ pub(super) fn resolve_argument_list<'a>(
                     argument_list,
                     callable_variant,
                     keywords_map,
-                    context
+                    context,
+                    pipeline_type_context,
                 );
                 if errors.is_empty() {
                     for warning in warnings {
@@ -61,11 +65,12 @@ pub(super) fn resolve_argument_list<'a>(
     }
 }
 
-fn try_resolve_argument_list_for_callable_variant<'a>(
+fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     argument_list: &'a ArgumentList,
     callable_variant: &CallableVariant<'a>,
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
+    pipeline_type_context: Option<&'b PipelineTypeContext>,
 ) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>) {
     let mut errors = vec![];
     let mut warnings = vec![];
