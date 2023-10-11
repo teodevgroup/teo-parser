@@ -81,7 +81,7 @@ type_reference = { enum_variant_literal }
 // generics
 // #############
 generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ ","? ~ ">" }
-generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ "," }
+generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ ","? }
 generics_constraint_item = { identifier ~ ":" ~ type_expression }
 
 // #############
