@@ -1,23 +1,14 @@
 use std::default::Default;
-use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use maplit::{hashset};
-use teo_teon::types::range::Range;
-use teo_teon::value::Value;
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
-use crate::ast::reference::{Reference, ReferenceType};
-use crate::ast::span::Span;
-use crate::ast::top::Top;
-use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::resolver::resolve_constant::resolve_constant;
-use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier_into_type};
+use crate::resolver::resolve_identifier::resolve_identifier_into_type;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
     expression.resolve(resolve_expression_kind(&expression.kind, context, expected))

@@ -1,10 +1,13 @@
 use std::cell::RefCell;
-use crate::ast::type_expr::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeSubscript, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
 use crate::ast::arity::Arity;
+use crate::ast::literals::EnumVariantLiteral;
+use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
+use crate::parser::parse_literals::parse_enum_variant_literal;
 
 pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext) -> TypeExpr {
     let span = parse_span(&pair);
@@ -12,6 +15,8 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
         Rule::type_item => TypeExprKind::TypeItem(parse_type_item(primary, context)),
         Rule::type_group => TypeExprKind::TypeGroup(parse_type_group(primary, context)),
         Rule::type_tuple => TypeExprKind::TypeTuple(parse_type_tuple(primary, context)),
+        Rule::type_subscript => TypeExprKind::TypeSubscript(parse_type_subscript(primary, context)),
+        Rule::type_reference => TypeExprKind::FieldReference(parse_type_reference(primary, context)),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             panic!("unreachable 6")
@@ -106,4 +111,35 @@ fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<TypeE
         }
     }
     items
+}
+
+fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubscript {
+    let span = parse_span(&pair);
+    let mut type_item = None;
+    let mut type_expr = None;
+    let mut optional = false;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::type_item => type_item = Some(parse_type_item(current, context)),
+            Rule::type_expression => type_expr = Some(parse_type_expression(current, context).kind),
+            Rule::OPTIONAL => optional = true,
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    TypeSubscript {
+        span,
+        type_item: type_item.unwrap(),
+        type_expr: Box::new(type_expr.unwrap()),
+        optional,
+    }
+}
+
+fn parse_type_reference(pair: Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::enum_variant_literal => return parse_enum_variant_literal(current, context),
+            _ => unreachable!()
+        }
+    }
+    unreachable!()
 }

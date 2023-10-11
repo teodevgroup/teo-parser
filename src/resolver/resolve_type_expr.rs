@@ -60,7 +60,6 @@ fn resolve_type_expr_kind<'a>(
                         context
                     );
                     let retval = Type::Union(vec![lhs, rhs]);
-                    println!("see type union: {:?}", retval);
                     retval
                 }
             }
@@ -99,7 +98,20 @@ fn resolve_type_expr_kind<'a>(
                 resolved
             }
         }
-        _ => unreachable!()
+        TypeExprKind::TypeSubscript(subscript) => {
+            let resolved = Type::FieldType(
+                Box::new(resolve_type_item(&subscript.type_item, generics_declaration, generics_constraint, context)),
+                Box::new(resolve_type_expr_kind(&subscript.type_expr, generics_declaration, generics_constraint, context)),
+            );
+            if subscript.optional {
+                Type::Optional(Box::new(resolved))
+            } else {
+                resolved
+            }
+        }
+        TypeExprKind::FieldReference(r) => {
+            Type::FieldReference(r.identifier.name().to_string())
+        }
     }
 }
 

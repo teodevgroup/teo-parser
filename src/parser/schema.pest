@@ -68,13 +68,14 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 // type
 // #############
-type_expression = { (type_subscript | type_item | type_group | type_tuple) ~ (BI_OR ~ (type_subscript | type_item | type_group | type_tuple))* }
+type_expression = { (type_subscript | type_item | type_group | type_tuple | type_reference) ~ (BI_OR ~ (type_subscript | type_item | type_group | type_tuple | type_reference))* }
 type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_generics = { "<" ~ type_expression ~ ("," ~ type_expression)* ~ ","? ~ ">" }
 arity = {"[]" | "{}" }
 type_group = { "(" ~ type_expression ~ ")" ~ OPTIONAL? }
 type_tuple = { "(" ~ type_expression ~ "," ~ type_expression? ~ ("," ~ type_expression)* ~ ","? ~ ")" ~ OPTIONAL? }
-type_subscript = { type_item ~ "[" ~ identifier | enum_variant_literal ~ "]" }
+type_subscript = { type_item ~ "[" ~ type_expression ~ "]" ~ OPTIONAL? }
+type_reference = { enum_variant_literal }
 
 // #############
 // generics

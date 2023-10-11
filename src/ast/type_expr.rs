@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::arity::Arity;
+use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;
@@ -69,6 +70,7 @@ pub(crate) struct TypeTuple {
 }
 
 impl Display for TypeTuple {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let len = self.kinds.len();
         for (index, kind) in self.kinds.iter().enumerate() {
@@ -84,12 +86,35 @@ impl Display for TypeTuple {
 }
 
 #[derive(Debug)]
+pub(crate) struct TypeSubscript {
+    pub(crate) span: Span,
+    pub(crate) type_item: TypeItem,
+    pub(crate) type_expr: Box<TypeExprKind>,
+    pub(crate) optional: bool,
+}
+
+impl Display for TypeSubscript {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.type_item, f)?;
+        f.write_str("[")?;
+        Display::fmt(&self.type_expr, f)?;
+        f.write_str("]")?;
+        if self.optional {
+            f.write_str("?")?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub(crate) enum TypeExprKind {
     Expr(Box<TypeExprKind>),
     BinaryOp(TypeBinaryOp),
     TypeItem(TypeItem),
     TypeGroup(TypeGroup),
     TypeTuple(TypeTuple),
+    TypeSubscript(TypeSubscript),
     FieldReference(EnumVariantLiteral),
 }
 
@@ -102,6 +127,7 @@ impl TypeExprKind {
             TypeExprKind::TypeItem(t) => t.span,
             TypeExprKind::TypeGroup(g) => g.span,
             TypeExprKind::TypeTuple(t) => t.span,
+            TypeExprKind::TypeSubscript(s) => s.span,
             TypeExprKind::FieldReference(e) => e.span,
         }
     }
@@ -127,6 +153,7 @@ impl Display for TypeExprKind {
             TypeExprKind::TypeItem(i) => Display::fmt(i, f)?,
             TypeExprKind::TypeGroup(g) => Display::fmt(g, f)?,
             TypeExprKind::TypeTuple(t) => Display::fmt(t, f)?,
+            TypeExprKind::TypeSubscript(s) => Display::fmt(s, f)?,
             TypeExprKind::FieldReference(e) => Display::fmt(e, f)?,
         }
         Ok(())

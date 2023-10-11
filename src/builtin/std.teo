@@ -747,19 +747,19 @@ namespace std {
     /// Set the value on object or map
     declare pipeline item set {
         variant<T>(key?: String, value?: T): Dictionary<T> -> Dictionary<T>
-        variant<T, K>(key?: K, value?: T[K]): Object<T> -> Object<T> where K: ScalarField<T>, T: Model
+        variant<T, K>(key?: K, value?: T[K]): T -> T where K: ModelScalarFields<T>, T: Model
     }
 
     /// @name Get
     /// Get the value on object or map
     declare pipeline item get {
-        variant<T>(key?: String): Map<String, T> -> T?
-        variant<T, K>(key?: K): Object<T> -> T[K]? where K: ScalarField<T>, T: Model
+        variant<T>(key?: String): Dictionary<T> -> T?
+        variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
     }
 
     /// @name Previous
     /// Get the previous object value
-    declare pipeline item previous<T, K>(key?: K): Object<T> -> T[K]
+    declare pipeline item previous<T, K>(key?: K): T -> T[K] where K: ModelScalarFields<T>, T: Model
 
     /// @name Assign
     /// Assign value to key on context object
