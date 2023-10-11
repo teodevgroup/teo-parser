@@ -1,5 +1,5 @@
 use crate::ast::interface::InterfaceDeclaration;
-use crate::resolver::resolve_field::{FieldParentType, resolve_field};
+use crate::resolver::resolve_field::{FieldParentType, resolve_field_class};
 use crate::resolver::resolve_generics::resolve_generics_declaration;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
@@ -23,7 +23,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
         }
     }
     for field in &interface_declaration.fields {
-        resolve_field(
+        resolve_field_class(
             field,
             FieldParentType::Interface,
             interface_declaration.generics_declaration.as_ref(),

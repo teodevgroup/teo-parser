@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::Model;
 use crate::parser::parse_comment::parse_comment;
@@ -56,5 +57,6 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         fields,
         empty_field_decorator_spans,
         unattached_field_decorators,
+        resolved: RefCell::new(None),
     }
 }

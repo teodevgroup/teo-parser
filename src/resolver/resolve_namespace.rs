@@ -8,7 +8,7 @@ use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaratio
 use crate::resolver::resolve_enum::resolve_enum;
 use crate::resolver::resolve_interface::resolve_interface;
 use crate::resolver::resolve_middleware::resolve_middleware;
-use crate::resolver::resolve_model::resolve_model;
+use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_info};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration;
 use crate::resolver::resolver_context::ResolverContext;
@@ -20,7 +20,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::Import(_) => (), // no imports in namespace
             Top::Constant(_) => (), // only resolve when used
             Top::Enum(r#enum) => resolve_enum(r#enum, context),
-            Top::Model(model) => resolve_model(model, context),
+            Top::Model(model) => resolve_model_info(model, context),
             Top::Config(config) => resolve_config(config, context),
             Top::DataSet(_) => (), // don't resolve the first time
             Top::Middleware(middleware) => resolve_middleware(middleware, context),
@@ -42,6 +42,7 @@ pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'
         match top {
             Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
+            Top::Model(model) => resolve_model_decorators(model, context),
             _ => ()
         }
     }

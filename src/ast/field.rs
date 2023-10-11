@@ -13,10 +13,21 @@ pub(crate) enum FieldHint {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub struct ModelPrimitiveFieldSettings {
+    pub dropped: bool,
+    pub r#virtual: bool,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct ModelPropertyFieldSettings {
+   pub cached: bool,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum FieldClass {
-    ModelPrimitiveField,
+    ModelPrimitiveField(ModelPrimitiveFieldSettings),
     ModelRelation,
-    ModelProperty,
+    ModelProperty(ModelPropertyFieldSettings),
     InterfaceField,
     ConfigDeclarationField,
 }
@@ -30,16 +41,24 @@ impl FieldClass {
     }
 
     pub(crate) fn is_model_primitive_field(&self) -> bool {
+        self.as_model_primitive_field().is_some()
+    }
+
+    pub(crate) fn as_model_primitive_field(&self) -> Option<&ModelPrimitiveFieldSettings> {
         match self {
-            FieldClass::ModelPrimitiveField => true,
-            _ => false,
+            FieldClass::ModelPrimitiveField(s) => Some(s),
+            _ => None,
         }
     }
 
     pub(crate) fn is_model_property(&self) -> bool {
+        self.as_model_property().is_some()
+    }
+
+    pub(crate) fn as_model_property(&self) -> Option<&ModelPropertyFieldSettings> {
         match self {
-            FieldClass::ModelProperty => true,
-            _ => false,
+            FieldClass::ModelProperty(s) => Some(s),
+            _ => None,
         }
     }
 
@@ -58,9 +77,9 @@ impl FieldClass {
 
     pub(crate) fn reference_type(&self) -> ReferenceType {
         match self {
-            FieldClass::ModelPrimitiveField => ReferenceType::ModelFieldDecorator,
+            FieldClass::ModelPrimitiveField(_) => ReferenceType::ModelFieldDecorator,
             FieldClass::ModelRelation => ReferenceType::ModelRelationDecorator,
-            FieldClass::ModelProperty => ReferenceType::ModelPropertyDecorator,
+            FieldClass::ModelProperty(_) => ReferenceType::ModelPropertyDecorator,
             FieldClass::InterfaceField => ReferenceType::InterfaceFieldDecorator,
             FieldClass::ConfigDeclarationField => ReferenceType::Default,
         }
