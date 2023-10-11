@@ -32,7 +32,8 @@ pub enum Type {
     ModelScalarFields(Box<Type>),
     ModelScalarFieldsWithoutVirtuals(Box<Type>),
     ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>),
-    FieldType(Box<Type>, String),
+    FieldType(Box<Type>, Box<Type>),
+    FieldReference(String),
     GenericItem(String),
     Keyword(Keyword),
     Optional(Box<Type>),
@@ -296,9 +297,20 @@ impl Type {
         self.as_field_type().is_some()
     }
 
-    pub(crate) fn as_field_type(&self) -> Option<(&Type, &str)> {
+    pub(crate) fn as_field_type(&self) -> Option<(&Type, &Type)> {
         match self {
             Self::FieldType(path, field) => Some((path, field)),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_field_reference(&self) -> bool {
+        self.as_field_reference().is_some()
+    }
+
+    pub(crate) fn as_field_reference(&self) -> Option<&str> {
+        match self {
+            Self::FieldReference(name) => Some(name.as_str()),
             _ => None,
         }
     }
@@ -397,6 +409,7 @@ impl Type {
             Type::ModelScalarFieldsWithoutVirtuals(_) => false,
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => false,
             Type::FieldType(_, _) => false,
+            Type::FieldReference(_) => false,
             Type::GenericItem(_) => false,
             Type::Keyword(_) => false,
             Type::Optional(_) => true,
@@ -483,7 +496,8 @@ impl Type {
             Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().test(path),
             Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().test(path),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().test(path),
-            Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field == passed.as_field_type().unwrap().1,
+            Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
+            Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed),

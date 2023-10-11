@@ -741,12 +741,12 @@ namespace std {
 
     /// @name Self
     /// Get the current pipeline context object
-    declare pipeline item self: Ignored -> Object<Self>
+    declare pipeline item self: Ignored -> Self
 
     /// @name Set
     /// Set the value on object or map
     declare pipeline item set {
-        variant<T>(key?: String, value?: T): Map<String, T> -> Map<String, T>
+        variant<T>(key?: String, value?: T): Dictionary<T> -> Dictionary<T>
         variant<T, K>(key?: K, value?: T[K]): Object<T> -> Object<T> where K: ScalarField<T>, T: Model
     }
 
