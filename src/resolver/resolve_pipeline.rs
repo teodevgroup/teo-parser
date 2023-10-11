@@ -1,6 +1,7 @@
 use maplit::btreemap;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
+use crate::ast::span::Span;
 use crate::ast::type_info::TypeInfo;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
@@ -26,10 +27,10 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
     } else {
         &undetermined
     };
-    resolve_pipeline_unit(pipeline.unit.as_ref(), context, r#type)
+    resolve_pipeline_unit(pipeline.span, pipeline.unit.as_ref(), context, r#type)
 }
 
-pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
     let mut has_errors = false;
     let mut current_input_type = if let Some((input, _)) = expected.as_pipeline() {
         input.clone()
@@ -52,17 +53,9 @@ pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverCon
                         let pipeline_type_context = TypeInfo {
                             passed_in: current_input_type.clone()
                         };
-                        if let Some(argument_list) = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten() {
-                            resolve_argument_list(identifier.span, Some(argument_list), pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context));
-                        } else {
-                            resolve_argument_list(identifier.span, None, pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context));
-                        }
+                        let argument_list = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten();
+                        current_input_type = resolve_argument_list(identifier.span, argument_list, pipeline_item_declaration.callable_variants(), &btreemap!{}, context, Some(&pipeline_type_context)).unwrap();
                         current_space = None;
-                        // if !pipeline_item_declaration.input_type.resolved().test(&current_input_type) {
-                        //     context.insert_diagnostics_error(identifier.span, "Input type does not match passed in type");
-                        //     has_errors = true;
-                        // }
-                        // pipeline_item_declaration.output_type.resolved()
                     }
                     _ => unreachable!()
                 }
@@ -70,6 +63,12 @@ pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverCon
                 context.insert_diagnostics_error(identifier.span, "Identifier is not found");
                 has_errors = true;
             }
+        }
+    }
+    if let Some((_, output)) = expected.as_pipeline() {
+        if !output.test(&current_input_type) {
+            context.insert_diagnostics_error(span, "Output type is unexpected");
+            has_errors = true;
         }
     }
     if has_errors {
