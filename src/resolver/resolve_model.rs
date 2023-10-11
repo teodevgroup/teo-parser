@@ -1,4 +1,5 @@
 use maplit::btreemap;
+use crate::ast::field::FieldClass;
 use crate::ast::model::{Model, ModelResolved};
 use crate::ast::reference::ReferenceType;
 use crate::r#type::keyword::Keyword;
@@ -18,6 +19,25 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
     // fields
     for field in &model.fields {
         resolve_field_class(field, FieldParentType::Model, None, None, context);
+        match field.resolved().class {
+            FieldClass::ModelPrimitiveField(settings) => {
+                if !settings.dropped {
+                    scalar_fields.push(field.name().to_string());
+                    if !settings.r#virtual {
+                        scalar_fields_without_virtuals.push(field.name().to_string());
+                        scalar_fields_and_cached_properties_without_virtuals.push(field.name().to_string());
+                    }
+                }
+            }
+            FieldClass::ModelRelation => {}
+            FieldClass::ModelProperty(settings) => {
+                if settings.cached {
+                    scalar_fields_and_cached_properties_without_virtuals.push(field.name().to_string());
+                }
+            }
+            FieldClass::InterfaceField => {}
+            FieldClass::ConfigDeclarationField => {}
+        }
     }
     model.resolve(ModelResolved {
         scalar_fields,
