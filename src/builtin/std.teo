@@ -440,9 +440,9 @@ namespace std {
     /// Define a model relation
     declare unique model relation decorator relation {
         /// Define a normal relation
-        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>, references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
+        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>[])
         /// Define a through relation
-        variant(through: Model, local: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>, foreign: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
+        /// variant(through: Model, local: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>, foreign: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
     }
 
     /// @name Getter
@@ -802,5 +802,18 @@ namespace std {
     // objects.insert("join".to_owned(), join);
     // objects.insert("at".to_owned(), item_at);
     // objects.insert("filter".to_owned(), filter);
-    // objects.insert("map".to_owned(), map);        
+    // objects.insert("map".to_owned(), map);
+
+    /// @name Data
+    /// This interface is common for action output
+    interface Data<T> {
+        data: T
+    }
+
+    /// @name Data and Meta
+    /// This interface is common for action output with meta information
+    interface DataMeta<T, U> {
+        data: T
+        meta: U
+    }
 }

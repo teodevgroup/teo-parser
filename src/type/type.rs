@@ -448,7 +448,7 @@ impl Type {
             } else {
                 self.clone()
             }
-        } else if self.is_container() {
+        } else {
             match self {
                 Type::Array(inner) => Type::Array(Box::new(inner.replace_keywords(map))),
                 Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_keywords(map))),
@@ -458,10 +458,11 @@ impl Type {
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
-                _ => unreachable!(),
+                Type::ModelScalarFields(inner) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map))),
+                Type::ModelScalarFieldsWithoutVirtuals(inner) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map))),
+                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map))),
+                _ => self.clone(),
             }
-        } else {
-            self.clone()
         }
     }
 
@@ -502,6 +503,22 @@ impl Type {
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
+        }
+    }
+
+    pub(crate) fn unwrap_optional(&self) -> &Type {
+        if self.is_optional() {
+            self.as_optional().unwrap()
+        } else {
+            self
+        }
+    }
+
+    pub(crate) fn unwrap_array(&self) -> &Type {
+        if self.is_array() {
+            self.as_array().unwrap()
+        } else {
+            self
         }
     }
 }

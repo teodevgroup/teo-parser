@@ -4,6 +4,7 @@ use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::diagnostics::diagnostics::DiagnosticsError;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_into_type;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
@@ -98,57 +99,75 @@ fn resolve_null_literal<'a>(r: &NullLiteral, context: &'a ResolverContext<'a>, e
     Type::Null
 }
 
-pub(super) fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+pub(super) fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Type {
+    if expected.is_optional() {
+        expected = expected.unwrap_optional();
+    }
+    if let Some(types) = expected.as_union() {
+        for expected in types {
+            if let Ok(t) = try_resolve_enum_variant_literal(e, context, expected) {
+                return t
+            }
+        }
+        context.insert_diagnostics_error(e.span, "unexpected enum variant literal");
+        Type::Undetermined
+    } else {
+        match try_resolve_enum_variant_literal(e, context, expected) {
+            Ok(t) => t,
+            Err(err) => {
+                context.insert_error(err);
+                Type::Undetermined
+            }
+        }
+    }
+}
+
+fn try_resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Result<Type, DiagnosticsError> {
+    if expected.is_optional() {
+        expected = expected.unwrap_optional();
+    }
     if let Some(enum_path) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
         if let Some(_) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) {
-            Type::EnumVariant(enum_path.clone())
+            Ok(Type::EnumVariant(enum_path.clone()))
         } else {
-            context.insert_diagnostics_error(e.span, "ValueError: undefined enum member");
-            Type::Undetermined
+            Err(context.generate_diagnostics_error(e.span, "ValueError: undefined enum member"))
         }
     } else if let Some(t) = expected.as_model_scalar_fields() {
         if let Some(model_object) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields.contains(&e.identifier.name) {
-                Type::ModelScalarFields(Box::new(Type::ModelObject(model_object.clone())))
+                Ok(Type::ModelScalarFields(Box::new(Type::ModelObject(model_object.clone()))))
             } else {
-                context.insert_diagnostics_error(e.span, "undefined model scalar fields");
-                Type::Undetermined
+                Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields"))
             }
         } else {
-            context.insert_diagnostics_error(e.span, "ValueError: unexpected enum variant literal");
-            Type::Undetermined
+            Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
     } else if let Some(t) = expected.as_model_scalar_fields_without_virtuals() {
         if let Some(model_object) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields_without_virtuals.contains(&e.identifier.name) {
-                Type::ModelScalarFieldsWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone())))
+                Ok(Type::ModelScalarFieldsWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone()))))
             } else {
-                context.insert_diagnostics_error(e.span, "undefined model scalar fields without virtuals");
-                Type::Undetermined
+                Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields without virtuals"))
             }
         } else {
-            context.insert_diagnostics_error(e.span, "ValueError: unexpected enum variant literal");
-            Type::Undetermined
+            Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
     } else if let Some(t) = expected.as_model_scalar_fields_and_cached_properties_without_virtuals() {
         if let Some(model_object) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields_and_cached_properties_without_virtuals.contains(&e.identifier.name) {
-                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone())))
+                Ok(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone()))))
             } else {
-                context.insert_diagnostics_error(e.span, "undefined model scalar fields and cached properties without virtuals");
-                Type::Undetermined
+                Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields and cached properties without virtuals"))
             }
         } else {
-            context.insert_diagnostics_error(e.span, "ValueError: unexpected enum variant literal");
-            Type::Undetermined
+            Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
     } else {
-        context.insert_diagnostics_error(e.span, "ValueError: unexpected enum variant literal");
-        Type::Undetermined
+        Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
     }
 }
 
@@ -162,12 +181,25 @@ fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'
     Type::Tuple(retval)
 }
 
-fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
-    let r#type = expected.as_array();
-    let mut retval = hashset![];
+fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Type {
+    if expected.is_optional() {
+        expected = expected.unwrap_optional();
+    }
     let undetermined = Type::Undetermined;
+    let r#type = if let Some(inner) = expected.as_array() {
+        inner
+    } else if let Some(types) = expected.as_union() {
+        types.iter().find_map(|t| if t.is_array() {
+            Some(t.as_array().unwrap())
+        } else {
+            None
+        }).unwrap_or(&undetermined)
+    } else {
+        &undetermined
+    };
+    let mut retval = hashset![];
     for e in a.expressions.iter() {
-        retval.insert(resolve_expression_kind(e, context, r#type.unwrap_or(&undetermined)));
+        retval.insert(resolve_expression_kind(e, context, r#type));
     }
     if retval.len() == 2 && retval.contains(&Type::Null) {
         let t = retval.iter().find(|t| !t.is_null()).unwrap().clone();

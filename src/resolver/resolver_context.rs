@@ -205,6 +205,10 @@ impl<'a> ResolverContext<'a> {
         self.diagnostics().insert(self.generate_diagnostics_error(span, message))
     }
 
+    pub(super) fn insert_error(&self, error: DiagnosticsError) {
+        self.diagnostics().insert(error)
+    }
+
     pub(super) fn generate_diagnostics_warning(&self, span: Span, message: impl Into<String>) -> DiagnosticsWarning {
         DiagnosticsWarning::new(
             span,

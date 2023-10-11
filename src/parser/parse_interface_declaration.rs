@@ -1,6 +1,7 @@
 use crate::ast::field::Field;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::type_expr::TypeExpr;
+use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_identifier::parse_identifier;
@@ -11,6 +12,7 @@ use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserContext) -> InterfaceDeclaration {
     let span = parse_span(&pair);
+    let mut comment = None;
     let mut identifier = None;
     let mut generics_declaration = None;
     let mut generics_constraint = None;
@@ -20,6 +22,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
                 string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
@@ -38,6 +41,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         span,
         path,
         string_path: string_path.unwrap(),
+        comment,
         identifier: identifier.unwrap(),
         generics_declaration,
         generics_constraint,
