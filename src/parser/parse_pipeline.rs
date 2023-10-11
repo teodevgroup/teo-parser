@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::unit::Unit;
 use crate::parser::parse_expression::parse_unit;
@@ -17,5 +18,6 @@ pub(super) fn parse_pipeline(pair: Pair<'_>, context: &mut ParserContext) -> Pip
     Pipeline {
         unit: Box::new(unit.unwrap()),
         span,
+        resolved: RefCell::new(None),
     }
 }

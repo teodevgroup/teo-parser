@@ -70,7 +70,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
         let expected = Type::Undetermined;
         let mut current = if let Some(identifier) = first_expression.as_identifier() {
             if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
-                UnitResolveResult::Reference(reference.path)
+                UnitResolveResult::Reference(reference)
             } else {
                 context.insert_diagnostics_error(identifier.span, "reference is not found");
                 UnitResolveResult::Type(Type::Undetermined)

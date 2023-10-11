@@ -32,7 +32,7 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected),
-        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context),
+        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected),
         ExpressionKind::Call(_) => unreachable!(),
     }
 }
