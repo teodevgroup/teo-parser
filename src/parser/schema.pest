@@ -491,7 +491,7 @@ function_declaration = {
   FUNCTION_KEYWORD ~
   identifier ~
   generics_declaration? ~
-  argument_list? ~
+  argument_list_declaration ~
   ":" ~
   type_expression ~
   generics_constraint?
