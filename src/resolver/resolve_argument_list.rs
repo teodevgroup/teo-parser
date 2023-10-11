@@ -54,7 +54,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                 }
             }
             context.insert_diagnostics_error(argument_list.span, "Argument list doesn't match any callable variants");
-            return None;
+            return Some(Type::Undetermined);
         }
     } else {
         for callable_variant in &callable_variants {

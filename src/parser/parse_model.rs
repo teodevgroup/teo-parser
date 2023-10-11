@@ -23,12 +23,12 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
     let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::MODEL_KEYWORD | Rule::COLON | Rule::EMPTY_LINES | Rule::BLOCK_CLOSE => {},
+            Rule::MODEL_KEYWORD | Rule::COLON | Rule::EMPTY_LINES | Rule::BLOCK_CLOSE | Rule::double_comment_block | Rule::comment_block => {},
             Rule::BLOCK_OPEN => {
                 string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
                 parsing_fields = true;
             },
-            Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::decorator => if parsing_fields {
                 unattached_field_decorators.push(parse_decorator(current, context));
             } else {

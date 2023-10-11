@@ -19,8 +19,8 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
     let mut type_expr: Option<TypeExpr> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::EMPTY_LINES => {},
-            Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::COLON | Rule::EMPTY_LINES | Rule::comment_block | Rule::double_comment_block => {},
+            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::decorator => decorators.push(parse_decorator(current, context)),
             Rule::empty_decorator => empty_decorators_spans.push(parse_span(&current)),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
