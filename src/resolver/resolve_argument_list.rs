@@ -13,7 +13,7 @@ use crate::resolver::resolver_context::ResolverContext;
 pub(super) struct CallableVariant<'a> {
     pub(super) generics_declaration: Option<&'a GenericsDeclaration>,
     pub(super) argument_list_declaration: Option<&'a ArgumentListDeclaration>,
-    pub(super) generics_contraint: Option<&'a GenericsConstraint>,
+    pub(super) generics_constraint: Option<&'a GenericsConstraint>,
 }
 
 pub(super) fn resolve_argument_list<'a>(
@@ -106,7 +106,7 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
         }
         // match unnamed arguments
         for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
-            if let Some(name) = declaration_names.last() {
+            if let Some(name) = declaration_names.first() {
                 if let Some(argument_declaration) = argument_list_declaration.get(name) {
                     let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map);
                     resolve_expression(&unnamed_argument.value, context, &desired_type);

@@ -38,7 +38,7 @@ mod test {
 
     #[test]
     fn call_expr() {
-        let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
+        let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
         let (schema, _) = parse(path, None, None);
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);

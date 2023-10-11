@@ -107,7 +107,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                 CallableVariant {
                                     generics_declaration: new.generics_declaration.as_ref(),
                                     argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                    generics_contraint: new.generics_constraint.as_ref(),
+                                    generics_constraint: new.generics_constraint.as_ref(),
                                 }
                             ], &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
@@ -153,7 +153,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                     CallableVariant {
                                         generics_declaration: new.generics_declaration.as_ref(),
                                         argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                        generics_contraint: new.generics_constraint.as_ref(),
+                                        generics_constraint: new.generics_constraint.as_ref(),
                                     }
                                 ], &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
@@ -170,7 +170,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                     CallableVariant {
                                         generics_declaration: new.generics_declaration.as_ref(),
                                         argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                        generics_contraint: new.generics_constraint.as_ref(),
+                                        generics_constraint: new.generics_constraint.as_ref(),
                                     }
                                 ],  &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,

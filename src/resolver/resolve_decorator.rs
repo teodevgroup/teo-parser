@@ -24,14 +24,14 @@ pub(super) fn resolve_decorator<'a>(
                     CallableVariant {
                         generics_declaration: variant.generics_declaration.as_ref(),
                         argument_list_declaration: variant.argument_list_declaration.as_ref(),
-                        generics_contraint: variant.generics_constraint.as_ref(),
+                        generics_constraint: variant.generics_constraint.as_ref(),
                     }
                 }).collect()
             } else {
                 vec![CallableVariant {
                     generics_declaration: decorator_declaration.generics_declaration.as_ref(),
                     argument_list_declaration: decorator_declaration.argument_list_declaration.as_ref(),
-                    generics_contraint: decorator_declaration.generics_constraint.as_ref(),
+                    generics_constraint: decorator_declaration.generics_constraint.as_ref(),
                 }]
             },
             keywords_map,
