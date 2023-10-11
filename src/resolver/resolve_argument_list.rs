@@ -1,9 +1,11 @@
+use std::collections::BTreeMap;
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
+use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
@@ -18,6 +20,7 @@ pub(super) fn resolve_argument_list<'a>(
     callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variants: Vec<CallableVariant<'a>>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
 ) {
     if let Some(argument_list) = argument_list {

@@ -20,7 +20,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
     context.clear_examined_fields();
     // decorators
     for decorator in &r#enum.decorators {
-        resolve_decorator(decorator, context, ReferenceType::EnumDecorator);
+        resolve_decorator(decorator, context, &btreemap!{}, ReferenceType::EnumDecorator);
     }
     // members
     let option_member_map = Mutex::new(btreemap!{});
@@ -40,7 +40,7 @@ pub(super) fn resolve_enum_member<'a>(
 ) {
     // decorators
     for decorator in &member.decorators {
-        resolve_decorator(decorator, context, ReferenceType::EnumMemberDecorator)
+        resolve_decorator(decorator, context, &btreemap!{}, ReferenceType::EnumMemberDecorator)
     }
     // expression
     if let Some(member_expression) = &member.expression {

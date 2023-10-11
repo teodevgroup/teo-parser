@@ -1,5 +1,8 @@
+use std::collections::BTreeMap;
 use crate::ast::decorator::{Decorator, DecoratorResolved};
 use crate::ast::reference::ReferenceType;
+use crate::r#type::keyword::Keyword;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::{CallableVariant, resolve_argument_list};
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolver_context::ResolverContext;
@@ -7,6 +10,7 @@ use crate::resolver::resolver_context::ResolverContext;
 pub(super) fn resolve_decorator<'a>(
     decorator: &'a Decorator,
     context: &'a ResolverContext<'a>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     reference_type: ReferenceType,
 ) {
     if let Some(reference) = resolve_identifier_path(&decorator.identifier_path, context, reference_type) {
@@ -30,6 +34,7 @@ pub(super) fn resolve_decorator<'a>(
                     generics_contraint: decorator_declaration.generics_constraint.as_ref(),
                 }]
             },
+            keywords_map,
             context,
         )
     } else {

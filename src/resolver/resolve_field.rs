@@ -1,5 +1,9 @@
+use maplit::btreemap;
 use crate::ast::field::{Field, FieldClass, FieldResolved, ModelPrimitiveFieldSettings, ModelPropertyFieldSettings};
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
+use crate::ast::model::Model;
+use crate::r#type::keyword::Keyword;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
@@ -41,9 +45,6 @@ pub(super) fn resolve_field_class<'a>(
             field.resolve(FieldResolved {
                 class: field_class,
             });
-            for decorator in &field.decorators {
-                resolve_decorator(decorator, context, field_class.reference_type());
-            }
         }
     }
     resolve_type_expr(
@@ -63,10 +64,14 @@ pub(super) fn resolve_field_class<'a>(
 }
 
 pub(super) fn resolve_field_decorators<'a>(
+    model: &'a Model,
     field: &'a Field,
     context: &'a ResolverContext<'a>,
 ) {
     for decorator in &field.decorators {
-        resolve_decorator(decorator, context, field.resolved().class.reference_type());
+        resolve_decorator(decorator, context, &btreemap!{
+            Keyword::SelfIdentifier => Type::ModelObject(model.path.clone()),
+            Keyword::ThisFieldType => field.type_expr.resolved().clone(),
+        }, field.resolved().class.reference_type());
     }
 }

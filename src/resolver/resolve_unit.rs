@@ -1,9 +1,11 @@
+use maplit::btreemap;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::{CallableVariant, resolve_argument_list};
 use crate::resolver::resolve_constant::resolve_constant;
@@ -106,7 +108,9 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                     argument_list_declaration: new.argument_list_declaration.as_ref(),
                                     generics_contraint: new.generics_constraint.as_ref(),
                                 }
-                            ], context);
+                            ], &btreemap!{
+                                Keyword::SelfIdentifier => Type::StructObject(struct_declaration.path.clone()),
+                            }, context);
                             UnitResolveResult::Type(new.return_type.resolved().clone())
                         } else {
                             context.insert_diagnostics_error(last_span, "struct function is not found");
@@ -149,7 +153,9 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                         argument_list_declaration: new.argument_list_declaration.as_ref(),
                                         generics_contraint: new.generics_constraint.as_ref(),
                                     }
-                                ], context);
+                                ], &btreemap!{
+                                    Keyword::SelfIdentifier => Type::StructObject(struct_declaration.path.clone()),
+                                },  context);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
                             } else {
                                 context.insert_diagnostics_error(last_span, "Constructor is not found");
@@ -164,7 +170,9 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                         argument_list_declaration: new.argument_list_declaration.as_ref(),
                                         generics_contraint: new.generics_constraint.as_ref(),
                                     }
-                                ], context);
+                                ],  &btreemap!{
+                                    Keyword::SelfIdentifier => Type::StructObject(struct_declaration.path.clone()),
+                                }, context);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
                             } else {
                                 context.insert_diagnostics_error(last_span, "static struct function is not found");

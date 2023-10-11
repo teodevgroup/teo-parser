@@ -1,5 +1,8 @@
+use maplit::btreemap;
 use crate::ast::model::{Model, ModelResolved};
 use crate::ast::reference::ReferenceType;
+use crate::r#type::keyword::Keyword;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators};
 use crate::resolver::resolver_context::ResolverContext;
@@ -27,10 +30,12 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     // decorators
     for decorator in &model.decorators {
-        resolve_decorator(decorator, context, ReferenceType::ModelDecorator);
+        resolve_decorator(decorator, context, &btreemap!{
+            Keyword::SelfIdentifier => Type::ModelObject(model.path.clone())
+        }, ReferenceType::ModelDecorator);
     }
     // fields
     for field in &model.fields {
-        resolve_field_decorators(field, context);
+        resolve_field_decorators(model, field, context);
     }
 }
