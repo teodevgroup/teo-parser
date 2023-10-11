@@ -35,8 +35,6 @@ pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserCon
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    context.pop_parent_id();
-    context.pop_string_path();
     FunctionDeclaration {
         span,
         path,

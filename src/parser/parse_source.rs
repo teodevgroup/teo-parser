@@ -16,6 +16,7 @@ use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_namespace::parse_namespace;
 use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
 use crate::parser::parse_span::parse_span;
+use crate::parser::parse_struct_declaration::parse_struct_declaration;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
 use super::pest_parser::Rule;
@@ -119,6 +120,12 @@ pub(super) fn parse_source(
                 context.schema_references.action_groups.push(action_group_declaration.path.clone());
                 tops.insert(action_group_declaration.id(), Top::ActionGroup(action_group_declaration));
             },
+            Rule::struct_declaration => {
+                let struct_declaration = parse_struct_declaration(current, context);
+                references.action_groups.insert(struct_declaration.id());
+                context.schema_references.struct_declarations.push(struct_declaration.path.clone());
+                tops.insert(struct_declaration.id(), Top::StructDeclaration(struct_declaration));
+            }
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }

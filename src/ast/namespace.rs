@@ -158,6 +158,7 @@ pub(crate) struct NamespaceReferences {
     pub(crate) pipeline_item_declarations: BTreeSet<usize>,
     pub(crate) middlewares: BTreeSet<usize>,
     pub(crate) action_groups: BTreeSet<usize>,
+    pub(crate) struct_declarations: BTreeSet<usize>,
 }
 
 impl NamespaceReferences {
@@ -176,6 +177,7 @@ impl NamespaceReferences {
             pipeline_item_declarations: btreeset!{},
             middlewares: btreeset!{},
             action_groups: btreeset!{},
+            struct_declarations: btreeset!{},
         }
     }
 }
