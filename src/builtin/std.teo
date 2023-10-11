@@ -13,12 +13,12 @@ namespace std {
     /// The environment variables
     let ENV = EnvVars()
 
-    declare struct Bool {
-        declare static function new(from?: String): Self
+    declare struct Null {
+        declare static function new(): Self
     }
 
-    declare struct String {
-        declare static function new(from?: Int | Int64 | Float | Float32 | Bool | ObjectId): Self
+    declare struct Bool {
+        declare static function new(from?: String): Self
     }
 
     declare struct Int {
@@ -41,6 +41,14 @@ namespace std {
         declare static function new(from?: String): Self
     }
 
+    declare struct String {
+        declare static function new(from?: Int | Int64 | Float | Float32 | Bool | ObjectId): Self
+    }
+
+    declare struct ObjectId {
+        declare static function new(from?: String): Self
+    }
+
     declare struct Date {
         declare static function new(from?: String): Self
     }
@@ -49,8 +57,14 @@ namespace std {
         declare static function new(from?: String): Self
     }
 
-    declare struct ObjectId {
-        declare static function new(from?: String): Self
+    declare struct Array<T> {
+        declare static function new(): Self
+        declare function subscript(index?: Int): T?
+    }
+
+    declare struct Dictionary<T> {
+        declare static function new(): Self
+        declare function subscript(key?: String): T?
     }
 
     /// @name Action
