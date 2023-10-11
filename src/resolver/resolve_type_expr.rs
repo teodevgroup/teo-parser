@@ -256,7 +256,7 @@ fn resolve_type_item<'a>(
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                     if model_object.is_model_object() || model_object.is_keyword() {
-                        Some(Type::ModelScalarFields(Box::new(model_object)))
+                        Some(Type::ModelScalarFieldsWithoutVirtuals(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)
@@ -270,7 +270,7 @@ fn resolve_type_item<'a>(
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                     if model_object.is_model_object() || model_object.is_keyword() {
-                        Some(Type::ModelScalarFields(Box::new(model_object)))
+                        Some(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(model_object)))
                     }else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)
