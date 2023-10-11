@@ -145,6 +145,12 @@ namespace std {
         python
     }
 
+    interface enum DatabaseType {
+        text
+        varChar
+        char
+    }
+
     /// @name Connector
     /// Represents the database connection
     declare config connector {

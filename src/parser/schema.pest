@@ -213,7 +213,6 @@ unit = {
     tuple_literal |
     array_literal |
     dictionary_literal |
-    call |
     identifier
     ~ (subscript | argument_list | "." ~  (call | identifier))*
 }
