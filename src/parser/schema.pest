@@ -257,7 +257,14 @@ pipeline = { "$" ~ identifier_unit }
 // #############
 // arguments declaration
 // #############
-argument_list_declaration = { "(" ~ (NEWLINE | WHITESPACE)* ~ (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~ TRAILING_COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
+argument_list_declaration = {
+  "(" ~
+  (NEWLINE | WHITESPACE)* ~
+  (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~
+  TRAILING_COMMA? ~
+  (NEWLINE | WHITESPACE)* ~
+  ")"
+}
 argument_declaration = { identifier ~ OPTIONAL? ~ ":" ~ type_expression }
 
 // #############

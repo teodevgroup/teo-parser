@@ -18,7 +18,7 @@ pub(super) fn parse_struct_declaration(pair: Pair<'_>, context: &mut ParserConte
     let mut function_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
+            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::STRUCT_KEYWORD => (),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));

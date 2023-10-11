@@ -21,7 +21,7 @@ pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserCon
     let mut return_type = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
+            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::FUNCTION_KEYWORD => (),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::STATIC_KEYWORD => r#static = true,
             Rule::identifier => {
