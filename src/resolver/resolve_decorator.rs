@@ -10,7 +10,7 @@ use crate::resolver::resolver_context::ResolverContext;
 pub(super) fn resolve_decorator<'a>(
     decorator: &'a Decorator,
     context: &'a ResolverContext<'a>,
-    keywords_map: &BTreeMap<Keyword, Type>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     reference_type: ReferenceType,
 ) {
     if let Some(reference) = resolve_identifier_path(&decorator.identifier_path, context, reference_type) {

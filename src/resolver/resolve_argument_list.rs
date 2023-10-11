@@ -20,7 +20,7 @@ pub(super) fn resolve_argument_list<'a>(
     callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variants: Vec<CallableVariant<'a>>,
-    keywords_map: &BTreeMap<Keyword, Type>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
 ) {
     if let Some(argument_list) = argument_list {
@@ -28,6 +28,7 @@ pub(super) fn resolve_argument_list<'a>(
             let (errors, warnings) = try_resolve_argument_list_for_callable_variant(
                 argument_list,
                 callable_variants.first().unwrap(),
+                keywords_map,
                 context
             );
             for error in errors {
@@ -41,6 +42,7 @@ pub(super) fn resolve_argument_list<'a>(
                 let (errors, warnings) = try_resolve_argument_list_for_callable_variant(
                     argument_list,
                     callable_variant,
+                    keywords_map,
                     context
                 );
                 if errors.is_empty() {
@@ -69,6 +71,7 @@ pub(super) fn resolve_argument_list<'a>(
 fn try_resolve_argument_list_for_callable_variant<'a>(
     argument_list: &'a ArgumentList,
     callable_variant: &CallableVariant<'a>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
 ) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>) {
     let mut errors = vec![];
@@ -78,8 +81,9 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
         // match named arguments
         for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
             if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
-                resolve_expression(&named_argument.value, context, argument_declaration.type_expr.resolved());
-                if !argument_declaration.type_expr.resolved().test(named_argument.value.resolved()) {
+                let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map);
+                resolve_expression(&named_argument.value, context, &desired_type);
+                if !desired_type.test(named_argument.value.resolved()) {
                     errors.push(context.generate_diagnostics_error(named_argument.value.span(), "Argument value is of wrong type"))
                 }
                 declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
@@ -104,8 +108,9 @@ fn try_resolve_argument_list_for_callable_variant<'a>(
         for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
             if let Some(name) = declaration_names.last() {
                 if let Some(argument_declaration) = argument_list_declaration.get(name) {
-                    resolve_expression(&unnamed_argument.value, context, argument_declaration.type_expr.resolved());
-                    if !argument_declaration.type_expr.resolved().test(unnamed_argument.value.resolved()) {
+                    let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map);
+                    resolve_expression(&unnamed_argument.value, context, &desired_type);
+                    if !desired_type.test(unnamed_argument.value.resolved()) {
                         errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), "Argument value is of wrong type"))
                     }
                     unnamed_argument.resolve(ArgumentResolved {

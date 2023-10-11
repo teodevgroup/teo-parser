@@ -29,9 +29,10 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
 
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     // decorators
+    let model_type = Type::ModelObject(model.path.clone());
     for decorator in &model.decorators {
         resolve_decorator(decorator, context, &btreemap!{
-            Keyword::SelfIdentifier => Type::ModelObject(model.path.clone())
+            Keyword::SelfIdentifier => &model_type
         }, ReferenceType::ModelDecorator);
     }
     // fields
