@@ -23,7 +23,7 @@ pub(super) fn resolve_decorator<'a>(
             keywords_map,
             context,
             None,
-        )
+        );
     } else {
         context.insert_diagnostics_error(decorator.identifier_path.span, "Decorator is not found")
     }

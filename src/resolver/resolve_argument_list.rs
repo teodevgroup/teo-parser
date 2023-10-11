@@ -17,10 +17,10 @@ pub(super) fn resolve_argument_list<'a, 'b>(
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
     pipeline_type_context: Option<&'b PipelineTypeContext>,
-) {
+) -> Option<Type> {
     if let Some(argument_list) = argument_list {
         if callable_variants.len() == 1 {
-            let (errors, warnings) = try_resolve_argument_list_for_callable_variant(
+            let (errors, warnings, t) = try_resolve_argument_list_for_callable_variant(
                 argument_list,
                 callable_variants.first().unwrap(),
                 keywords_map,
@@ -33,9 +33,10 @@ pub(super) fn resolve_argument_list<'a, 'b>(
             for warning in warnings {
                 context.insert_diagnostics_error(*warning.span(), warning.message());
             }
+            return t;
         } else {
             for callable_variant in &callable_variants {
-                let (errors, warnings) = try_resolve_argument_list_for_callable_variant(
+                let (errors, warnings, t) = try_resolve_argument_list_for_callable_variant(
                     argument_list,
                     callable_variant,
                     keywords_map,
@@ -46,22 +47,24 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                     for warning in warnings {
                         context.insert_diagnostics_error(*warning.span(), warning.message());
                     }
-                    return
+                    return t;
                 }
             }
             context.insert_diagnostics_error(argument_list.span, "Argument list doesn't match any callable variants");
+            return None;
         }
     } else {
         for callable_variant in &callable_variants {
             if let Some(argument_list_declaration) = callable_variant.argument_list_declaration {
                 if argument_list_declaration.every_argument_is_optional() {
-                    return
+                    return callable_variant.pipeline_output.clone(); // todo: replace generics
                 }
             } else {
-                return
+                return callable_variant.pipeline_output.clone(); // todo: replace generics
             }
         }
         context.insert_diagnostics_error(callable_span, "Callable requires arguments");
+        return Some(Type::Undetermined)
     }
 }
 
@@ -71,7 +74,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
     pipeline_type_context: Option<&'b PipelineTypeContext>,
-) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>) {
+) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>) {
     let mut errors = vec![];
     let mut warnings = vec![];
     if let Some(argument_list_declaration) = callable_variant.argument_list_declaration {
@@ -133,5 +136,5 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             errors.push(context.generate_diagnostics_error(argument_list.span, "Callable requires no arguments"));
         }
     }
-    (errors, warnings)
+    (errors, warnings, None)
 }
