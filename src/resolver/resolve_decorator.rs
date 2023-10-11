@@ -3,7 +3,7 @@ use crate::ast::decorator::{Decorator, DecoratorResolved};
 use crate::ast::reference::ReferenceType;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
-use crate::resolver::resolve_argument_list::{CallableVariant, resolve_argument_list};
+use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -19,21 +19,7 @@ pub(super) fn resolve_decorator<'a>(
         resolve_argument_list(
             decorator.identifier_path.identifiers.last().unwrap().span,
             decorator.argument_list.as_ref(),
-            if decorator_declaration.has_variants() {
-                decorator_declaration.variants.iter().map(|variant| {
-                    CallableVariant {
-                        generics_declaration: variant.generics_declaration.as_ref(),
-                        argument_list_declaration: variant.argument_list_declaration.as_ref(),
-                        generics_constraint: variant.generics_constraint.as_ref(),
-                    }
-                }).collect()
-            } else {
-                vec![CallableVariant {
-                    generics_declaration: decorator_declaration.generics_declaration.as_ref(),
-                    argument_list_declaration: decorator_declaration.argument_list_declaration.as_ref(),
-                    generics_constraint: decorator_declaration.generics_constraint.as_ref(),
-                }]
-            },
+            decorator_declaration.callable_variants(),
             keywords_map,
             context,
         )

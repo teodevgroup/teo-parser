@@ -1,8 +1,10 @@
+use maplit::btreemap;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
+use crate::resolver::resolve_argument_list::resolve_argument_list;
 use crate::resolver::resolve_identifier::resolve_identifier_with_filter;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_pipeline;
@@ -47,9 +49,9 @@ pub(super) fn resolve_pipeline_unit<'a>(unit: &'a Unit, context: &'a ResolverCon
                     }
                     Top::PipelineItemDeclaration(pipeline_item_declaration) => {
                         if let Some(argument_list) = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten() {
-
+                            resolve_argument_list(identifier.span, Some(argument_list), pipeline_item_declaration.callable_variants(), &btreemap!{}, context);
                         } else {
-
+                            resolve_argument_list(identifier.span, None, pipeline_item_declaration.callable_variants(), &btreemap!{}, context);
                         }
                         current_space = None;
                     }

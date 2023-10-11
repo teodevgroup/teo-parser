@@ -1,4 +1,5 @@
 use maplit::btreemap;
+use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
@@ -7,7 +8,7 @@ use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
-use crate::resolver::resolve_argument_list::{CallableVariant, resolve_argument_list};
+use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolve_expression::{resolve_enum_variant_literal, resolve_expression_kind};
 use crate::resolver::resolve_identifier::resolve_identifier;
@@ -103,13 +104,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
                         let struct_object = Type::StructObject(struct_declaration.path.clone());
                         if let Some(new) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == call.identifier.name()) {
-                            resolve_argument_list(last_span, Some(&call.argument_list), vec![
-                                CallableVariant {
-                                    generics_declaration: new.generics_declaration.as_ref(),
-                                    argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                    generics_constraint: new.generics_constraint.as_ref(),
-                                }
-                            ], &btreemap!{
+                            resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(), &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
                             }, context);
                             UnitResolveResult::Type(new.return_type.resolved().clone())
@@ -149,13 +144,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     match item {
                         ExpressionKind::ArgumentList(argument_list) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
-                                resolve_argument_list(last_span, Some(argument_list), vec![
-                                    CallableVariant {
-                                        generics_declaration: new.generics_declaration.as_ref(),
-                                        argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                        generics_constraint: new.generics_constraint.as_ref(),
-                                    }
-                                ], &btreemap!{
+                                resolve_argument_list(last_span, Some(argument_list), new.callable_variants(), &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 },  context);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())
@@ -166,13 +155,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         }
                         ExpressionKind::Call(call) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
-                                resolve_argument_list(last_span, Some(&call.argument_list), vec![
-                                    CallableVariant {
-                                        generics_declaration: new.generics_declaration.as_ref(),
-                                        argument_list_declaration: new.argument_list_declaration.as_ref(),
-                                        generics_constraint: new.generics_constraint.as_ref(),
-                                    }
-                                ],  &btreemap!{
+                                resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(),  &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 }, context);
                                 UnitResolveResult::Type(new.return_type.resolved().clone())

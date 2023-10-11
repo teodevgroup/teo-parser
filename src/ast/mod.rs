@@ -40,3 +40,4 @@ pub(crate) mod call;
 pub(crate) mod availability;
 pub(crate) mod struct_declaration;
 pub(crate) mod function_declaration;
+pub(crate) mod callable_variant;
