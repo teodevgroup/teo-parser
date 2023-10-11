@@ -36,6 +36,8 @@ impl FunctionDeclaration {
             generics_declaration: self.generics_declaration.as_ref(),
             argument_list_declaration: self.argument_list_declaration.as_ref(),
             generics_constraint: self.generics_constraint.as_ref(),
+            pipeline_input: None,
+            pipeline_output: None,
         }]
     }
 }

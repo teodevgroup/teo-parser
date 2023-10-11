@@ -41,12 +41,16 @@ impl PipelineItemDeclaration {
                 generics_declaration: v.generics_declaration.as_ref(),
                 argument_list_declaration: v.argument_list_declaration.as_ref(),
                 generics_constraint: v.generics_constraint.as_ref(),
+                pipeline_input: Some(v.input_type.resolved().clone()),
+                pipeline_output: Some(v.output_type.resolved().clone()),
             }).collect()
         } else {
             vec![CallableVariant {
                 generics_declaration: self.generics_declaration.as_ref(),
                 argument_list_declaration: self.argument_list_declaration.as_ref(),
                 generics_constraint: self.generics_constraint.as_ref(),
+                pipeline_input: self.input_type.as_ref().map(|t| t.resolved().clone()),
+                pipeline_output: self.output_type.as_ref().map(|t| t.resolved().clone()),
             }]
         }
     }

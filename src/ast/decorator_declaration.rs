@@ -42,12 +42,16 @@ impl DecoratorDeclaration {
                 generics_declaration: v.generics_declaration.as_ref(),
                 argument_list_declaration: v.argument_list_declaration.as_ref(),
                 generics_constraint: v.generics_constraint.as_ref(),
+                pipeline_input: None,
+                pipeline_output: None,
             }).collect()
         } else {
             vec![CallableVariant {
                 generics_declaration: self.generics_declaration.as_ref(),
                 argument_list_declaration: self.argument_list_declaration.as_ref(),
                 generics_constraint: self.generics_constraint.as_ref(),
+                pipeline_input: None,
+                pipeline_output: None,
             }]
         }
     }
