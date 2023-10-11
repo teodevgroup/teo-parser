@@ -10,8 +10,16 @@ pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a Decor
     if let Some(argument_list_declaration) = &decorator_declaration.argument_list_declaration {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            decorator_declaration.generics_declaration.as_ref(),
-            decorator_declaration.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = decorator_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = decorator_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         )
     }
@@ -30,8 +38,16 @@ fn resolve_decorator_declaration_variant<'a>(
     if let Some(argument_list_declaration) = &decorator_declaration_variant.argument_list_declaration {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            decorator_declaration_variant.generics_declaration.as_ref(),
-            decorator_declaration_variant.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = decorator_declaration_variant.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = decorator_declaration_variant.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         )
     }

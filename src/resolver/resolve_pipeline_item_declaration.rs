@@ -11,24 +11,48 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
     if let Some(argument_list_declaration) = &pipeline_item_declaration.argument_list_declaration {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            pipeline_item_declaration.generics_declaration.as_ref(),
-            pipeline_item_declaration.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = pipeline_item_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = pipeline_item_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         );
     }
     if let Some(input_type) = &pipeline_item_declaration.input_type {
         resolve_type_expr(
             input_type,
-            pipeline_item_declaration.generics_declaration.as_ref(),
-            pipeline_item_declaration.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = pipeline_item_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = pipeline_item_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         );
     }
     if let Some(output_type) = &pipeline_item_declaration.output_type {
         resolve_type_expr(
             output_type,
-            pipeline_item_declaration.generics_declaration.as_ref(),
-            pipeline_item_declaration.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = pipeline_item_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = pipeline_item_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         );
     }
@@ -47,21 +71,45 @@ fn resolve_pipeline_item_declaration_variant<'a>(
     if let Some(argument_list_declaration) = &pipeline_item_declaration_variant.argument_list_declaration {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            pipeline_item_declaration_variant.generics_declaration.as_ref(),
-            pipeline_item_declaration_variant.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = pipeline_item_declaration_variant.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = pipeline_item_declaration_variant.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context,
         );
     }
     resolve_type_expr(
         &pipeline_item_declaration_variant.input_type,
-        pipeline_item_declaration_variant.generics_declaration.as_ref(),
-        pipeline_item_declaration_variant.generics_constraint.as_ref(),
+        &if let Some(generics_declaration) = pipeline_item_declaration_variant.generics_declaration.as_ref() {
+            vec![generics_declaration]
+        } else {
+            vec![]
+        },
+        &if let Some(generics_constraint) = pipeline_item_declaration_variant.generics_constraint.as_ref() {
+            vec![generics_constraint]
+        } else {
+            vec![]
+        },
         context,
     );
     resolve_type_expr(
         &pipeline_item_declaration_variant.output_type,
-        pipeline_item_declaration_variant.generics_declaration.as_ref(),
-        pipeline_item_declaration_variant.generics_constraint.as_ref(),
+        &if let Some(generics_declaration) = pipeline_item_declaration_variant.generics_declaration.as_ref() {
+            vec![generics_declaration]
+        } else {
+            vec![]
+        },
+        &if let Some(generics_constraint) = pipeline_item_declaration_variant.generics_constraint.as_ref() {
+            vec![generics_constraint]
+        } else {
+            vec![]
+        },
         context,
     );
 }

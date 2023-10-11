@@ -10,18 +10,32 @@ pub(super) fn resolve_function_declaration<'a>(
     generics_constraint: Option<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) {
+    let mut generics_declarations = vec![];
+    let mut generics_constraints = vec![];
+    if let Some(generics_declaration) = generics_declaration {
+        generics_declarations.push(generics_declaration);
+    }
+    if let Some(generics_constraint) = generics_constraint {
+        generics_constraints.push(generics_constraint);
+    }
+    if let Some(generics_declaration) = &function_declaration.generics_declaration {
+        generics_declarations.push(generics_declaration);
+    }
+    if let Some(generics_constraint) = &function_declaration.generics_constraint {
+        generics_constraints.push(generics_constraint);
+    }
     if let Some(argument_list_declaration) = &function_declaration.argument_list_declaration {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            generics_declaration,
-            generics_constraint,
+            &generics_declarations,
+            &generics_constraints,
             context
         );
     }
     resolve_type_expr(
         &function_declaration.return_type,
-        generics_declaration,
-        generics_constraint,
+        &generics_declarations,
+        &generics_constraints,
         context
     );
 }

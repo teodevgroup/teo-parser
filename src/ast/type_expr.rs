@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::arity::Arity;
-use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;

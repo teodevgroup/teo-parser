@@ -15,8 +15,8 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_type_expr<'a>(
     type_expr: &'a TypeExpr,
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    generics_constraint: Option<&'a GenericsConstraint>,
+    generics_declaration: &Vec<&'a GenericsDeclaration>,
+    generics_constraint: &Vec<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>
 ) {
     type_expr.resolve(
@@ -31,8 +31,8 @@ pub(super) fn resolve_type_expr<'a>(
 
 fn resolve_type_expr_kind<'a>(
     type_expr_kind: &'a TypeExprKind,
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    generics_constraint: Option<&'a GenericsConstraint>,
+    generics_declaration: &Vec<&'a GenericsDeclaration>,
+    generics_constraint: &Vec<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>
 ) -> Type {
     match type_expr_kind {
@@ -117,8 +117,8 @@ fn resolve_type_expr_kind<'a>(
 
 fn resolve_type_item<'a>(
     type_item: &'a TypeItem,
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    generics_constraint: Option<&'a GenericsConstraint>,
+    generics_declaration: &Vec<&'a GenericsDeclaration>,
+    generics_constraint: &Vec<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>
 ) -> Type {
     let names = type_item.identifier_path.names();
@@ -240,7 +240,7 @@ fn resolve_type_item<'a>(
             "ModelScalarFields" => {
                 request_single_generics("ModelScalarFields", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
-                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                     if model_object.is_model_object() || model_object.is_keyword() {
                         Some(Type::ModelScalarFields(Box::new(model_object)))
                     } else {
@@ -254,7 +254,7 @@ fn resolve_type_item<'a>(
             "ModelScalarFieldsWithoutVirtuals" => {
                 request_single_generics("ModelScalarFieldsWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
-                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                     if model_object.is_model_object() || model_object.is_keyword() {
                         Some(Type::ModelScalarFields(Box::new(model_object)))
                     } else {
@@ -268,7 +268,7 @@ fn resolve_type_item<'a>(
             "ModelScalarFieldsAndCachedPropertiesWithoutVirtuals" => {
                 request_single_generics("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
-                    let model_object = resolve_type_expr_kind(t, None, None, context);
+                    let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                     if model_object.is_model_object() || model_object.is_keyword() {
                         Some(Type::ModelScalarFields(Box::new(model_object)))
                     }else {
@@ -287,7 +287,7 @@ fn resolve_type_item<'a>(
                     let t = type_item.generics.get(0).unwrap();
                     let f = type_item.generics.get(1).unwrap();
                     if let Some(field_ref) = f.as_field_reference() {
-                        let inner_type = resolve_type_expr_kind(t, None, None, context);
+                        let inner_type = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
                         if let Some(model_path) = inner_type.as_model_object() {
                             let model = context.schema.find_top_by_path(model_path).unwrap().as_model().unwrap();
                             if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
@@ -332,15 +332,13 @@ fn resolve_type_item<'a>(
                 })))))
             }
             _ => {
-                if let Some(generics_declaration) = generics_declaration {
+                generics_declaration.iter().find_map(|generics_declaration| {
                     if generics_declaration.identifiers.iter().find(|i| i.name() == name).is_some() {
                         Some(Type::GenericItem(name.to_string()))
                     } else {
                         None
                     }
-                } else {
-                    None
-                }
+                })
             },
         }
     } else {

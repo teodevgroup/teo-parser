@@ -14,8 +14,16 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
     for extend in &interface_declaration.extends {
         resolve_type_expr(
             extend,
-            interface_declaration.generics_declaration.as_ref(),
-            interface_declaration.generics_constraint.as_ref(),
+            &if let Some(generics_declaration) = interface_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = interface_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
             context
         );
         if !extend.resolved().is_interface_object() {

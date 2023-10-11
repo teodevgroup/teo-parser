@@ -48,8 +48,16 @@ pub(super) fn resolve_field_class<'a>(
     }
     resolve_type_expr(
         &field.type_expr,
-        generics_declaration,
-        generics_constraint,
+        &if let Some(generics_declaration) = generics_declaration {
+            vec![generics_declaration]
+        } else {
+            vec![]
+        },
+        &if let Some(generics_constraint) = generics_constraint {
+            vec![generics_constraint]
+        } else {
+            vec![]
+        },
         context
     );
 }
