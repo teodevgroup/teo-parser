@@ -417,6 +417,46 @@ impl Type {
         }
     }
 
+    pub(crate) fn contains_generics(&self) -> bool {
+        match self {
+            Type::Undetermined => false,
+            Type::Ignored => false,
+            Type::Any => false,
+            Type::Null => false,
+            Type::Bool => false,
+            Type::Int => false,
+            Type::Int64 => false,
+            Type::Float32 => false,
+            Type::Float => false,
+            Type::Decimal => false,
+            Type::String => false,
+            Type::ObjectId => false,
+            Type::Date => false,
+            Type::DateTime => false,
+            Type::File => false,
+            Type::Regex => false,
+            Type::Model => false,
+            Type::Array(inner) => inner.contains_generics(),
+            Type::Dictionary(inner) => inner.contains_generics(),
+            Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
+            Type::Range(inner) => inner.contains_generics(),
+            Type::Union(types) => types.iter().any(|t| t.contains_generics()),
+            Type::EnumVariant(_) => false,
+            Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::ModelObject(_) => false,
+            Type::StructObject(_) => false,
+            Type::ModelScalarFields(inner) => inner.contains_generics(),
+            Type::ModelScalarFieldsWithoutVirtuals(inner) => inner.contains_generics(),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => inner.contains_generics(),
+            Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
+            Type::FieldReference(_) => false,
+            Type::GenericItem(_) => true,
+            Type::Keyword(_) => false,
+            Type::Optional(inner) => inner.contains_generics(),
+            Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
+        }
+    }
+
     pub(crate) fn replace_generics(&self, map: &BTreeMap<String, &Type>) -> Self {
         if let Some(name) = self.as_generic_item() {
             if let Some(t) = map.get(name) {
