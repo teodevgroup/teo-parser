@@ -73,7 +73,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
         println!("see output and current input: {:?} {:?}", output, current_input_type);
         if !output.test(&current_input_type) {
             println!("here happens");
-            context.insert_diagnostics_error(span, "Output type is unexpected");
+            context.insert_diagnostics_error(span, format!("unexpected pipeline output: expect {output}, found {current_input_type}"));
             has_errors = true;
         }
     }

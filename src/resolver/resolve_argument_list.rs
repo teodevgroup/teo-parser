@@ -100,7 +100,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         let expected = pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map);
         let found = type_info.unwrap().passed_in.replace_generics(&generics_map).replace_keywords(keywords_map);
         if !expected.test(&found) {
-            errors.push(context.generate_diagnostics_error(callable_span, format!("incorrect pipeline input: expect {expected}, found {found}")));
+            errors.push(context.generate_diagnostics_error(callable_span, format!("unexpected pipeline input: expect {expected}, found {found}")));
         }
     }
     // normal process handling
