@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::default::Default;
 use maplit::{hashset};
 use crate::ast::arith::{ArithExpr, Op};
@@ -5,40 +6,41 @@ use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
 use crate::diagnostics::diagnostics::DiagnosticsError;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_into_type;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type) {
-    expression.resolve(resolve_expression_kind(&expression.kind, context, expected))
+pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>) {
+    expression.resolve(resolve_expression_kind(&expression.kind, context, expected, keywords_map))
 }
 
-pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     match &expression {
-        ExpressionKind::Group(e) => resolve_group(e, context, expected),
-        ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected),
+        ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),
+        ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
         ExpressionKind::NumericLiteral(n) => resolve_numeric_literal(n, context, expected),
         ExpressionKind::StringLiteral(e) => resolve_string_literal(e, context, expected),
         ExpressionKind::RegExpLiteral(e) => resolve_regexp_literal(e, context, expected),
         ExpressionKind::BoolLiteral(b) => resolve_bool_literal(b, context, expected),
         ExpressionKind::NullLiteral(n) => resolve_null_literal(n, context, expected),
         ExpressionKind::EnumVariantLiteral(e) => resolve_enum_variant_literal(e, context, expected),
-        ExpressionKind::TupleLiteral(t) => resolve_tuple_literal(t, context, expected),
-        ExpressionKind::ArrayLiteral(a) => resolve_array_literal(a, context, expected),
-        ExpressionKind::DictionaryLiteral(d) => resolve_dictionary_literal(d, context, expected),
+        ExpressionKind::TupleLiteral(t) => resolve_tuple_literal(t, context, expected, keywords_map),
+        ExpressionKind::ArrayLiteral(a) => resolve_array_literal(a, context, expected, keywords_map),
+        ExpressionKind::DictionaryLiteral(d) => resolve_dictionary_literal(d, context, expected, keywords_map),
         ExpressionKind::Identifier(i) => resolve_identifier_into_type(i, context),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
-        ExpressionKind::Unit(u) => resolve_unit(u, context, expected),
-        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected),
+        ExpressionKind::Unit(u) => resolve_unit(u, context, expected, keywords_map),
+        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected, keywords_map),
         ExpressionKind::Call(_) => unreachable!(),
     }
 }
 
-fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
-    resolve_expression_kind(&group.expression, context, expected)
+fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
+    resolve_expression_kind(&group.expression, context, expected, keywords_map)
 }
 
 fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
@@ -208,17 +210,17 @@ fn try_resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a Res
     }
 }
 
-fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     let types = expected.as_tuple();
     let mut retval = vec![];
     let undetermined = Type::Undetermined;
     for (i, e) in t.expressions.iter().enumerate() {
-        retval.push(resolve_expression_kind(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined)));
+        retval.push(resolve_expression_kind(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined), keywords_map));
     }
     Type::Tuple(retval)
 }
 
-fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Type {
+fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -236,7 +238,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     };
     let mut retval = hashset![];
     for e in a.expressions.iter() {
-        retval.insert(resolve_expression_kind(e, context, r#type));
+        retval.insert(resolve_expression_kind(e, context, r#type, keywords_map));
     }
     if retval.len() == 2 && retval.contains(&Type::Null) {
         let t = retval.iter().find(|t| !t.is_null()).unwrap().clone();
@@ -248,7 +250,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     }
 }
 
-fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     let undetermined = Type::Undetermined;
     let r#type = if let Some(v) = expected.as_dictionary() {
         v
@@ -257,11 +259,11 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     };
     let mut retval = hashset![];
     for (k, v) in a.expressions.iter() {
-        let k_value = resolve_expression_kind(k, context, &Type::String);
+        let k_value = resolve_expression_kind(k, context, &Type::String, keywords_map);
         if !k_value.is_string() {
             context.insert_diagnostics_error(k.span(), "ValueError: dictionary key is not String");
         }
-        let v_value = resolve_expression_kind(v, context, r#type);
+        let v_value = resolve_expression_kind(v, context, r#type, keywords_map);
         retval.insert(v_value);
     }
     if retval.len() == 2 && retval.contains(&Type::Null) {
@@ -274,11 +276,11 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     }
 }
 
-fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     match arith_expr {
-        ArithExpr::Expression(e) => resolve_expression_kind(e.as_ref(), context, expected),
+        ArithExpr::Expression(e) => resolve_expression_kind(e.as_ref(), context, expected, keywords_map),
         ArithExpr::UnaryOp(unary) => {
-            let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected);
+            let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected, keywords_map);
             if !v.is_undetermined() {
                 match unary.op {
                     Op::Neg => {
@@ -305,8 +307,8 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
             }
         }
         ArithExpr::BinaryOp(binary) => {
-            let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected);
-            let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected);
+            let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected, keywords_map);
+            let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected, keywords_map);
             if !lhs.is_undetermined() && !rhs.is_undetermined() {
                 match binary.op {
                     Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Mod => {

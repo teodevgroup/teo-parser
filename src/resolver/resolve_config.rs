@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use itertools::Itertools;
+use maplit::btreemap;
 use crate::ast::config::Config;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
@@ -23,7 +24,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
         // check each field
         for field in &config_declaration.fields {
             if let Some(item) = config.items.iter().find(|i| i.identifier.name() == field.identifier.name()) {
-                resolve_expression(&item.expression, context, field.type_expr.resolved());
+                resolve_expression(&item.expression, context, field.type_expr.resolved(), &btreemap! {});
                 let r#type = item.expression.resolved();
                 if r#type.is_undetermined() {
                     context.insert_diagnostics_error(item.identifier.span, "ValueError: invalid value");

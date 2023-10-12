@@ -111,14 +111,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
                 if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
                     let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map).replace_generics(&generics_map);
-                    resolve_expression(&named_argument.value, context, &desired_type);
+                    resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
                     if !desired_type.test(named_argument.value.resolved()) {
                         errors.push(context.generate_diagnostics_error(named_argument.value.span(), "Argument value is of wrong type"))
                     }
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
                 } else {
                     let undetermined = Type::Undetermined;
-                    resolve_expression(&named_argument.value, context, &undetermined);
+                    resolve_expression(&named_argument.value, context, &undetermined, keywords_map);
                     errors.push(context.generate_diagnostics_error(named_argument.name.as_ref().unwrap().span, "Undefined argument"))
                 }
             }
@@ -140,7 +140,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                 if let Some(name) = declaration_names.first() {
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map).replace_generics(&generics_map);
-                        resolve_expression(&unnamed_argument.value, context, &desired_type);
+                        resolve_expression(&unnamed_argument.value, context, &desired_type, keywords_map);
                         println!("see desired type and resolved type: {:?} {:?} {}", desired_type, unnamed_argument.value.resolved(), desired_type.test(unnamed_argument.value.resolved()));
                         if !desired_type.test(unnamed_argument.value.resolved()) {
                             errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), "Argument value is of wrong type"))

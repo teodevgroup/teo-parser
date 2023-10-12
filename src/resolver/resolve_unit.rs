@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expr::ExpressionKind;
@@ -63,9 +64,9 @@ impl UnitResolveResult {
     }
 }
 
-pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     if unit.expressions.len() == 1 {
-        resolve_expression_kind(unit.expressions.get(0).unwrap(), context, expected)
+        resolve_expression_kind(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
     } else {
         let first_expression = unit.expressions.get(0).unwrap();
         let expected = Type::Undetermined;
@@ -77,7 +78,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
                 UnitResolveResult::Type(Type::Undetermined)
             }
         } else {
-            UnitResolveResult::Type(resolve_expression_kind(first_expression, context, &expected))
+            UnitResolveResult::Type(resolve_expression_kind(first_expression, context, &expected, keywords_map))
         };
         if current.is_undetermined() {
             return current.as_type().unwrap().clone();
