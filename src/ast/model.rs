@@ -48,4 +48,6 @@ pub struct ModelResolved {
     pub(crate) scalar_fields: Vec<String>,
     pub(crate) scalar_fields_without_virtuals: Vec<String>,
     pub(crate) scalar_fields_and_cached_properties_without_virtuals: Vec<String>,
+    pub(crate) direct_relations: Vec<String>,
+    pub(crate) relations: Vec<String>
 }

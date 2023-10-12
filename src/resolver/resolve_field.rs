@@ -1,5 +1,5 @@
 use maplit::btreemap;
-use crate::ast::field::{Field, FieldClass, FieldResolved, ModelPrimitiveFieldSettings, ModelPropertyFieldSettings};
+use crate::ast::field::{Field, FieldClass, FieldResolved, ModelPrimitiveFieldSettings, ModelPropertyFieldSettings, ModelRelationSettings};
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::model::Model;
 use crate::r#type::keyword::Keyword;
@@ -30,8 +30,10 @@ pub(super) fn resolve_field_class<'a>(
             let r#virtual = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "virtual"] || d.identifier_path.names() == ["virtual"]).is_some();
             let dropped = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "dropped"] || d.identifier_path.names() == ["dropped"]).is_some();
             let cached = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "cached"] || d.identifier_path.names() == ["cached"]).is_some();
-            let field_class = if field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "relation"] || d.identifier_path.names() == ["relation"]).is_some() {
-                FieldClass::ModelRelation
+            let field_class = if let Some(decorator) = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "relation"] || d.identifier_path.names() == ["relation"]) {
+                FieldClass::ModelRelation(ModelRelationSettings {
+                    direct: decorator.argument_list.as_ref().map_or(false, |list| list.arguments.iter().find(|argument| argument.name.as_ref().map_or(false, |name| name.name() == "fields")).is_some()),
+                })
             } else if field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "getter"] || d.identifier_path.names() == ["getter"] || d.identifier_path.names() == ["std", "setter"] || d.identifier_path.names() == ["setter"]).is_some() {
                 FieldClass::ModelProperty(ModelPropertyFieldSettings {
                     cached

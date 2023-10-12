@@ -19,6 +19,11 @@ pub struct ModelPrimitiveFieldSettings {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub struct ModelRelationSettings {
+    pub direct: bool,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub struct ModelPropertyFieldSettings {
    pub cached: bool,
 }
@@ -26,17 +31,22 @@ pub struct ModelPropertyFieldSettings {
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum FieldClass {
     ModelPrimitiveField(ModelPrimitiveFieldSettings),
-    ModelRelation,
+    ModelRelation(ModelRelationSettings),
     ModelProperty(ModelPropertyFieldSettings),
     InterfaceField,
     ConfigDeclarationField,
 }
 
 impl FieldClass {
+
     pub(crate) fn is_model_relation(&self) -> bool {
+        self.as_model_relation().is_some()
+    }
+
+    pub(crate) fn as_model_relation(&self) -> Option<&ModelRelationSettings> {
         match self {
-            FieldClass::ModelRelation => true,
-            _ => false,
+            FieldClass::ModelRelation(s) => Some(s),
+            _ => None,
         }
     }
 
@@ -78,7 +88,7 @@ impl FieldClass {
     pub(crate) fn reference_type(&self) -> ReferenceType {
         match self {
             FieldClass::ModelPrimitiveField(_) => ReferenceType::ModelFieldDecorator,
-            FieldClass::ModelRelation => ReferenceType::ModelRelationDecorator,
+            FieldClass::ModelRelation(_) => ReferenceType::ModelRelationDecorator,
             FieldClass::ModelProperty(_) => ReferenceType::ModelPropertyDecorator,
             FieldClass::InterfaceField => ReferenceType::InterfaceFieldDecorator,
             FieldClass::ConfigDeclarationField => ReferenceType::Default,

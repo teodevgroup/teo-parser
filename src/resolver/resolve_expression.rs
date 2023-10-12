@@ -181,6 +181,28 @@ fn try_resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a Res
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
+    } else if let Some(t) = expected.as_model_relations() {
+        if let Some(model_object) = t.as_model_object() {
+            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
+            if model.resolved().relations.contains(&e.identifier.name) {
+                Ok(Type::ModelRelations(Box::new(Type::ModelObject(model_object.clone()))))
+            } else {
+                Err(context.generate_diagnostics_error(e.span, "undefined model relations"))
+            }
+        } else {
+            Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
+        }
+    } else if let Some(t) = expected.as_model_direct_relations() {
+        if let Some(model_object) = t.as_model_object() {
+            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
+            if model.resolved().direct_relations.contains(&e.identifier.name) {
+                Ok(Type::ModelDirectRelations(Box::new(Type::ModelObject(model_object.clone()))))
+            } else {
+                Err(context.generate_diagnostics_error(e.span, "undefined model direct relations"))
+            }
+        } else {
+            Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
+        }
     } else {
         Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
     }

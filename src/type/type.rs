@@ -32,6 +32,8 @@ pub enum Type {
     ModelScalarFields(Box<Type>),
     ModelScalarFieldsWithoutVirtuals(Box<Type>),
     ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>),
+    ModelRelations(Box<Type>),
+    ModelDirectRelations(Box<Type>),
     FieldType(Box<Type>, Box<Type>),
     FieldReference(String),
     GenericItem(String),
@@ -293,6 +295,28 @@ impl Type {
         }
     }
 
+    pub(crate) fn is_model_relations(&self) -> bool {
+        self.as_model_scalar_fields().is_some()
+    }
+
+    pub(crate) fn as_model_relations(&self) -> Option<&Type> {
+        match self {
+            Self::ModelRelations(path) => Some(path),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn is_model_direct_relations(&self) -> bool {
+        self.as_model_direct_relations().is_some()
+    }
+
+    pub(crate) fn as_model_direct_relations(&self) -> Option<&Type> {
+        match self {
+            Self::ModelDirectRelations(path) => Some(path),
+            _ => None,
+        }
+    }
+
     pub(crate) fn is_field_type(&self) -> bool {
         self.as_field_type().is_some()
     }
@@ -408,6 +432,8 @@ impl Type {
             Type::ModelScalarFields(_) => false,
             Type::ModelScalarFieldsWithoutVirtuals(_) => false,
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => false,
+            Type::ModelRelations(_) => false,
+            Type::ModelDirectRelations(_) => false,
             Type::FieldType(_, _) => false,
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => false,
@@ -448,6 +474,8 @@ impl Type {
             Type::ModelScalarFields(inner) => inner.contains_generics(),
             Type::ModelScalarFieldsWithoutVirtuals(inner) => inner.contains_generics(),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => inner.contains_generics(),
+            Type::ModelRelations(inner) => inner.contains_generics(),
+            Type::ModelDirectRelations(inner) => inner.contains_generics(),
             Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => true,
@@ -499,6 +527,8 @@ impl Type {
                 Type::ModelScalarFields(inner) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map))),
                 Type::ModelScalarFieldsWithoutVirtuals(inner) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map))),
                 Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map))),
+                Type::ModelRelations(inner) => Type::ModelRelations(Box::new(inner.replace_keywords(map))),
+                Type::ModelDirectRelations(inner) => Type::ModelDirectRelations(Box::new(inner.replace_keywords(map))),
                 _ => self.clone(),
             }
         }
@@ -535,6 +565,8 @@ impl Type {
             Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().test(path),
             Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().test(path),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().test(path),
+            Type::ModelRelations(path) => passed.is_model_relations() && passed.as_model_relations().unwrap().test(path),
+            Type::ModelDirectRelations(path) => passed.is_model_direct_relations() && passed.as_model_direct_relations().unwrap().test(path),
             Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
             Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),

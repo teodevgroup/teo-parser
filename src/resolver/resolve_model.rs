@@ -16,6 +16,8 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
     let mut scalar_fields = vec![];
     let mut scalar_fields_without_virtuals = vec![];
     let mut scalar_fields_and_cached_properties_without_virtuals = vec![];
+    let mut direct_relations = vec![];
+    let mut relations = vec![];
     // fields
     for field in &model.fields {
         resolve_field_class(field, FieldParentType::Model, None, None, context);
@@ -29,7 +31,12 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
                     }
                 }
             }
-            FieldClass::ModelRelation => {}
+            FieldClass::ModelRelation(settings) => {
+                if settings.direct {
+                    direct_relations.push(field.name().to_string());
+                }
+                relations.push(field.name().to_string());
+            }
             FieldClass::ModelProperty(settings) => {
                 if settings.cached {
                     scalar_fields_and_cached_properties_without_virtuals.push(field.name().to_string());
@@ -43,6 +50,8 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
         scalar_fields,
         scalar_fields_without_virtuals,
         scalar_fields_and_cached_properties_without_virtuals,
+        relations,
+        direct_relations,
     });
     context.add_examined_default_path(model.string_path.clone());
 }

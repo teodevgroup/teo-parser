@@ -279,6 +279,34 @@ fn resolve_type_item<'a>(
                     Some(Type::Undetermined)
                 }
             },
+            "ModelRelations" => {
+                request_single_generics("ModelRelations", type_item, context);
+                if let Some(t) = type_item.generics.get(0) {
+                    let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
+                    if model_object.is_model_object() || model_object.is_keyword() {
+                        Some(Type::ModelRelations(Box::new(model_object)))
+                    } else {
+                        context.insert_diagnostics_error(t.span(), "model not found");
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            },
+            "ModelDirectRelations" => {
+                request_single_generics("ModelDirectRelations", type_item, context);
+                if let Some(t) = type_item.generics.get(0) {
+                    let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
+                    if model_object.is_model_object() || model_object.is_keyword() {
+                        Some(Type::ModelDirectRelations(Box::new(model_object)))
+                    } else {
+                        context.insert_diagnostics_error(t.span(), "model not found");
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            },
             "FieldType" => {
                 request_double_generics("FieldType", type_item, context);
                 if type_item.generics.len() != 2 {
