@@ -69,10 +69,15 @@ pub(super) fn resolve_field_decorators<'a>(
     context: &'a ResolverContext<'a>,
 ) {
     let model_type = Type::ModelObject(model.path.clone());
+
     for decorator in &field.decorators {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => &model_type,
-            Keyword::ThisFieldType => field.type_expr.resolved(), // .unwrap_optional().unwrap_array()
+            Keyword::ThisFieldType => if field.resolved().class.is_model_relation() {
+                field.type_expr.resolved().unwrap_optional().unwrap_array()
+            } else {
+                field.type_expr.resolved()
+            },
         }, field.resolved().class.reference_type());
     }
 }

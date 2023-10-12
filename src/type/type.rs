@@ -464,7 +464,7 @@ impl Type {
             } else {
                 self.clone()
             }
-        } else if self.is_container() {
+        } else {
             match self {
                 Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
                 Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_generics(map))),
@@ -474,10 +474,8 @@ impl Type {
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
-                _ => unreachable!(),
+                _ => self.clone(),
             }
-        } else {
-            self.clone()
         }
     }
 

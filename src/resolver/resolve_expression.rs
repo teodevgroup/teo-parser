@@ -120,6 +120,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: 
     if let Some(types) = expected.as_union() {
         for expected in types {
             if let Ok(t) = try_resolve_enum_variant_literal(e, context, expected) {
+                println!("ok here see expected: {:?}", t);
                 return t
             }
         }

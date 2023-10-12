@@ -442,7 +442,7 @@ namespace std {
         /// Define a normal relation
         variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>[])
         /// Define a through relation
-        variant(through: Model, local: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>, foreign: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>)
+        variant(through: Model, local: ModelRelations<Self>, foreign: ModelRelations<ThisFieldType>)
     }
 
     /// @name Getter
