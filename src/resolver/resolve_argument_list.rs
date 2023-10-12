@@ -103,8 +103,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
     }
 
-    // figure out more by guessing with generics constraints
-
     // test input type matching
     if let Some(pipeline_input) = &callable_variant.pipeline_input {
         let expected = pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map);
