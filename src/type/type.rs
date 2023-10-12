@@ -605,6 +605,7 @@ impl Type {
 }
 
 impl Display for Type {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Type::Undetermined => f.write_str("Undetermined"),
