@@ -25,10 +25,10 @@ pub enum Type {
     Tuple(Vec<Type>),
     Range(Box<Type>),
     Union(Vec<Type>),
-    EnumVariant(Vec<usize>),
-    InterfaceObject(Vec<usize>, Vec<Type>),
-    ModelObject(Vec<usize>),
-    StructObject(Vec<usize>),
+    EnumVariant(Vec<usize>, Vec<String>),
+    InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
+    ModelObject(Vec<usize>, Vec<String>),
+    StructObject(Vec<usize>, Vec<String>),
     ModelScalarFields(Box<Type>),
     ModelScalarFieldsWithoutVirtuals(Box<Type>),
     ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>),
@@ -222,9 +222,9 @@ impl Type {
         self.as_enum_variant().is_some()
     }
 
-    pub(crate) fn as_enum_variant(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_enum_variant(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
-            Self::EnumVariant(path) => Some(path),
+            Self::EnumVariant(path, name) => Some((path, name)),
             _ => None,
         }
     }
@@ -233,9 +233,9 @@ impl Type {
         self.as_interface_object().is_some()
     }
 
-    pub(crate) fn as_interface_object(&self) -> Option<(&Vec<usize>, &Vec<Type>)> {
+    pub(crate) fn as_interface_object(&self) -> Option<(&Vec<usize>, &Vec<Type>, &Vec<String>)> {
         match self {
-            Self::InterfaceObject(path, types) => Some((path, types)),
+            Self::InterfaceObject(path, types, name) => Some((path, types, name)),
             _ => None,
         }
     }
@@ -244,9 +244,9 @@ impl Type {
         self.as_model_object().is_some()
     }
 
-    pub(crate) fn as_model_object(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_model_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
-            Self::ModelObject(path) => Some(path),
+            Self::ModelObject(path, name) => Some((path, name)),
             _ => None,
         }
     }
@@ -255,9 +255,9 @@ impl Type {
         self.as_struct_object().is_some()
     }
 
-    pub(crate) fn as_struct_object(&self) -> Option<&Vec<usize>> {
+    pub(crate) fn as_struct_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
-            Self::StructObject(path) => Some(path),
+            Self::StructObject(path, name) => Some((path, name)),
             _ => None,
         }
     }
@@ -425,10 +425,10 @@ impl Type {
             Type::Tuple(_) => true,
             Type::Range(_) => true,
             Type::Union(_) => true,
-            Type::EnumVariant(_) => false,
-            Type::InterfaceObject(_, _) => true,
-            Type::ModelObject(_) => false,
-            Type::StructObject(_) => false,
+            Type::EnumVariant(_, _) => false,
+            Type::InterfaceObject(_, _, _) => true,
+            Type::ModelObject(_, _) => false,
+            Type::StructObject(_, _) => false,
             Type::ModelScalarFields(_) => false,
             Type::ModelScalarFieldsWithoutVirtuals(_) => false,
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => false,
@@ -467,10 +467,10 @@ impl Type {
             Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
             Type::Range(inner) => inner.contains_generics(),
             Type::Union(types) => types.iter().any(|t| t.contains_generics()),
-            Type::EnumVariant(_) => false,
-            Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_generics()),
-            Type::ModelObject(_) => false,
-            Type::StructObject(_) => false,
+            Type::EnumVariant(_, _) => false,
+            Type::InterfaceObject(_, types, _) => types.iter().any(|t| t.contains_generics()),
+            Type::ModelObject(_, _) => false,
+            Type::StructObject(_, _) => false,
             Type::ModelScalarFields(inner) => inner.contains_generics(),
             Type::ModelScalarFieldsWithoutVirtuals(inner) => inner.contains_generics(),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => inner.contains_generics(),
@@ -499,7 +499,7 @@ impl Type {
                 Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
                 Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
-                Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
+                Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
                 _ => self.clone(),
@@ -521,7 +521,7 @@ impl Type {
                 Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_keywords(map)).collect()),
                 Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_keywords(map)).collect()),
-                Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect()),
+                Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
                 Type::ModelScalarFields(inner) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map))),
@@ -558,10 +558,10 @@ impl Type {
             Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
             Type::Range(inner) => passed.is_range() && inner.as_ref().test(passed.as_range().unwrap()),
             Type::Union(u) => u.iter().any(|t| t.test(passed)),
-            Type::EnumVariant(path) => passed.is_enum_variant() && passed.as_enum_variant().unwrap() == path,
-            Type::InterfaceObject(path, generics) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
-            Type::ModelObject(path) => passed.is_model_object() && passed.as_model_object().unwrap() == path,
-            Type::StructObject(path) => passed.is_struct_object() && passed.as_struct_object().unwrap() == path,
+            Type::EnumVariant(path, _) => passed.is_enum_variant() && passed.as_enum_variant().unwrap().0 == path,
+            Type::InterfaceObject(path, generics, _) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
+            Type::ModelObject(path, _) => passed.is_model_object() && passed.as_model_object().unwrap().0 == path,
+            Type::StructObject(path, _) => passed.is_struct_object() && passed.as_struct_object().unwrap().0 == path,
             Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().test(path),
             Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().test(path),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().test(path),

@@ -316,7 +316,7 @@ fn resolve_type_item<'a>(
                     let f = type_item.generics.get(1).unwrap();
                     if let Some(field_ref) = f.as_field_reference() {
                         let inner_type = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                        if let Some(model_path) = inner_type.as_model_object() {
+                        if let Some((model_path, _)) = inner_type.as_model_object() {
                             let model = context.schema.find_top_by_path(model_path).unwrap().as_model().unwrap();
                             if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
                                 Some(field.type_expr.resolved().clone())
@@ -324,7 +324,7 @@ fn resolve_type_item<'a>(
                                 context.insert_diagnostics_error(f.span(), "field not found");
                                 Some(Type::Undetermined)
                             }
-                        } else if let Some((interface_path, interface_generics)) = inner_type.as_interface_object() {
+                        } else if let Some((interface_path, interface_generics, _)) = inner_type.as_interface_object() {
                             let interface = context.schema.find_top_by_path(interface_path).unwrap().as_interface().unwrap();
                             let map = calculate_generics_map(interface.generics_declaration.as_ref(), interface_generics);
                             if let Some(field) = interface.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
@@ -376,10 +376,10 @@ fn resolve_type_item<'a>(
         if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default) {
             let top = context.schema.find_top_by_path(&reference).unwrap();
             base = match top {
-                Top::Model(m) => Some(Type::ModelObject(m.path.clone())),
-                Top::Enum(e) => Some(Type::EnumVariant(e.path.clone())),
-                Top::Interface(i) => Some(Type::InterfaceObject(i.path.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect())),
-                Top::StructDeclaration(s) => Some(Type::StructObject(s.path.clone())),
+                Top::Model(m) => Some(Type::ModelObject(m.path.clone(), m.string_path.clone())),
+                Top::Enum(e) => Some(Type::EnumVariant(e.path.clone(), e.string_path.clone())),
+                Top::Interface(i) => Some(Type::InterfaceObject(i.path.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context)).collect(), i.string_path.clone())),
+                Top::StructDeclaration(s) => Some(Type::StructObject(s.path.clone(), s.string_path.clone())),
                 _ => None,
             }
         }

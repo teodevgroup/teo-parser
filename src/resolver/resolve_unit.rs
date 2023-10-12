@@ -94,7 +94,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
 fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a ExpressionKind, context: &'a ResolverContext<'a>) -> UnitResolveResult {
     match current {
         UnitResolveResult::Type(current_value) => {
-            if let Some(path) = current_value.as_struct_object() {
+            if let Some((path, _)) = current_value.as_struct_object() {
                 match item {
                     ExpressionKind::Identifier(_) => {
                         context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
@@ -102,7 +102,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                     ExpressionKind::Call(call) => {
                         let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
-                        let struct_object = Type::StructObject(struct_declaration.path.clone());
+                        let struct_object = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
                         if let Some(new) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == call.identifier.name()) {
                             resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration), &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
@@ -140,7 +140,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
         UnitResolveResult::Reference(path) => {
             match context.schema.find_top_by_path(path).unwrap() {
                 Top::StructDeclaration(struct_declaration) => {
-                    let struct_object = Type::StructObject(struct_declaration.path.clone());
+                    let struct_object = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
                     match item {
                         ExpressionKind::ArgumentList(argument_list) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
@@ -213,14 +213,14 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                 span: Span::default(),
                                 identifier: i.clone(),
                                 argument_list: None,
-                            }, context, &Type::EnumVariant(r#enum.path.clone())))
+                            }, context, &Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone())))
                         }
                         ExpressionKind::Call(c) => {
                             return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
                                 span: Span::default(),
                                 identifier: c.identifier.clone(),
                                 argument_list: None,
-                            }, context, &Type::EnumVariant(r#enum.path.clone())))
+                            }, context, &Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone())))
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Enum cannot be called");

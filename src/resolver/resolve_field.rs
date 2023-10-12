@@ -70,7 +70,7 @@ pub(super) fn resolve_field_decorators<'a>(
     field: &'a Field,
     context: &'a ResolverContext<'a>,
 ) {
-    let model_type = Type::ModelObject(model.path.clone());
+    let model_type = Type::ModelObject(model.path.clone(), model.string_path.clone());
 
     for decorator in &field.decorators {
         resolve_decorator(decorator, context, &btreemap!{

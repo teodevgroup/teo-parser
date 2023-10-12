@@ -13,7 +13,7 @@ pub(crate) fn resolve_type_contains_type<'a, F>(r#type: &Type, f: F, context: &'
         Type::Tuple(t) => t.iter().find(|t| matcher(*t, &f)).is_some(),
         Type::Range(t) => matcher(t.as_ref(), &f),
         Type::Union(u) => u.iter().find(|t| matcher(*t, &f)).is_some(),
-        Type::InterfaceObject(path, types) => {
+        Type::InterfaceObject(path, types, _) => {
             let interface = context.schema.find_top_by_path(path).unwrap().as_interface().unwrap();
             let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types);
             for field in &interface.fields {
