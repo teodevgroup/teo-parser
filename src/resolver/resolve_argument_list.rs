@@ -83,16 +83,21 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         if let Some(pipeline_input) = &callable_variant.pipeline_input {
             if pipeline_input.contains_generics() {
                 match guess_generics_by_pipeline_input_and_passed_in(pipeline_input, &type_info.passed_in) {
-                    Ok(map) => generics_map.extend(map),
-                    Err(err) => errors.push(context.generate_diagnostics_error(callable_span, err))
+                    Ok(map) => {
+                        println!("see gen map: {:?}", map);
+                        generics_map.extend(map);
+                    },
+                    Err(err) => {
+                        println!("guess error: {:?}", err);
+                        errors.push(context.generate_diagnostics_error(callable_span, err));
+                    }
                 }
             }
         }
     }
     // test input type matching
     if let Some(pipeline_input) = &callable_variant.pipeline_input {
-        if !pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map).test(&type_info.unwrap().passed_in) {
-            println!("see here p input => {:?} {:?}", pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map), type_info.unwrap().passed_in);
+        if !pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map).test(&type_info.unwrap().passed_in.replace_generics(&generics_map).replace_keywords(keywords_map)) {
             errors.push(context.generate_diagnostics_error(callable_span, "Unexpected input type"));
         }
     }
@@ -163,7 +168,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             }
         }
     }
-    println!("this time return: {:?}", callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)));
+    if callable_variant.pipeline_output.is_some() {
+        println!("this time return: {:?}", callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)));
+    }
     (errors, warnings, callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)))
 }
 

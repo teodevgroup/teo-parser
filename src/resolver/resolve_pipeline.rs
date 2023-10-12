@@ -12,6 +12,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type) -> Type {
+    println!("see this pipeline: {}", pipeline);
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }

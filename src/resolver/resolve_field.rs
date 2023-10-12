@@ -72,7 +72,7 @@ pub(super) fn resolve_field_decorators<'a>(
     for decorator in &field.decorators {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => &model_type,
-            Keyword::ThisFieldType => field.type_expr.resolved().unwrap_optional().unwrap_array(),
+            Keyword::ThisFieldType => field.type_expr.resolved(), // .unwrap_optional().unwrap_array()
         }, field.resolved().class.reference_type());
     }
 }

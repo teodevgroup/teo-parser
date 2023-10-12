@@ -472,7 +472,7 @@ impl Type {
                 Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect()),
-                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
                 _ => unreachable!(),
             }
@@ -496,7 +496,7 @@ impl Type {
                 Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
                 Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_keywords(map)).collect()),
                 Type::InterfaceObject(path, generics) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect()),
-                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))),
+                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
                 Type::ModelScalarFields(inner) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map))),
                 Type::ModelScalarFieldsWithoutVirtuals(inner) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map))),
@@ -560,5 +560,14 @@ impl Type {
         } else {
             self
         }
+    }
+
+    pub(crate) fn flatten(&self) -> Type {
+        if let Some(inner) = self.as_optional() {
+            if inner.is_optional() {
+                return inner.flatten();
+            }
+        }
+        self.clone()
     }
 }

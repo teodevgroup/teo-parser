@@ -381,7 +381,7 @@ namespace std {
 
     /// @name On Set
     /// This pipeline is triggered when value is set
-    declare unique model field decorator onSet(pipeline?: Pipeline<ThisFieldType?, ThisFieldType>)
+    declare unique model field decorator onSet(pipeline?: Pipeline<ThisFieldType?, ThisFieldType?>)
 
     /// @name On Save
     /// This pipeline is triggered before the value is saving into the database
@@ -700,6 +700,8 @@ namespace std {
     declare pipeline item bcryptSalt: String -> String
 
     declare pipeline item bcryptVerify(value?: Pipeline<String, String>): String -> String
+
+    declare pipeline item ifPresent<T>(pipeline?: Pipeline<T, T>): T? -> T?
 
     declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<T, T>): T -> T
 
