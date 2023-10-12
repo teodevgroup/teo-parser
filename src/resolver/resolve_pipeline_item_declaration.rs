@@ -1,12 +1,15 @@
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
-use crate::resolver::resolve_generics::resolve_generics_declaration;
+use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &'a PipelineItemDeclaration, context: &'a ResolverContext<'a>) {
     if let Some(generics_declaration) = &pipeline_item_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
+        if let Some(generics_constraint) = &pipeline_item_declaration.generics_constraint {
+            resolve_generics_constraint(generics_constraint, context, generics_declaration);
+        }
     }
     if let Some(argument_list_declaration) = &pipeline_item_declaration.argument_list_declaration {
         resolve_argument_list_declaration(
@@ -67,6 +70,9 @@ fn resolve_pipeline_item_declaration_variant<'a>(
 ) {
     if let Some(generics_declaration) = &pipeline_item_declaration_variant.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
+        if let Some(generics_constraint) = &pipeline_item_declaration_variant.generics_constraint {
+            resolve_generics_constraint(generics_constraint, context, generics_declaration);
+        }
     }
     if let Some(argument_list_declaration) = &pipeline_item_declaration_variant.argument_list_declaration {
         resolve_argument_list_declaration(

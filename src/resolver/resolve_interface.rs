@@ -1,6 +1,6 @@
 use crate::ast::interface::InterfaceDeclaration;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class};
-use crate::resolver::resolve_generics::resolve_generics_declaration;
+use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -9,7 +9,10 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
         context.insert_duplicated_identifier(interface_declaration.identifier.span);
     }
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
-        resolve_generics_declaration(generics_declaration, context)
+        resolve_generics_declaration(generics_declaration, context);
+        if let Some(generics_constraint) = &interface_declaration.generics_constraint {
+            resolve_generics_constraint(generics_constraint, context, generics_declaration);
+        }
     }
     for extend in &interface_declaration.extends {
         resolve_type_expr(
