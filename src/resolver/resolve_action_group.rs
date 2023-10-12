@@ -109,8 +109,8 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         }
         Type::Model => Some("TypeError: invalid form action input type: Model is not supported"),
         Type::InterfaceObject(path, items, _) => None,
-        Type::ModelScalarFields(_) => Some("TypeError: invalid form action input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid form action input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::ModelScalarFields(_, _) => Some("TypeError: invalid form action input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid form action input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid form action input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("TypeError: invalid form action input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
@@ -120,7 +120,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Keyword(_) => Some("TypeError: found keyword type"),
         Type::Regex => Some("TypeError: invalid form action input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("TypeError: invalid form action input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid form action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid form action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid form action input type: Pipeline is not supported"),
         _ => None,
     }
@@ -173,8 +173,8 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         }
         Type::Model => Some("TypeError: invalid form action input type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_) => Some("TypeError: invalid action input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid action input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::ModelScalarFields(_, _) => Some("TypeError: invalid action input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid action input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid action input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("TypeError: invalid action input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action input type: GenericsItem is not supported"),
@@ -184,7 +184,7 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::Keyword(_) => Some("TypeError: found keyword type"),
         Type::Regex => Some("TypeError: invalid action input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("TypeError: invalid action input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid action input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid action input type: Pipeline is not supported"),
         _ => None,
     }
@@ -237,8 +237,8 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         }
         Type::Model => Some("TypeError: invalid form action output type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_) => Some("TypeError: invalid action output type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => Some("TypeError: invalid action output type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::ModelScalarFields(_, _) => Some("TypeError: invalid action output type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid action output type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("TypeError: invalid action output type: FieldType is not supported"),
         Type::FieldReference(_) => Some("TypeError: invalid action output type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("TypeError: invalid form action output type: GenericsItem is not supported"),
@@ -248,7 +248,7 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::Keyword(_) => Some("TypeError: found keyword type"),
         Type::Regex => Some("TypeError: invalid action output type: Regex is not supported"),
         Type::StructObject(_, _) => Some("TypeError: invalid action output type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_) => Some("TypeError: invalid action output type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid action output type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid action output type: Pipeline is not supported"),
         _ => None,
     }

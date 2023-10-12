@@ -771,7 +771,7 @@ namespace std {
     /// @name Get
     /// Get the value on object or map
     declare pipeline item get {
-        variant<T>(key?: String): Dictionary<T> -> T?
+        //variant<T>(key?: String): Dictionary<T> -> T?
         variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
     }
 
@@ -781,7 +781,7 @@ namespace std {
 
     /// @name Assign
     /// Assign value to key on context object
-    declare pipeline item assign<T, K, U>(key?: K, value?: T[K] | Pipeline<U, T[K]>): U -> U where K: ModelScalarFields<T>, T: Model
+    declare pipeline item assign<T, K>(key?: K, value?: T[K] | Pipeline<T, T[K]>): T -> T where K: ModelScalarFields<Self>
 
     // isA, is
 

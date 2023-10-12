@@ -31,11 +31,11 @@ pub enum Type {
     InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
     ModelObject(Vec<usize>, Vec<String>),
     StructObject(Vec<usize>, Vec<String>),
-    ModelScalarFields(Box<Type>),
-    ModelScalarFieldsWithoutVirtuals(Box<Type>),
-    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>),
-    ModelRelations(Box<Type>),
-    ModelDirectRelations(Box<Type>),
+    ModelScalarFields(Box<Type>, Option<String>),
+    ModelScalarFieldsWithoutVirtuals(Box<Type>, Option<String>),
+    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>, Option<String>),
+    ModelRelations(Box<Type>, Option<String>),
+    ModelDirectRelations(Box<Type>, Option<String>),
     FieldType(Box<Type>, Box<Type>),
     FieldReference(String),
     GenericItem(String),
@@ -268,9 +268,9 @@ impl Type {
         self.as_model_scalar_fields().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields(&self) -> Option<&Type> {
+    pub(crate) fn as_model_scalar_fields(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelScalarFields(path) => Some(path),
+            Self::ModelScalarFields(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -279,9 +279,9 @@ impl Type {
         self.as_model_scalar_fields_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_without_virtuals(&self) -> Option<&Type> {
+    pub(crate) fn as_model_scalar_fields_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelScalarFieldsWithoutVirtuals(path) => Some(path),
+            Self::ModelScalarFieldsWithoutVirtuals(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -290,9 +290,9 @@ impl Type {
         self.as_model_scalar_fields_and_cached_properties_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<&Type> {
+    pub(crate) fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => Some(path),
+            Self::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -301,9 +301,9 @@ impl Type {
         self.as_model_scalar_fields().is_some()
     }
 
-    pub(crate) fn as_model_relations(&self) -> Option<&Type> {
+    pub(crate) fn as_model_relations(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelRelations(path) => Some(path),
+            Self::ModelRelations(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -312,9 +312,9 @@ impl Type {
         self.as_model_direct_relations().is_some()
     }
 
-    pub(crate) fn as_model_direct_relations(&self) -> Option<&Type> {
+    pub(crate) fn as_model_direct_relations(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelDirectRelations(path) => Some(path),
+            Self::ModelDirectRelations(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -431,11 +431,11 @@ impl Type {
             Type::InterfaceObject(_, _, _) => true,
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
-            Type::ModelScalarFields(_) => false,
-            Type::ModelScalarFieldsWithoutVirtuals(_) => false,
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_) => false,
-            Type::ModelRelations(_) => false,
-            Type::ModelDirectRelations(_) => false,
+            Type::ModelScalarFields(_, _) => false,
+            Type::ModelScalarFieldsWithoutVirtuals(_, _) => false,
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => false,
+            Type::ModelRelations(_, _) => false,
+            Type::ModelDirectRelations(_, _) => false,
             Type::FieldType(_, _) => false,
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => false,
@@ -473,11 +473,11 @@ impl Type {
             Type::InterfaceObject(_, types, _) => types.iter().any(|t| t.contains_generics()),
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
-            Type::ModelScalarFields(inner) => inner.contains_generics(),
-            Type::ModelScalarFieldsWithoutVirtuals(inner) => inner.contains_generics(),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => inner.contains_generics(),
-            Type::ModelRelations(inner) => inner.contains_generics(),
-            Type::ModelDirectRelations(inner) => inner.contains_generics(),
+            Type::ModelScalarFields(inner, _) => inner.contains_generics(),
+            Type::ModelScalarFieldsWithoutVirtuals(inner, _) => inner.contains_generics(),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => inner.contains_generics(),
+            Type::ModelRelations(inner, _) => inner.contains_generics(),
+            Type::ModelDirectRelations(inner, _) => inner.contains_generics(),
             Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => true,
@@ -504,6 +504,11 @@ impl Type {
                 Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
+                Type::ModelScalarFields(inner, name) => Type::ModelScalarFields(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::ModelScalarFieldsWithoutVirtuals(inner, name) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_generics(map)), name.clone()),
                 _ => self.clone(),
             }
         }
@@ -526,11 +531,11 @@ impl Type {
                 Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
-                Type::ModelScalarFields(inner) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map))),
-                Type::ModelScalarFieldsWithoutVirtuals(inner) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map))),
-                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map))),
-                Type::ModelRelations(inner) => Type::ModelRelations(Box::new(inner.replace_keywords(map))),
-                Type::ModelDirectRelations(inner) => Type::ModelDirectRelations(Box::new(inner.replace_keywords(map))),
+                Type::ModelScalarFields(inner, name) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::ModelScalarFieldsWithoutVirtuals(inner, name) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_keywords(map)), name.clone()),
                 _ => self.clone(),
             }
         }
@@ -564,11 +569,11 @@ impl Type {
             Type::InterfaceObject(path, generics, _) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
             Type::ModelObject(path, _) => passed.is_model_object() && passed.as_model_object().unwrap().0 == path,
             Type::StructObject(path, _) => passed.is_struct_object() && passed.as_struct_object().unwrap().0 == path,
-            Type::ModelScalarFields(path) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().test(path),
-            Type::ModelScalarFieldsWithoutVirtuals(path) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().test(path),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().test(path),
-            Type::ModelRelations(path) => passed.is_model_relations() && passed.as_model_relations().unwrap().test(path),
-            Type::ModelDirectRelations(path) => passed.is_model_direct_relations() && passed.as_model_direct_relations().unwrap().test(path),
+            Type::ModelScalarFields(path, _) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().0.test(path),
+            Type::ModelScalarFieldsWithoutVirtuals(path, _) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().0.test(path),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, _) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().0.test(path),
+            Type::ModelRelations(path, _) => passed.is_model_relations() && passed.as_model_relations().unwrap().0.test(path),
+            Type::ModelDirectRelations(path, _) => passed.is_model_direct_relations() && passed.as_model_direct_relations().unwrap().0.test(path),
             Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
             Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
             Type::GenericItem(identifier) => passed.is_generic_item() && passed.as_generic_item().unwrap() == identifier.as_str(),
@@ -662,11 +667,11 @@ impl Display for Type {
             Type::InterfaceObject(_, _, name) => f.write_str(&name.join(".")),
             Type::ModelObject(_, name) => f.write_str(&name.join(".")),
             Type::StructObject(_, name) => f.write_str(&name.join(".")),
-            Type::ModelScalarFields(inner) => f.write_str(&format!("ModelScalarFields<{}>", inner)),
-            Type::ModelScalarFieldsWithoutVirtuals(inner) => f.write_str(&format!("ModelScalarFieldsWithoutVirtuals<{}>", inner)),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),
-            Type::ModelRelations(inner) => f.write_str(&format!("ModelRelations<{}>", inner)),
-            Type::ModelDirectRelations(inner) => f.write_str(&format!("ModelDirectRelations<{}>", inner)),
+            Type::ModelScalarFields(inner, _) => f.write_str(&format!("ModelScalarFields<{}>", inner)),
+            Type::ModelScalarFieldsWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsWithoutVirtuals<{}>", inner)),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),
+            Type::ModelRelations(inner, _) => f.write_str(&format!("ModelRelations<{}>", inner)),
+            Type::ModelDirectRelations(inner, _) => f.write_str(&format!("ModelDirectRelations<{}>", inner)),
             Type::FieldType(a, b) => if a.is_union() {
                 f.write_str(&format!("({})[{}]", a, b))
             } else {

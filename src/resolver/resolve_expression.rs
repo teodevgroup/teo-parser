@@ -150,55 +150,55 @@ fn try_resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a Res
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: undefined enum member"))
         }
-    } else if let Some(t) = expected.as_model_scalar_fields() {
+    } else if let Some((t, _)) = expected.as_model_scalar_fields() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields.contains(&e.identifier.name) {
-                Ok(Type::ModelScalarFields(Box::new(Type::ModelObject(model_object.clone(), model_name.clone()))))
+                Ok(Type::ModelScalarFields(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())))
             } else {
                 Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields"))
             }
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
-    } else if let Some(t) = expected.as_model_scalar_fields_without_virtuals() {
+    } else if let Some((t, _)) = expected.as_model_scalar_fields_without_virtuals() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields_without_virtuals.contains(&e.identifier.name) {
-                Ok(Type::ModelScalarFieldsWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone()))))
+                Ok(Type::ModelScalarFieldsWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())))
             } else {
                 Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields without virtuals"))
             }
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
-    } else if let Some(t) = expected.as_model_scalar_fields_and_cached_properties_without_virtuals() {
+    } else if let Some((t, _)) = expected.as_model_scalar_fields_and_cached_properties_without_virtuals() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields_and_cached_properties_without_virtuals.contains(&e.identifier.name) {
-                Ok(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone()))))
+                Ok(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())))
             } else {
                 Err(context.generate_diagnostics_error(e.span, "undefined model scalar fields and cached properties without virtuals"))
             }
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
-    } else if let Some(t) = expected.as_model_relations() {
+    } else if let Some((t, _)) = expected.as_model_relations() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().relations.contains(&e.identifier.name) {
-                Ok(Type::ModelRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone()))))
+                Ok(Type::ModelRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())))
             } else {
                 Err(context.generate_diagnostics_error(e.span, "undefined model relations"))
             }
         } else {
             Err(context.generate_diagnostics_error(e.span, "ValueError: unexpected enum variant literal"))
         }
-    } else if let Some(t) = expected.as_model_direct_relations() {
+    } else if let Some((t, _)) = expected.as_model_direct_relations() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().direct_relations.contains(&e.identifier.name) {
-                Ok(Type::ModelDirectRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone()))))
+                Ok(Type::ModelDirectRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())))
             } else {
                 Err(context.generate_diagnostics_error(e.span, "undefined model direct relations"))
             }
