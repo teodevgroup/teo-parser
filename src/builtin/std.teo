@@ -693,9 +693,9 @@ namespace std {
 
     declare pipeline item regexMatch(regex?: Regex): String -> String
 
-    declare pipeline item identity<T>: Ignored -> T? where T: ModelObject
+    declare pipeline item identity<T>: Ignored -> T? where T: Model
 
-    declare pipeline item print<T>(label?: String?): T -> T where T: Any
+    declare pipeline item print<T>(label?: String?): T -> T
 
     declare pipeline item bcryptSalt: String -> String
 
@@ -781,7 +781,7 @@ namespace std {
 
     /// @name Assign
     /// Assign value to key on context object
-    declare pipeline item assign<T, K, U>(key?: K, value?: T[K] | Pipeline<U, T[K]>): U -> U where K: ScalarField<T>, T: Model
+    declare pipeline item assign<T, K, U>(key?: K, value?: T[K] | Pipeline<U, T[K]>): U -> U where K: ModelScalarFields<T>, T: Model
 
     // isA, is
 

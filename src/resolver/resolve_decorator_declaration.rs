@@ -23,6 +23,9 @@ pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a Decor
             context,
         )
     }
+    if let Some(generics_constraint) = decorator_declaration.generics_constraint {
+
+    }
     for variant in &decorator_declaration.variants {
         resolve_decorator_declaration_variant(variant, context);
     }
