@@ -118,10 +118,13 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         if let Some(argument_list) = argument_list {
             for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
                 if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
-                    let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map).replace_generics(&generics_map);
+                    let desired_type_original = argument_declaration.type_expr.resolved();
+                    let desired_type = desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map);
                     resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
                     if !desired_type.test(named_argument.value.resolved()) {
                         errors.push(context.generate_diagnostics_error(named_argument.value.span(), "Argument value is of wrong type"))
+                    } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
+                        generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().clone());
                     }
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
                 } else {
@@ -147,11 +150,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
                 if let Some(name) = declaration_names.first() {
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
-                        let desired_type = argument_declaration.type_expr.resolved().replace_keywords(keywords_map).replace_generics(&generics_map);
+                        let desired_type_original = argument_declaration.type_expr.resolved();
+                        let desired_type = desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map);
                         resolve_expression(&unnamed_argument.value, context, &desired_type, keywords_map);
                         println!("see desired type and resolved type: {:?} {:?} {}", desired_type, unnamed_argument.value.resolved(), desired_type.test(unnamed_argument.value.resolved()));
                         if !desired_type.test(unnamed_argument.value.resolved()) {
                             errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), "Argument value is of wrong type"))
+                        } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
+                            generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().clone());
                         }
                         unnamed_argument.resolve(ArgumentResolved {
                             name: name.to_string()
@@ -181,7 +187,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     if callable_variant.pipeline_output.is_some() {
         println!("this time return: {:?}", callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)));
     }
-    (errors, warnings, callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)))
+    (errors, warnings, flatten_field_type_reference(callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)), context))
 }
 
 fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Type, mut passed_in: &'a Type) -> Result<BTreeMap<String, Type>, String> {
@@ -242,4 +248,28 @@ fn guess_generics_by_constraints<'a>(
         }
     }
     retval
+}
+
+fn flatten_field_type_reference<'a>(t: Option<Type>, context: &'a ResolverContext<'a>) -> Option<Type> {
+    if let Some(t) = t {
+        Some(t.replace_field_type(|container: &Type, reference: &Type| {
+            if let Some(field_name) = reference.field_name() {
+                match container {
+                    Type::ModelObject(path, _) => {
+                        let model = context.schema.find_top_by_path(path).unwrap().as_model().unwrap();
+                        let field = model.fields.iter().find(|f| f.identifier.name() == field_name).unwrap();
+                        field.type_expr.resolved().clone()
+                    },
+                    Type::InterfaceObject(path, _, _) => {
+                        unreachable!()
+                    },
+                    _ => Type::Undetermined
+                }
+            } else {
+                Type::Undetermined
+            }
+        }))
+    } else {
+        t
+    }
 }

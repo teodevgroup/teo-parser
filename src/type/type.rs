@@ -403,6 +403,14 @@ impl Type {
         self.is_int_32_or_64() || self.is_float_32_or_64()
     }
 
+    pub(crate) fn is_any_model_field_reference(&self) -> bool {
+        self.is_model_scalar_fields() ||
+            self.is_model_scalar_fields_without_virtuals() ||
+            self.is_model_scalar_fields_and_cached_properties_without_virtuals() ||
+            self.is_model_relations() ||
+            self.is_model_direct_relations()
+    }
+
     pub(crate) fn is_container(&self) -> bool {
         match self {
             Type::Undetermined => false,
@@ -509,6 +517,7 @@ impl Type {
                 Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_generics(map)), name.clone()),
                 Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_generics(map)), name.clone()),
                 Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map))),
                 _ => self.clone(),
             }
         }
@@ -536,6 +545,7 @@ impl Type {
                 Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map)), name.clone()),
                 Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_keywords(map)), name.clone()),
                 Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map))),
                 _ => self.clone(),
             }
         }
@@ -613,6 +623,61 @@ impl Type {
             return true
         }
         constraint.test(self)
+    }
+
+    pub(crate) fn field_name(&self) -> Option<&str> {
+        match self {
+            Type::FieldReference(n) => Some(n.as_str()),
+            Type::ModelScalarFields(_, name) => name.as_ref().map(|n| n.as_str()),
+            Type::ModelScalarFieldsWithoutVirtuals(_, name) => name.as_ref().map(|n| n.as_str()),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, name) => name.as_ref().map(|n| n.as_str()),
+            Type::ModelRelations(_, name) => name.as_ref().map(|n| n.as_str()),
+            Type::ModelDirectRelations(_, name) => name.as_ref().map(|n| n.as_str()),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn replace_field_type<F>(&self, f: F) -> Type where F: Fn(&Type, &Type) -> Type {
+        let f_ref = |t: &Type, f: &dyn Fn(&Type, &Type) -> Type| { t.replace_field_type(f) };
+        match self {
+            Type::Undetermined => self.clone(),
+            Type::Ignored => self.clone(),
+            Type::Any => self.clone(),
+            Type::Null => self.clone(),
+            Type::Bool => self.clone(),
+            Type::Int => self.clone(),
+            Type::Int64 => self.clone(),
+            Type::Float32 => self.clone(),
+            Type::Float => self.clone(),
+            Type::Decimal => self.clone(),
+            Type::String => self.clone(),
+            Type::ObjectId => self.clone(),
+            Type::Date => self.clone(),
+            Type::DateTime => self.clone(),
+            Type::File => self.clone(),
+            Type::Regex => self.clone(),
+            Type::Model => self.clone(),
+            Type::Array(t) => Type::Array(Box::new(f_ref(t, &f))),
+            Type::Dictionary(t) => Type::Dictionary(Box::new(f_ref(t, &f))),
+            Type::Tuple(types) => Type::Tuple(types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::Range(t) => Type::Array(Box::new(f_ref(t, &f))),
+            Type::Union(types) => Type::Union(types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::EnumVariant(_, _) => self.clone(),
+            Type::InterfaceObject(_, _, _) => self.clone(),
+            Type::ModelObject(_, _) => self.clone(),
+            Type::StructObject(_, _) => self.clone(),
+            Type::ModelScalarFields(_, _) => self.clone(),
+            Type::ModelScalarFieldsWithoutVirtuals(_, _) => self.clone(),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => self.clone(),
+            Type::ModelRelations(_, _) => self.clone(),
+            Type::ModelDirectRelations(_, _) => self.clone(),
+            Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
+            Type::FieldReference(_) => self.clone(),
+            Type::GenericItem(_) => self.clone(),
+            Type::Keyword(_) => self.clone(),
+            Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
+            Type::Pipeline((t1, t2)) => Type::Pipeline((Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f)))),
+        }
     }
 }
 
