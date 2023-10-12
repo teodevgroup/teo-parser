@@ -1,4 +1,6 @@
 use std::collections::BTreeMap;
+use std::fmt::{Display, Formatter};
+use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
@@ -599,5 +601,78 @@ impl Type {
             }
         }
         self.clone()
+    }
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::Undetermined => f.write_str("Undetermined"),
+            Type::Ignored => f.write_str("Ignored"),
+            Type::Any => f.write_str("Any"),
+            Type::Null => f.write_str("Null"),
+            Type::Bool => f.write_str("Bool"),
+            Type::Int => f.write_str("Int"),
+            Type::Int64 => f.write_str("Int64"),
+            Type::Float32 => f.write_str("Float32"),
+            Type::Float => f.write_str("Float"),
+            Type::Decimal => f.write_str("Decimal"),
+            Type::String => f.write_str("String"),
+            Type::ObjectId => f.write_str("ObjectId"),
+            Type::Date => f.write_str("Date"),
+            Type::DateTime => f.write_str("DateTime"),
+            Type::File => f.write_str("File"),
+            Type::Regex => f.write_str("Regex"),
+            Type::Model => f.write_str("Model"),
+            Type::Array(inner) => if inner.is_union() {
+                f.write_str(&format!("({})[]", inner))
+            } else {
+                f.write_str(&format!("{}[]", inner))
+            },
+            Type::Dictionary(inner) => if inner.is_union() {
+                f.write_str(&format!("({}){{}}", inner))
+            } else {
+                f.write_str(&format!("{}{{}}", inner))
+            }
+            Type::Tuple(types) => {
+                f.write_str("(")?;
+                let len = types.len();
+                for (index, t) in types.iter().enumerate() {
+                    Display::fmt(t, f)?;
+                    if index != len - 1 {
+                        f.write_str(", ")?;
+                    }
+                }
+                if len == 1 {
+                    f.write_str(",")?;
+                }
+                f.write_str(")")
+            },
+            Type::Range(inner) => f.write_str(&format!("Range<{}>", inner)),
+            Type::Union(types) => f.write_str(&types.iter().map(|t| format!("{t}")).join(" | ")),
+            Type::EnumVariant(_, name) => f.write_str(&name.join(".")),
+            Type::InterfaceObject(_, _, name) => f.write_str(&name.join(".")),
+            Type::ModelObject(_, name) => f.write_str(&name.join(".")),
+            Type::StructObject(_, name) => f.write_str(&name.join(".")),
+            Type::ModelScalarFields(inner) => f.write_str(&format!("ModelScalarFields<{}>", inner)),
+            Type::ModelScalarFieldsWithoutVirtuals(inner) => f.write_str(&format!("ModelScalarFieldsWithoutVirtuals<{}>", inner)),
+            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),
+            Type::ModelRelations(inner) => f.write_str(&format!("ModelRelations<{}>", inner)),
+            Type::ModelDirectRelations(inner) => f.write_str(&format!("ModelDirectRelations<{}>", inner)),
+            Type::FieldType(a, b) => if a.is_union() {
+                f.write_str(&format!("({})[{}]", a, b))
+            } else {
+                f.write_str(&format!("{}[{}]", a, b))
+            },
+            Type::FieldReference(name) => f.write_str(&format!(".{}", name)),
+            Type::GenericItem(name) => f.write_str(name),
+            Type::Keyword(k) => Display::fmt(k, f),
+            Type::Optional(inner) => if inner.is_union() {
+                f.write_str(&format!("({})?", inner))
+            } else {
+                f.write_str(&format!("{}?", inner))
+            },
+            Type::Pipeline((i, o)) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
+        }
     }
 }

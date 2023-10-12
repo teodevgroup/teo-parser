@@ -108,6 +108,9 @@ impl Display for TupleLiteral {
                 f.write_str(", ")?;
             }
         }
+        if len == 1 {
+            f.write_str(",")?;
+        }
         f.write_str(")")
     }
 }
