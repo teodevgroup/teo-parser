@@ -602,6 +602,13 @@ impl Type {
         }
         self.clone()
     }
+
+    pub(crate) fn satisfies(&self, constraint: &Type) -> bool {
+        if self.is_model_object() && constraint.is_model() {
+            return true
+        }
+        constraint.test(self)
+    }
 }
 
 impl Display for Type {
