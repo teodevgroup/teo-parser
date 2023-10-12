@@ -457,7 +457,7 @@ pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext
 
 fn fetch_all_interface_fields<'a>(
     interface: &'a InterfaceDeclaration,
-    generics_map: BTreeMap<String, &Type>,
+    generics_map: BTreeMap<String, Type>,
     context: &'a ResolverContext<'a>,
 ) -> HashMap<String, TypeShape> {
     let mut retval = hashmap!{};

@@ -76,8 +76,8 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             generic_identifiers.insert(i.name().to_string());
         }
     }
-    // figure out generics by guessing
     let mut generics_map = btreemap!{};
+    // figure out generics by guessing
     if let Some(type_info) = type_info {
         if let Some(pipeline_input) = &callable_variant.pipeline_input {
             if pipeline_input.contains_generics() {
@@ -94,9 +94,13 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             }
         }
     }
-    // generics constraint checking
     if !generics_map.is_empty() {
-        validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context);
+        // generics constraint checking
+        for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context) {
+            errors.push(e);
+        }
+        // guessing more by constraints
+        generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
     }
 
     // figure out more by guessing with generics constraints
@@ -182,9 +186,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     (errors, warnings, callable_variant.pipeline_output.clone().map(|t| t.replace_keywords(keywords_map).replace_generics(&generics_map)))
 }
 
-fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Type, mut passed_in: &'a Type) -> Result<BTreeMap<String, &'a Type>, String> {
+fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Type, mut passed_in: &'a Type) -> Result<BTreeMap<String, Type>, String> {
     if let Some(identifier) = pipeline_input.as_generic_item() {
-        return Ok(btreemap!{identifier.to_string() => passed_in})
+        return Ok(btreemap!{identifier.to_string() => passed_in.clone()})
     }
     if let Some(inner) = pipeline_input.as_optional() {
         pipeline_input = inner;
@@ -193,7 +197,7 @@ fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Ty
         }
     }
     if let Some(identifier) = pipeline_input.as_generic_item() {
-        return Ok(btreemap!{identifier.to_string() => passed_in})
+        return Ok(btreemap!{identifier.to_string() => passed_in.clone()})
     }
     if pipeline_input.is_array() && passed_in.is_array() {
         return guess_generics_by_pipeline_input_and_passed_in(pipeline_input.as_array().unwrap(), passed_in.as_array().unwrap());
@@ -205,7 +209,7 @@ fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Ty
 
 fn validate_generics_map_with_constraint_info<'a>(
     span: Span,
-    generics_map: &BTreeMap<String, &Type>,
+    generics_map: &BTreeMap<String, Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) -> Vec<DiagnosticsError> {
@@ -222,4 +226,22 @@ fn validate_generics_map_with_constraint_info<'a>(
         }
     }
     results
+}
+
+fn guess_generics_by_constraints<'a>(
+    generics_map: &BTreeMap<String, Type>,
+    generics_constraints: &Vec<&GenericsConstraint>,
+) -> BTreeMap<String, Type> {
+    let mut retval = btreemap! {};
+    for constraint in generics_constraints {
+        for item in &constraint.items {
+            if !generics_map.contains_key(item.identifier.name()) {
+                let new_type = item.type_expr.resolved().replace_generics(generics_map).flatten();
+                if !new_type.contains_generics() {
+                    retval.insert(item.identifier.name.clone(), new_type);
+                }
+            }
+        }
+    }
+    retval
 }

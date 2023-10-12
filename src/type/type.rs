@@ -487,7 +487,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn replace_generics(&self, map: &BTreeMap<String, &Type>) -> Self {
+    pub(crate) fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
         if let Some(name) = self.as_generic_item() {
             if let Some(t) = map.get(name) {
                 (*t).clone()
