@@ -241,7 +241,7 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFields", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                    if model_object.is_model_object() || model_object.is_keyword() {
+                    if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
                         Some(Type::ModelScalarFields(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
@@ -255,7 +255,7 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFieldsWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                    if model_object.is_model_object() || model_object.is_keyword() {
+                    if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
                         Some(Type::ModelScalarFieldsWithoutVirtuals(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
@@ -269,7 +269,7 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                    if model_object.is_model_object() || model_object.is_keyword() {
+                    if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
                         Some(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(model_object)))
                     }else {
                         context.insert_diagnostics_error(t.span(), "model not found");
@@ -283,7 +283,7 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelRelations", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                    if model_object.is_model_object() || model_object.is_keyword() {
+                    if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
                         Some(Type::ModelRelations(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
@@ -297,7 +297,7 @@ fn resolve_type_item<'a>(
                 request_single_generics("ModelDirectRelations", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context);
-                    if model_object.is_model_object() || model_object.is_keyword() {
+                    if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
                         Some(Type::ModelDirectRelations(Box::new(model_object)))
                     } else {
                         context.insert_diagnostics_error(t.span(), "model not found");
