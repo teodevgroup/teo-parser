@@ -3,6 +3,7 @@ use maplit::{btreemap, btreeset};
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::callable_variant::CallableVariant;
+use crate::ast::generics::GenericsConstraint;
 use crate::ast::type_info::TypeInfo;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{DiagnosticsError, DiagnosticsLog, DiagnosticsWarning};
@@ -46,16 +47,13 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                 pipeline_type_context,
             );
             if errors.is_empty() {
-                if pipeline_type_context.is_some() {
-                    println!("errors are empty: {:?}", t);
-                }
                 for warning in warnings {
                     context.insert_diagnostics_error(*warning.span(), warning.message());
                 }
                 return t;
             }
         }
-        context.insert_diagnostics_error(callable_span, "Argument list doesn't match any callable variants");
+        context.insert_diagnostics_error(callable_span, "variant not found for arguments");
         return Some(Type::Undetermined);
     }
 }
@@ -71,13 +69,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     // declare errors and warnings
     let mut errors = vec![];
     let mut warnings = vec![];
-    // figure out generics by guessing
+    // collect generics identifiers
     let mut generic_identifiers = btreeset!{};
     for g in &callable_variant.generics_declarations {
         for i in &g.identifiers {
             generic_identifiers.insert(i.name().to_string());
         }
     }
+    // figure out generics by guessing
     let mut generics_map = btreemap!{};
     if let Some(type_info) = type_info {
         if let Some(pipeline_input) = &callable_variant.pipeline_input {
@@ -96,6 +95,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         }
     }
     // generics constraint checking
+    if !generics_map.is_empty() {
+        validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context);
+    }
 
     // figure out more by guessing with generics constraints
 
@@ -199,4 +201,25 @@ fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Ty
         return guess_generics_by_pipeline_input_and_passed_in(pipeline_input.as_dictionary().unwrap(), passed_in.as_dictionary().unwrap());
     }
     Err("Pipeline input and passed in are not match".to_owned())
+}
+
+fn validate_generics_map_with_constraint_info<'a>(
+    span: Span,
+    generics_map: &BTreeMap<String, &Type>,
+    generics_constraints: &Vec<&GenericsConstraint>,
+    context: &'a ResolverContext<'a>,
+) -> Vec<DiagnosticsError> {
+    let mut results = vec![];
+    for (name, t) in generics_map {
+        for constraint in generics_constraints {
+            for item in &constraint.items {
+                if item.identifier.name() == name {
+                    if !t.satisfies(item.type_expr.resolved()) {
+                        results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr.resolved())))
+                    }
+                }
+            }
+        }
+    }
+    results
 }
