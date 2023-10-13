@@ -104,9 +104,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     // normal process handling
     if let Some(argument_list_declaration) = callable_variant.argument_list_declaration {
         let mut declaration_names: Vec<&str> = argument_list_declaration.argument_declarations.iter().map(|d| d.name.name()).collect();
-        if type_info.is_some() {
-            println!("see declaration names 0: {:?}", declaration_names);
-        }
         // match named arguments
         if let Some(argument_list) = argument_list {
             for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
@@ -148,9 +145,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
                 }
             }
-        }
-        if type_info.is_some() {
-            println!("see declaration names 1: {:?}", declaration_names);
         }
         // match unnamed arguments
         if let Some(argument_list) = argument_list {
