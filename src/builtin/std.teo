@@ -635,6 +635,10 @@ namespace std {
     /// generate a CUID
     declare pipeline item cuid: Ignored -> String
 
+    /// @name CUID2
+    /// generate a CUID2
+    declare pipeline item cuid2: Ignored -> String
+
     /// @name UUID
     /// generate a UUID
     declare pipeline item uuid: Ignored -> String

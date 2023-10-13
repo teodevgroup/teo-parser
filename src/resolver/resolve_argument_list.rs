@@ -81,26 +81,17 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     if let Some(type_info) = type_info {
         if let Some(pipeline_input) = &callable_variant.pipeline_input {
             if pipeline_input.contains_generics() {
-                match guess_generics_by_pipeline_input_and_passed_in(pipeline_input, &type_info.passed_in) {
-                    Ok(map) => {
-                        println!("see gen map: {:?}", map);
-                        generics_map.extend(map);
-                    },
-                    Err(err) => {
-                        println!("guess error: {:?}", err);
-                        errors.push(context.generate_diagnostics_error(callable_span, err));
-                    }
-                }
+                guess_extend_and_check(
+                    callable_span,
+                    callable_variant,
+                    pipeline_input,
+                    &type_info.passed_in,
+                    &mut generics_map,
+                    &mut errors,
+                    context,
+                );
             }
         }
-    }
-    if !generics_map.is_empty() {
-        // generics constraint checking
-        for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context) {
-            errors.push(e);
-        }
-        // guessing more by constraints
-        generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
     }
     println!("see current generics map: {:?}", generics_map);
     // test input type matching
@@ -187,25 +178,35 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     (errors, warnings, callable_variant.pipeline_output.clone().map(|t| flatten_field_type_reference(t.replace_keywords(keywords_map).replace_generics(&generics_map), context)))
 }
 
-fn guess_generics_by_pipeline_input_and_passed_in<'a>(mut pipeline_input: &'a Type, mut passed_in: &'a Type) -> Result<BTreeMap<String, Type>, String> {
-    if let Some(identifier) = pipeline_input.as_generic_item() {
-        return Ok(btreemap!{identifier.to_string() => passed_in.clone()})
+fn guess_generics_by_pipeline_input_and_passed_in<'a>(unresolved: &'a Type, explicit: &'a Type) -> Result<BTreeMap<String, Type>, String> {
+    let mut unresolved = unresolved;
+    let mut explicit = explicit;
+    // direct match
+    if let Some(identifier) = unresolved.as_generic_item() {
+        return Ok(btreemap!{identifier.to_string() => explicit.clone()})
     }
-    if let Some(inner) = pipeline_input.as_optional() {
-        pipeline_input = inner;
-        if passed_in.is_optional() {
-            passed_in = passed_in.unwrap_optional();
+    // unwrap optional
+    if let Some(inner) = unresolved.as_optional() {
+        unresolved = inner;
+        if explicit.is_optional() {
+            explicit = explicit.unwrap_optional();
         }
     }
-    if let Some(identifier) = pipeline_input.as_generic_item() {
-        return Ok(btreemap!{identifier.to_string() => passed_in.clone()})
+    if let Some(identifier) = unresolved.as_generic_item() {
+        return Ok(btreemap!{identifier.to_string() => explicit.clone()})
     }
-    if pipeline_input.is_array() && passed_in.is_array() {
-        return guess_generics_by_pipeline_input_and_passed_in(pipeline_input.as_array().unwrap(), passed_in.as_array().unwrap());
-    } else if pipeline_input.is_dictionary() && passed_in.is_dictionary() {
-        return guess_generics_by_pipeline_input_and_passed_in(pipeline_input.as_dictionary().unwrap(), passed_in.as_dictionary().unwrap());
+    // unwrap in types
+    if unresolved.is_array() && explicit.is_array() {
+        return guess_generics_by_pipeline_input_and_passed_in(unresolved.as_array().unwrap(), explicit.as_array().unwrap());
+    } else if unresolved.is_dictionary() && explicit.is_dictionary() {
+        return guess_generics_by_pipeline_input_and_passed_in(unresolved.as_dictionary().unwrap(), explicit.as_dictionary().unwrap());
+    } else if unresolved.is_pipeline() && explicit.is_pipeline() {
+        let mut result = btreemap! {};
+        result.extend(guess_generics_by_pipeline_input_and_passed_in(unresolved.as_pipeline().unwrap().0, explicit.as_pipeline().unwrap().0)?);
+        result.extend(guess_generics_by_pipeline_input_and_passed_in(unresolved.as_pipeline().unwrap().1, explicit.as_pipeline().unwrap().1)?);
+        return Ok(result);
     }
-    Err("Pipeline input and passed in are not match".to_owned())
+    Err("unresolved and explicit are not match".to_owned())
 }
 
 fn validate_generics_map_with_constraint_info<'a>(
@@ -265,4 +266,29 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
             Type::Undetermined
         }
     })
+}
+
+fn guess_extend_and_check<'a>(
+    callable_span: Span,
+    callable_variant: &CallableVariant,
+    unresolved: &Type,
+    explicit: &Type,
+    generics_map: &mut BTreeMap<String, Type>,
+    errors: &mut Vec<DiagnosticsError>,
+    context: &'a ResolverContext<'a>,
+) {
+    match guess_generics_by_pipeline_input_and_passed_in(unresolved, explicit) {
+        Ok(map) => {
+            generics_map.extend(map);
+        },
+        Err(err) => {
+            errors.push(context.generate_diagnostics_error(callable_span, err));
+        }
+    }
+    // generics constraint checking
+    for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context) {
+        errors.push(e);
+    }
+    // guessing more by constraints
+    generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
 }
