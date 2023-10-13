@@ -117,7 +117,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         if let Some(argument_list) = argument_list {
             for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
                 if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
-                    println!("=arg: {}", argument_declaration.name.name());
                     let desired_type_original = argument_declaration.type_expr.resolved();
                     let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
@@ -162,7 +161,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         if let Some(argument_list) = argument_list {
             for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
                 if let Some(name) = declaration_names.first() {
-                    println!("=arg: {name}");
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type_original = argument_declaration.type_expr.resolved();
                         let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);

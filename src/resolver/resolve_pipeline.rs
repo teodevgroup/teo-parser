@@ -14,7 +14,6 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>) -> Type {
-    println!("===== see this pipeline: {}", pipeline);
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -79,7 +78,6 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
     if has_errors {
         expected.clone()
     } else if let Some((input, output)) = expected.as_pipeline() {
-        println!("pipeline input: {:?}", Type::Pipeline((Box::new(input.clone()), Box::new(current_input_type.clone()))));
         Type::Pipeline((Box::new(input.clone()), Box::new(current_input_type)))
     } else {
         Type::Undetermined

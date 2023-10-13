@@ -2,8 +2,11 @@ use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
+use educe::Educe;
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+#[derive(Debug, Clone, Eq)]
+#[derive(Educe)]
+#[educe(Hash, PartialEq)]
 pub enum Type {
     Undetermined,
     Ignored,
@@ -31,11 +34,31 @@ pub enum Type {
     InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
     ModelObject(Vec<usize>, Vec<String>),
     StructObject(Vec<usize>, Vec<String>),
-    ModelScalarFields(Box<Type>, Option<String>),
-    ModelScalarFieldsWithoutVirtuals(Box<Type>, Option<String>),
-    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box<Type>, Option<String>),
-    ModelRelations(Box<Type>, Option<String>),
-    ModelDirectRelations(Box<Type>, Option<String>),
+    ModelScalarFields(
+        Box<Type>,
+        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
+        Option<String>
+    ),
+    ModelScalarFieldsWithoutVirtuals(
+        Box<Type>,
+        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
+        Option<String>
+    ),
+    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(
+        Box<Type>,
+        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
+        Option<String>
+    ),
+    ModelRelations(
+        Box<Type>,
+        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
+        Option<String>
+    ),
+    ModelDirectRelations(
+        Box<Type>,
+        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
+        Option<String>
+    ),
     FieldType(Box<Type>, Box<Type>),
     FieldReference(String),
     GenericItem(String),
