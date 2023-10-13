@@ -4,6 +4,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::definition::definition::Definition;
+use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::search::search_identifier_path::search_identifier_path_in_source;
 
 pub(super) fn jump_to_definition_in_decorator<'a>(
@@ -26,11 +27,12 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
         }
     }
     if let Some(selector_span) = selector_span {
+        // find in decorator path body
         let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
         match reference {
             Some(path) => {
                 let top = schema.find_top_by_path(&path).unwrap();
-                return vec![Definition {
+                vec![Definition {
                     path: schema.source(*path.get(0).unwrap()).unwrap().file_path.clone(),
                     selection_span: selector_span,
                     target_span: top.span(),
@@ -39,12 +41,28 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
                         Top::Namespace(n) => n.span,
                         _ => unreachable!()
                     }
-                }];
+                }]
             },
-            None => {
-                return vec![];
+            None => vec![],
+        }
+    } else {
+        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
+        // found in argument lists
+        if let Some(argument_list) = &decorator.argument_list {
+            if let Some(reference) = reference {
+                jump_to_definition_in_argument_list(
+                    schema,
+                    source,
+                    argument_list,
+                    namespace_path,
+                    reference,
+                    line_col
+                )
+            } else {
+                vec![]
             }
+        } else {
+            vec![]
         }
     }
-    vec![]
 }
