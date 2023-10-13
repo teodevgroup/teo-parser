@@ -94,6 +94,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         pipeline_input,
                         passed_in.as_ref().unwrap(),
                         &mut generics_map,
+                        keywords_map,
                         &mut errors,
                         context,
                     );
@@ -121,16 +122,19 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
                     if !desired_type.test(named_argument.value.resolved()) {
-                        errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved())))
+                        if !named_argument.value.resolved().is_undetermined() {
+                            errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved())))
+                        }
                     } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
                         generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().clone());
-                    } else if desired_type_original.contains_generics() {
+                    } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                         guess_extend_and_check(
                             callable_span,
                             callable_variant,
-                            desired_type_original,
+                            &desired_type,
                             named_argument.value.resolved(),
                             &mut generics_map,
+                            keywords_map,
                             &mut errors,
                             context,
                         );
@@ -163,18 +167,20 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         let desired_type_original = argument_declaration.type_expr.resolved();
                         let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                         resolve_expression(&unnamed_argument.value, context, &desired_type, keywords_map);
-                        println!("see desired type and resolved type: {:?} {:?} {}", desired_type, unnamed_argument.value.resolved(), desired_type.test(unnamed_argument.value.resolved()));
                         if !desired_type.test(unnamed_argument.value.resolved()) {
-                            errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved())))
+                            if !unnamed_argument.value.resolved().is_undetermined() {
+                                errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved())))
+                            }
                         } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().clone());
-                        } else if desired_type_original.contains_generics() {
+                        } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                             guess_extend_and_check(
                                 callable_span,
                                 callable_variant,
-                                desired_type_original,
+                                &desired_type,
                                 unnamed_argument.value.resolved(),
                                 &mut generics_map,
+                                keywords_map,
                                 &mut errors,
                                 context,
                             );
@@ -208,6 +214,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
 }
 
 fn guess_generics_by_pipeline_input_and_passed_in<'a>(unresolved: &'a Type, explicit: &'a Type) -> Result<BTreeMap<String, Type>, String> {
+    if !unresolved.contains_generics() && !explicit.contains_generics() {
+        return Ok(btreemap! {})
+    }
     let mut unresolved = unresolved;
     let mut explicit = explicit;
     // direct match
@@ -235,12 +244,13 @@ fn guess_generics_by_pipeline_input_and_passed_in<'a>(unresolved: &'a Type, expl
         result.extend(guess_generics_by_pipeline_input_and_passed_in(unresolved.as_pipeline().unwrap().1, explicit.as_pipeline().unwrap().1)?);
         return Ok(result);
     }
-    Err("unresolved and explicit are not match".to_owned())
+    Err(format!("cannot resolve generics: unresolved: {}, explicit: {}", unresolved, explicit))
 }
 
 fn validate_generics_map_with_constraint_info<'a>(
     span: Span,
     generics_map: &BTreeMap<String, Type>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) -> Vec<DiagnosticsError> {
@@ -249,7 +259,9 @@ fn validate_generics_map_with_constraint_info<'a>(
         for constraint in generics_constraints {
             for item in &constraint.items {
                 if item.identifier.name() == name {
-                    if !t.satisfies(item.type_expr.resolved()) {
+                    let mut generics_map_without_name = generics_map.clone();
+                    generics_map_without_name.remove(name);
+                    if !t.satisfies(&item.type_expr.resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)) {
                         results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr.resolved())))
                     }
                 }
@@ -261,13 +273,14 @@ fn validate_generics_map_with_constraint_info<'a>(
 
 fn guess_generics_by_constraints<'a>(
     generics_map: &BTreeMap<String, Type>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
 ) -> BTreeMap<String, Type> {
     let mut retval = btreemap! {};
     for constraint in generics_constraints {
         for item in &constraint.items {
             if !generics_map.contains_key(item.identifier.name()) {
-                let new_type = item.type_expr.resolved().replace_generics(generics_map).flatten();
+                let new_type = item.type_expr.resolved().replace_keywords(keywords_map).replace_generics(generics_map).flatten();
                 if !new_type.contains_generics() {
                     retval.insert(item.identifier.name.clone(), new_type);
                 }
@@ -303,10 +316,10 @@ fn guess_extend_and_check<'a>(
     unresolved: &Type,
     explicit: &Type,
     generics_map: &mut BTreeMap<String, Type>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     errors: &mut Vec<DiagnosticsError>,
     context: &'a ResolverContext<'a>,
 ) {
-    println!("unresolved, explicit: {} {}", unresolved, explicit);
     match guess_generics_by_pipeline_input_and_passed_in(unresolved, explicit) {
         Ok(map) => {
             generics_map.extend(map);
@@ -316,10 +329,9 @@ fn guess_extend_and_check<'a>(
         }
     }
     // generics constraint checking
-    for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, &callable_variant.generics_constraints, context) {
+    for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
         errors.push(e);
     }
     // guessing more by constraints
-    generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
-    println!("see generics map here: {:?}", generics_map);
+    generics_map.extend(guess_generics_by_constraints(&generics_map, keywords_map, &callable_variant.generics_constraints));
 }
