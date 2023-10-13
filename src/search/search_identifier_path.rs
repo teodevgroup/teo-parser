@@ -21,12 +21,13 @@ pub(crate) fn search_identifier_path_in_source(
     );
     if reference.is_none() {
         for builtin_source in schema.builtin_sources() {
-            if let Some(reference) = search_identifier_path_in_source(
+            if let Some(reference) = search_identifier_path_in_source_inner(
                 schema,
-                source,
-                &vec!["std"],
+                builtin_source,
                 &identifier_path,
                 filter,
+                &mut used_sources,
+                &vec!["std"],
             ) {
                 return Some(reference);
             }

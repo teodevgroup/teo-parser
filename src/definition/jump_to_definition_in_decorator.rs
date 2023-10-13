@@ -25,23 +25,26 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
             user_typed_spaces.push(identifier.name());
         }
     }
-    let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
-    match reference {
-        Some(path) => {
-            let top = schema.find_top_by_path(&path).unwrap();
-            vec![Definition {
-                path: schema.source(*path.get(0).unwrap()).unwrap().file_path.clone(),
-                selection_span: selector_span.unwrap(),
-                target_span: top.span(),
-                identifier_span: match top {
-                    Top::DecoratorDeclaration(d) => d.identifier.span,
-                    Top::Namespace(n) => n.span,
-                    _ => unreachable!()
-                }
-            }]
-        },
-        None => {
-            vec![]
+    if let Some(selector_span) = selector_span {
+        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
+        match reference {
+            Some(path) => {
+                let top = schema.find_top_by_path(&path).unwrap();
+                return vec![Definition {
+                    path: schema.source(*path.get(0).unwrap()).unwrap().file_path.clone(),
+                    selection_span: selector_span,
+                    target_span: top.span(),
+                    identifier_span: match top {
+                        Top::DecoratorDeclaration(d) => d.identifier.span,
+                        Top::Namespace(n) => n.span,
+                        _ => unreachable!()
+                    }
+                }];
+            },
+            None => {
+                return vec![];
+            }
         }
     }
+    vec![]
 }
