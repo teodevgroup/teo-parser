@@ -13,8 +13,6 @@ use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
-use crate::definition::definition::Definition;
-use crate::definition::definition_context::DefinitionContext;
 
 #[derive(Debug)]
 pub(crate) enum Top {
@@ -265,24 +263,5 @@ impl Top {
 
     pub(crate) fn is_struct_declaration(&self) -> bool {
         self.as_struct_declaration().is_some()
-    }
-
-    pub(crate) fn jump_to_definition(&self, context: &DefinitionContext, line_col: (usize, usize)) -> Vec<Definition> {
-        match self {
-            Top::Import(t) => t.jump_to_definition(context, line_col),
-            _ => vec![],
-            // Top::Config(t) => t.jump_to_definition(context, line_col_range),
-            // Top::ConfigDeclaration(_) => vec![],
-            // Top::Constant(t) => t.jump_to_definition(context, line_col_range),
-            // Top::Enum(t) => t.jump_to_definition(context, line_col_range),
-            // Top::Model(t) => t.jump_to_definition(context, line_col_range),
-            // Top::DataSet(t) => t.jump_to_definition(context, line_col_range),
-            // Top::Middleware(t) => t.jump_to_definition(context, line_col_range),
-            // Top::ActionGroup(t) => t.jump_to_definition(context, line_col_range),
-            // Top::Interface(t) => t.jump_to_definition(context, line_col_range),
-            // Top::Namespace(t) => t.jump_to_definition(context, line_col_range),
-            // Top::DecoratorDeclaration(t) => t.jump_to_definition(context, line_col_range),
-            // Top::PipelineItemDeclaration(t) => t.jump_to_definition(context, line_col_range),
-        }
     }
 }

@@ -1,5 +1,4 @@
 pub(crate) mod completion_item;
-pub(crate) mod completion_context;
 pub(crate) mod find_completion;
 mod completion_item_from_top;
 mod find_completion_in_decorator;

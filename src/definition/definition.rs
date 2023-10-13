@@ -1,7 +1,8 @@
 use serde::Serialize;
 use crate::ast::schema::Schema;
 use crate::ast::span::Span;
-use crate::definition::definition_context::DefinitionContext;
+use crate::ast::top::Top;
+use crate::search::search_top::search_top;
 
 #[derive(Debug, Serialize)]
 pub struct Definition {
@@ -11,10 +12,3 @@ pub struct Definition {
     pub(crate) identifier_span: Span,
 }
 
-pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<Definition> {
-    if let Some(source) = schema.sources().iter().find(|s| s.file_path.as_str() == file_path) {
-        let mut context = DefinitionContext::new(schema, source);
-        return source.jump_to_definition(&mut context, line_col);
-    }
-    vec![]
-}

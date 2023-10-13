@@ -43,7 +43,7 @@ pub fn generate_json_diagnostics(diagnostics: &Diagnostics, include_warnings: bo
 }
 
 pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<Definition> {
-    definition::definition::jump_to_definition(schema, file_path, line_col)
+    definition::jump_to_definition::jump_to_definition(schema, file_path, line_col)
 }
 
 pub fn auto_complete_items(schema: &Schema, file_path: &str, line_col: (usize, usize)) -> Vec<CompletionItem> {
