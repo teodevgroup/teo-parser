@@ -753,7 +753,9 @@ namespace std {
     /// When `pipeline` doesn't throw, returns true
     declare pipeline item passed<T>(pipeline?: Pipeline<T, Ignored>): T -> Bool
 
-    declare pipeline item if<T, U>(cond?: Pipeline<T, Ignored>, then: Pipeline<T, U>, else: Pipeline<T, U>?): T -> U
+    declare pipeline item if<T, U, V>(cond?: Pipeline<T, U>, then?: Pipeline<U, V>?, else: Pipeline<T, V>?): T -> V
+
+    declare pipeline item validate<T>(pipeline? Pipeline<T, Ignored>): T -> T
 
     // or, and, not, all, any
 
