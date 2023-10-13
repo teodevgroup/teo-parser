@@ -93,7 +93,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             }
         }
     }
-    println!("see current generics map: {:?}", generics_map);
     // test input type matching
     if let Some(pipeline_input) = &callable_variant.pipeline_input {
         let expected = pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map);
@@ -105,10 +104,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     // normal process handling
     if let Some(argument_list_declaration) = callable_variant.argument_list_declaration {
         let mut declaration_names: Vec<&str> = argument_list_declaration.argument_declarations.iter().map(|d| d.name.name()).collect();
+        if type_info.is_some() {
+            println!("see declaration names 0: {:?}", declaration_names);
+        }
         // match named arguments
         if let Some(argument_list) = argument_list {
             for named_argument in argument_list.arguments().iter().filter(|a| a.name.is_some()) {
                 if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name.as_ref().unwrap().name()) {
+                    println!("=arg: {}", argument_declaration.name.name());
                     let desired_type_original = argument_declaration.type_expr.resolved();
                     let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
@@ -116,6 +119,16 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved())))
                     } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
                         generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().clone());
+                    } else if desired_type_original.contains_generics() {
+                        guess_extend_and_check(
+                            callable_span,
+                            callable_variant,
+                            desired_type_original,
+                            named_argument.value.resolved(),
+                            &mut generics_map,
+                            &mut errors,
+                            context,
+                        );
                     }
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
                 } else {
@@ -136,10 +149,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                 }
             }
         }
+        if type_info.is_some() {
+            println!("see declaration names 1: {:?}", declaration_names);
+        }
         // match unnamed arguments
         if let Some(argument_list) = argument_list {
             for unnamed_argument in argument_list.arguments().iter().filter(|a| a.name.is_none()) {
                 if let Some(name) = declaration_names.first() {
+                    println!("=arg: {name}");
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type_original = argument_declaration.type_expr.resolved();
                         let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
@@ -149,6 +166,16 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved())))
                         } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().clone());
+                        } else if desired_type_original.contains_generics() {
+                            guess_extend_and_check(
+                                callable_span,
+                                callable_variant,
+                                desired_type_original,
+                                unnamed_argument.value.resolved(),
+                                &mut generics_map,
+                                &mut errors,
+                                context,
+                            );
                         }
                         unnamed_argument.resolve(ArgumentResolved {
                             name: name.to_string()
@@ -277,6 +304,7 @@ fn guess_extend_and_check<'a>(
     errors: &mut Vec<DiagnosticsError>,
     context: &'a ResolverContext<'a>,
 ) {
+    println!("unresolved, explicit: {} {}", unresolved, explicit);
     match guess_generics_by_pipeline_input_and_passed_in(unresolved, explicit) {
         Ok(map) => {
             generics_map.extend(map);
@@ -291,4 +319,5 @@ fn guess_extend_and_check<'a>(
     }
     // guessing more by constraints
     generics_map.extend(guess_generics_by_constraints(&generics_map, &callable_variant.generics_constraints));
+    println!("see generics map here: {:?}", generics_map);
 }

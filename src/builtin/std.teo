@@ -759,7 +759,7 @@ namespace std {
 
     declare pipeline item if<T, U, V>(cond?: Pipeline<T, U>, then?: Pipeline<U, V>?, else: Pipeline<T, V>?): T -> V
 
-    declare pipeline item validate<T>(pipeline? Pipeline<T, Ignored>): T -> T
+    declare pipeline item validate<T>(pipeline?: Pipeline<T, Ignored>): T -> T
 
     // or, and, not, all, any
 
