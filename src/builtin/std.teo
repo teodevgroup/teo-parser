@@ -699,7 +699,7 @@ namespace std {
 
     declare pipeline item bcryptSalt: String -> String
 
-    declare pipeline item bcryptVerify(value?: Pipeline<String, String>): String -> String
+    declare pipeline item bcryptVerify(pipeline?: Pipeline<String, String>): String -> String
 
     declare pipeline item presents<T>: T? -> T
 
