@@ -1,4 +1,4 @@
-TEO Schema Parser
+Teo Schema Parser
 =================
 
-The schema parser for TEO.
+Schema parser for Teo web framework
