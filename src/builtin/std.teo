@@ -791,9 +791,15 @@ namespace std {
 
     // isA, is
 
+    /// @name Equal
+    /// Valid if input is equal to rhs
+    declare pipeline item eq<T>(rhs: T | Pipeline<T, T>): T -> T
+
+    /// @name Greater Than
+    /// Valid if input is greater than or equal to rhs
+    declare pipeline item gt<T>(rhs: T | Pipeline<T, T>): T -> T
+
     // // value
-    // objects.insert("eq".to_owned(), eq);
-    // objects.insert("gt".to_owned(), gt);
     // objects.insert("gte".to_owned(), gte);
     // objects.insert("exists".to_owned(), exists);
     // objects.insert("isFalse".to_owned(), is_false);
