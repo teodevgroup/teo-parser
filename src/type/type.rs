@@ -683,7 +683,7 @@ impl Type {
             Type::Array(t) => Type::Array(Box::new(f_ref(t, &f))),
             Type::Dictionary(t) => Type::Dictionary(Box::new(f_ref(t, &f))),
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| f_ref(t, &f)).collect()),
-            Type::Range(t) => Type::Array(Box::new(f_ref(t, &f))),
+            Type::Range(t) => Type::Range(Box::new(f_ref(t, &f))),
             Type::Union(types) => Type::Union(types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::EnumVariant(_, _) => self.clone(),
             Type::InterfaceObject(_, _, _) => self.clone(),

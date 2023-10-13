@@ -48,7 +48,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
             );
             if errors.is_empty() {
                 for warning in warnings {
-                    context.insert_diagnostics_error(*warning.span(), warning.message());
+                    context.insert_diagnostics_warning(*warning.span(), warning.message());
                 }
                 return t;
             }
