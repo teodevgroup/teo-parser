@@ -77,26 +77,34 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         }
     }
     let mut generics_map = btreemap!{};
+    let mut passed_in = None;
     // figure out generics by guessing
     if let Some(type_info) = type_info {
-        if let Some(pipeline_input) = &callable_variant.pipeline_input {
-            if pipeline_input.contains_generics() {
-                guess_extend_and_check(
-                    callable_span,
-                    callable_variant,
-                    pipeline_input,
-                    &type_info.passed_in,
-                    &mut generics_map,
-                    &mut errors,
-                    context,
-                );
+        passed_in = Some(type_info.passed_in.clone());
+        if type_info.passed_in.contains_generics() {
+            if !callable_variant.pipeline_input.as_ref().unwrap().contains_generics() {
+                passed_in = Some(callable_variant.pipeline_input.as_ref().unwrap().clone());
+            }
+        } else {
+            if let Some(pipeline_input) = &callable_variant.pipeline_input {
+                if pipeline_input.contains_generics() {
+                    guess_extend_and_check(
+                        callable_span,
+                        callable_variant,
+                        pipeline_input,
+                        passed_in.as_ref().unwrap(),
+                        &mut generics_map,
+                        &mut errors,
+                        context,
+                    );
+                }
             }
         }
     }
     // test input type matching
     if let Some(pipeline_input) = &callable_variant.pipeline_input {
         let expected = pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map);
-        let found = type_info.unwrap().passed_in.replace_generics(&generics_map).replace_keywords(keywords_map);
+        let found = passed_in.as_ref().unwrap().replace_generics(&generics_map).replace_keywords(keywords_map);
         if !expected.test(&found) {
             errors.push(context.generate_diagnostics_error(callable_span, format!("unexpected pipeline input: expect {expected}, found {found}")));
         }
