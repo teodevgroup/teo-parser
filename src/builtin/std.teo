@@ -701,7 +701,7 @@ namespace std {
 
     declare pipeline item bcryptVerify(value?: Pipeline<String, String>): String -> String
 
-    declare pipeline item ifPresent<T>(pipeline?: Pipeline<T, T>): T? -> T?
+    declare pipeline item presents<T>: T? -> T
 
     declare pipeline item when<T>(action?: Action, pipeline?: Pipeline<T, T>): T -> T
 
@@ -764,20 +764,20 @@ namespace std {
     /// @name Set
     /// Set the value on object or map
     declare pipeline item set {
-        variant<T>(key?: String, value?: T): Dictionary<T> -> Dictionary<T>
         variant<T, K>(key?: K, value?: T[K]): T -> T where K: ModelScalarFields<T>, T: Model
+        variant<T>(key?: String, value?: T): Dictionary<T> -> Dictionary<T>
     }
 
     /// @name Get
     /// Get the value on object or map
     declare pipeline item get {
-        variant<T>(key?: String): Dictionary<T> -> T?
         variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
+        variant<T>(key?: String): Dictionary<T> -> T?
     }
 
     /// @name Previous
     /// Get the previous object value
-    declare pipeline item previous<T, K>(key?: K): T -> T[K] where K: ModelScalarFields<T>, T: Model
+    declare pipeline item previous<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
 
     /// @name Assign
     /// Assign value to key on context object

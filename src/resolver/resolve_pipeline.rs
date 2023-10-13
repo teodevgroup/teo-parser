@@ -70,10 +70,10 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
         }
     }
     if let Some((_, output)) = expected.as_pipeline() {
-        println!("see output and current input: {:?} {:?}", output, current_input_type);
         if !output.test(&current_input_type) {
-            println!("here happens");
-            context.insert_diagnostics_error(span, format!("unexpected pipeline output: expect {output}, found {current_input_type}"));
+            if !current_input_type.is_undetermined() {
+                context.insert_diagnostics_error(span, format!("unexpected pipeline output: expect {output}, found {current_input_type}"));
+            }
             has_errors = true;
         }
     }
