@@ -34,12 +34,12 @@ impl Display for StringLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct RegExpLiteral {
+pub(crate) struct RegexLiteral {
     pub(crate) value: Regex,
     pub(crate) span: Span,
 }
 
-impl Display for RegExpLiteral {
+impl Display for RegexLiteral {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("/")?;

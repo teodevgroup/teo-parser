@@ -4,7 +4,7 @@ use maplit::{hashset};
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
-use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::diagnostics::diagnostics::DiagnosticsError;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
@@ -23,7 +23,7 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
         ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
         ExpressionKind::NumericLiteral(n) => resolve_numeric_literal(n, context, expected),
         ExpressionKind::StringLiteral(e) => resolve_string_literal(e, context, expected),
-        ExpressionKind::RegExpLiteral(e) => resolve_regexp_literal(e, context, expected),
+        ExpressionKind::RegexLiteral(e) => resolve_regex_literal(e, context, expected),
         ExpressionKind::BoolLiteral(b) => resolve_bool_literal(b, context, expected),
         ExpressionKind::NullLiteral(n) => resolve_null_literal(n, context, expected),
         ExpressionKind::EnumVariantLiteral(e) => resolve_enum_variant_literal(e, context, expected),
@@ -103,7 +103,7 @@ fn resolve_string_literal<'a>(s: &StringLiteral, context: &'a ResolverContext<'a
     Type::String
 }
 
-fn resolve_regexp_literal<'a>(r: &RegExpLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+fn resolve_regex_literal<'a>(r: &RegexLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
     Type::Regex
 }
 

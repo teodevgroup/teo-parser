@@ -39,7 +39,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
         ),
         ExpressionKind::NumericLiteral(_) => vec![],
         ExpressionKind::StringLiteral(_) => vec![],
-        ExpressionKind::RegExpLiteral(_) => vec![],
+        ExpressionKind::RegexLiteral(_) => vec![],
         ExpressionKind::BoolLiteral(_) => vec![],
         ExpressionKind::NullLiteral(_) => vec![],
         ExpressionKind::EnumVariantLiteral(enum_variant_literal) => jump_to_definition_in_enum_variant_literal(

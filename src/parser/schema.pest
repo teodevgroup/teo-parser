@@ -110,10 +110,10 @@ string_content = @{ (string_escape | !("\"" | ASCII_CONTROL_CHARACTER) ~ ANY)* }
 string_literal = ${ "\"" ~ string_content ~ "\"" }
 
 // #############
-// regexp literals
+// regex literals
 // #############
-regexp_content = @{ (string_escape | !("/") ~ ANY)+ }
-regexp_literal = ${ "/" ~ regexp_content ~ "/" }
+regex_content = @{ (string_escape | !("/") ~ ANY)+ }
+regex_literal = ${ "/" ~ regex_content ~ "/" }
 
 // #############
 // bool literals
@@ -208,7 +208,7 @@ unit = {
     bool_literal |
     numeric_literal |
     string_literal |
-    regexp_literal |
+    regex_literal |
     enum_variant_literal |
     tuple_literal |
     array_literal |

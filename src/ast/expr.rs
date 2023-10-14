@@ -6,7 +6,7 @@ use crate::ast::call::Call;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
-use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
@@ -65,7 +65,7 @@ pub(crate) enum ExpressionKind {
     ArithExpr(ArithExpr),
     NumericLiteral(NumericLiteral),
     StringLiteral(StringLiteral),
-    RegExpLiteral(RegExpLiteral),
+    RegexLiteral(RegexLiteral),
     BoolLiteral(BoolLiteral),
     NullLiteral(NullLiteral),
     EnumVariantLiteral(EnumVariantLiteral),
@@ -88,7 +88,7 @@ impl ExpressionKind {
             ExpressionKind::ArithExpr(e) => e.span(),
             ExpressionKind::NumericLiteral(e) => e.span,
             ExpressionKind::StringLiteral(e) => e.span,
-            ExpressionKind::RegExpLiteral(e) => e.span,
+            ExpressionKind::RegexLiteral(e) => e.span,
             ExpressionKind::BoolLiteral(e) => e.span,
             ExpressionKind::NullLiteral(e) => e.span,
             ExpressionKind::EnumVariantLiteral(e) => e.span,
@@ -126,15 +126,15 @@ impl ExpressionKind {
         self.as_string_literal().is_some()
     }
 
-    pub(crate) fn as_regexp_literal(&self) -> Option<&RegExpLiteral> {
+    pub(crate) fn as_regex_literal(&self) -> Option<&RegexLiteral> {
         match self {
-            ExpressionKind::RegExpLiteral(n) => Some(n),
+            ExpressionKind::RegexLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_regexp_literal(&self) -> bool {
-        self.as_regexp_literal().is_some()
+    pub(crate) fn is_regex_literal(&self) -> bool {
+        self.as_regex_literal().is_some()
     }
 
     pub(crate) fn as_bool_literal(&self) -> Option<&BoolLiteral> {
@@ -248,7 +248,7 @@ impl Display for ExpressionKind {
             ExpressionKind::Group(g) => Display::fmt(g, f),
             ExpressionKind::NumericLiteral(e) => Display::fmt(e, f),
             ExpressionKind::StringLiteral(s) => Display::fmt(s, f),
-            ExpressionKind::RegExpLiteral(r) => Display::fmt(r, f),
+            ExpressionKind::RegexLiteral(r) => Display::fmt(r, f),
             ExpressionKind::BoolLiteral(b) => Display::fmt(b, f),
             ExpressionKind::NullLiteral(n) => Display::fmt(n, f),
             ExpressionKind::EnumVariantLiteral(e) => Display::fmt(e, f),

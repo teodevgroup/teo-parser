@@ -4,7 +4,7 @@ use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expr::ExpressionKind;
-use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegExpLiteral, StringLiteral, TupleLiteral};
+use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_expression::{parse_expression_kind};
 use crate::parser::parse_identifier::parse_identifier;
@@ -30,19 +30,19 @@ pub(super) fn parse_bool_literal(pair: &Pair<'_>) -> BoolLiteral {
     }
 }
 
-pub(super) fn parse_regexp_literal(pair: Pair<'_>, context: &mut ParserContext) -> RegExpLiteral {
+pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &mut ParserContext) -> RegexLiteral {
     let span = parse_span(&pair);
     let mut value = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::regexp_content => match Regex::new(current.as_str()) {
-                Ok(regexp) => value = Some(regexp),
-                Err(err) => context.insert_error(span.clone(), "RegExpError: invalid regular expression"),
+            Rule::regex_content => match Regex::new(current.as_str()) {
+                Ok(regex) => value = Some(regex),
+                Err(_) => context.insert_error(span.clone(), "invalid regular expression"),
             },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    RegExpLiteral {
+    RegexLiteral {
         value: value.unwrap_or(Regex::new("").unwrap()),
         span,
     }
