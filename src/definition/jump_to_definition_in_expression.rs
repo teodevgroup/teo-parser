@@ -35,6 +35,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             arith,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::NumericLiteral(_) => vec![],
         ExpressionKind::StringLiteral(_) => vec![],
