@@ -796,19 +796,34 @@ namespace std {
     declare pipeline item eq<T>(rhs: T | Pipeline<T, T>): T -> T
 
     /// @name Greater Than
-    /// Valid if input is greater than or equal to rhs
+    /// Valid if input is greater than rhs
     declare pipeline item gt<T>(rhs: T | Pipeline<T, T>): T -> T
+
+    /// @name Greater Than Or Equal
+    /// Valid if input is greater than or equal to rhs
+    declare pipeline item gte<T>(rhs: T | Pipeline<T, T>): T -> T
 
     // // value
     // objects.insert("gte".to_owned(), gte);
-    // objects.insert("exists".to_owned(), exists);
-    // objects.insert("isFalse".to_owned(), is_false);
-    // objects.insert("isNull".to_owned(), is_null);
-    // objects.insert("isTrue".to_owned(), is_true);
     // objects.insert("lt".to_owned(), lt);
     // objects.insert("lte".to_owned(), lte);
     // objects.insert("neq".to_owned(), neq);
-    // objects.insert("oneOf".to_owned(), one_of);
+
+    /// @name Is False
+    /// Valid if input is false
+    declare pipeline item isFalse: Bool -> Bool
+
+    /// @name Is True
+    /// Valid if input is true
+    declare pipeline item isTrue: Bool -> Bool
+
+    /// @name Is Null
+    /// Valid if input is null
+    declare pipeline item isNull<T>: T? -> T?
+
+    /// @name One Of
+    /// Valid if input is one of candidates
+    declare pipeline item oneOf<T>(candidates?: T[] | Pipeline<T, T[]>): T -> T
 
     /// @name Join
     /// Join string array into a string with separator

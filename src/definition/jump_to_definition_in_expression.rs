@@ -10,6 +10,7 @@ use crate::definition::jump_to_definition_in_identifier::jump_to_definition_in_i
 use crate::definition::jump_to_definition_in_pipeline::jump_to_definition_in_pipeline;
 use crate::definition::jump_to_definition_in_tuple_literal::jump_to_definition_in_tuple_literal;
 use crate::definition::jump_to_definition_in_unit::jump_to_definition_in_unit;
+use crate::r#type::r#type::Type;
 
 pub(super) fn jump_to_definition_in_expression_kind<'a>(
     schema: &'a Schema,
@@ -17,6 +18,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
     expression_kind: &'a ExpressionKind,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
+    expect: &Type,
 ) -> Vec<Definition> {
     match expression_kind {
         ExpressionKind::Group(group) => jump_to_definition_in_expression_kind(
@@ -25,6 +27,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             group.expression.as_ref(),
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::ArithExpr(arith) => jump_to_definition_in_arith_expr(
             schema,
