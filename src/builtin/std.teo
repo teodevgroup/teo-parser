@@ -833,7 +833,7 @@ namespace std {
 
     /// @name Join
     /// Join string array into a string with separator
-    declare pipeline item join(separator?: Pipeline<String[], String>): String[] -> String
+    declare pipeline item join(separator?: String | Pipeline<String[], String>): String[] -> String
 
     /// @name Filter
     /// Filter items by pipeline
