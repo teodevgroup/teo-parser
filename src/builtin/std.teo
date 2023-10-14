@@ -812,7 +812,7 @@ namespace std {
     declare pipeline item lte<T>(rhs: T | Pipeline<T, T>): T -> T
 
     /// @name Not Equal
-    /// Valid if input input is not equal to rhs
+    /// Valid if input is not equal to rhs
     declare pipeline item neq<T>(rhs: T | Pipeline<T, T>): T -> T
 
     // // value
