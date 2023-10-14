@@ -809,11 +809,18 @@ namespace std {
     // objects.insert("lte".to_owned(), lte);
     // objects.insert("neq".to_owned(), neq);
     // objects.insert("oneOf".to_owned(), one_of);
-    // // vector
-    // objects.insert("join".to_owned(), join);
-    // objects.insert("at".to_owned(), item_at);
-    // objects.insert("filter".to_owned(), filter);
-    // objects.insert("map".to_owned(), map);
+
+    /// @name Join
+    /// Join string array into a string with separator
+    declare pipeline item join(separator?: Pipeline<String[], String>): String[] -> String
+
+    /// @name Filter
+    /// Filter items by pipeline
+    declare pipeline item filter<T>(pipeline?: Pipeline<T, Ignored>): T[] -> T[]
+
+    /// @name Map
+    /// Perform map and collect results on array
+    declare pipeline item map<T, U>(pipeline?: Pipeline<T, U>): T[] -> U[]
 
     /// @name Data
     /// This interface is common for action output
