@@ -2,8 +2,10 @@ use crate::ast::schema::Schema;
 use crate::ast::top::Top;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_config::jump_to_definition_in_config;
+use crate::definition::jump_to_definition_in_config_declaration::jump_to_definition_in_config_declaration;
 use crate::definition::jump_to_definition_in_constant::jump_to_definition_in_constant;
 use crate::definition::jump_to_definition_in_import::jump_to_definition_in_import;
+use crate::definition::jump_to_definition_in_interface::jump_to_definition_in_interface;
 use crate::definition::jump_to_definition_in_model::jump_to_definition_in_model;
 use crate::search::search_top::search_top;
 
@@ -13,8 +15,10 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
             return match top {
                 Top::Import(i) => jump_to_definition_in_import(schema, source, i, line_col),
                 Top::Model(m) => jump_to_definition_in_model(schema, source, m, line_col),
+                Top::Interface(i) => jump_to_definition_in_interface(schema, source, i, line_col),
                 Top::Constant(c) => jump_to_definition_in_constant(schema, source, c, line_col),
                 Top::Config(c) => jump_to_definition_in_config(schema, source, c, line_col),
+                Top::ConfigDeclaration(c) => jump_to_definition_in_config_declaration(schema, source, c, line_col),
                 _ => vec![]
             };
         }

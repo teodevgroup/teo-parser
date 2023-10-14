@@ -10,7 +10,7 @@ use crate::utils::top_filter::{top_filter_for_any_model_field_decorators, top_fi
 pub(super) fn jump_to_definition_in_model(schema: &Schema, source: &Source, model: &Model, line_col: (usize, usize)) -> Vec<Definition> {
     for field in &model.fields {
         if field.span.contains_line_col(line_col) {
-            return jump_to_definition_in_field(schema, source, field, line_col);
+            return jump_to_definition_in_field(schema, source, field, line_col, &vec![]);
         }
     }
     let mut namespace_path: Vec<_> = model.string_path.iter().map(|s| s.as_str()).collect();

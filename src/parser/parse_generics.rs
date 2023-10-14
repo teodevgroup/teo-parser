@@ -7,6 +7,7 @@ use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserContext) -> GenericsDeclaration {
     let span = parse_span(&pair);
+    let path = context.next_path();
     let mut identifiers = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
@@ -14,7 +15,7 @@ pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserCon
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    GenericsDeclaration { span, identifiers }
+    GenericsDeclaration { span, path, identifiers }
 }
 
 pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &mut ParserContext) -> GenericsConstraint {
