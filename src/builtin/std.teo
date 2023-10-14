@@ -771,14 +771,16 @@ namespace std {
     /// Set the value on object or map
     declare pipeline item set {
         variant<T, K>(key?: K, value?: T[K]): T -> T where K: ModelScalarFields<T>, T: Model
-        variant<T>(key?: String, value?: T): Dictionary<T> -> Dictionary<T>
+        variant<T>(key?: String, value?: T): T{} -> T{}
+        variant<T>(key?: Int): T[] -> T[]
     }
 
     /// @name Get
     /// Get the value on object or map
     declare pipeline item get {
         variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
-        variant<T>(key?: String): Dictionary<T> -> T?
+        variant<T>(key?: String): T{} -> T?
+        variant<T>(key?: Int): T[] -> T?
     }
 
     /// @name Previous
@@ -788,8 +790,6 @@ namespace std {
     /// @name Assign
     /// Assign value to key on context object
     declare pipeline item assign<T, K>(key?: K, value?: T[K] | Pipeline<T, T[K]>): T -> T where K: ModelScalarFields<Self>
-
-    // isA, is
 
     /// @name Equal
     /// Valid if input is equal to rhs
