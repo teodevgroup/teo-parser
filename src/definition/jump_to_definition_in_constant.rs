@@ -2,7 +2,7 @@ use crate::ast::constant::Constant;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression_kind;
+use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 
 pub(super) fn jump_to_definition_in_constant<'a>(
@@ -15,7 +15,7 @@ pub(super) fn jump_to_definition_in_constant<'a>(
     namespace_path.pop();
     if constant.expression.span().contains_line_col(line_col) {
         let undetermined = Type::Undetermined;
-        return jump_to_definition_in_expression_kind(
+        return jump_to_definition_in_expression(
             schema,
             source,
             &constant.expression,

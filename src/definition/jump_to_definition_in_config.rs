@@ -2,7 +2,7 @@ use crate::ast::config::Config;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression_kind;
+use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 
 pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<Definition> {
@@ -47,10 +47,10 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             } else {
                 &undetermined
             };
-            return jump_to_definition_in_expression_kind(
+            return jump_to_definition_in_expression(
                 schema,
                 source,
-                &item.expression.kind,
+                &item.expression,
                 &namespace_path,
                 line_col,
                 expected_type

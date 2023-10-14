@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::Expression;
 use crate::ast::span::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -78,7 +78,7 @@ pub(crate) struct BinaryOp {
 
 #[derive(Debug)]
 pub(crate) enum ArithExpr {
-    Expression(Box<ExpressionKind>),
+    Expression(Box<Expression>),
     UnaryOp(UnaryOp),
     BinaryOp(BinaryOp),
 }

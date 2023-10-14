@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
@@ -11,7 +11,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_constant::resolve_constant;
-use crate::resolver::resolve_expression::{resolve_enum_variant_literal, resolve_expression_kind};
+use crate::resolver::resolve_expression::{resolve_enum_variant_literal, resolve_expression};
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -66,11 +66,11 @@ impl UnitResolveResult {
 
 pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     if unit.expressions.len() == 1 {
-        resolve_expression_kind(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
+        resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
     } else {
         let first_expression = unit.expressions.get(0).unwrap();
         let expected = Type::Undetermined;
-        let mut current = if let Some(identifier) = first_expression.as_identifier() {
+        let mut current = if let Some(identifier) = first_expression.kind.as_identifier() {
             if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
                 UnitResolveResult::Reference(reference)
             } else {
@@ -78,7 +78,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
                 UnitResolveResult::Type(Type::Undetermined)
             }
         } else {
-            UnitResolveResult::Type(resolve_expression_kind(first_expression, context, &expected, keywords_map))
+            UnitResolveResult::Type(resolve_expression(first_expression, context, &expected, keywords_map))
         };
         if current.is_undetermined() {
             return current.as_type().unwrap().clone();
@@ -92,11 +92,11 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
     }
 }
 
-fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a ExpressionKind, context: &'a ResolverContext<'a>) -> UnitResolveResult {
+fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a Expression, context: &'a ResolverContext<'a>) -> UnitResolveResult {
     match current {
         UnitResolveResult::Type(current_value) => {
             if let Some((path, _)) = current_value.as_struct_object() {
-                match item {
+                match &item.kind {
                     ExpressionKind::Identifier(_) => {
                         context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
                         UnitResolveResult::Type(Type::Undetermined)
@@ -142,7 +142,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
             match context.schema.find_top_by_path(path).unwrap() {
                 Top::StructDeclaration(struct_declaration) => {
                     let struct_object = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
-                    match item {
+                    match &item.kind {
                         ExpressionKind::ArgumentList(argument_list) => {
                             if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
                                 resolve_argument_list(last_span, Some(argument_list), new.callable_variants(struct_declaration), &btreemap!{
@@ -177,7 +177,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                 },
                 Top::Config(config) => {
-                    match item {
+                    match &item.kind {
                         ExpressionKind::Identifier(identifier) => {
                             if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
                                 return UnitResolveResult::Type(item.expression.resolved().clone());
@@ -208,7 +208,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     UnitResolveResult::Type(constant.resolved().r#type.clone())
                 }
                 Top::Enum(r#enum) => {
-                    match item {
+                    match &item.kind {
                         ExpressionKind::Identifier(i) => {
                             return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
                                 span: Span::default(),
@@ -235,7 +235,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                 }
                 Top::Model(_) => {
-                    match item {
+                    match &item.kind {
                         ExpressionKind::Identifier(_) => todo!("return model field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Model cannot be called");
@@ -253,7 +253,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                 }
                 Top::Interface(_) => {
-                    match item {
+                    match &item.kind {
                         ExpressionKind::Identifier(_) => todo!("return interface field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Interface cannot be called");
@@ -271,7 +271,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                 }
                 Top::Namespace(namespace) => {
-                    match item {
+                    match &item.kind {
                         ExpressionKind::Identifier(identifier) => {
                             if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
                                 return UnitResolveResult::Reference(top.path().clone())

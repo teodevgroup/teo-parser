@@ -1,4 +1,4 @@
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
@@ -12,16 +12,16 @@ use crate::definition::jump_to_definition_in_tuple_literal::jump_to_definition_i
 use crate::definition::jump_to_definition_in_unit::jump_to_definition_in_unit;
 use crate::r#type::r#type::Type;
 
-pub(super) fn jump_to_definition_in_expression_kind<'a>(
+pub(super) fn jump_to_definition_in_expression<'a>(
     schema: &'a Schema,
     source: &'a Source,
-    expression_kind: &'a ExpressionKind,
+    expression: &'a Expression,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
     expect: &Type,
 ) -> Vec<Definition> {
-    match expression_kind {
-        ExpressionKind::Group(group) => jump_to_definition_in_expression_kind(
+    match &expression.kind {
+        ExpressionKind::Group(group) => jump_to_definition_in_expression(
             schema,
             source,
             group.expression.as_ref(),

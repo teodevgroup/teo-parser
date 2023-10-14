@@ -1,9 +1,10 @@
+use std::cell::RefCell;
 use std::str::FromStr;
 use snailquote::unescape;
 use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::Expression;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_expression::{parse_expression_kind};
@@ -78,10 +79,13 @@ pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserCon
 
 pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -> ArrayLiteral {
     let span = parse_span(&pair);
-    let mut expressions: Vec<ExpressionKind> = vec![];
+    let mut expressions: Vec<Expression> = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::expression => expressions.push(parse_expression_kind(current, context)),
+            Rule::expression => expressions.push(Expression {
+                kind: parse_expression_kind(current, context),
+                resolved: RefCell::new(None),
+            }),
             Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
@@ -91,10 +95,13 @@ pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -
 
 pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -> TupleLiteral {
     let span = parse_span(&pair);
-    let mut expressions: Vec<ExpressionKind> = vec![];
+    let mut expressions: Vec<Expression> = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::expression => expressions.push(parse_expression_kind(current, context)),
+            Rule::expression => expressions.push(Expression {
+                kind: parse_expression_kind(current, context),
+                resolved: RefCell::new(None),
+            }),
             Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
@@ -104,7 +111,7 @@ pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -
 
 pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserContext) -> DictionaryLiteral {
     let span = parse_span(&pair);
-    let mut expressions: Vec<(ExpressionKind, ExpressionKind)> = vec![];
+    let mut expressions: Vec<(Expression, Expression)> = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::named_expression => expressions.push(parse_named_expression(current, context)),
@@ -115,15 +122,21 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserConte
     DictionaryLiteral { expressions, span }
 }
 
-fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (ExpressionKind, ExpressionKind) {
+fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (Expression, Expression) {
     let mut key = None;
     let mut value = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::expression => if key.is_none() {
-                key = Some(parse_expression_kind(current, context));
+                key = Some(Expression {
+                    kind: parse_expression_kind(current, context),
+                    resolved: RefCell::new(None),
+                });
             } else {
-                value = Some(parse_expression_kind(current, context));
+                value = Some(Expression {
+                    kind: parse_expression_kind(current, context),
+                    resolved: RefCell::new(None),
+                });
             },
             _ => context.insert_unparsed(parse_span(&current)),
         }

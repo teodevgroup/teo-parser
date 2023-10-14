@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use crate::ast::expr::Expression;
 use crate::ast::group::Group;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
@@ -13,5 +15,5 @@ pub(super) fn parse_group(pair: Pair<'_>, context: &mut ParserContext) -> Group 
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    Group { span, expression: Box::new(expression.unwrap()) }
+    Group { span, expression: Box::new(Expression { kind: expression.unwrap(), resolved: RefCell::new(None) }) }
 }

@@ -13,11 +13,13 @@ use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>) {
-    expression.resolve(resolve_expression_kind(&expression.kind, context, expected, keywords_map))
+pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>) -> Type {
+    let t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);
+    expression.resolve(t.clone());
+    t
 }
 
-pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
+fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),
         ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
@@ -40,7 +42,7 @@ pub(super) fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, contex
 }
 
 fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
-    resolve_expression_kind(&group.expression, context, expected, keywords_map)
+    resolve_expression(&group.expression, context, expected, keywords_map)
 }
 
 fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
@@ -216,7 +218,7 @@ fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'
     let mut retval = vec![];
     let undetermined = Type::Undetermined;
     for (i, e) in t.expressions.iter().enumerate() {
-        retval.push(resolve_expression_kind(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined), keywords_map));
+        retval.push(resolve_expression(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined), keywords_map));
     }
     Type::Tuple(retval)
 }
@@ -239,7 +241,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     };
     let mut retval = hashset![];
     for e in a.expressions.iter() {
-        retval.insert(resolve_expression_kind(e, context, r#type, keywords_map));
+        retval.insert(resolve_expression(e, context, r#type, keywords_map));
     }
     if retval.len() == 2 && retval.contains(&Type::Null) {
         let t = retval.iter().find(|t| !t.is_null()).unwrap().clone();
@@ -260,11 +262,11 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     };
     let mut retval = hashset![];
     for (k, v) in a.expressions.iter() {
-        let k_value = resolve_expression_kind(k, context, &Type::String, keywords_map);
+        let k_value = resolve_expression(k, context, &Type::String, keywords_map);
         if !k_value.is_string() {
             context.insert_diagnostics_error(k.span(), "ValueError: dictionary key is not String");
         }
-        let v_value = resolve_expression_kind(v, context, r#type, keywords_map);
+        let v_value = resolve_expression(v, context, r#type, keywords_map);
         retval.insert(v_value);
     }
     if retval.len() == 2 && retval.contains(&Type::Null) {
@@ -279,7 +281,7 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
 
 fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
     match arith_expr {
-        ArithExpr::Expression(e) => resolve_expression_kind(e.as_ref(), context, expected, keywords_map),
+        ArithExpr::Expression(e) => resolve_expression(e.as_ref(), context, expected, keywords_map),
         ArithExpr::UnaryOp(unary) => {
             let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected, keywords_map);
             if !v.is_undetermined() {

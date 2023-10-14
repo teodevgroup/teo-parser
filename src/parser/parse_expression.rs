@@ -1,4 +1,5 @@
-use crate::ast::expr::ExpressionKind;
+use std::cell::RefCell;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::literals::NullLiteral;
 use crate::ast::unit::Unit;
 use crate::parser::parse_argument::parse_argument_list;
@@ -30,20 +31,20 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
     let mut expressions = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::group => expressions.push(ExpressionKind::Group(parse_group(current, context))),
-            Rule::null_literal => expressions.push(ExpressionKind::NullLiteral(parse_null_literal(&current))),
-            Rule::bool_literal => expressions.push(ExpressionKind::BoolLiteral(parse_bool_literal(&current))),
-            Rule::numeric_literal => expressions.push(ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context))),
-            Rule::string_literal => expressions.push(ExpressionKind::StringLiteral(parse_string_literal(&current))),
-            Rule::regex_literal => expressions.push(ExpressionKind::RegexLiteral(parse_regex_literal(current, context))),
-            Rule::enum_variant_literal => expressions.push(ExpressionKind::EnumVariantLiteral(parse_enum_variant_literal(current, context))),
-            Rule::tuple_literal => expressions.push(ExpressionKind::TupleLiteral(parse_tuple_literal(current, context))),
-            Rule::array_literal => expressions.push(ExpressionKind::ArrayLiteral(parse_array_literal(current, context))),
-            Rule::dictionary_literal => expressions.push(ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context))),
-            Rule::identifier => expressions.push(ExpressionKind::Identifier(parse_identifier(&current))),
-            Rule::subscript => expressions.push(ExpressionKind::Subscript(parse_subscript(current, context))),
-            Rule::call => expressions.push(ExpressionKind::Call(parse_call(current, context))),
-            Rule::argument_list => expressions.push(ExpressionKind::ArgumentList(parse_argument_list(current, context))),
+            Rule::group => expressions.push(Expression { kind: ExpressionKind::Group(parse_group(current, context)), resolved: RefCell::new(None) }),
+            Rule::null_literal => expressions.push(Expression { kind: ExpressionKind::NullLiteral(parse_null_literal(&current)), resolved: RefCell::new(None) }),
+            Rule::bool_literal => expressions.push(Expression { kind: ExpressionKind::BoolLiteral(parse_bool_literal(&current)), resolved: RefCell::new(None) }),
+            Rule::numeric_literal => expressions.push(Expression { kind: ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context)), resolved: RefCell::new(None) }),
+            Rule::string_literal => expressions.push(Expression { kind: ExpressionKind::StringLiteral(parse_string_literal(&current)), resolved: RefCell::new(None) }),
+            Rule::regex_literal => expressions.push(Expression { kind: ExpressionKind::RegexLiteral(parse_regex_literal(current, context)), resolved: RefCell::new(None) }),
+            Rule::enum_variant_literal => expressions.push(Expression { kind: ExpressionKind::EnumVariantLiteral(parse_enum_variant_literal(current, context)), resolved: RefCell::new(None) }),
+            Rule::tuple_literal => expressions.push(Expression { kind: ExpressionKind::TupleLiteral(parse_tuple_literal(current, context)), resolved: RefCell::new(None) }),
+            Rule::array_literal => expressions.push(Expression { kind: ExpressionKind::ArrayLiteral(parse_array_literal(current, context)), resolved: RefCell::new(None) }),
+            Rule::dictionary_literal => expressions.push(Expression { kind: ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context)), resolved: RefCell::new(None) }),
+            Rule::identifier => expressions.push(Expression { kind: ExpressionKind::Identifier(parse_identifier(&current)), resolved: RefCell::new(None) }),
+            Rule::subscript => expressions.push(Expression { kind: ExpressionKind::Subscript(parse_subscript(current, context)), resolved: RefCell::new(None) }),
+            Rule::call => expressions.push(Expression { kind: ExpressionKind::Call(parse_call(current, context)), resolved: RefCell::new(None) }),
+            Rule::argument_list => expressions.push(Expression { kind: ExpressionKind::ArgumentList(parse_argument_list(current, context)), resolved: RefCell::new(None) }),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

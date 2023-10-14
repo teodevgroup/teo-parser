@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -94,7 +94,7 @@ impl Display for EnumVariantLiteral {
 
 #[derive(Debug)]
 pub(crate) struct TupleLiteral {
-    pub(crate) expressions: Vec<ExpressionKind>,
+    pub(crate) expressions: Vec<Expression>,
     pub(crate) span: Span,
 }
 
@@ -117,7 +117,7 @@ impl Display for TupleLiteral {
 
 #[derive(Debug)]
 pub(crate) struct ArrayLiteral {
-    pub(crate) expressions: Vec<ExpressionKind>,
+    pub(crate) expressions: Vec<Expression>,
     pub(crate) span: Span,
 }
 
@@ -137,7 +137,7 @@ impl Display for ArrayLiteral {
 
 #[derive(Debug)]
 pub(crate) struct DictionaryLiteral {
-    pub(crate) expressions: Vec<(ExpressionKind, ExpressionKind)>,
+    pub(crate) expressions: Vec<(Expression, Expression)>,
     pub(crate) span: Span,
 }
 

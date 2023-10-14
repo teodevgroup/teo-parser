@@ -1,11 +1,11 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::span::Span;
 
 /// A group represents something like this (1 + 2) * 5
 #[derive(Debug)]
 pub(crate) struct Group {
-    pub(crate) expression: Box<ExpressionKind>,
+    pub(crate) expression: Box<Expression>,
     pub(crate) span: Span,
 }
 

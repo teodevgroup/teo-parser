@@ -2,7 +2,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression_kind;
+use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 
 pub(super) fn jump_to_definition_in_unit<'a>(
@@ -14,7 +14,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
     expect: &Type,
 ) -> Vec<Definition> {
     if unit.expressions.len() == 1 {
-        jump_to_definition_in_expression_kind(
+        jump_to_definition_in_expression(
             schema,
             source,
             unit.expressions.get(0).unwrap(),
@@ -23,6 +23,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             expect,
         )
     } else {
+
         vec![]
     }
 }

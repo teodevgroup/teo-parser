@@ -41,7 +41,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
     };
     let mut current_space: Option<&Namespace> = None;
     for (index, expression) in unit.expressions.iter().enumerate() {
-        if let Some(identifier) = expression.as_identifier() {
+        if let Some(identifier) = expression.kind.as_identifier() {
             if let Some(this_top) = if current_space.is_some() {
                 current_space.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline())
             } else {
@@ -55,7 +55,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
                         let pipeline_type_context = TypeInfo {
                             passed_in: current_input_type.clone()
                         };
-                        let argument_list = unit.expressions.get(index + 1).map(|e| e.as_argument_list()).flatten();
+                        let argument_list = unit.expressions.get(index + 1).map(|e| e.kind.as_argument_list()).flatten();
                         current_input_type = resolve_argument_list(identifier.span, argument_list, pipeline_item_declaration.callable_variants(), keywords_map, context, Some(&pipeline_type_context)).unwrap();
                         current_space = None;
                     }

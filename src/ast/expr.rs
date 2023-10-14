@@ -14,7 +14,7 @@ use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
 pub(crate) struct Negation {
-    pub(crate) expression: Box<ExpressionKind>,
+    pub(crate) expression: Box<Expression>,
     pub(crate) span: Span,
 }
 
@@ -28,7 +28,7 @@ impl Display for Negation {
 
 #[derive(Debug)]
 pub(crate) struct BitwiseNegation {
-    pub(crate) expression: Box<ExpressionKind>,
+    pub(crate) expression: Box<Expression>,
     pub(crate) span: Span,
 }
 
@@ -42,7 +42,7 @@ impl Display for BitwiseNegation {
 
 #[derive(Debug)]
 pub(crate) struct NullishCoalescing {
-    pub(crate) expressions: Vec<ExpressionKind>,
+    pub(crate) expressions: Vec<Expression>,
     pub(crate) span: Span,
 }
 

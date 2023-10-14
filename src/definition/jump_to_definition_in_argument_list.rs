@@ -4,7 +4,7 @@ use crate::ast::identifier::Identifier;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression_kind;
+use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 
 pub(super) fn jump_to_definition_in_argument_list<'a>(
     schema: &'a Schema,
@@ -50,10 +50,10 @@ pub(super) fn jump_to_definition_in_argument<'a>(
         }
     }
     if argument.value.span().contains_line_col(line_col) {
-        return jump_to_definition_in_expression_kind(
+        return jump_to_definition_in_expression(
             schema,
             source,
-            &argument.value.kind,
+            &argument.value,
             namespace_path,
             line_col,
             argument.value.resolved()

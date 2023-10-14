@@ -2,7 +2,7 @@ use crate::ast::arith::ArithExpr;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression_kind;
+use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 
 pub(super) fn jump_to_definition_in_arith_expr<'a>(
@@ -14,7 +14,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
     expect: &Type,
 ) -> Vec<Definition> {
     match arith_expr {
-        ArithExpr::Expression(e) => jump_to_definition_in_expression_kind(
+        ArithExpr::Expression(e) => jump_to_definition_in_expression(
             schema,
             source,
             e.as_ref(),

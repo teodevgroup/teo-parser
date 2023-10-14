@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use maplit::btreemap;
 use teo_teon::value::Value;
 use crate::ast::arith::{ArithExpr, Op};
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved};
 use crate::ast::reference::ReferenceType;
 use crate::resolver::resolve_decorator::resolve_decorator;
@@ -85,8 +85,8 @@ pub(super) fn resolve_enum_member<'a>(
     }
 }
 
-fn resolve_enum_member_expression<'a>(expression: &ExpressionKind, context: &ResolverContext<'a>, map: &Mutex<BTreeMap<&'a str, i32>>) -> i32 {
-    match expression {
+fn resolve_enum_member_expression<'a>(expression: &Expression, context: &ResolverContext<'a>, map: &Mutex<BTreeMap<&'a str, i32>>) -> i32 {
+    match &expression.kind {
         ExpressionKind::Unit(u) => if u.expressions.len() == 1 {
             resolve_enum_member_expression(u.expressions.get(0).unwrap(), context, map)
         } else {
