@@ -48,6 +48,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             enum_variant_literal,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::TupleLiteral(tuple_literal) => jump_to_definition_in_tuple_literal(
             schema,
@@ -55,6 +56,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             tuple_literal,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::ArrayLiteral(array_literal) => jump_to_definition_in_array_literal(
             schema,
@@ -62,6 +64,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             array_literal,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::DictionaryLiteral(dictionary_literal) => jump_to_definition_in_dictionary_literal(
             schema,
@@ -69,6 +72,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             dictionary_literal,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::Identifier(identifier) => jump_to_definition_in_identifier(
             schema,
@@ -86,6 +90,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             unit,
             namespace_path,
             line_col,
+            expect,
         ),
         ExpressionKind::Pipeline(pipeline) => jump_to_definition_in_pipeline(
             schema,
@@ -93,6 +98,7 @@ pub(super) fn jump_to_definition_in_expression_kind<'a>(
             pipeline,
             namespace_path,
             line_col,
+            expect,
         )
     }
 }
