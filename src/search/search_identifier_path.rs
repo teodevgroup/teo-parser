@@ -74,7 +74,7 @@ fn search_identifier_path_in_source_inner(
         }).map(|s| *s) {
             if let Some(found) = search_identifier_path_in_source_inner(
                 schema,
-                source,
+                from_source,
                 identifier_path,
                 filter,
                 used_sources,
