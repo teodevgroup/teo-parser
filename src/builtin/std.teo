@@ -799,11 +799,24 @@ namespace std {
     /// Valid if input is greater than or equal to rhs
     declare pipeline item gt<T>(rhs: T | Pipeline<T, T>): T -> T
 
-    // // value
-    // objects.insert("gte".to_owned(), gte);
-    // objects.insert("exists".to_owned(), exists);
-    // objects.insert("isFalse".to_owned(), is_false);
+    /// @name Greater or Equal
+    // / Valid if input is greater than or equal to rhs
+    declare pipeline item gte<T>(rhs: T| Pipeline<T, T>): T -> T
+
+    /// @name Exists/Presents
+    // / Valid if input is exists/present
+    declare pipeline item presents<T>(rhs: T| Pipeline<T, T>): T -> T
+
+    /// @name isFalse
+    // / Valid if input is False
+    declare pipeline item isFalse<T>(isfalse: Bool): T -> T
+
+    /// @name isNull
+    // / Valid if input is Null
+    declare pipeline item isNull<T>(isnull: T): T -> T
     // objects.insert("isNull".to_owned(), is_null);
+
+    // // value
     // objects.insert("isTrue".to_owned(), is_true);
     // objects.insert("lt".to_owned(), lt);
     // objects.insert("lte".to_owned(), lte);
