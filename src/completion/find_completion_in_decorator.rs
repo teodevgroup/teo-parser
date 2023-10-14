@@ -17,6 +17,11 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
     line_col: (usize, usize),
     filter: &Arc<dyn Fn(&Top) -> bool>,
 ) -> Vec<CompletionItem> {
+    if let Some(argument_list) = &decorator.argument_list {
+        if argument_list.span.contains_line_col(line_col) {
+            return vec![]
+        }
+    }
     let mut user_typed_spaces = vec![];
     for identifier in decorator.identifier_path.identifiers.iter() {
         if identifier.span.contains_line_col(line_col) {
