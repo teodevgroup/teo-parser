@@ -16,3 +16,4 @@ pub(crate) mod jump_to_definition_in_arith_expr;
 pub(crate) mod jump_to_definition_in_pipeline;
 pub(crate) mod jump_to_definition_in_unit;
 pub(crate) mod jump_to_definition_in_constant;
+pub(crate) mod jump_to_definition_in_config;
