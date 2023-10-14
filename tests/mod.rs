@@ -1,5 +1,5 @@
 mod test {
-    use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items};
+    use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items, jump_to_definition};
 
     #[test]
     fn print() {
@@ -29,16 +29,16 @@ mod test {
     }
 
     #[test]
-    fn type_expr() {
-        let path = "/Users/victor/Developer/teo-parser/src/builtin/std.teo";
+    fn test_jump_to_definition() {
+        let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
         let (schema, _) = parse(path, None, None);
-        //let completions = auto_complete_items(&schema, path, (4, 13));
-        //println!("{:?}", completions);
+        let definitions = jump_to_definition(&schema, path, (14, 12));
+        println!("{:?}", definitions)
     }
 
     #[test]
-    fn call_expr() {
-        let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
+    fn test_auto_completion() {
+        let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
         let (schema, _) = parse(path, None, None);
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);

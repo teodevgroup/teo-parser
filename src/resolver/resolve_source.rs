@@ -2,6 +2,7 @@ use crate::ast::top::Top;
 use crate::resolver::resolve_action_group::resolve_action_group;
 use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
+use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolve_data_set::{resolve_data_set, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
@@ -17,7 +18,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
     for top in context.source().tops() {
         match top {
             Top::Import(_) => (), // resolved when parsing,
-            Top::Constant(_) => (), // only resolve when used
+            Top::Constant(constant) => resolve_constant(constant, context),
             Top::Enum(r#enum) => resolve_enum(r#enum, context),
             Top::Model(model) => resolve_model_info(model, context),
             Top::Config(config) => resolve_config(config, context),
