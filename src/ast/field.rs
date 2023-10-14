@@ -115,6 +115,15 @@ pub(crate) struct Field {
 }
 
 impl Field {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
     pub(crate) fn name(&self) -> &str {
         self.identifier.name.as_str()
     }

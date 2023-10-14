@@ -4,6 +4,7 @@ use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
+use crate::ast::identifier::Identifier;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::Middleware;
@@ -34,6 +35,25 @@ pub(crate) enum Top {
 
 impl Top {
 
+    pub(crate) fn source_id(&self) -> usize {
+        match self {
+            Top::Import(i) => i.source_id(),
+            Top::Constant(c) => c.source_id(),
+            Top::Enum(e) => e.source_id(),
+            Top::Model(m) => m.source_id(),
+            Top::Config(c) => c.source_id(),
+            Top::ConfigDeclaration(c) => c.source_id(),
+            Top::DataSet(d) => d.source_id(),
+            Top::Middleware(m) => m.source_id(),
+            Top::ActionGroup(a) => a.source_id(),
+            Top::Interface(i) => i.source_id(),
+            Top::Namespace(n) => n.source_id(),
+            Top::DecoratorDeclaration(d) => d.source_id(),
+            Top::PipelineItemDeclaration(p) => p.source_id(),
+            Top::StructDeclaration(s) => s.source_id(),
+        }
+    }
+
     pub(crate) fn id(&self) -> usize {
         match self {
             Top::Import(i) => i.id(),
@@ -50,6 +70,25 @@ impl Top {
             Top::DecoratorDeclaration(d) => d.id(),
             Top::PipelineItemDeclaration(p) => p.id(),
             Top::StructDeclaration(s) => s.id(),
+        }
+    }
+
+    pub(crate) fn identifier_span(&self) -> Option<Span> {
+        match self {
+            Top::Import(i) => None,
+            Top::Constant(c) => Some(c.identifier.span),
+            Top::Enum(e) => Some(e.identifier.span),
+            Top::Model(m) => Some(m.identifier.span),
+            Top::Config(c) => Some(c.identifier.as_ref().map_or(c.keyword.span, |i| i.span)),
+            Top::ConfigDeclaration(c) => Some(c.identifier.span),
+            Top::DataSet(d) => Some(d.identifier.span),
+            Top::Middleware(m) => Some(m.identifier.span),
+            Top::ActionGroup(a) => Some(a.identifier.span),
+            Top::Interface(i) => Some(i.identifier.span),
+            Top::Namespace(n) => Some(n.identifier.span),
+            Top::DecoratorDeclaration(d) => Some(d.identifier.span),
+            Top::PipelineItemDeclaration(p) => Some(p.identifier.span),
+            Top::StructDeclaration(s) => Some(s.identifier.span),
         }
     }
 

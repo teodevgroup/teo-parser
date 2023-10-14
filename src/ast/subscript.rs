@@ -1,10 +1,10 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub(crate) struct Subscript {
-    pub(crate) expression: Box<ExpressionKind>,
+    pub(crate) expression: Box<Expression>,
     pub(crate) span: Span,
 }
 

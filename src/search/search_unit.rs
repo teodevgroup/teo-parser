@@ -3,6 +3,7 @@ use crate::ast::expr::ExpressionKind;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
+use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
@@ -41,7 +42,7 @@ impl UnitSearchResult {
     }
 }
 
-fn search_unit<HAL, HS, HI, OUTPUT>(
+pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
     schema: &Schema,
     source: &Source,
     unit: &Unit,
@@ -54,11 +55,12 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
 ) -> OUTPUT where
     HAL: Fn(&ArgumentList, &Vec<usize>, Option<&str>) -> OUTPUT,
     HS: Fn(&Subscript) -> OUTPUT,
-    HI: Fn(&Vec<usize>, Option<&str>) -> OUTPUT,
+    HI: Fn(Span, &Vec<usize>, Option<&str>) -> OUTPUT,
 {
     let mut current: Option<UnitSearchResult> = None;
     for (index, expression) in unit.expressions.iter().enumerate() {
         if index == 0 {
+            let mut identifier_span = None;
             current = Some(if let Some(identifier) = expression.kind.as_identifier() {
                 if let Some(path) = search_identifier_path_in_source(
                     schema,
@@ -67,6 +69,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                     &vec![identifier.name()],
                     &top_filter_for_reference_type(ReferenceType::Default),
                 ) {
+                    identifier_span = Some(identifier.span);
                     UnitSearchResult::Reference(path)
                 } else {
                     UnitSearchResult::Type(Type::Undetermined)
@@ -78,7 +81,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                 if let Some(current) = current {
                     return match current {
                         UnitSearchResult::Type(_) => default,
-                        UnitSearchResult::Reference(path) => handle_identifier(&path, None),
+                        UnitSearchResult::Reference(path) => handle_identifier(identifier_span.unwrap(), &path, None),
                     }
                 }
                 break
@@ -104,7 +107,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                         f.r#static == false && f.identifier.name() == call.identifier.name()
                                     }) {
                                         if call.identifier.span.contains_line_col(line_col) {
-                                            return handle_identifier(&struct_declaration.path, Some(call.identifier.name()));
+                                            return handle_identifier(call.identifier.span, &struct_declaration.path, Some(call.identifier.name()));
                                         } else if call.argument_list.span.contains_line_col(line_col) {
                                             return handle_argument_list(&call.argument_list, &struct_declaration.path, Some(call.identifier.name()));
                                         } else {
@@ -157,7 +160,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Call(call) => {
                                         if let Some(function) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
                                             if call.span.contains_line_col(line_col) {
-                                                return handle_identifier(struct_declaration.path.as_ref(), Some(function.identifier.name()));
+                                                return handle_identifier(call.identifier.span, struct_declaration.path.as_ref(), Some(function.identifier.name()));
                                             } else if call.argument_list.span.contains_line_col(line_col) {
                                                 return handle_argument_list(&call.argument_list, struct_declaration.path.as_ref(), Some(function.identifier.name()));
                                             } else {
@@ -181,7 +184,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(config.path.as_ref(), Some(item.identifier.name()));
+                                                return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier.name()));
                                             } else {
                                                 current = Some(UnitSearchResult::Type(item.expression.resolved().clone()));
                                             }
@@ -206,7 +209,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Identifier(i) => {
                                         if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
                                             if i.span.contains_line_col(line_col) {
-                                                return handle_identifier(r#enum.path.as_ref(), Some(member.identifier.name()));
+                                                return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier.name()));
                                             } else {
                                                 return default;
                                             }
@@ -218,7 +221,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                         if c.span.contains_line_col(line_col) {
                                             if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
                                                 if c.identifier.span.contains_line_col(line_col) {
-                                                    return handle_identifier(r#enum.path.as_ref(), Some(member.identifier.name()));
+                                                    return handle_identifier(c.identifier.span, r#enum.path.as_ref(), Some(member.identifier.name()));
                                                 } else if c.argument_list.span.contains_line_col(line_col) {
                                                     return handle_argument_list(&c.argument_list, r#enum.path.as_ref(), Some(member.identifier.name()));
                                                 } else {
@@ -245,7 +248,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(field) = model.fields.iter().find(|f| f.name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(model.path.as_ref(), Some(field.name()));
+                                                return handle_identifier(identifier.span, model.path.as_ref(), Some(field.name()));
                                             } else {
                                                 return default;
                                             }
@@ -270,7 +273,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(field) = interface.fields.iter().find(|f| f.name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(interface.path.as_ref(), Some(field.name()));
+                                                return handle_identifier(identifier.span, interface.path.as_ref(), Some(field.name()));
                                             } else {
                                                 return default;
                                             }
@@ -295,7 +298,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(top.path(), None);
+                                                return handle_identifier(identifier.span, top.path(), None);
                                             } else {
                                                 return default;
                                             }
@@ -312,7 +315,7 @@ fn search_unit<HAL, HS, HI, OUTPUT>(
                                                     }) {
                                                         if c.span.contains_line_col(line_col) {
                                                             if c.identifier.span.contains_line_col(line_col) {
-                                                                return handle_identifier(struct_declaration.path.as_ref(), Some("new"));
+                                                                return handle_identifier(c.identifier.span, struct_declaration.path.as_ref(), Some("new"));
                                                             } else if c.argument_list.span.contains_line_col(line_col) {
                                                                 return handle_argument_list(&c.argument_list, struct_declaration.path.as_ref(), Some("new"));
                                                             } else {

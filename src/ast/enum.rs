@@ -48,6 +48,7 @@ impl EnumMemberResolved {
 #[derive(Debug)]
 pub(crate) struct EnumMember {
     pub(crate) span: Span,
+    pub(crate) path: Vec<usize>,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) identifier: Identifier,
@@ -56,6 +57,14 @@ pub(crate) struct EnumMember {
 }
 
 impl EnumMember {
+
+    pub(crate) fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    pub(crate) fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
 
     pub(crate) fn resolve(&self, resolved: EnumMemberResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);

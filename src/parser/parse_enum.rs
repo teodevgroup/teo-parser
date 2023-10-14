@@ -53,6 +53,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
 
 fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember {
     let span = parse_span(&pair);
+    let path = context.next_path();
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
@@ -70,6 +71,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     }
     EnumMember {
         span,
+        path,
         comment,
         decorators,
         identifier: identifier.unwrap(),

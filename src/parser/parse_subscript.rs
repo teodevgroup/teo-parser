@@ -1,3 +1,4 @@
+use crate::ast::expr::Expression;
 use crate::ast::subscript::Subscript;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
@@ -13,5 +14,5 @@ pub(super) fn parse_subscript(pair: Pair<'_>, context: &mut ParserContext) -> Su
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    Subscript { span, expression: Box::new(expression.unwrap()) }
+    Subscript { span, expression: Box::new(Expression::new(expression.unwrap())) }
 }
