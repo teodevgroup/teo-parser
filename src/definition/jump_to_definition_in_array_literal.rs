@@ -13,6 +13,7 @@ pub(super) fn jump_to_definition_in_array_literal<'a>(
     line_col: (usize, usize),
     expect: &Type,
 ) -> Vec<Definition> {
+    println!("here jump in array literals");
     for expression in &array_literal.expressions {
         if expression.span().contains_line_col(line_col) {
             return jump_to_definition_in_expression(

@@ -30,9 +30,9 @@ mod test {
 
     #[test]
     fn test_jump_to_definition() {
-        let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
+        let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
         let (schema, _) = parse(path, None, None);
-        let definitions = jump_to_definition(&schema, path, (14, 12));
+        let definitions = jump_to_definition(&schema, path, (8, 17));
         println!("{:?}", definitions)
     }
 
