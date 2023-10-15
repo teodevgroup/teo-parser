@@ -98,7 +98,6 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             pipeline,
             namespace_path,
             line_col,
-            expect,
         )
     }
 }
