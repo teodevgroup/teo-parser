@@ -61,6 +61,7 @@ pub(super) fn resolve_field_class<'a>(
         } else {
             vec![]
         },
+        &btreemap! {},
         context
     );
 }

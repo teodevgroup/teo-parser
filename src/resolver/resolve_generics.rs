@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use maplit::btreemap;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
@@ -28,6 +29,7 @@ pub(super) fn resolve_generics_constraint<'a>(
             &item.type_expr,
             &vec![generics_declaration],
             &vec![],
+            &btreemap! {},
             context,
         )
     }

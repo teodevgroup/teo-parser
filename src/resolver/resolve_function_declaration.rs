@@ -1,3 +1,4 @@
+use maplit::btreemap;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
@@ -43,6 +44,7 @@ pub(super) fn resolve_function_declaration<'a>(
         &function_declaration.return_type,
         &generics_declarations,
         &generics_constraints,
+        &btreemap! {},
         context
     );
 }

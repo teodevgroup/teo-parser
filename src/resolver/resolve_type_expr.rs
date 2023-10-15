@@ -17,6 +17,7 @@ pub(super) fn resolve_type_expr<'a>(
     type_expr: &'a TypeExpr,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>
 ) {
     type_expr.resolve(
@@ -25,7 +26,7 @@ pub(super) fn resolve_type_expr<'a>(
             generics_declaration,
             generics_constraint,
             context
-        )
+        ).replace_keywords(&keywords_map)
     )
 }
 

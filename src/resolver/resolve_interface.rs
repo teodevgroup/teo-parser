@@ -1,3 +1,4 @@
+use maplit::btreemap;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class};
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
@@ -27,6 +28,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
             } else {
                 vec![]
             },
+            &btreemap! {},
             context
         );
         if !extend.resolved().is_interface_object() {

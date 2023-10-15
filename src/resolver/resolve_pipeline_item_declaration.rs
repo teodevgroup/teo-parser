@@ -1,3 +1,4 @@
+use maplit::btreemap;
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
@@ -40,6 +41,7 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
             } else {
                 vec![]
             },
+            &btreemap!{},
             context,
         );
     }
@@ -56,6 +58,7 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
             } else {
                 vec![]
             },
+            &btreemap!{},
             context,
         );
     }
@@ -102,6 +105,7 @@ fn resolve_pipeline_item_declaration_variant<'a>(
         } else {
             vec![]
         },
+        &btreemap! {},
         context,
     );
     resolve_type_expr(
@@ -116,6 +120,7 @@ fn resolve_pipeline_item_declaration_variant<'a>(
         } else {
             vec![]
         },
+        &btreemap! {},
         context,
     );
 }

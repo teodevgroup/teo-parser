@@ -1,3 +1,4 @@
+use maplit::btreemap;
 use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
@@ -20,5 +21,5 @@ fn resolve_argument_declaration<'a>(
     generics_constraint: &Vec<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>
 ) {
-    resolve_type_expr(&argument_declaration.type_expr, generics_declaration, generics_constraint, context)
+    resolve_type_expr(&argument_declaration.type_expr, generics_declaration, generics_constraint, &btreemap! {}, context)
 }

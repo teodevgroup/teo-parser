@@ -1,3 +1,4 @@
+use maplit::btreemap;
 use crate::ast::action::{ActionDeclaration, ActionDeclarationResolved, ActionGroupDeclaration, ActionInputFormat};
 use crate::ast::type_expr::{TypeShape};
 use crate::ast::span::Span;
@@ -23,8 +24,8 @@ pub(super) fn resolve_action_declaration<'a>(
     } else {
         context.add_examined_action_path(action_declaration.string_path.clone());
     }
-    resolve_type_expr(&action_declaration.input_type, &vec![], &vec![], context);
-    resolve_type_expr(&action_declaration.output_type, &vec![], &vec![], context);
+    resolve_type_expr(&action_declaration.input_type, &vec![], &vec![], &btreemap! {}, context);
+    resolve_type_expr(&action_declaration.output_type, &vec![], &vec![], &btreemap! {}, context);
     action_declaration.resolve(ActionDeclarationResolved {
         input_shape: resolve_type_shape(action_declaration.input_type.resolved(), context),
         output_shape: resolve_type_shape(action_declaration.output_type.resolved(), context),
