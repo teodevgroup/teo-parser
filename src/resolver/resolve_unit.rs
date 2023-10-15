@@ -16,6 +16,7 @@ use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
+#[derive(Debug)]
 pub(super) enum UnitResolveResult {
     Reference(Vec<usize>),
     Type(Type),
@@ -72,7 +73,15 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
         let expected = Type::Undetermined;
         let mut current = if let Some(identifier) = first_expression.kind.as_identifier() {
             if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
-                UnitResolveResult::Reference(reference)
+                let top = context.schema.find_top_by_path(&reference).unwrap();
+                if let Some(constant) = top.as_constant() {
+                    if !constant.is_resolved() {
+                        resolve_constant(constant, context);
+                    }
+                    UnitResolveResult::Type(constant.resolved().r#type.clone())
+                } else {
+                    UnitResolveResult::Reference(reference)
+                }
             } else {
                 context.insert_diagnostics_error(identifier.span, "reference is not found");
                 UnitResolveResult::Type(Type::Undetermined)
@@ -116,15 +125,29 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     }
                     ExpressionKind::Subscript(subscript) => {
                         let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
+                        let struct_object = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
                         if let Some(subscript_function) = struct_declaration.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == "subscript") {
-                            //subscript_function.argument_list_declaration.unwrap().
-                            // resolve_argument_list(last_span, Some(&call.argument_list), vec![
-                            //     CallableVariant {
-                            //         generics_declaration: subscript_function.generics_declaration.as_ref(),
-                            //         argument_list_declaration: subscript_function.argument_list_declaration.as_ref(),
-                            //         generics_contraint: subscript_function.generics_constraint.as_ref(),
-                            //     }
-                            // ], context);
+                            let resolve_result = resolve_expression(
+                                subscript.expression.as_ref(),
+                                context,
+                                subscript_function.return_type.resolved(),
+                                &btreemap!{
+                                    Keyword::SelfIdentifier => &struct_object,
+                                },
+                            );
+                            if let Some(argument_list_declaration) = &subscript_function.argument_list_declaration {
+                                if let Some(argument_declaration) = argument_list_declaration.argument_declarations.first() {
+                                    if argument_declaration.type_expr.resolved().test(&resolve_result) {
+
+                                    } else {
+                                        context.insert_diagnostics_error(subscript.expression.span(), format!("expect {}, found {}", argument_declaration.type_expr.resolved(), resolve_result))
+                                    }
+                                } else {
+                                    context.insert_diagnostics_error(subscript.span, "invalid subscript function declaration")
+                                }
+                            } else {
+                                context.insert_diagnostics_error(subscript.span, "invalid subscript function declaration")
+                            }
                             UnitResolveResult::Type(subscript_function.return_type.resolved().clone())
                         } else {
                             context.insert_diagnostics_error(subscript.span, "cannot subscript");
