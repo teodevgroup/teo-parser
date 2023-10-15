@@ -30,7 +30,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
                     context.insert_diagnostics_error(item.identifier.span, "ValueError: invalid value");
                 } else {
                     if !field.type_expr.resolved().test(r#type) {
-                        context.insert_diagnostics_error(item.expression.span(), "ValueError: value is of wrong type");
+                        context.insert_diagnostics_error(item.expression.span(), format!("expect {}, found {}", field.type_expr.resolved(), r#type));
                     }
                 }
             } else {

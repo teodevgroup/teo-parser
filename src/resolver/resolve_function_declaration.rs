@@ -1,6 +1,8 @@
-use maplit::btreemap;
+use std::collections::BTreeMap;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
+use crate::r#type::keyword::Keyword;
+use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
@@ -10,6 +12,7 @@ pub(super) fn resolve_function_declaration<'a>(
     function_declaration: &'a FunctionDeclaration,
     generics_declaration: Option<&'a GenericsDeclaration>,
     generics_constraint: Option<&'a GenericsConstraint>,
+    keywords_map: &BTreeMap<Keyword, &Type>,
     context: &'a ResolverContext<'a>,
 ) {
     if let Some(generics_declaration) = &function_declaration.generics_declaration {
@@ -44,7 +47,7 @@ pub(super) fn resolve_function_declaration<'a>(
         &function_declaration.return_type,
         &generics_declarations,
         &generics_constraints,
-        &btreemap! {},
+        keywords_map,
         context
     );
 }
