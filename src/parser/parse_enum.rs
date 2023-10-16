@@ -1,7 +1,9 @@
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
+use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
+use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
@@ -58,6 +60,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
     let mut expression: Option<EnumMemberExpression> = None;
+    let mut argument_list_declaration: Option<ArgumentListDeclaration> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::EMPTY_LINES => {},
@@ -66,6 +69,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
             Rule::empty_decorator => (),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::enum_member_expression => expression = Some(parse_enum_member_expression(current, context)),
+            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -76,6 +80,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
         decorators,
         identifier: identifier.unwrap(),
         expression,
+        argument_list_declaration,
         resolved: RefCell::new(None),
     }
 }

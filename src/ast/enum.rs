@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
 use teo_teon::value::Value;
+use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::arith::ArithExpr;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
@@ -53,6 +54,7 @@ pub(crate) struct EnumMember {
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) identifier: Identifier,
     pub(crate) expression: Option<EnumMemberExpression>,
+    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) resolved: RefCell<Option<EnumMemberResolved>>,
 }
 

@@ -302,7 +302,7 @@ enum_declaration = {
 enum_member_declaration = {
     triple_comment_block? ~
     (decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
-    identifier ~ ("=" ~ enum_member_expression)?
+    identifier ~ (("=" ~ enum_member_expression) | argument_list_declaration)?
 }
 
 enum_member_expression = { arith_expr | string_literal | numeric_literal }

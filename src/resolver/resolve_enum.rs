@@ -7,6 +7,7 @@ use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved};
 use crate::ast::reference::ReferenceType;
+use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -82,6 +83,10 @@ pub(super) fn resolve_enum_member<'a>(
         } else {
             member.resolve(EnumMemberResolved::new(Value::String(member.identifier.name.clone())))
         }
+    }
+    // argument list
+    if let Some(argument_list_declaration) = &member.argument_list_declaration {
+        resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context);
     }
 }
 

@@ -1,13 +1,15 @@
 use std::collections::BTreeMap;
 use std::default::Default;
-use maplit::{hashset};
+use maplit::{btreemap, hashset};
 use crate::ast::arith::{ArithExpr, Op};
+use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::diagnostics::diagnostics::DiagnosticsError;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::resolver::resolve_argument_list::resolve_argument_list;
 use crate::resolver::resolve_identifier::resolve_identifier_into_type;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
@@ -117,7 +119,7 @@ fn resolve_null_literal<'a>(r: &NullLiteral, context: &'a ResolverContext<'a>, e
     Type::Null
 }
 
-pub(super) fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
+pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> Type {
     let expected_original = expected;
     let mut expected = expected;
     if expected.is_optional() {
@@ -142,16 +144,36 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: 
     }
 }
 
-fn try_resolve_enum_variant_literal<'a>(e: &EnumVariantLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Result<Type, DiagnosticsError> {
+fn try_resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Result<Type, DiagnosticsError> {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
     if let Some((enum_path, enum_name)) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
-        if let Some(_) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) {
+        if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) {
+            if let Some(argument_list_declaration) = &member.argument_list_declaration {
+                if let Some(argument_list) = &e.argument_list {
+                    resolve_argument_list(
+                        e.identifier.span,
+                        Some(argument_list),
+                        vec![CallableVariant {
+                            generics_declarations: vec![],
+                            argument_list_declaration: Some(argument_list_declaration),
+                            generics_constraints: vec![],
+                            pipeline_input: None,
+                            pipeline_output: None,
+                        }],
+                        &btreemap!{},
+                        context,
+                        None
+                    );
+                } else {
+                    return Err(context.generate_diagnostics_error(e.span, format!("expect argument list")));
+                }
+            }
             Ok(Type::EnumVariant(enum_path.clone(), enum_name.clone()))
         } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", enum_name.join("."), e.identifier.name())))
+            Err(context.generate_diagnostics_error(e.span, format!("expect {}, found .{}", enum_name.join("."), e.identifier.name())))
         }
     } else if let Some((t, _)) = expected.as_model_scalar_fields() {
         if let Some((model_object, model_name)) = t.as_model_object() {
