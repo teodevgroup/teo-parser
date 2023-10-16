@@ -361,7 +361,7 @@ namespace std {
 
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType)
+    declare unique model field decorator db(type?: MySQLDatabaseType)
 
     /// @name Readonly
     /// Disallow this field to be written by the client
