@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
+use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
@@ -232,18 +233,39 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                 Top::Enum(r#enum) => {
                     match &item.kind {
                         ExpressionKind::Identifier(i) => {
-                            return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
-                                span: Span::default(),
-                                identifier: i.clone(),
-                                argument_list: None,
-                            }, context, &Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone())))
+                            if let Some(member_declaration) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
+                                if member_declaration.argument_list_declaration.is_some() {
+                                    context.insert_diagnostics_error(i.span, "expect argument list");
+                                }
+                            } else {
+                                context.insert_diagnostics_error(i.span, "enum member not found");
+                            }
+                            return UnitResolveResult::Type(Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()));
                         }
                         ExpressionKind::Call(c) => {
-                            return UnitResolveResult::Type(resolve_enum_variant_literal(&EnumVariantLiteral {
-                                span: Span::default(),
-                                identifier: c.identifier.clone(),
-                                argument_list: None,
-                            }, context, &Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone())))
+                            if let Some(member_declaration) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
+                                if member_declaration.argument_list_declaration.is_none() {
+                                    context.insert_diagnostics_error(c.argument_list.span, "unexpected argument list");
+                                } else {
+                                    resolve_argument_list(
+                                        c.identifier.span,
+                                        Some(&c.argument_list),
+                                        vec![CallableVariant {
+                                            generics_declarations: vec![],
+                                            argument_list_declaration: Some(member_declaration.argument_list_declaration.as_ref().unwrap()),
+                                            generics_constraints: vec![],
+                                            pipeline_input: None,
+                                            pipeline_output: None,
+                                        }],
+                                        &btreemap! {},
+                                        context,
+                                        None,
+                                    );
+                                }
+                            } else {
+                                context.insert_diagnostics_error(c.identifier.span, "enum member not found");
+                            }
+                            return UnitResolveResult::Type(Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()));
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Enum cannot be called");
