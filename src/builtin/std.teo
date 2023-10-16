@@ -271,6 +271,10 @@ namespace std {
     /// Specify whether the model is used as identity
     declare unique model decorator identity
 
+    /// @name Internal
+    /// Specify the model is internal
+    declare unique model decorator internal
+
     /// @name Map
     /// Specify an underlying database column name for the model field
     declare unique model field decorator map(table_name?: String)
@@ -854,5 +858,41 @@ namespace std {
     interface DataMeta<T, U> {
         data: T
         meta: U
+    }
+
+    @internal
+    model DataSetRecord {
+
+        @id @default($cuid)
+        id: String
+
+        dataSet: String
+
+        group: String
+
+        name: String
+
+        record: String
+    }
+
+    @internal
+    model DataSetRelation {
+
+        @id @default($cuid)
+        id: String
+
+        dataSet: String
+
+        groupA: String
+
+        relationA: String
+
+        nameA: String
+
+        groupB: String
+
+        relationB: String?
+
+        nameB: String
     }
 }
