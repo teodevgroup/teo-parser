@@ -159,11 +159,91 @@ namespace std {
         python
     }
 
-    interface enum DatabaseType {
+    #available(mysql)
+    interface enum MySQLDatabaseType {
+        varChar(len?: Int)
         text
-        varChar
-        char
+        char(len?: Int)
+        tinyText
+        mediumText
+        longText
+        bit(len?: Int)
+        tinyInt(len?: Int, signed: Bool)
+        int(signed: Bool)
+        smallInt(signed: Bool)
+        mediumInt(signed: Bool)
+        bigInt(signed: Bool)
+        year
+        float
+        double
+        decimal(precision?: Int, scale?: Int)
+        dateTime(len?: Int)
+        date(len?: Int)
+        time(len?: Int)
+        timestamp(len?: Int)
+        json
+        longBlob
+        binary
+        varBinary
+        tinyBlob
+        blob
+        mediumBlob
     }
+    #end
+
+    #available(postgres)
+    interface enum PostgresDatabaseType {
+        text
+        char(len?: Int)
+        varChar(len?: Int)
+        bit(len?: Int)
+        varBit
+        uuid
+        xml
+        inet
+        boolean
+        integer
+        smallInt
+        int
+        bigInt
+        oid
+        doublePrecision
+        real
+        decimal(precision?: Int, scale?: Int)
+        money
+        timestamp(len?: Int)
+        timestampTz(len?: Int)
+        date
+        time
+        timeTz
+        json
+        jsonB
+        byteA
+    }
+    #end
+
+    #available(sqlite)
+    interface enum SQLiteDatabaseType {
+        text
+        integer
+        real
+        decimal
+        blob
+    }
+    #end    
+
+    #available(mongo)
+    interface enum MongoDatabaseType {
+        string
+        bool
+        int
+        long
+        double
+        date
+        timestamp
+        binData
+    }
+    #end 
 
     /// @name Connector
     /// Represents the database connection
