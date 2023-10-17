@@ -331,6 +331,10 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                 v
             }
         }
+        ArithExpr::UnaryPostfixOp(unary) => {
+            let v = resolve_arith_expr(unary.lhs.as_ref(), context, expected, keywords_map);
+            v.unwrap_optional().clone()
+        }
         ArithExpr::BinaryOp(binary) => {
             let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected, keywords_map);
             let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected, keywords_map);

@@ -107,7 +107,7 @@ fn resolve_enum_member_expression<'a>(expression: &Expression, context: &Resolve
             0
         },
         _ => {
-            context.insert_diagnostics_error(expression.span(), "EnumMemberError: Only number literals and enum variant literals are allowed");
+            context.insert_diagnostics_error(expression.span(), "only number literals and enum variant literals are allowed");
             0
         }
     }
@@ -141,7 +141,7 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
                 Op::Eq => if lhs == rhs { 1 } else { 0 },
                 Op::Neq => if lhs != rhs { 1 } else { 0 },
                 _ => {
-                    context.insert_diagnostics_error(bi_op.span, "EnumMemberError: This binary operation is not allowed in enum member definition");
+                    context.insert_diagnostics_error(bi_op.span, "this binary operation is not allowed in enum member definition");
                     0
                 }
             }
@@ -153,10 +153,14 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
                 Op::Not => if rhs == 0 { 1 } else { 0 }
                 Op::BitNeg => !rhs,
                 _ => {
-                    context.insert_diagnostics_error(u_op.span, "EnumMemberError: This unary operation is not allowed in enum member definition");
+                    context.insert_diagnostics_error(u_op.span, "this unary operation is not allowed in enum member definition");
                     0
                 }
             }
+        }
+        ArithExpr::UnaryPostfixOp(u_postfix_op) => {
+            context.insert_diagnostics_error(u_postfix_op.span, "force unwrap is not allowed in enum member definition");
+            0
         }
     }
 }

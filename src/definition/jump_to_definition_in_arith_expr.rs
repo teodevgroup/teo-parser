@@ -22,6 +22,18 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             line_col,
             expect,
         ),
+        ArithExpr::UnaryPostfixOp(u) => if u.lhs.span().contains_line_col(line_col) {
+            jump_to_definition_in_arith_expr(
+                schema,
+                source,
+                u.lhs.as_ref(),
+                namespace_path,
+                line_col,
+                expect
+            )
+        } else {
+            vec![]
+        }
         ArithExpr::UnaryOp(u) => if u.rhs.span().contains_line_col(line_col) {
             jump_to_definition_in_arith_expr(
                 schema,

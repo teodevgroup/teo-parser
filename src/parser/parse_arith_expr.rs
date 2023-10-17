@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::arith::{ArithExpr, BinaryOp, Op, UnaryOp};
+use crate::ast::arith::{ArithExpr, BinaryOp, Op, UnaryOp, UnaryPostfixOp};
 use crate::ast::expr::Expression;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
@@ -56,6 +56,16 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             lhs: Box::new(lhs),
             op,
             rhs: Box::new(rhs),
+        })
+    }).map_postfix(|lhs, op| {
+        let op = match op.as_rule() {
+            Rule::FORCE_UNWRAP => Op::ForceUnwrap,
+            _ => panic!("unreachable 6"),
+        };
+        ArithExpr::UnaryPostfixOp(UnaryPostfixOp {
+            span,
+            lhs: Box::new(lhs),
+            op,
         })
     }).parse(pair.into_inner());
     result

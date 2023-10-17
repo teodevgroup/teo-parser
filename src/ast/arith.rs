@@ -28,6 +28,7 @@ pub enum Op {
     Neq,
     RangeOpen,
     RangeClose,
+    ForceUnwrap,
 }
 
 impl Display for Op {
@@ -57,6 +58,7 @@ impl Display for Op {
             Op::Neq => f.write_str("!="),
             Op::RangeOpen => f.write_str(".."),
             Op::RangeClose => f.write_str("..."),
+            Op::ForceUnwrap => f.write_str("!"),
         }
     }
 }
@@ -66,6 +68,13 @@ pub(crate) struct UnaryOp {
     pub(crate) span: Span,
     pub(crate) op: Op,
     pub(crate) rhs: Box<ArithExpr>,
+}
+
+#[derive(Debug)]
+pub(crate) struct UnaryPostfixOp {
+    pub(crate) span: Span,
+    pub(crate) op: Op,
+    pub(crate) lhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
@@ -81,6 +90,7 @@ pub(crate) enum ArithExpr {
     Expression(Box<Expression>),
     UnaryOp(UnaryOp),
     BinaryOp(BinaryOp),
+    UnaryPostfixOp(UnaryPostfixOp),
 }
 
 impl ArithExpr {
@@ -89,6 +99,7 @@ impl ArithExpr {
             ArithExpr::Expression(e) => e.span(),
             ArithExpr::UnaryOp(u) => u.span,
             ArithExpr::BinaryOp(b) => b.span,
+            ArithExpr::UnaryPostfixOp(u) => u.span,
         }
     }
 }
@@ -101,6 +112,10 @@ impl Display for ArithExpr {
                 Display::fmt(&u.op, f)?;
                 Display::fmt(&u.rhs, f)
             },
+            ArithExpr::UnaryPostfixOp(u) => {
+                Display::fmt(&u.lhs, f)?;
+                Display::fmt(&u.op, f)
+            }
             ArithExpr::BinaryOp(b) => {
                 Display::fmt(&b.lhs, f)?;
                 f.write_str(" ")?;

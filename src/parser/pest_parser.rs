@@ -28,6 +28,7 @@ pub(super) static EXPR_PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::prefix(BI_NEG))
         .op(Op::prefix(NEG))
         .op(Op::infix(RANGE_OPEN, Left) | Op::infix(RANGE_CLOSE, Left))
+        .op(Op::postfix(FORCE_UNWRAP))
 });
 
 pub(super) static TYPE_PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
