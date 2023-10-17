@@ -62,7 +62,8 @@ pub(super) fn resolve_field_class<'a>(
             vec![]
         },
         &btreemap! {},
-        context
+        context,
+        field.availability
     );
 }
 

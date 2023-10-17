@@ -77,6 +77,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     EnumMember {
         span,
         path,
+        availability: context.current_availability_flag(),
         comment,
         decorators,
         identifier: identifier.unwrap(),

@@ -40,8 +40,8 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     } else {
         context.add_examined_field(handler_declaration.identifier.name.clone());
     }
-    resolve_type_expr(&handler_declaration.input_type, &vec![], &vec![], &btreemap! {}, context);
-    resolve_type_expr(&handler_declaration.output_type, &vec![], &vec![], &btreemap! {}, context);
+    resolve_type_expr(&handler_declaration.input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+    resolve_type_expr(&handler_declaration.output_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     handler_declaration.resolve(HandlerDeclarationResolved {
         input_shape: resolve_type_shape(handler_declaration.input_type.resolved(), context),
         output_shape: resolve_type_shape(handler_declaration.output_type.resolved(), context),

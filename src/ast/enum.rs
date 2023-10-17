@@ -52,6 +52,7 @@ impl EnumMemberResolved {
 pub(crate) struct EnumMember {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) identifier: Identifier,

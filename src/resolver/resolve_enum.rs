@@ -86,7 +86,7 @@ pub(super) fn resolve_enum_member<'a>(
     }
     // argument list
     if let Some(argument_list_declaration) = &member.argument_list_declaration {
-        resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context);
+        resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context, member.availability);
     }
 }
 

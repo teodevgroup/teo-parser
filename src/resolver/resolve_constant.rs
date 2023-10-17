@@ -7,7 +7,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_constant<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {
     if let Some(type_expr) = &constant.type_expr {
-        resolve_type_expr(type_expr, &vec![], &vec![], &btreemap!{}, context);
+        resolve_type_expr(type_expr, &vec![], &vec![], &btreemap!{}, context, context.current_availability());
     }
     let undetermined = Type::Undetermined;
     constant.resolve(ConstantResolved {

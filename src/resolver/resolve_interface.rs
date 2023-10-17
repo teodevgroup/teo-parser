@@ -12,7 +12,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &interface_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, interface_declaration.availability);
         }
     }
     for extend in &interface_declaration.extends {
@@ -29,7 +29,8 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
                 vec![]
             },
             &btreemap! {},
-            context
+            context,
+            interface_declaration.availability,
         );
         if !extend.resolved().is_interface_object() {
             context.insert_diagnostics_error(extend.span(), "TypeError: type is not interface");

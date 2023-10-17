@@ -386,9 +386,29 @@ namespace std {
     /// Specify an underlying database column name for the model field
     declare unique model field decorator map(table_name?: String)
 
+    #if available(mysql)
     /// @name Database Type
     /// Specify an underlying database type for the model field
     declare unique model field decorator db(type?: DatabaseType)
+    #end
+
+    #if available(postgres)
+    /// @name Database Type
+    /// Specify an underlying database type for the model field
+    declare unique model field decorator db(type?: DatabaseType)
+    #end
+
+    #if available(sqlite)
+    /// @name Database Type
+    /// Specify an underlying database type for the model field
+    declare unique model field decorator db(type?: DatabaseType)
+    #end
+
+    #if available(mongo)
+    /// @name Database Type
+    /// Specify an underlying database type for the model field
+    declare unique model field decorator db(type?: DatabaseType)
+    #end
 
     /// @name Readonly
     /// Disallow this field to be written by the client
