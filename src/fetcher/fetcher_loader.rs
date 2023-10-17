@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::Arc;
 use educe::Educe;
+use maplit::btreemap;
 use teo_teon::Value;
 
 #[derive(Debug)]
@@ -11,8 +12,14 @@ pub struct FetcherLoader<T, E> where T: From<Value>, E: Error {
 
 impl<T, E> FetcherLoader<T, E> where T: From<Value>, E: Error {
 
-    pub fn define_struct(&mut self, path: Vec<String>, loader: StructLoader<T, E>) {
+    pub fn new() -> Self {
+        Self {
+            struct_loaders: btreemap! {}
+        }
+    }
 
+    pub fn define_struct(&mut self, path: Vec<String>, loader: StructLoader<T, E>) {
+        self.struct_loaders.insert(path, loader);
     }
 }
 
@@ -23,6 +30,13 @@ pub struct StructLoader<T, E> where T: From<Value>, E: Error {
 }
 
 impl<T, E> StructLoader<T, E> where T: From<Value>, E: Error {
+
+    pub fn new() -> Self {
+        Self {
+            functions: btreemap! {},
+            static_functions: btreemap! {},
+        }
+    }
 
     pub fn define_function(&mut self, name: impl Into<String>, function: Function<T, E>) {
         self.functions.insert(name.into(), function);
