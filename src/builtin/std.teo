@@ -159,7 +159,7 @@ namespace std {
         python
     }
 
-    #available(mysql)
+    #if available(mysql)
     interface enum MySQLDatabaseType {
         varChar(len?: Int)
         text
@@ -191,7 +191,7 @@ namespace std {
     }
     #end
 
-    #available(postgres)
+    #if available(postgres)
     interface enum PostgresDatabaseType {
         text
         char(len?: Int)
@@ -222,7 +222,7 @@ namespace std {
     }
     #end
 
-    #available(sqlite)
+    #if available(sqlite)
     interface enum SQLiteDatabaseType {
         text
         integer
@@ -232,7 +232,7 @@ namespace std {
     }
     #end    
 
-    #available(mongo)
+    #if available(mongo)
     interface enum MongoDatabaseType {
         string
         bool
@@ -248,6 +248,14 @@ namespace std {
     enum TestResetDatasetsConfig {
         auto
         names(names?: String[])
+    }
+
+    enum Method {
+        get
+        post
+        put
+        patch
+        delete
     }
 
     /// @name Connector
@@ -569,6 +577,14 @@ namespace std {
     /// @name Unique
     /// Define unique index for this cached property
     declare unique model property decorator unique(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Method
+    /// Specify an HTTP method for this handler
+    declare unique handler decorator method(method?: Method)
+
+    /// @name Path
+    /// Specify a path for this handler
+    declare unique handler decorator path(path?: String, ignoreNamespacePrefix: Bool?)
 
     /// @name Add
     /// Add a new numeric value 

@@ -26,7 +26,7 @@ pub(super) fn parse_source(
 ) -> Source {
     let path = path.into();
     let id = context.start_next_source(path.clone());
-    if builtin {
+    if builtin || path.as_str().ends_with("builtin/std.teo") {
         context.set_is_builtin_source();
     }
     let mut tops = btreemap!{};
