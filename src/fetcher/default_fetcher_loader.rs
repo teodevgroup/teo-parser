@@ -23,6 +23,6 @@ impl Debug for FetcherLoaderError {
 
 impl Error for FetcherLoaderError {}
 
-pub(crate) fn default_fetcher_loader() -> FetcherLoader<Value, FetcherLoaderError> {
+pub(crate) fn default_fetcher_loader() -> FetcherLoader<Option<Value>, FetcherLoaderError> {
     FetcherLoader::new()
 }

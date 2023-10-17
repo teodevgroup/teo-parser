@@ -13,7 +13,7 @@ pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_pa
         if let Some(namespace) = source.find_child_namespace_by_string_path(namespace_path) {
             find_namespace_availability(namespace, schema, source)
         } else {
-            Availability::none()
+            Availability::no_database()
         }
     }
 }
@@ -52,7 +52,7 @@ pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Avai
                 if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
                     availability_from_enum_variant_literal(enum_variant_literal)
                 } else {
-                    Availability::none()
+                    Availability::no_database()
                 }
             } else if let Some(arith) = provider.expression.kind.as_arith_expr() {
                 match arith {
@@ -61,24 +61,24 @@ pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Avai
                             if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
                                 availability_from_enum_variant_literal(enum_variant_literal)
                             } else {
-                                Availability::none()
+                                Availability::no_database()
                             }
                         } else if let Some(e) = e.kind.as_enum_variant_literal() {
                             availability_from_enum_variant_literal(e)
                         } else {
-                            Availability::none()
+                            Availability::no_database()
                         }
                     }
-                    _ => Availability::none(),
+                    _ => Availability::no_database(),
                 }
             } else {
-                Availability::none()
+                Availability::no_database()
             }
         } else {
-            Availability::none()
+            Availability::no_database()
         }
     } else {
-        Availability::none()
+        Availability::no_database()
     }
 }
 
@@ -150,6 +150,6 @@ fn availability_from_enum_variant_literal(e: &EnumVariantLiteral) -> Availabilit
         "mysql" => Availability::mysql(),
         "postgres" => Availability::postgres(),
         "sqlite" => Availability::sqlite(),
-        _ => Availability::none(),
+        _ => Availability::no_database(),
     }
 }

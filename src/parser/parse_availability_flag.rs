@@ -8,6 +8,14 @@ pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContex
         match current.as_rule() {
             Rule::identifier => {
                 match current.as_str() {
+                    "noDatabase" => {
+                        let flag = Availability::no_database();
+                        context.push_availability_flag(flag);
+                    }
+                    "database" => {
+                        let flag = Availability::database();
+                        context.push_availability_flag(flag);
+                    }
                     "mongo" => {
                         let flag = Availability::mongo();
                         context.push_availability_flag(flag);

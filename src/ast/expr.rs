@@ -274,7 +274,7 @@ impl Display for ExpressionKind {
 }
 
 #[derive(Debug)]
-pub(crate) struct Expression {
+pub struct Expression {
     pub(crate) kind: ExpressionKind,
     pub(crate) resolved: RefCell<Option<Type>>,
 }

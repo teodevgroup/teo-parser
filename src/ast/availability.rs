@@ -1,45 +1,57 @@
 use std::fmt::{Display, Formatter};
 
-static MONGO: u32 = 1;
-static MYSQL: u32 = 1 << 1;
-static POSTGRES: u32 = 1 << 2;
-static SQLITE: u32 = 1 << 3;
+static NO_DATABASE: u32 = 1;
+static MONGO: u32 = 1 << 1;
+static MYSQL: u32 = 1 << 2;
+static POSTGRES: u32 = 1 << 3;
+static SQLITE: u32 = 1 << 4;
+static DATABASE: u32 = MONGO | MYSQL | POSTGRES | SQLITE;
 static SQL: u32 = MYSQL | POSTGRES | SQLITE;
 static ALL: u32 = SQL | MONGO;
 
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(crate) struct Availability(u32);
+pub struct Availability(u32);
 
 impl Availability {
 
-    pub(crate) fn mongo() -> Self {
+    pub fn no_database() -> Self {
+        Self(NO_DATABASE)
+    }
+
+    pub fn database() -> Self {
+        Self(DATABASE)
+    }
+
+    pub fn mongo() -> Self {
         Self(MONGO)
     }
 
-    pub(crate) fn sql() -> Self {
+    pub fn sql() -> Self {
         Self(SQL)
     }
 
-    pub(crate) fn mysql() -> Self {
+    pub fn mysql() -> Self {
         Self(MYSQL)
     }
 
-    pub(crate) fn postgres() -> Self {
+    pub fn postgres() -> Self {
         Self(POSTGRES)
     }
 
-    pub(crate) fn sqlite() -> Self {
+    pub fn sqlite() -> Self {
         Self(SQLITE)
     }
 
-    pub(crate) fn none() -> Self { Self(0) }
-
-    pub(crate) fn contains(&self, user: Availability) -> bool {
+    pub fn contains(&self, user: Availability) -> bool {
         self.0 & user.0 != 0
     }
 
-    pub(crate) fn is_none(&self) -> bool {
+    pub fn none(&self) -> Self {
+        Self(0)
+    }
+
+    pub fn is_none(&self) -> bool {
         self.0 == 0
     }
 }
@@ -55,6 +67,9 @@ impl Display for Availability {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut to_join = vec![];
+        if self.0 & NO_DATABASE > 0 {
+            to_join.push("noDatabase");
+        }
         if self.0 & MYSQL > 0 {
             to_join.push("mysql");
         }
