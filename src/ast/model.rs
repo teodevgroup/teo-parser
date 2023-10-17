@@ -3,6 +3,7 @@ use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
+use crate::ast::handler::HandlerDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -19,6 +20,7 @@ pub struct Model {
     pub(crate) fields: Vec<Field>,
     pub(crate) empty_field_decorator_spans: Vec<Span>,
     pub(crate) unattached_field_decorators: Vec<Decorator>,
+    pub(crate) handlers: Vec<HandlerDeclaration>,
     pub(crate) resolved: RefCell<Option<ModelResolved>>,
 }
 

@@ -316,7 +316,7 @@ model_declaration = {
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | decorator | empty_decorator | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | handler_declaration | decorator | empty_decorator | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

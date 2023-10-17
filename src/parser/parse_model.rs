@@ -4,6 +4,7 @@ use crate::ast::model::Model;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
+use crate::parser::parse_handler_group::parse_handler_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -19,6 +20,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
     let mut unattached_field_decorators = vec![];
     let mut identifier: Option<Identifier> = None;
     let mut fields = vec![];
+    let mut handlers = vec![];
     let path = context.next_parent_path();
     let mut string_path = None;
     for current in pair.into_inner() {
@@ -41,6 +43,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
             },
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
+            Rule::handler_declaration => handlers.push(parse_handler_declaration(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -56,6 +59,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         empty_decorator_spans,
         identifier: identifier.unwrap(),
         fields,
+        handlers,
         empty_field_decorator_spans,
         unattached_field_decorators,
         resolved: RefCell::new(None),

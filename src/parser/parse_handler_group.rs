@@ -39,7 +39,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut Pars
     }
 }
 
-fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerDeclaration {
+pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerDeclaration {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut string_path = None;
