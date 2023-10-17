@@ -1,7 +1,7 @@
 use maplit::btreemap;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::top::Top;
-use crate::parser::parse_action_group::parse_action_group_declaration;
+use crate::parser::parse_handler_group::parse_handler_group_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
@@ -108,11 +108,11 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 context.schema_references.middlewares.push(middleware_declaration.path.clone());
                 tops.insert(middleware_declaration.id(), Top::Middleware(middleware_declaration));
             },
-            Rule::action_group_declaration => {
-                let action_group_declaration = parse_action_group_declaration(current, context);
-                references.action_groups.insert(action_group_declaration.id());
-                context.schema_references.action_groups.push(action_group_declaration.path.clone());
-                tops.insert(action_group_declaration.id(), Top::ActionGroup(action_group_declaration));
+            Rule::handler_group_declaration => {
+                let handler_group_declaration = parse_handler_group_declaration(current, context);
+                references.handler_groups.insert(handler_group_declaration.id());
+                context.schema_references.handler_groups.push(handler_group_declaration.path.clone());
+                tops.insert(handler_group_declaration.id(), Top::HandlerGroup(handler_group_declaration));
             },
             Rule::struct_declaration => {
                 let struct_declaration = parse_struct_declaration(current, context);

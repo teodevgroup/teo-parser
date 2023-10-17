@@ -16,7 +16,7 @@ mod resolve_config_declaration;
 mod resolve_interface;
 mod resolve_generics;
 mod resolve_middleware;
-mod resolve_action_group;
+mod resolve_handler_group;
 mod resolve_config;
 mod resolve_expression;
 mod resolve_argument_list;

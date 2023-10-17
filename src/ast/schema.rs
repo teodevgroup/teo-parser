@@ -71,7 +71,7 @@ pub(crate) struct SchemaReferences {
     pub(crate) decorator_declarations: Vec<Vec<usize>>,
     pub(crate) pipeline_item_declarations: Vec<Vec<usize>>,
     pub(crate) middlewares: Vec<Vec<usize>>,
-    pub(crate) action_groups: Vec<Vec<usize>>,
+    pub(crate) handler_groups: Vec<Vec<usize>>,
     pub(crate) struct_declarations: Vec<Vec<usize>>,
 }
 
@@ -97,7 +97,7 @@ impl SchemaReferences {
             decorator_declarations: vec![],
             pipeline_item_declarations: vec![],
             middlewares: vec![],
-            action_groups: vec![],
+            handler_groups: vec![],
             struct_declarations: vec![],
         }
     }

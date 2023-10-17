@@ -14,7 +14,7 @@ pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
         Top::Model(_) => unreachable!(),
         Top::DataSet(_) => unreachable!(),
         Top::Middleware(_) => unreachable!(),
-        Top::ActionGroup(_) => unreachable!(),
+        Top::HandlerGroup(_) => unreachable!(),
         Top::Interface(_) => unreachable!(),
         Top::Namespace(namespace) => completion_item_from_namespace(namespace),
         Top::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),

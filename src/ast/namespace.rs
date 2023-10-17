@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Debug};
 use std::sync::Arc;
 use maplit::btreeset;
-use crate::ast::action::ActionGroupDeclaration;
+use crate::ast::handler::HandlerGroupDeclaration;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::config::Config;
@@ -76,8 +76,8 @@ impl Namespace {
         self.tops.get(&id).unwrap().as_middleware().unwrap()
     }
 
-    pub(crate) fn get_action_group(&self, id: usize) -> &ActionGroupDeclaration {
-        self.tops.get(&id).unwrap().as_action_group().unwrap()
+    pub(crate) fn get_handler_group(&self, id: usize) -> &HandlerGroupDeclaration {
+        self.tops.get(&id).unwrap().as_handler_group().unwrap()
     }
 
     pub(crate) fn get_interface(&self, id: usize) -> &InterfaceDeclaration {
@@ -92,8 +92,8 @@ impl Namespace {
         self.references.enums.iter().map(|m| self.get_enum(*m)).collect()
     }
 
-    pub(crate) fn action_groups(&self) -> Vec<&ActionGroupDeclaration> {
-        self.references.namespaces.iter().map(|m| self.get_action_group(*m)).collect()
+    pub(crate) fn handler_groups(&self) -> Vec<&HandlerGroupDeclaration> {
+        self.references.namespaces.iter().map(|m| self.get_handler_group(*m)).collect()
     }
 
     pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
@@ -159,7 +159,7 @@ pub(crate) struct NamespaceReferences {
     pub(crate) decorator_declarations: BTreeSet<usize>,
     pub(crate) pipeline_item_declarations: BTreeSet<usize>,
     pub(crate) middlewares: BTreeSet<usize>,
-    pub(crate) action_groups: BTreeSet<usize>,
+    pub(crate) handler_groups: BTreeSet<usize>,
     pub(crate) struct_declarations: BTreeSet<usize>,
 }
 
@@ -178,7 +178,7 @@ impl NamespaceReferences {
             decorator_declarations: btreeset!{},
             pipeline_item_declarations: btreeset!{},
             middlewares: btreeset!{},
-            action_groups: btreeset!{},
+            handler_groups: btreeset!{},
             struct_declarations: btreeset!{},
         }
     }

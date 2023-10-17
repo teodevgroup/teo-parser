@@ -5,16 +5,16 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct ActionGroupDeclaration {
+pub(crate) struct HandlerGroupDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
-    pub(crate) action_declarations: Vec<ActionDeclaration>,
+    pub(crate) handler_declarations: Vec<HandlerDeclaration>,
 }
 
-impl ActionGroupDeclaration {
+impl HandlerGroupDeclaration {
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()
@@ -26,7 +26,7 @@ impl ActionGroupDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) struct ActionDeclaration {
+pub(crate) struct HandlerDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
@@ -34,11 +34,11 @@ pub(crate) struct ActionDeclaration {
     pub(crate) identifier: Identifier,
     pub(crate) input_type: TypeExpr,
     pub(crate) output_type: TypeExpr,
-    pub(crate) input_format: ActionInputFormat,
-    pub(crate) resolved: RefCell<Option<ActionDeclarationResolved>>,
+    pub(crate) input_format: HandlerInputFormat,
+    pub(crate) resolved: RefCell<Option<HandlerDeclarationResolved>>,
 }
 
-impl ActionDeclaration {
+impl HandlerDeclaration {
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()
@@ -48,15 +48,15 @@ impl ActionDeclaration {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn action_group_id(&self) -> usize {
+    pub(crate) fn handler_group_id(&self) -> usize {
         *self.path.get(self.path.len() - 2).unwrap()
     }
 
-    pub(crate) fn resolve(&self, resolved: ActionDeclarationResolved) {
+    pub(crate) fn resolve(&self, resolved: HandlerDeclarationResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ActionDeclarationResolved {
+    pub(crate) fn resolved(&self) -> &HandlerDeclarationResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
@@ -66,30 +66,30 @@ impl ActionDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) enum ActionInputFormat {
+pub(crate) enum HandlerInputFormat {
     Json,
     Form,
 }
 
-impl ActionInputFormat {
+impl HandlerInputFormat {
 
     pub(crate) fn is_json(&self) -> bool {
         match self {
-            ActionInputFormat::Json => true,
+            HandlerInputFormat::Json => true,
             _ => false,
         }
     }
 
     pub(crate) fn is_form(&self) -> bool {
         match self {
-            ActionInputFormat::Form => true,
+            HandlerInputFormat::Form => true,
             _ => false,
         }
     }
 }
 
 #[derive(Debug)]
-pub(crate) struct ActionDeclarationResolved {
+pub(crate) struct HandlerDeclarationResolved {
     pub(crate) input_shape: TypeShape,
     pub(crate) output_shape: TypeShape,
 }

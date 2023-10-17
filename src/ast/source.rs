@@ -143,7 +143,7 @@ pub(crate) struct SourceReferences {
     pub(crate) decorator_declarations: BTreeSet<usize>,
     pub(crate) pipeline_item_declarations: BTreeSet<usize>,
     pub(crate) middlewares: BTreeSet<usize>,
-    pub(crate) action_groups: BTreeSet<usize>,
+    pub(crate) handler_groups: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -162,7 +162,7 @@ impl SourceReferences {
             decorator_declarations: btreeset!{},
             pipeline_item_declarations: btreeset!{},
             middlewares: btreeset!{},
-            action_groups: btreeset!{},
+            handler_groups: btreeset!{},
         }
     }
 }

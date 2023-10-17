@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::action::{ActionDeclaration, ActionGroupDeclaration, ActionInputFormat};
+use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::ast::type_expr::TypeExpr;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_identifier::parse_identifier;
@@ -8,13 +8,13 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_action_group_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ActionGroupDeclaration {
+pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerGroupDeclaration {
     let span = parse_span(&pair);
     let path = context.next_parent_path();
     let mut string_path = None;
     let mut comment = None;
     let mut identifier = None;
-    let mut action_declarations = vec![];
+    let mut handler_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
@@ -23,23 +23,23 @@ pub(super) fn parse_action_group_declaration(pair: Pair<'_>, context: &mut Parse
                 identifier = Some(parse_identifier(&current));
                 string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
             },
-            Rule::action_declaration => action_declarations.push(parse_action_declaration(current, context)),
+            Rule::handler_declaration => handler_declarations.push(parse_handler_declaration(current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     context.pop_parent_id();
     context.pop_string_path();
-    ActionGroupDeclaration {
+    HandlerGroupDeclaration {
         span,
         path,
         string_path: string_path.unwrap(),
         comment,
         identifier: identifier.unwrap(),
-        action_declarations,
+        handler_declarations,
     }
 }
 
-fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ActionDeclaration {
+fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerDeclaration {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut string_path = None;
@@ -47,7 +47,7 @@ fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Acti
     let mut identifier = None;
     let mut input_type: Option<TypeExpr> = None;
     let mut output_type: Option<TypeExpr> = None;
-    let mut input_format: ActionInputFormat = ActionInputFormat::Json;
+    let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
@@ -62,12 +62,12 @@ fn parse_action_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Acti
             },
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES => (),
             Rule::req_type => if current.as_str() == "form" {
-                input_format = ActionInputFormat::Form
+                input_format = HandlerInputFormat::Form
             },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    ActionDeclaration {
+    HandlerDeclaration {
         span,
         path,
         string_path: string_path.unwrap(),

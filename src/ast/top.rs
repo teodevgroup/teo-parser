@@ -1,4 +1,4 @@
-use crate::ast::action::ActionGroupDeclaration;
+use crate::ast::handler::HandlerGroupDeclaration;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
@@ -25,7 +25,7 @@ pub(crate) enum Top {
     Model(Model),
     DataSet(DataSet),
     Middleware(Middleware),
-    ActionGroup(ActionGroupDeclaration),
+    HandlerGroup(HandlerGroupDeclaration),
     Interface(InterfaceDeclaration),
     Namespace(Namespace),
     DecoratorDeclaration(DecoratorDeclaration),
@@ -45,7 +45,7 @@ impl Top {
             Top::ConfigDeclaration(c) => c.source_id(),
             Top::DataSet(d) => d.source_id(),
             Top::Middleware(m) => m.source_id(),
-            Top::ActionGroup(a) => a.source_id(),
+            Top::HandlerGroup(a) => a.source_id(),
             Top::Interface(i) => i.source_id(),
             Top::Namespace(n) => n.source_id(),
             Top::DecoratorDeclaration(d) => d.source_id(),
@@ -64,7 +64,7 @@ impl Top {
             Top::ConfigDeclaration(c) => c.id(),
             Top::DataSet(d) => d.id(),
             Top::Middleware(m) => m.id(),
-            Top::ActionGroup(a) => a.id(),
+            Top::HandlerGroup(a) => a.id(),
             Top::Interface(i) => i.id(),
             Top::Namespace(n) => n.id(),
             Top::DecoratorDeclaration(d) => d.id(),
@@ -83,7 +83,7 @@ impl Top {
             Top::ConfigDeclaration(c) => Some(c.identifier.span),
             Top::DataSet(d) => Some(d.identifier.span),
             Top::Middleware(m) => Some(m.identifier.span),
-            Top::ActionGroup(a) => Some(a.identifier.span),
+            Top::HandlerGroup(a) => Some(a.identifier.span),
             Top::Interface(i) => Some(i.identifier.span),
             Top::Namespace(n) => Some(n.identifier.span),
             Top::DecoratorDeclaration(d) => Some(d.identifier.span),
@@ -102,7 +102,7 @@ impl Top {
             Top::ConfigDeclaration(c) => Some(c.identifier.name()),
             Top::DataSet(d) => Some(d.identifier.name()),
             Top::Middleware(m) => Some(m.identifier.name()),
-            Top::ActionGroup(a) => Some(a.identifier.name()),
+            Top::HandlerGroup(a) => Some(a.identifier.name()),
             Top::Interface(i) => Some(i.identifier.name()),
             Top::Namespace(n) => Some(n.identifier.name()),
             Top::DecoratorDeclaration(d) => Some(d.identifier.name()),
@@ -121,7 +121,7 @@ impl Top {
             Top::ConfigDeclaration(c) => &c.path,
             Top::DataSet(d) => &d.path,
             Top::Middleware(m) => &m.path,
-            Top::ActionGroup(a) => &a.path,
+            Top::HandlerGroup(a) => &a.path,
             Top::Interface(i) => &i.path,
             Top::Namespace(n) => &n.path,
             Top::DecoratorDeclaration(d) => &d.path,
@@ -140,7 +140,7 @@ impl Top {
             Top::ConfigDeclaration(c) => c.span,
             Top::DataSet(d) => d.span,
             Top::Middleware(m) => m.span,
-            Top::ActionGroup(a) => a.span,
+            Top::HandlerGroup(a) => a.span,
             Top::Interface(i) => i.span,
             Top::Namespace(n) => n.span,
             Top::DecoratorDeclaration(d) => d.span,
@@ -238,15 +238,15 @@ impl Top {
         self.as_middleware().is_some()
     }
 
-    pub(crate) fn as_action_group(&self) -> Option<&ActionGroupDeclaration> {
+    pub(crate) fn as_handler_group(&self) -> Option<&HandlerGroupDeclaration> {
         match self {
-            Top::ActionGroup(m) => Some(m),
+            Top::HandlerGroup(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_action_group(&self) -> bool {
-        self.as_action_group().is_some()
+    pub(crate) fn is_handler_group(&self) -> bool {
+        self.as_handler_group().is_some()
     }
 
     pub(crate) fn as_interface(&self) -> Option<&InterfaceDeclaration> {
