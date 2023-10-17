@@ -104,6 +104,17 @@ impl EnumMemberExpression {
         }
     }
 
+    pub(crate) fn is_arith_expr(&self) -> bool {
+        self.as_arith_expr().is_some()
+    }
+
+    pub(crate) fn as_arith_expr(&self) -> Option<&ArithExpr> {
+        match self {
+            Self::ArithExpr(s) => Some(s),
+            _ => None,
+        }
+    }
+
     pub(crate) fn span(&self) -> Span {
         match self {
             Self::StringLiteral(s) => s.span,

@@ -1,4 +1,4 @@
-use crate::ast::handler::HandlerDeclaration;
+use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
@@ -31,6 +31,20 @@ pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source:
             &vec![],
             availability
         );
+    }
+    vec![]
+}
+
+pub(super) fn jump_to_definition_in_handler_group_declaration(schema: &Schema, source: &Source, handler_group_declaration: &HandlerGroupDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
+    for handler_declaration in &handler_group_declaration.handler_declarations {
+        if handler_declaration.span.contains_line_col(line_col) {
+            return jump_to_definition_in_handler_declaration(
+                schema,
+                source,
+                handler_declaration,
+                line_col,
+            );
+        }
     }
     vec![]
 }

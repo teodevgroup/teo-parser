@@ -1,14 +1,9 @@
-use crate::ast::config_declaration::ConfigDeclaration;
-use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_definition_in_argument_list_declaration;
-use crate::definition::jump_to_definition_in_field::jump_to_definition_in_field;
 use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_type_expr_kind;
-use crate::search::search_availability::search_availability;
 
 pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, source: &Source, pipeline_item_declaration: &PipelineItemDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = pipeline_item_declaration.string_path.iter().map(|s| s.as_str()).collect();

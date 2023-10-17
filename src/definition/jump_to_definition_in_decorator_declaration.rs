@@ -1,12 +1,8 @@
-use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_definition_in_argument_list_declaration;
-use crate::definition::jump_to_definition_in_field::jump_to_definition_in_field;
-use crate::search::search_availability::search_availability;
 
 pub(super) fn jump_to_definition_in_decorator_declaration(schema: &Schema, source: &Source, decorator_declaration: &DecoratorDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = decorator_declaration.string_path.iter().map(|s| s.as_str()).collect();
