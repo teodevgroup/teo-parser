@@ -204,7 +204,7 @@ impl Diagnostics {
     }
 
     pub(crate) fn insert_unparsed_rule(&mut self, span: Span, source_path: String) {
-        self.insert(DiagnosticsError::new(span, "SyntaxError: Unexpected content.", source_path))
+        self.insert(DiagnosticsError::new(span, "unexpected content", source_path))
     }
 
     pub(crate) fn insert_unresolved_model(&mut self, span: Span, source_path: String) {
