@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::expr::{Expression, ExpressionKind};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -19,6 +20,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
     expect: &Type,
+    availability: Availability,
 ) -> Vec<Definition> {
     match &expression.kind {
         ExpressionKind::Group(group) => jump_to_definition_in_expression(
@@ -28,6 +30,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability
         ),
         ExpressionKind::ArithExpr(arith) => jump_to_definition_in_arith_expr(
             schema,
@@ -36,6 +39,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         ),
         ExpressionKind::NumericLiteral(_) => vec![],
         ExpressionKind::StringLiteral(_) => vec![],
@@ -57,6 +61,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         ),
         ExpressionKind::ArrayLiteral(array_literal) => jump_to_definition_in_array_literal(
             schema,
@@ -65,6 +70,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         ),
         ExpressionKind::DictionaryLiteral(dictionary_literal) => jump_to_definition_in_dictionary_literal(
             schema,
@@ -73,6 +79,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         ),
         ExpressionKind::Identifier(identifier) => jump_to_definition_in_identifier(
             schema,
@@ -80,6 +87,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             identifier,
             namespace_path,
             line_col,
+            availability,
         ),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
@@ -91,6 +99,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         ),
         ExpressionKind::Pipeline(pipeline) => jump_to_definition_in_pipeline(
             schema,
@@ -98,6 +107,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             pipeline,
             namespace_path,
             line_col,
+            availability,
         )
     }
 }

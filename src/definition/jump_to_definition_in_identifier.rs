@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
@@ -13,13 +14,15 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
     identifier: &'a Identifier,
     namespace_path: &Vec<&'a str>,
     _line_col: (usize, usize),
+    availability: Availability,
 ) -> Vec<Definition> {
     if let Some(reference) = search_identifier_path_in_source(
         schema,
         source,
         namespace_path,
         &vec![identifier.name()],
-        &top_filter_for_reference_type(ReferenceType::Default)
+        &top_filter_for_reference_type(ReferenceType::Default),
+        availability,
     ) {
         match schema.find_top_by_path(&reference).unwrap() {
             Top::Constant(c) => vec![Definition {

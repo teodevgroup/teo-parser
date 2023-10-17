@@ -1,4 +1,5 @@
 use crate::ast::argument_list::ArgumentList;
+use crate::ast::availability::Availability;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::schema::Schema;
@@ -18,6 +19,7 @@ pub(crate) fn search_pipeline_unit<HAL, HI, OUTPUT>(
     handle_argument_list: HAL,
     handle_identifier: HI,
     default: OUTPUT,
+    availability: Availability,
 ) -> OUTPUT where
     HAL: Fn(&ArgumentList, &Vec<usize>) -> OUTPUT,
     HI: Fn(Span, &Vec<usize>) -> OUTPUT,
@@ -27,13 +29,14 @@ pub(crate) fn search_pipeline_unit<HAL, HI, OUTPUT>(
     for (index, expression) in unit.expressions.iter().enumerate() {
         if let Some(identifier) = expression.kind.as_identifier() {
             if let Some(this_top) = if current_namespace.is_some() {
-                current_namespace.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline())
+                current_namespace.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline(), availability)
             } else if let Some(path) = search_identifier_path_in_source(
                 schema,
                 source,
                 namespace_path,
                 &vec![identifier.name()],
-                &top_filter_for_pipeline()
+                &top_filter_for_pipeline(),
+                availability,
             ) {
                 schema.find_top_by_path(&path)
             } else {

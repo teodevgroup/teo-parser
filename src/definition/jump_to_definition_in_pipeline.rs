@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -5,7 +6,6 @@ use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
-use crate::r#type::r#type::Type;
 use crate::search::search_pipeline_unit::search_pipeline_unit;
 
 pub(super) fn jump_to_definition_in_pipeline<'a>(
@@ -14,6 +14,7 @@ pub(super) fn jump_to_definition_in_pipeline<'a>(
     pipeline: &'a Pipeline,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
+    availability: Availability,
 ) -> Vec<Definition> {
     if pipeline.unit.span.contains_line_col(line_col) {
         jump_to_definition_in_pipeline_unit(
@@ -22,6 +23,7 @@ pub(super) fn jump_to_definition_in_pipeline<'a>(
             pipeline.unit.as_ref(),
             namespace_path,
             line_col,
+            availability
         )
     } else {
         vec![]
@@ -34,6 +36,7 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
     unit: &'a Unit,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
+    availability: Availability,
 ) -> Vec<Definition> {
     search_pipeline_unit(
         schema,
@@ -49,6 +52,7 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
                 namespace_path,
                 path.clone(),
                 line_col,
+                availability
             )
         },
         |span ,path| {
@@ -69,6 +73,7 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
                 _ => unreachable!(),
             }
         },
-        vec![]
+        vec![],
+        availability
     )
 }

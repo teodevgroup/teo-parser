@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -16,6 +17,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
     expect: &Type,
+    availability: Availability,
 ) -> Vec<Definition> {
     if unit.expressions.len() == 1 {
         jump_to_definition_in_expression(
@@ -25,6 +27,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             namespace_path,
             line_col,
             expect,
+            availability,
         )
     } else {
         search_unit(
@@ -34,7 +37,6 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             namespace_path,
             line_col,
             |argument_list, callable_container_path, callable_name| {
-
                 vec![]
             },
             |subscript| {
@@ -47,6 +49,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         namespace_path,
                         line_col,
                         &exp,
+                        availability,
                     )
                 } else {
                     vec![]
@@ -142,7 +145,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     }
                     Top::Namespace(namespace) => if let Some(identifier) = identifier_name {
-                        let top = namespace.find_top_by_name(identifier, &top_filter_for_reference_type(ReferenceType::Default)).unwrap();
+                        let top = namespace.find_top_by_name(identifier, &top_filter_for_reference_type(ReferenceType::Default), availability).unwrap();
                         vec![Definition {
                             path: schema.source(top.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
@@ -176,7 +179,8 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                     _ => vec![]
                 }
             },
-            vec![]
+            vec![],
+            availability,
         )
     }
 }

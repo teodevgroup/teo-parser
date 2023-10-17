@@ -1,5 +1,6 @@
 use crate::ast::argument::Argument;
 use crate::ast::argument_list::ArgumentList;
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -13,6 +14,7 @@ pub(super) fn jump_to_definition_in_argument_list<'a>(
     namespace_path: &Vec<&'a str>,
     callable_reference: Vec<usize>,
     line_col: (usize, usize),
+    availability: Availability,
 ) -> Vec<Definition> {
     for argument in &argument_list.arguments {
         if argument.span.contains_line_col(line_col) {
@@ -23,6 +25,7 @@ pub(super) fn jump_to_definition_in_argument_list<'a>(
                 namespace_path,
                 callable_reference,
                 line_col,
+                availability,
             )
         }
     }
@@ -36,6 +39,7 @@ pub(super) fn jump_to_definition_in_argument<'a>(
     namespace_path: &Vec<&'a str>,
     callable_reference: Vec<usize>,
     line_col: (usize, usize),
+    availability: Availability,
 ) -> Vec<Definition> {
     if let Some(name) = &argument.name {
         if name.span.contains_line_col(line_col) {
@@ -56,7 +60,8 @@ pub(super) fn jump_to_definition_in_argument<'a>(
             &argument.value,
             namespace_path,
             line_col,
-            argument.value.resolved()
+            argument.value.resolved(),
+            availability,
         );
     }
     vec![]

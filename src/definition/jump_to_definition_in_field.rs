@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::field::Field;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::schema::Schema;
@@ -13,13 +14,14 @@ pub(super) fn jump_to_definition_in_field<'a>(
     field: &'a Field,
     line_col: (usize, usize),
     generics_declarations: &Vec<&GenericsDeclaration>,
+    availability: Availability,
 ) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = field.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     namespace_path.pop();
     for decorator in &field.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(field.resolved().class.reference_type()));
+            return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(field.resolved().class.reference_type()), availability);
         }
     }
     if field.type_expr.span().contains_line_col(line_col) {
@@ -30,6 +32,7 @@ pub(super) fn jump_to_definition_in_field<'a>(
             &namespace_path,
             line_col,
             generics_declarations,
+            availability,
         )
     }
     vec![]

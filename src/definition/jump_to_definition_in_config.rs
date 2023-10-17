@@ -4,10 +4,12 @@ use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
+use crate::search::search_availability::search_availability;
 
 pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = config.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
+    let availability = search_availability(schema, source, &namespace_path);
     if config.keyword.span.contains_line_col(line_col) {
         if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name()) {
             return vec![Definition {
@@ -53,7 +55,8 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
                 &item.expression,
                 &namespace_path,
                 line_col,
-                expected_type
+                expected_type,
+                availability
             );
         }
     }

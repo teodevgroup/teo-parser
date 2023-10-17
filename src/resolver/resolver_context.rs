@@ -11,8 +11,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
-use crate::resolver::resolve_namespace_availability::resolve_namespace_availability;
-use crate::resolver::resolve_source_availability::resolve_source_availability;
+use crate::search::search_availability::{find_namespace_availability, find_source_availability};
 
 #[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) struct ExaminedDataSetRecord {
@@ -52,13 +51,13 @@ impl<'a> ResolverContext<'a> {
     pub(crate) fn start_source(&self, source: &'a Source) {
         *self.source.lock().unwrap() = Some(source);
         // set availability
-        let availability = resolve_source_availability(self.schema, source);
+        let availability = find_source_availability(self.schema, source);
         *self.availabilities.lock().unwrap() = vec![availability];
     }
 
     pub(crate) fn push_namespace(&self, namespace: &'a Namespace) {
         self.namespaces.lock().unwrap().push(namespace);
-        let availability = resolve_namespace_availability(namespace, self.schema, self.source());
+        let availability = find_namespace_availability(namespace, self.schema, self.source());
         self.availabilities.lock().unwrap().push(availability);
     }
 

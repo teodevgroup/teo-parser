@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use crate::ast::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -14,6 +15,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
     filter: &Arc<dyn Fn(&Top) -> bool>,
+    availability: Availability,
 ) -> Vec<Definition> {
     let mut user_typed_spaces = vec![];
     let mut selector_span = None;
@@ -28,7 +30,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     }
     if let Some(selector_span) = selector_span {
         // find in decorator path body
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
+        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter, availability);
         match reference {
             Some(path) => {
                 let top = schema.find_top_by_path(&path).unwrap();
@@ -46,7 +48,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
             None => vec![],
         }
     } else {
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter);
+        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter, availability);
         // found in argument lists
         if let Some(argument_list) = &decorator.argument_list {
             if let Some(reference) = reference {
@@ -56,7 +58,8 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
                     argument_list,
                     namespace_path,
                     reference,
-                    line_col
+                    line_col,
+                    availability,
                 )
             } else {
                 vec![]

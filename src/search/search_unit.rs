@@ -1,4 +1,5 @@
 use crate::ast::argument_list::ArgumentList;
+use crate::ast::availability::Availability;
 use crate::ast::expr::ExpressionKind;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
@@ -52,6 +53,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
     handle_subscript: HS,
     handle_identifier: HI,
     default: OUTPUT,
+    availability: Availability,
 ) -> OUTPUT where
     HAL: Fn(&ArgumentList, &Vec<usize>, Option<&str>) -> OUTPUT,
     HS: Fn(&Subscript) -> OUTPUT,
@@ -68,6 +70,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
                     namespace_path,
                     &vec![identifier.name()],
                     &top_filter_for_reference_type(ReferenceType::Default),
+                    availability,
                 ) {
                     identifier_span = Some(identifier.span);
                     UnitSearchResult::Reference(path)
@@ -296,7 +299,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
                             Top::Namespace(namespace) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
+                                        if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, top.path(), None);
                                             } else {
@@ -307,7 +310,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
                                         }
                                     },
                                     ExpressionKind::Call(c) => {
-                                        if let Some(top) = namespace.find_top_by_name(c.identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
+                                        if let Some(top) = namespace.find_top_by_name(c.identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
                                             match top {
                                                 Top::StructDeclaration(struct_declaration) => {
                                                     if let Some(new) = struct_declaration.function_declarations.iter().find(|f| {

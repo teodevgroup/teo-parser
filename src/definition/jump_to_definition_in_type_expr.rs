@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
@@ -14,6 +15,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
     namespace_path: &Vec<&str>,
     line_col: (usize, usize),
     generics_declarations: &Vec<&GenericsDeclaration>,
+    availability: Availability,
 ) -> Vec<Definition> {
     match type_expr {
         TypeExprKind::Expr(type_expr) => jump_to_definition_in_type_expr_kind(
@@ -23,6 +25,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             namespace_path,
             line_col,
             generics_declarations,
+            availability
         ),
         TypeExprKind::BinaryOp(b) => if b.lhs.span().contains_line_col(line_col) {
             jump_to_definition_in_type_expr_kind(
@@ -32,6 +35,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             )
         } else if b.rhs.span().contains_line_col(line_col) {
             jump_to_definition_in_type_expr_kind(
@@ -41,6 +45,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             )
         } else {
             vec![]
@@ -53,6 +58,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             )
         } else {
             vec![]
@@ -67,6 +73,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                         namespace_path,
                         line_col,
                         generics_declarations,
+                        availability
                     );
                 }
             }
@@ -80,6 +87,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             );
         } else if type_subscript.type_item.span.contains_line_col(line_col) {
             jump_to_definition_in_type_item(
@@ -89,6 +97,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             )
         } else {
             vec![]
@@ -101,6 +110,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             namespace_path,
             line_col,
             generics_declarations,
+            availability
         )
     }
 }
@@ -112,6 +122,7 @@ fn jump_to_definition_in_type_item(
     namespace_path: &Vec<&str>,
     line_col: (usize, usize),
     generics_declarations: &Vec<&GenericsDeclaration>,
+    availability: Availability,
 ) -> Vec<Definition> {
     for gen in &type_item.generics {
         if gen.span().contains_line_col(line_col) {
@@ -122,6 +133,7 @@ fn jump_to_definition_in_type_item(
                 namespace_path,
                 line_col,
                 generics_declarations,
+                availability
             );
         }
     }
@@ -150,7 +162,7 @@ fn jump_to_definition_in_type_item(
                 user_typed_spaces.push(identifier.name());
             }
         }
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, &top_filter_for_reference_type(ReferenceType::Default));
+        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, &top_filter_for_reference_type(ReferenceType::Default), availability);
         if let Some(reference) = reference {
             let top = schema.find_top_by_path(&reference).unwrap();
             return vec![Definition {

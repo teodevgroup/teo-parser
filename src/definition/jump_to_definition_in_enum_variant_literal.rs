@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;

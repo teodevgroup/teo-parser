@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::literals::DictionaryLiteral;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -12,6 +13,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
     expect: &Type,
+    availability: Availability,
 ) -> Vec<Definition> {
     for (key_expression, value_expression) in &dictionary_literal.expressions {
         if key_expression.span().contains_line_col(line_col) {
@@ -22,6 +24,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
                 namespace_path,
                 line_col,
                 key_expression.resolved(),
+                availability
             );
         }
         if value_expression.span().contains_line_col(line_col) {
@@ -32,6 +35,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
                 namespace_path,
                 line_col,
                 value_expression.resolved(),
+                availability,
             );
         }
     }

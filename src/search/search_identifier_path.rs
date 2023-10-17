@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use crate::ast::availability::Availability;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
@@ -9,6 +10,7 @@ pub(crate) fn search_identifier_path_in_source(
     ns_str_path: &Vec<&str>,
     identifier_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Top) -> bool>,
+    availability: Availability,
 ) -> Option<Vec<usize>> {
     let mut used_sources = vec![];
     let reference = search_identifier_path_in_source_inner(
@@ -18,6 +20,7 @@ pub(crate) fn search_identifier_path_in_source(
         filter,
         &mut used_sources,
         ns_str_path,
+        availability,
     );
     if reference.is_none() {
         for builtin_source in schema.builtin_sources() {
@@ -28,6 +31,7 @@ pub(crate) fn search_identifier_path_in_source(
                 filter,
                 &mut used_sources,
                 &vec!["std"],
+                availability,
             ) {
                 return Some(reference);
             }
@@ -43,6 +47,7 @@ fn search_identifier_path_in_source_inner(
     filter: &Arc<dyn Fn(&Top) -> bool>,
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
+    availability: Availability,
 ) -> Option<Vec<usize>> {
     if used_sources.contains(&source.id) {
         return None;
@@ -51,12 +56,12 @@ fn search_identifier_path_in_source_inner(
     let mut ns_str_path_mut = ns_str_path.clone();
     loop {
         if ns_str_path_mut.is_empty() {
-            if let Some(top) = source.find_top_by_string_path(&identifier_path, filter) {
+            if let Some(top) = source.find_top_by_string_path(&identifier_path, filter, availability) {
                 return Some(top.path().clone());
             }
         } else {
             if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
-                if let Some(top) = ns.find_top_by_string_path(&identifier_path, filter) {
+                if let Some(top) = ns.find_top_by_string_path(&identifier_path, filter, availability) {
                     return Some(top.path().clone());
                 }
             }
@@ -78,7 +83,8 @@ fn search_identifier_path_in_source_inner(
                 identifier_path,
                 filter,
                 used_sources,
-                &ns_str_path
+                &ns_str_path,
+                availability
             ) {
                 return Some(found)
             }
