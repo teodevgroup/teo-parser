@@ -3,6 +3,7 @@ use std::fmt::{Debug};
 use std::sync::Arc;
 use maplit::btreeset;
 use crate::ast::action::ActionGroupDeclaration;
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::config::Config;
 use crate::ast::constant::Constant;
@@ -22,6 +23,7 @@ pub(crate) struct Namespace {
     pub(crate) parent_path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) parent_string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) tops: BTreeMap<usize, Top>,

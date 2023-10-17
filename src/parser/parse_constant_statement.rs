@@ -30,6 +30,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserConte
         path: context.next_path(),
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
         identifier: identifier.unwrap(),
+        availability: context.current_availability_flag(),
         type_expr,
         expression: expression.unwrap(),
         resolved: RefCell::new(None),

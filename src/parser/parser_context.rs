@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use maplit::btreemap;
+use crate::ast::availability::Availability;
 use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
@@ -15,6 +16,8 @@ pub(super) struct ParserContext<'a> {
     current_id: usize,
     current_path: Vec<usize>,
     current_string_path: Vec<String>,
+    current_availability_flag_state: Vec<Availability>,
+    current_source_is_builtin: bool,
     examined_import_file_paths: Vec<String>,
 }
 
@@ -36,6 +39,8 @@ impl<'a> ParserContext<'a> {
             current_id: 0,
             current_path: vec![],
             current_string_path: vec![],
+            current_availability_flag_state: vec![Availability::default()],
+            current_source_is_builtin: false,
             examined_import_file_paths: vec![],
         }
     }
@@ -55,8 +60,18 @@ impl<'a> ParserContext<'a> {
         self.current_source_id = source_id;
         self.current_path = vec![source_id];
         self.current_string_path = vec![];
+        self.current_availability_flag_state = vec![Availability::default()];
         self.examined_import_file_paths = vec![];
+        self.current_source_is_builtin = false;
         source_id
+    }
+
+    pub(super) fn set_is_builtin_source(&mut self) {
+        self.current_source_is_builtin = true;
+    }
+
+    pub(super) fn is_builtin_source(&self) -> bool {
+        self.current_source_is_builtin
     }
 
     pub(super) fn next_id(&mut self) -> usize {
@@ -140,5 +155,21 @@ impl<'a> ParserContext<'a> {
     pub(super) fn insert_warning(&mut self, span: Span, message: impl Into<String>) {
         let path = self.source_lookup.get(&self.current_source_id).unwrap();
         self.diagnostics.insert(DiagnosticsWarning::new(span, message.into(), path.clone()));
+    }
+
+    pub(super) fn push_availability_flag(&mut self, new_flag: Availability) {
+        self.current_availability_flag_state.push(new_flag);
+    }
+
+    pub(super) fn pop_availability_flag(&mut self, span: Span) {
+        if self.current_availability_flag_state.len() == 1 {
+            self.insert_error(span,"unbalanced availability end")
+        } else {
+            self.current_availability_flag_state.pop();
+        }
+    }
+
+    pub(super) fn current_availability_flag(&self) -> Availability {
+        *self.current_availability_flag_state.last().unwrap()
     }
 }

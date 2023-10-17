@@ -43,6 +43,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
         span,
         path,
         string_path: string_path.unwrap(),
+        availability: context.current_availability_flag(),
         comment,
         decorators,
         interface,

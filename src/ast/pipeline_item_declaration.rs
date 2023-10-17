@@ -1,4 +1,5 @@
 use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
@@ -11,6 +12,7 @@ pub(crate) struct PipelineItemDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,

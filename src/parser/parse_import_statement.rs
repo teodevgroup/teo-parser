@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::import::Import;
 use crate::ast::literals::StringLiteral;
@@ -9,6 +10,9 @@ use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context: &mut ParserContext) -> Import {
     let span = parse_span(&pair);
+    if context.current_availability_flag() != Availability::default() {
+        context.insert_error(span, "import statement is placed in availability flag");
+    }
     let mut identifiers = vec![];
     let mut source: Option<StringLiteral> = None;
     for current in pair.into_inner() {

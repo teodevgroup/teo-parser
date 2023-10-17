@@ -3,6 +3,7 @@ use std::sync::atomic::AtomicBool;
 use teo_teon::value::Value;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::arith::ArithExpr;
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::identifier::Identifier;
@@ -14,6 +15,7 @@ pub(crate) struct Enum {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) interface: bool,

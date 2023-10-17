@@ -316,7 +316,7 @@ model_declaration = {
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | decorator | empty_decorator | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | decorator | empty_decorator | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -460,7 +460,7 @@ static_files_declaration = {
 // availability
 // #############
 availability_start = {
-    HASH_TAG ~ "available" ~ "(" ~ identifier ~ ")"
+    HASH_TAG ~ "if" ~ "available" ~ "(" ~ identifier ~ ")"
 }
 
 availability_end = {

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::TypeExpr;
@@ -106,6 +107,7 @@ pub(crate) struct Field {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) empty_decorators_spans: Vec<Span>,

@@ -34,6 +34,13 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
+                if identifier.as_ref().unwrap().name() == "main" {
+                    context.insert_error(identifier.as_ref().unwrap().span, "'main' is reserved for main namespace");
+                } else if identifier.as_ref().unwrap().name() == "std" {
+                    if !context.is_builtin_source() {
+                        context.insert_error(identifier.as_ref().unwrap().span, "'std' is reserved for standard library");
+                    }
+                }
                 string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
             },
             Rule::constant_statement => { // let a = 5
@@ -125,6 +132,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
         parent_path,
         string_path: string_path.unwrap(),
         parent_string_path,
+        availability: context.current_availability_flag(),
         comment,
         identifier: identifier.unwrap(),
         tops,

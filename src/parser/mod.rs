@@ -33,6 +33,8 @@ mod parse_middleware;
 mod parse_action_group;
 mod parse_struct_declaration;
 mod parse_function_declaration;
+mod parse_availability_flag;
+mod parse_availability_end;
 
 mod pest_parser;
 mod parser_context;

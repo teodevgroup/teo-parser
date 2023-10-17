@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use teo_teon::value::Value;
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::DictionaryLiteral;
@@ -12,6 +13,7 @@ pub struct DataSet {
     pub(crate) parent_path: Vec<String>,
     pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
+    pub(crate) availability: Availability,
     pub(crate) auto_seed: bool,
     pub(crate) notrack: bool,
     pub(crate) groups: Vec<DataSetGroup>,
@@ -37,6 +39,7 @@ pub struct DataSetGroupResolved {
 pub struct DataSetGroup {
     pub(crate) path: Vec<usize>,
     pub(crate) identifier_path: IdentifierPath,
+    pub(crate) availability: Availability,
     pub(crate) span: Span,
     pub(crate) records: Vec<DataSetRecord>,
     pub(crate) resolved: RefCell<Option<DataSetGroupResolved>>,
@@ -52,6 +55,7 @@ pub struct DataSetRecord {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) identifier: Identifier,
     pub(crate) dictionary: DictionaryLiteral,
     pub(crate) resolved: RefCell<Option<DataSetRecordResolved>>,

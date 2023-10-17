@@ -26,6 +26,9 @@ pub(super) fn parse_source(
 ) -> Source {
     let path = path.into();
     let id = context.start_next_source(path.clone());
+    if builtin {
+        context.set_is_builtin_source();
+    }
     let mut tops = btreemap!{};
     let mut references = SourceReferences::new();
     let mut pairs = match SchemaParser::parse(Rule::schema, &content) {

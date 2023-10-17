@@ -41,6 +41,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         span,
         path,
         string_path: string_path.unwrap(),
+        availability: context.current_availability_flag(),
         comment,
         identifier: identifier.unwrap(),
         generics_declaration,

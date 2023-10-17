@@ -6,7 +6,7 @@ static SQL: u32 = MYSQL | POSTGRES | SQLITE;
 static ALL: u32 = SQL | MONGO;
 
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) struct Availability(u32);
 
 impl Availability {

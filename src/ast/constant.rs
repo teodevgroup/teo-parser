@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::availability::Availability;
+use crate::ast::expr::{Expression};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
@@ -17,6 +18,7 @@ pub(crate) struct Constant {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
+    pub(crate) availability: Availability,
     pub(crate) type_expr: Option<TypeExpr>,
     pub(crate) expression: Expression,
     pub(crate) resolved: RefCell<Option<ConstantResolved>>,
