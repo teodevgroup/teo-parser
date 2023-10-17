@@ -45,7 +45,7 @@ DECLARE_KEYWORD = _{ "declare" }
 CONFIG_KEYWORD = _{ "config" }
 MIDDLEWARE_KEYWORD = _{ "middleware" }
 DECORATOR_KEYWORD = _{ "decorator" }
-HANDLER_KEYWORD = _{ "handler" }
+HANDLER_KEYWORD = { "handler" }
 USING_KEYWORD = _{ "using" }
 JSON_KEYWORD = _{ "json" }
 FORM_KEYWORD = _{ "form" }
@@ -354,7 +354,7 @@ decorator_declaration = {
     DECLARE_KEYWORD ~
     EXCLUSIVE_KEYWORD? ~
     UNIQUE_KEYWORD? ~
-    (MODEL_KEYWORD | ENUM_KEYWORD | INTERFACE_KEYWORD) ~
+    (MODEL_KEYWORD | ENUM_KEYWORD | INTERFACE_KEYWORD | HANDLER_KEYWORD) ~
     (FIELD_KEYWORD | RELATION_KEYWORD | PROPERTY_KEYWORD | MEMBER_KEYWORD)? ~
     DECORATOR_KEYWORD ~
     identifier ~
@@ -411,7 +411,10 @@ req_type = {
 }
 
 handler_declaration = {
-    triple_comment_block? ~ DECLARE_KEYWORD ~ HANDLER_KEYWORD ~ identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
+    triple_comment_block? ~
+    (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
+    DECLARE_KEYWORD ~ HANDLER_KEYWORD ~
+    identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
 }
 
 middleware_declaration = {

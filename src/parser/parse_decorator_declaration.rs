@@ -18,6 +18,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut model: bool = false;
     let mut r#enum: bool = false;
     let mut interface: bool = false;
+    let mut handler: bool = false;
     let mut field: bool = false;
     let mut relation: bool = false;
     let mut property: bool = false;
@@ -35,6 +36,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::MODEL_KEYWORD => model = true,
             Rule::ENUM_KEYWORD => r#enum = true,
             Rule::INTERFACE_KEYWORD => interface = true,
+            Rule::HANDLER_KEYWORD => handler = true,
             Rule::FIELD_KEYWORD => field = true,
             Rule::RELATION_KEYWORD => relation = true,
             Rule::PROPERTY_KEYWORD => property = true,
@@ -60,7 +62,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
         comment,
         exclusive,
         unique,
-        decorator_class: parse_decorator_class(model, r#enum, interface, field, relation, property, member, &span, context),
+        decorator_class: parse_decorator_class(model, r#enum, interface, handler, field, relation, property, member, &span, context),
         identifier: identifier.unwrap(),
         generics_declaration,
         argument_list_declaration,
@@ -93,7 +95,7 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserConte
     }
 }
 
-fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &mut ParserContext) -> ReferenceType {
+fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, handler: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &mut ParserContext) -> ReferenceType {
     if model {
         if field {
             ReferenceType::ModelFieldDecorator
@@ -136,6 +138,22 @@ fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, field: bool
             ReferenceType::Default
         } else {
             ReferenceType::InterfaceDecorator
+        }
+    } else if handler {
+        if field {
+            context.insert_invalid_decorator_declaration(span.clone());
+            ReferenceType::Default
+        } else if relation {
+            context.insert_invalid_decorator_declaration(span.clone());
+            ReferenceType::Default
+        } else if property {
+            context.insert_invalid_decorator_declaration(span.clone());
+            ReferenceType::Default
+        } else if member {
+            context.insert_invalid_decorator_declaration(span.clone());
+            ReferenceType::Default
+        } else {
+            ReferenceType::HandlerDecorator
         }
     } else {
         ReferenceType::Default

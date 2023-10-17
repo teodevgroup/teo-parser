@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::comment::Comment;
+use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr, TypeShape};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
@@ -31,6 +32,8 @@ pub(crate) struct HandlerDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
+    pub(crate) decorators: Vec<Decorator>,
+    pub(crate) empty_decorators_spans: Vec<Span>,
     pub(crate) identifier: Identifier,
     pub(crate) input_type: TypeExpr,
     pub(crate) output_type: TypeExpr,

@@ -1,5 +1,5 @@
 use crate::ast::top::Top;
-use crate::resolver::resolve_handler_group::resolve_handler_group;
+use crate::resolver::resolve_handler_group::resolve_handler_group_types;
 use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
 use crate::resolver::resolve_constant::resolve_constant;
@@ -27,7 +27,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::Interface(interface) => resolve_interface(interface, context),
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
             Top::ConfigDeclaration(config_declaration) => resolve_config_declaration(config_declaration, context),
-            Top::HandlerGroup(handler_group) => resolve_handler_group(handler_group, context),
+            Top::HandlerGroup(handler_group) => resolve_handler_group_types(handler_group, context),
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
             Top::StructDeclaration(s) => resolve_struct_declaration(s, context),

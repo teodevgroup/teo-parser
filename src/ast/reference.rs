@@ -8,6 +8,7 @@ pub(crate) enum ReferenceType {
     ModelPropertyDecorator,
     InterfaceDecorator,
     InterfaceFieldDecorator,
+    HandlerDecorator,
     PipelineItem,
     Default,
 }

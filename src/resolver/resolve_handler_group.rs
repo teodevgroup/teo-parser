@@ -1,12 +1,14 @@
 use maplit::btreemap;
 use crate::ast::handler::{HandlerDeclaration, HandlerDeclarationResolved, HandlerGroupDeclaration, HandlerInputFormat};
+use crate::ast::reference::ReferenceType;
 use crate::ast::type_expr::{TypeShape};
 use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
+use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::{resolve_type_expr, resolve_type_shape};
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_handler_group<'a>(
+pub(super) fn resolve_handler_group_types<'a>(
     handler_group: &'a HandlerGroupDeclaration,
     context: &'a ResolverContext<'a>
 ) {
@@ -14,11 +16,20 @@ pub(super) fn resolve_handler_group<'a>(
         context.insert_duplicated_identifier(handler_group.identifier.span);
     }
     for handler_declaration in &handler_group.handler_declarations {
-        resolve_handler_declaration(handler_declaration, context)
+        resolve_handler_declaration_types(handler_declaration, context)
     }
 }
 
-pub(super) fn resolve_handler_declaration<'a>(
+pub(super) fn resolve_handler_group_decorators<'a>(
+    handler_group: &'a HandlerGroupDeclaration,
+    context: &'a ResolverContext<'a>
+) {
+    for handler_declaration in &handler_group.handler_declarations {
+        resolve_handler_declaration_decorators(handler_declaration, context)
+    }
+}
+
+pub(super) fn resolve_handler_declaration_types<'a>(
     handler_declaration: &'a HandlerDeclaration,
     context: &'a ResolverContext<'a>,
 ) {
@@ -38,6 +49,16 @@ pub(super) fn resolve_handler_declaration<'a>(
         HandlerInputFormat::Json => validate_json_input_type(&handler_declaration.resolved().input_shape, handler_declaration.input_type.span(), context),
     }
     validate_json_output_type(&handler_declaration.resolved().output_shape, handler_declaration.output_type.span(), context);
+}
+
+pub(super) fn resolve_handler_declaration_decorators<'a>(
+    handler_declaration: &'a HandlerDeclaration,
+    context: &'a ResolverContext<'a>,
+) {
+    for decorator in &handler_declaration.decorators {
+        resolve_decorator(decorator, context, &btreemap!{
+        }, ReferenceType::HandlerDecorator);
+    }
 }
 
 fn validate_form_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {

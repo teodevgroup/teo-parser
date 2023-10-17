@@ -6,6 +6,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators};
+use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
@@ -46,6 +47,10 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
             FieldClass::ConfigDeclarationField => {}
         }
     }
+    // handlers
+    for handler in &model.handlers {
+        resolve_handler_declaration_types(handler, context);
+    }
     model.resolve(ModelResolved {
         scalar_fields,
         scalar_fields_without_virtuals,
@@ -67,5 +72,9 @@ pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a Resolv
     // fields
     for field in &model.fields {
         resolve_field_decorators(model, field, context);
+    }
+    // handlers
+    for handler in &model.handlers {
+        resolve_handler_declaration_decorators(handler, context);
     }
 }

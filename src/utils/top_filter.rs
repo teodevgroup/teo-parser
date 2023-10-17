@@ -11,7 +11,8 @@ pub(crate) fn top_filter_for_reference_type(reference_type: ReferenceType) -> Ar
         ReferenceType::ModelRelationDecorator |
         ReferenceType::ModelPropertyDecorator |
         ReferenceType::InterfaceDecorator |
-        ReferenceType::InterfaceFieldDecorator => Arc::new(move |top: &Top| {
+        ReferenceType::InterfaceFieldDecorator |
+        ReferenceType::HandlerDecorator => Arc::new(move |top: &Top| {
             top.as_decorator_declaration().map_or(false, |d| d.decorator_class == reference_type)
         }),
         ReferenceType::PipelineItem => Arc::new(|top: &Top| {
