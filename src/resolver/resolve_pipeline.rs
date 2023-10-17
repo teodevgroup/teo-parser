@@ -43,9 +43,9 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
     for (index, expression) in unit.expressions.iter().enumerate() {
         if let Some(identifier) = expression.kind.as_identifier() {
             if let Some(this_top) = if current_space.is_some() {
-                current_space.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline())
+                current_space.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline(), context.current_availability())
             } else {
-                resolve_identifier_with_filter(identifier, context, &top_filter_for_pipeline()).map(|path| context.schema.find_top_by_path(&path)).flatten()
+                resolve_identifier_with_filter(identifier, context, &top_filter_for_pipeline(), context.current_availability()).map(|path| context.schema.find_top_by_path(&path)).flatten()
             } {
                 match this_top {
                     Top::Namespace(namespace) => {

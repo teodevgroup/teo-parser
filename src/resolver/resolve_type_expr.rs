@@ -374,7 +374,7 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default) {
+        if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default, context.current_availability()) {
             let top = context.schema.find_top_by_path(&reference).unwrap();
             base = match top {
                 Top::Model(m) => Some(Type::ModelObject(m.path.clone(), m.string_path.clone())),

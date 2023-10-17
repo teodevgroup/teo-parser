@@ -72,7 +72,7 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
         let first_expression = unit.expressions.get(0).unwrap();
         let expected = Type::Undetermined;
         let mut current = if let Some(identifier) = first_expression.kind.as_identifier() {
-            if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default) {
+            if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
                 let top = context.schema.find_top_by_path(&reference).unwrap();
                 if let Some(constant) = top.as_constant() {
                     if !constant.is_resolved() {
@@ -317,7 +317,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                 Top::Namespace(namespace) => {
                     match &item.kind {
                         ExpressionKind::Identifier(identifier) => {
-                            if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default)) {
+                            if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), context.current_availability()) {
                                 return UnitResolveResult::Reference(top.path().clone())
                             } else {
                                 context.insert_diagnostics_error(identifier.span, "Invalid reference");

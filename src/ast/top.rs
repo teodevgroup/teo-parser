@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::handler::HandlerGroupDeclaration;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
@@ -146,6 +147,25 @@ impl Top {
             Top::DecoratorDeclaration(d) => d.span,
             Top::PipelineItemDeclaration(p) => p.span,
             Top::StructDeclaration(s) => s.span,
+        }
+    }
+
+    pub(crate) fn available_test(&self, availability: Availability) -> bool {
+        match self {
+            Top::Import(_) => true,
+            Top::Config(_) => true,
+            Top::ConfigDeclaration(_) => true,
+            Top::Constant(t) => t.availability.contains(availability),
+            Top::Enum(t) => t.availability.contains(availability),
+            Top::Model(t) => t.availability.contains(availability),
+            Top::DataSet(t) => t.availability.contains(availability),
+            Top::Middleware(_) => true,
+            Top::HandlerGroup(t) => true,
+            Top::Interface(t) => t.availability.contains(availability),
+            Top::Namespace(_) => true,
+            Top::DecoratorDeclaration(t) => t.availability.contains(availability),
+            Top::PipelineItemDeclaration(t) => t.availability.contains(availability),
+            Top::StructDeclaration(t) => t.availability.contains(availability),
         }
     }
 

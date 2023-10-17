@@ -13,7 +13,7 @@ pub(super) fn resolve_decorator<'a>(
     keywords_map: &BTreeMap<Keyword, &Type>,
     reference_type: ReferenceType,
 ) {
-    if let Some(reference) = resolve_identifier_path(&decorator.identifier_path, context, reference_type) {
+    if let Some(reference) = resolve_identifier_path(&decorator.identifier_path, context, reference_type, context.current_availability()) {
         decorator.resolve(DecoratorResolved { path: reference });
         let decorator_declaration = context.schema.find_top_by_path(&decorator.resolved().path).unwrap().as_decorator_declaration().unwrap();
         resolve_argument_list(

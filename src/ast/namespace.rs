@@ -23,7 +23,6 @@ pub(crate) struct Namespace {
     pub(crate) parent_path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) parent_string_path: Vec<String>,
-    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) tops: BTreeMap<usize, Top>,
@@ -96,10 +95,10 @@ impl Namespace {
         self.references.data_sets.iter().map(|m| self.get_data_set(*m).unwrap()).collect()
     }
 
-    pub(crate) fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
+    pub(crate) fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
         self.tops().iter().find(|t| {
             if let Some(n) = t.name() {
-                (n == name) && filter(t)
+                (n == name) && filter(t) && t.available_test(availability)
             } else {
                 false
             }
@@ -110,15 +109,15 @@ impl Namespace {
         self.tops.get(&id)
     }
 
-    pub(crate) fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
+    pub(crate) fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
         if path.len() == 1 {
-            self.find_top_by_name(path.get(0).unwrap(), filter)
+            self.find_top_by_name(path.get(0).unwrap(), filter, availability)
         } else {
             let mut path_for_ns = path.clone();
             path_for_ns.remove(path_for_ns.len() - 1);
             let child_ns = self.find_child_namespace_by_string_path(&path_for_ns);
             return if let Some(child_ns) = child_ns {
-                child_ns.find_top_by_name(path.last().unwrap(), filter)
+                child_ns.find_top_by_name(path.last().unwrap(), filter, availability)
             } else {
                 None
             }

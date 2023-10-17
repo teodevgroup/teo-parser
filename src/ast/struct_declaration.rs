@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
@@ -8,6 +9,7 @@ use crate::ast::span::Span;
 pub(crate) struct StructDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
+    pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
