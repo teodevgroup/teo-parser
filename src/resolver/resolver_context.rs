@@ -21,7 +21,10 @@ pub(crate) struct ExaminedDataSetRecord {
 }
 
 pub(crate) struct ResolverContext<'a> {
-    pub(crate) examined_default_paths: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_default_paths_mysql: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_default_paths_postgres: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_default_paths_sqlite: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_default_paths_mongo: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_fields: Mutex<BTreeSet<String>>,
     pub(crate) examined_middleware_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
@@ -36,7 +39,10 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn new(diagnostics: &'a mut Diagnostics, schema: &'a Schema) -> Self {
         Self {
-            examined_default_paths: Mutex::new(btreeset!{}),
+            examined_default_paths_mysql: Mutex::new(btreeset!{}),
+            examined_default_paths_postgres: Mutex::new(btreeset!{}),
+            examined_default_paths_sqlite: Mutex::new(btreeset!{}),
+            examined_default_paths_mongo: Mutex::new(btreeset!{}),
             examined_fields: Mutex::new(btreeset!{}),
             examined_middleware_paths: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
@@ -78,12 +84,43 @@ impl<'a> ResolverContext<'a> {
         self.namespaces.lock().unwrap().last().map(|r| *r)
     }
 
-    pub(crate) fn add_examined_default_path(&self, path: Vec<String>) {
-        self.examined_default_paths.lock().unwrap().insert(path);
+    pub(crate) fn add_examined_default_path(&self, path: Vec<String>, availability: Availability) {
+        if availability.contains(Availability::mysql()) {
+            self.examined_default_paths_mysql.lock().unwrap().insert(path.clone());
+        }
+        if availability.contains(Availability::postgres()) {
+            self.examined_default_paths_postgres.lock().unwrap().insert(path.clone());
+        }
+        if availability.contains(Availability::sqlite()) {
+            self.examined_default_paths_sqlite.lock().unwrap().insert(path.clone());
+        }
+        if availability.contains(Availability::mongo()) {
+            self.examined_default_paths_mongo.lock().unwrap().insert(path.clone());
+        }
     }
 
-    pub(crate) fn has_examined_default_path(&self, path: &Vec<String>) -> bool {
-        self.examined_default_paths.lock().unwrap().contains(path)
+    pub(crate) fn has_examined_default_path(&self, path: &Vec<String>, availability: Availability) -> bool {
+        if availability.contains(Availability::mysql()) {
+            if self.examined_default_paths_mysql.lock().unwrap().contains(path) {
+                return true;
+            }
+        }
+        if availability.contains(Availability::postgres()) {
+            if self.examined_default_paths_postgres.lock().unwrap().contains(path) {
+                return true;
+            }
+        }
+        if availability.contains(Availability::sqlite()) {
+            if self.examined_default_paths_sqlite.lock().unwrap().contains(path) {
+                return true;
+            }
+        }
+        if availability.contains(Availability::mongo()) {
+            if self.examined_default_paths_mongo.lock().unwrap().contains(path) {
+                return true;
+            }
+        }
+        false
     }
 
     pub(crate) fn add_examined_middleware_path(&self, path: Vec<String>) {

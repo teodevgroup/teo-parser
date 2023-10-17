@@ -42,12 +42,14 @@ namespace std {
     }
 
     declare struct String {
-        declare static function new(from?: Int | Int64 | Float | Float32 | Bool | ObjectId): Self
+        declare static function new(from?: Int | Int64 | Float | Float32 | Bool): Self
     }
 
+    #if available(mongo)
     declare struct ObjectId {
         declare static function new(from?: String): Self
     }
+    #end
 
     declare struct Date {
         declare static function new(from?: String): Self
@@ -160,7 +162,7 @@ namespace std {
     }
 
     #if available(mysql)
-    interface enum MySQLDatabaseType {
+    interface enum DatabaseType {
         varChar(len?: Int)
         text
         char(len?: Int)
@@ -192,7 +194,7 @@ namespace std {
     #end
 
     #if available(postgres)
-    interface enum PostgresDatabaseType {
+    interface enum DatabaseType {
         text
         char(len?: Int)
         varChar(len?: Int)
@@ -223,7 +225,7 @@ namespace std {
     #end
 
     #if available(sqlite)
-    interface enum SQLiteDatabaseType {
+    interface enum DatabaseType {
         text
         integer
         real
@@ -233,7 +235,7 @@ namespace std {
     #end    
 
     #if available(mongo)
-    interface enum MongoDatabaseType {
+    interface enum DatabaseType {
         string
         bool
         int
@@ -386,7 +388,7 @@ namespace std {
 
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: MySQLDatabaseType)
+    declare unique model field decorator db(type?: DatabaseType)
 
     /// @name Readonly
     /// Disallow this field to be written by the client

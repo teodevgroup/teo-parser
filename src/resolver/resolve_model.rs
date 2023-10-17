@@ -10,7 +10,7 @@ use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorat
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
-    if context.has_examined_default_path(&model.string_path) {
+    if context.has_examined_default_path(&model.string_path, model.availability) {
         context.insert_duplicated_identifier(model.identifier.span);
     }
     context.clear_examined_fields();
@@ -58,7 +58,7 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
         relations,
         direct_relations,
     });
-    context.add_examined_default_path(model.string_path.clone());
+    context.add_examined_default_path(model.string_path.clone(), model.availability);
 }
 
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {

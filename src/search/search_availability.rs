@@ -2,7 +2,7 @@ use crate::ast::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
-use crate::ast::source::Source;
+use crate::ast::source::{Source, SourceType};
 
 pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_path: &Vec<&str>) -> Availability {
     if namespace_path.len() == 0 {
@@ -16,8 +16,10 @@ pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_pa
     }
 }
 
-
 pub(crate) fn find_source_availability(schema: &Schema, source: &Source) -> Availability {
+    if source.r#type == SourceType::Builtin {
+        return Availability::mysql(); // just pretend to be MySQL
+    }
     let connector = find_source_connector(schema, source);
     find_availability_in_connector(connector)
 }
