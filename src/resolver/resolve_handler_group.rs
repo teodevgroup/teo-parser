@@ -10,6 +10,9 @@ pub(super) fn resolve_handler_group<'a>(
     handler_group: &'a HandlerGroupDeclaration,
     context: &'a ResolverContext<'a>
 ) {
+    if context.has_examined_default_path(&handler_group.string_path) {
+        context.insert_duplicated_identifier(handler_group.identifier.span);
+    }
     for handler_declaration in &handler_group.handler_declarations {
         resolve_handler_declaration(handler_declaration, context)
     }
@@ -19,10 +22,10 @@ pub(super) fn resolve_handler_declaration<'a>(
     handler_declaration: &'a HandlerDeclaration,
     context: &'a ResolverContext<'a>,
 ) {
-    if context.has_examined_handler_path(&handler_declaration.string_path) {
+    if context.has_examined_field(&handler_declaration.identifier.name().to_owned()) {
         context.insert_diagnostics_error(handler_declaration.identifier.span, "DefinitionError: duplicated definition of handler");
     } else {
-        context.add_examined_handler_path(handler_declaration.string_path.clone());
+        context.add_examined_field(handler_declaration.identifier.name.clone());
     }
     resolve_type_expr(&handler_declaration.input_type, &vec![], &vec![], &btreemap! {}, context);
     resolve_type_expr(&handler_declaration.output_type, &vec![], &vec![], &btreemap! {}, context);
