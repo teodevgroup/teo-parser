@@ -43,4 +43,12 @@ mod test {
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }
+
+    #[test]
+    fn test_availability() {
+        let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
+        let (schema, _) = parse(path, None, None);
+        //let completions = auto_complete_items(&schema, path, (4, 13));
+        //println!("{:?}", completions);
+    }
 }

@@ -2,6 +2,8 @@ use maplit::btreemap;
 use crate::ast::availability::Availability;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::top::Top;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_config_block::parse_config_block;
@@ -127,6 +129,8 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 context.schema_references.struct_declarations.push(struct_declaration.path.clone());
                 tops.insert(struct_declaration.id(), Top::StructDeclaration(struct_declaration));
             },
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }

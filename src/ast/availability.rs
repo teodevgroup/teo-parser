@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 static MONGO: u32 = 1;
 static MYSQL: u32 = 1 << 1;
 static POSTGRES: u32 = 1 << 2;
@@ -46,5 +48,29 @@ impl Default for Availability {
 
     fn default() -> Self {
         Self(ALL)
+    }
+}
+
+impl Display for Availability {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut to_join = vec![];
+        if self.0 & MYSQL > 0 {
+            to_join.push("mysql");
+        }
+        if self.0 & POSTGRES > 0 {
+            to_join.push("postgres");
+        }
+        if self.0 & SQLITE > 0 {
+            to_join.push("sqlite");
+        }
+        if self.0 & MONGO > 0 {
+            to_join.push("mongo");
+        }
+        if to_join.is_empty() {
+            f.write_str(&"none")
+        } else {
+            f.write_str(&to_join.join(" | "))
+        }
     }
 }

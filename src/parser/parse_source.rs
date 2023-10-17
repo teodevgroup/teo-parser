@@ -2,6 +2,8 @@ use maplit::btreemap;
 use pest::Parser;
 use crate::ast::source::{Source, SourceReferences, SourceType};
 use crate::ast::top::Top;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
@@ -132,6 +134,8 @@ pub(super) fn parse_source(
                 context.schema_references.struct_declarations.push(struct_declaration.path.clone());
                 tops.insert(struct_declaration.id(), Top::StructDeclaration(struct_declaration));
             }
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }
@@ -141,7 +145,7 @@ pub(super) fn parse_source(
     }
     Source::new(
         id,
-        if builtin { SourceType::Builtin } else { SourceType::Normal },
+        if builtin || path.as_str().ends_with("builtin/std.teo") { SourceType::Builtin } else { SourceType::Normal },
         path,
         tops,
         references

@@ -1,5 +1,7 @@
+use crate::ast::arith::ArithExpr;
 use crate::ast::availability::Availability;
 use crate::ast::config::Config;
+use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::{Source, SourceType};
@@ -18,10 +20,11 @@ pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_pa
 
 pub(crate) fn find_source_availability(schema: &Schema, source: &Source) -> Availability {
     if source.r#type == SourceType::Builtin {
-        return Availability::mysql(); // just pretend to be MySQL
+        return Availability::default(); // just pretend to be all
     }
     let connector = find_source_connector(schema, source);
-    find_availability_in_connector(connector)
+    let retval = find_availability_in_connector(connector);
+    retval
 }
 
 pub(crate) fn find_source_connector<'a>(schema: &'a Schema, source: &'a Source) -> Option<&'a Config> {
@@ -44,11 +47,28 @@ pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Avai
             item.identifier.name() == "provider"
         }) {
             if let Some(enum_variant_literal) = provider.expression.kind.as_enum_variant_literal() {
-                match enum_variant_literal.identifier.name() {
-                    "mongo" => Availability::mongo(),
-                    "mysql" => Availability::mysql(),
-                    "postgres" => Availability::postgres(),
-                    "sqlite" => Availability::sqlite(),
+                availability_from_enum_variant_literal(enum_variant_literal)
+            } else if let Some(unit) = provider.expression.kind.as_unit() {
+                if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
+                    availability_from_enum_variant_literal(enum_variant_literal)
+                } else {
+                    Availability::none()
+                }
+            } else if let Some(arith) = provider.expression.kind.as_arith_expr() {
+                match arith {
+                    ArithExpr::Expression(e) => {
+                        if let Some(unit) = e.kind.as_unit() {
+                            if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
+                                availability_from_enum_variant_literal(enum_variant_literal)
+                            } else {
+                                Availability::none()
+                            }
+                        } else if let Some(e) = e.kind.as_enum_variant_literal() {
+                            availability_from_enum_variant_literal(e)
+                        } else {
+                            Availability::none()
+                        }
+                    }
                     _ => Availability::none(),
                 }
             } else {
@@ -63,6 +83,9 @@ pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Avai
 }
 
 pub(crate) fn find_namespace_availability(namespace: &Namespace, schema: &Schema, source: &Source) -> Availability {
+    if source.r#type == SourceType::Builtin {
+        return Availability::default(); // just pretend to be all
+    }
     let connector = find_namespace_connector(namespace, schema, source);
     find_availability_in_connector(connector)
 }
@@ -118,5 +141,15 @@ pub(crate) fn find_namespace_connector<'a>(namespace: &'a Namespace, schema: &'a
             }
         }
         return find_source_connector(schema, source);
+    }
+}
+
+fn availability_from_enum_variant_literal(e: &EnumVariantLiteral) -> Availability {
+    match e.identifier.name() {
+        "mongo" => Availability::mongo(),
+        "mysql" => Availability::mysql(),
+        "postgres" => Availability::postgres(),
+        "sqlite" => Availability::sqlite(),
+        _ => Availability::none(),
     }
 }

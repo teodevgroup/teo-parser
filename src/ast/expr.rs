@@ -240,6 +240,13 @@ impl ExpressionKind {
             _ => None,
         }
     }
+
+    pub(crate) fn as_arith_expr(&self) -> Option<&ArithExpr> {
+        match self {
+            ExpressionKind::ArithExpr(a) => Some(a),
+            _ => None,
+        }
+    }
 }
 
 impl Display for ExpressionKind {
