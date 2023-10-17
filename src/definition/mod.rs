@@ -19,3 +19,8 @@ pub(crate) mod jump_to_definition_in_constant;
 pub(crate) mod jump_to_definition_in_config;
 pub(crate) mod jump_to_definition_in_type_expr;
 pub(crate) mod jump_to_definition_in_config_declaration;
+pub(crate) mod jump_to_definition_in_decorator_declaration;
+pub(crate) mod jump_to_definition_in_pipeline_item_declaration;
+pub(crate) mod jump_to_definition_in_struct_declaration;
+pub(crate) mod jump_to_definition_in_handler_declaration;
+pub(crate) mod jump_to_definition_in_argument_list_declaration;
