@@ -1,5 +1,5 @@
 use crate::ast::top::Top;
-use crate::resolver::resolve_handler_group::resolve_handler_group_types;
+use crate::resolver::resolve_handler_group::{resolve_handler_group_decorators, resolve_handler_group_types};
 use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;
 use crate::resolver::resolve_constant::resolve_constant;
@@ -41,6 +41,7 @@ pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
             Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             Top::Model(model) => resolve_model_decorators(model, context),
+            Top::HandlerGroup(handler_group) => resolve_handler_group_decorators(handler_group, context),
             _ => ()
         }
     }

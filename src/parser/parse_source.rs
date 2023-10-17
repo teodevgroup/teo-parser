@@ -60,6 +60,9 @@ pub(super) fn parse_source(
                 let config = parse_config_block(current, context);
                 references.configs.insert(config.id());
                 context.schema_references.add_config(&config);
+                if config.keyword.is_connector() {
+                    references.connector = Some(config.id());
+                }
                 tops.insert(config.id(), Top::Config(config));
             },
             Rule::model_declaration => { // model A { ... }

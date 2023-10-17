@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use maplit::btreeset;
+use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
@@ -42,6 +43,10 @@ impl Source {
 
     pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
         self.references.namespaces.iter().map(|m| self.get_namespace(*m).unwrap()).collect()
+    }
+
+    pub(crate) fn get_connector(&self) -> Option<&Config> {
+        self.references.connector.map(|id| self.tops.get(&id).unwrap().as_config().unwrap())
     }
 
     pub(crate) fn get_namespace(&self, id: usize) -> Option<&Namespace> {
@@ -97,6 +102,10 @@ impl Source {
         }
     }
 
+    pub(crate) fn parent_namespace_for_namespace(&self, namespace: &Namespace) -> Option<&Namespace> {
+        self.find_child_namespace_by_string_path(&namespace.parent_str_path())
+    }
+
     pub(crate) fn find_child_namespace_by_path(&self, path: &Vec<usize>) -> Option<&Namespace> {
         if *path.first().unwrap() != self.id {
             return None;
@@ -132,6 +141,7 @@ impl Source {
 
 pub(crate) struct SourceReferences {
     pub(crate) imports: BTreeSet<usize>,
+    pub(crate) connector: Option<usize>,
     pub(crate) constants: BTreeSet<usize>,
     pub(crate) configs: BTreeSet<usize>,
     pub(crate) enums: BTreeSet<usize>,
@@ -151,6 +161,7 @@ impl SourceReferences {
     pub(crate) fn new() -> Self {
         Self {
             imports: btreeset!{},
+            connector: None,
             constants: btreeset!{},
             configs: btreeset!{},
             enums: btreeset!{},

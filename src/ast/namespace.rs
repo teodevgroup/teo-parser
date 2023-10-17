@@ -44,56 +44,48 @@ impl Namespace {
         self.string_path.iter().map(|s| s.as_str()).collect()
     }
 
+    pub(crate) fn parent_str_path(&self) -> Vec<&str> {
+        self.parent_string_path.iter().map(|s| s.as_str()).collect()
+    }
+
     pub(crate) fn tops(&self) -> Vec<&Top> {
         self.tops.values().collect()
     }
 
-    pub(crate) fn get_constant(&self, id: usize) -> &Constant {
-        self.tops.get(&id).unwrap().as_constant().unwrap()
+    pub(crate) fn get_connector(&self) -> Option<&Config> {
+        self.references.connector.map(|id| self.tops.get(&id).unwrap().as_config().unwrap())
     }
 
-    pub(crate) fn get_enum(&self, id: usize) -> &Enum {
-        self.tops.get(&id).unwrap().as_enum().unwrap()
+    fn get_enum(&self, id: usize) -> Option<&Enum> {
+        self.tops.get(&id).unwrap().as_enum()
     }
 
-    pub(crate) fn get_model(&self, id: usize) -> &Model {
-        self.tops.get(&id).unwrap().as_model().unwrap()
+    fn get_model(&self, id: usize) -> Option<&Model> {
+        self.tops.get(&id).unwrap().as_model()
     }
 
     pub(crate) fn get_namespace(&self, id: usize) -> Option<&Namespace> {
         self.tops.get(&id).unwrap().as_namespace()
     }
 
-    pub(crate) fn get_config(&self, id: usize) -> &Config {
-        self.tops.get(&id).unwrap().as_config().unwrap()
+    fn get_data_set(&self, id: usize) -> Option<&DataSet> {
+        self.tops.get(&id).unwrap().as_data_set()
     }
 
-    pub(crate) fn get_data_set(&self, id: usize) -> &DataSet {
-        self.tops.get(&id).unwrap().as_data_set().unwrap()
-    }
-
-    pub(crate) fn get_middleware(&self, id: usize) -> &Middleware {
-        self.tops.get(&id).unwrap().as_middleware().unwrap()
-    }
-
-    pub(crate) fn get_handler_group(&self, id: usize) -> &HandlerGroupDeclaration {
-        self.tops.get(&id).unwrap().as_handler_group().unwrap()
-    }
-
-    pub(crate) fn get_interface(&self, id: usize) -> &InterfaceDeclaration {
-        self.tops.get(&id).unwrap().as_interface().unwrap()
+    fn get_handler_group(&self, id: usize) -> Option<&HandlerGroupDeclaration> {
+        self.tops.get(&id).unwrap().as_handler_group()
     }
 
     pub(crate) fn models(&self) -> Vec<&Model> {
-        self.references.models.iter().map(|m| self.get_model(*m)).collect()
+        self.references.models.iter().map(|m| self.get_model(*m).unwrap()).collect()
     }
 
     pub(crate) fn enums(&self) -> Vec<&Enum> {
-        self.references.enums.iter().map(|m| self.get_enum(*m)).collect()
+        self.references.enums.iter().map(|m| self.get_enum(*m).unwrap()).collect()
     }
 
     pub(crate) fn handler_groups(&self) -> Vec<&HandlerGroupDeclaration> {
-        self.references.namespaces.iter().map(|m| self.get_handler_group(*m)).collect()
+        self.references.namespaces.iter().map(|m| self.get_handler_group(*m).unwrap()).collect()
     }
 
     pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
@@ -101,7 +93,7 @@ impl Namespace {
     }
 
     pub(crate) fn data_sets(&self) -> Vec<&DataSet> {
-        self.references.data_sets.iter().map(|m| self.get_data_set(*m)).collect()
+        self.references.data_sets.iter().map(|m| self.get_data_set(*m).unwrap()).collect()
     }
 
     pub(crate) fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>) -> Option<&Top> {
@@ -149,6 +141,7 @@ impl Namespace {
 #[derive(Debug)]
 pub(crate) struct NamespaceReferences {
     pub(crate) constants: BTreeSet<usize>,
+    pub(crate) connector: Option<usize>,
     pub(crate) configs: BTreeSet<usize>,
     pub(crate) enums: BTreeSet<usize>,
     pub(crate) models: BTreeSet<usize>,
@@ -168,6 +161,7 @@ impl NamespaceReferences {
     pub(crate) fn new() -> Self {
         Self {
             constants: btreeset!{},
+            connector: None,
             configs: btreeset!{},
             enums: btreeset!{},
             models: btreeset!{},

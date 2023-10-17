@@ -31,8 +31,14 @@ impl Availability {
         Self(SQLITE)
     }
 
+    pub(crate) fn none() -> Self { Self(0) }
+
     pub(crate) fn contains(&self, user: Availability) -> bool {
         self.0 & user.0 != 0
+    }
+
+    pub(crate) fn is_none(&self) -> bool {
+        self.0 == 0
     }
 }
 

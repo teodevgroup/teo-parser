@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 use maplit::btreeset;
+use crate::ast::availability::Availability;
 use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
 use crate::ast::namespace::Namespace;
@@ -10,6 +11,8 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
+use crate::resolver::resolve_namespace_availability::resolve_namespace_availability;
+use crate::resolver::resolve_source_availability::resolve_source_availability;
 
 #[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) struct ExaminedDataSetRecord {
@@ -27,6 +30,7 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) schema: &'a Schema,
     pub(crate) source: Mutex<Option<&'a Source>>,
     pub(crate) namespaces: Mutex<Vec<&'a Namespace>>,
+    pub(crate) availabilities: Mutex<Vec<Availability>>,
 }
 
 impl<'a> ResolverContext<'a> {
@@ -41,19 +45,30 @@ impl<'a> ResolverContext<'a> {
             schema,
             source: Mutex::new(None),
             namespaces: Mutex::new(vec![]),
+            availabilities: Mutex::new(vec![]),
         }
     }
 
     pub(crate) fn start_source(&self, source: &'a Source) {
         *self.source.lock().unwrap() = Some(source);
+        // set availability
+        let availability = resolve_source_availability(self.schema, source);
+        *self.availabilities.lock().unwrap() = vec![availability];
     }
 
     pub(crate) fn push_namespace(&self, namespace: &'a Namespace) {
         self.namespaces.lock().unwrap().push(namespace);
+        let availability = resolve_namespace_availability(namespace, self.schema, self.source());
+        self.availabilities.lock().unwrap().push(availability);
     }
 
     pub(crate) fn pop_namespace(&self) {
         self.namespaces.lock().unwrap().pop();
+        self.availabilities.lock().unwrap().pop();
+    }
+
+    pub(crate) fn current_availability(&self) -> Availability {
+        *self.availabilities.lock().unwrap().last().unwrap()
     }
 
     pub(crate) fn source(&self) -> &Source {

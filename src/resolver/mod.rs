@@ -26,3 +26,5 @@ mod resolve_struct_declaration;
 mod resolve_function_declaration;
 mod resolve_type;
 mod resolve_unit;
+mod resolve_source_availability;
+mod resolve_namespace_availability;
