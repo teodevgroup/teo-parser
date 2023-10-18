@@ -24,8 +24,6 @@ use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Namespace {
     let span = parse_span(&pair);
-    let parent_path = context.current_path();
-    let parent_string_path = context.current_string_path();
     let path = context.next_parent_path();
     let mut comment = None;
     let mut identifier = None;
@@ -140,9 +138,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
     Namespace {
         span,
         path,
-        parent_path,
         string_path: string_path.unwrap(),
-        parent_string_path,
         comment,
         identifier: identifier.unwrap(),
         tops,

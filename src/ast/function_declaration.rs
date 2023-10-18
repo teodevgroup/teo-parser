@@ -33,6 +33,10 @@ impl FunctionDeclaration {
         *self.path.last().unwrap()
     }
 
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    }
+
     pub(crate) fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
         let mut generics_declaration = vec![];
         let mut generics_constraint = vec![];

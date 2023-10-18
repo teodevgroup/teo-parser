@@ -126,6 +126,10 @@ impl Field {
         *self.path.last().unwrap()
     }
 
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    }
+
     pub(crate) fn name(&self) -> &str {
         self.identifier.name.as_str()
     }

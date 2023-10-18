@@ -20,9 +20,7 @@ use crate::ast::top::Top;
 pub struct Namespace {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
-    pub(crate) parent_path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) parent_string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) tops: BTreeMap<usize, Top>,
@@ -40,11 +38,11 @@ impl Namespace {
     }
 
     pub(crate) fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(|s| s.as_str()).collect()
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 
     pub(crate) fn parent_str_path(&self) -> Vec<&str> {
-        self.parent_string_path.iter().map(|s| s.as_str()).collect()
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
     pub(crate) fn tops(&self) -> Vec<&Top> {

@@ -57,6 +57,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
 fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember {
     let span = parse_span(&pair);
     let path = context.next_path();
+    let mut string_path = None;
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
@@ -65,7 +66,10 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::EMPTY_LINES => {},
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
+            Rule::identifier => {
+                identifier = Some(parse_identifier(&current));
+                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
+            },
             Rule::decorator => decorators.push(parse_decorator(current, context)),
             Rule::empty_decorator => (),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
@@ -77,6 +81,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
     EnumMember {
         span,
         path,
+        string_path: string_path.unwrap(),
         availability: context.current_availability_flag(),
         comment,
         decorators,

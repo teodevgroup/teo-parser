@@ -34,6 +34,10 @@ impl Enum {
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
+
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
 }
 
 #[derive(Debug)]
@@ -52,6 +56,7 @@ impl EnumMemberResolved {
 pub struct EnumMember {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
+    pub(crate) string_path: Vec<String>,
     pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
@@ -69,6 +74,10 @@ impl EnumMember {
 
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
+    }
+
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
     }
 
     pub(crate) fn resolve(&self, resolved: EnumMemberResolved) {

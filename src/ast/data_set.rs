@@ -28,6 +28,10 @@ impl DataSet {
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
+
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
 }
 
 #[derive(Debug)]
