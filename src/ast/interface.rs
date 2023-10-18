@@ -7,7 +7,7 @@ use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct InterfaceDeclaration {
+pub struct InterfaceDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,

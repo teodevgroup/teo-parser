@@ -6,12 +6,12 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct HandlerGroupDeclaration {
+pub struct HandlerGroupDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) handler_declarations: Vec<HandlerDeclaration>,
 }
 

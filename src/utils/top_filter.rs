@@ -19,7 +19,7 @@ pub(crate) fn top_filter_for_reference_type(reference_type: ReferenceType) -> Ar
             top.as_pipeline_item_declaration().is_some()
         }),
         ReferenceType::Default => Arc::new(|top: &Top| {
-            top.is_enum() || top.is_model() || top.is_interface() || top.is_struct_declaration() || top.is_config() || top.is_constant() || top.is_namespace()
+            top.is_enum() || top.is_model() || top.is_interface_declaration() || top.is_struct_declaration() || top.is_config() || top.is_constant() || top.is_namespace()
         }),
     }
 }

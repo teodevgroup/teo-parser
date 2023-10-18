@@ -8,7 +8,7 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct DecoratorDeclaration {
+pub struct DecoratorDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,

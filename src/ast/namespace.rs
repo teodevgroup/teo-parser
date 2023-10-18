@@ -10,14 +10,14 @@ use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
 use crate::ast::identifier::Identifier;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::middleware::Middleware;
+use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 
 #[derive(Debug)]
-pub(crate) struct Namespace {
+pub struct Namespace {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) parent_path: Vec<usize>,
@@ -72,7 +72,7 @@ impl Namespace {
     }
 
     fn get_handler_group(&self, id: usize) -> Option<&HandlerGroupDeclaration> {
-        self.tops.get(&id).unwrap().as_handler_group()
+        self.tops.get(&id).unwrap().as_handler_group_declaration()
     }
 
     pub(crate) fn models(&self) -> Vec<&Model> {

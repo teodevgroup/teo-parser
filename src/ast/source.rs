@@ -6,7 +6,6 @@ use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
-use crate::definition::definition::Definition;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(crate) enum SourceType {
@@ -14,7 +13,7 @@ pub(crate) enum SourceType {
     Normal,
 }
 
-pub(crate) struct Source {
+pub struct Source {
     pub(crate) id: usize,
     pub(crate) r#type: SourceType,
     pub(crate) file_path: String,

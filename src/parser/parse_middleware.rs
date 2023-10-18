@@ -1,11 +1,11 @@
-use crate::ast::middleware::Middleware;
+use crate::ast::middleware::MiddlewareDeclaration;
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_middleware(pair: Pair<'_>, context: &mut ParserContext) -> Middleware {
+pub(super) fn parse_middleware(pair: Pair<'_>, context: &mut ParserContext) -> MiddlewareDeclaration {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut string_path = None;
@@ -21,7 +21,7 @@ pub(super) fn parse_middleware(pair: Pair<'_>, context: &mut ParserContext) -> M
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    Middleware {
+    MiddlewareDeclaration {
         span,
         path,
         string_path: string_path.unwrap(),

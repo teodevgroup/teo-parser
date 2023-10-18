@@ -8,13 +8,13 @@ use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct PipelineItemDeclaration {
+pub struct PipelineItemDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,

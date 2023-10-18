@@ -11,7 +11,7 @@ use crate::ast::literals::{NumericLiteral, StringLiteral};
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct Enum {
+pub struct Enum {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
@@ -21,7 +21,7 @@ pub(crate) struct Enum {
     pub(crate) interface: bool,
     pub(crate) option: bool,
     pub(crate) identifier: Identifier,
-    pub(crate) members: Vec<EnumMember>,
+    pub members: Vec<EnumMember>,
     pub(crate) resolved: AtomicBool,
 }
 
@@ -49,13 +49,13 @@ impl EnumMemberResolved {
 }
 
 #[derive(Debug)]
-pub(crate) struct EnumMember {
+pub struct EnumMember {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) expression: Option<EnumMemberExpression>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) resolved: RefCell<Option<EnumMemberResolved>>,

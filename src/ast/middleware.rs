@@ -3,15 +3,15 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct Middleware {
+pub struct MiddlewareDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
 }
 
-impl Middleware {
+impl MiddlewareDeclaration {
 
     pub(crate) fn source_id(&self) -> usize {
         *self.path.first().unwrap()

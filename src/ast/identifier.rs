@@ -2,14 +2,14 @@ use std::fmt::{Display, Formatter};
 use super::span::Span;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Identifier {
+pub struct Identifier {
     pub(crate) name: String,
-    pub(crate) span: Span,
+    pub span: Span,
 }
 
 impl Identifier {
 
-    pub(crate) fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         self.name.as_str()
     }
 }

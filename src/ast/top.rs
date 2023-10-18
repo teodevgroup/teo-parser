@@ -8,7 +8,7 @@ use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::middleware::Middleware;
+use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
@@ -25,7 +25,7 @@ pub(crate) enum Top {
     Enum(Enum),
     Model(Model),
     DataSet(DataSet),
-    Middleware(Middleware),
+    Middleware(MiddlewareDeclaration),
     HandlerGroup(HandlerGroupDeclaration),
     Interface(InterfaceDeclaration),
     Namespace(Namespace),
@@ -247,37 +247,37 @@ impl Top {
         self.as_data_set().is_some()
     }
 
-    pub(crate) fn as_middleware(&self) -> Option<&Middleware> {
+    pub(crate) fn as_middleware_declaration(&self) -> Option<&MiddlewareDeclaration> {
         match self {
             Top::Middleware(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_middleware(&self) -> bool {
-        self.as_middleware().is_some()
+    pub(crate) fn is_middleware_declaration(&self) -> bool {
+        self.as_middleware_declaration().is_some()
     }
 
-    pub(crate) fn as_handler_group(&self) -> Option<&HandlerGroupDeclaration> {
+    pub(crate) fn as_handler_group_declaration(&self) -> Option<&HandlerGroupDeclaration> {
         match self {
             Top::HandlerGroup(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_handler_group(&self) -> bool {
-        self.as_handler_group().is_some()
+    pub(crate) fn is_handler_group_declaration(&self) -> bool {
+        self.as_handler_group_declaration().is_some()
     }
 
-    pub(crate) fn as_interface(&self) -> Option<&InterfaceDeclaration> {
+    pub(crate) fn as_interface_declaration(&self) -> Option<&InterfaceDeclaration> {
         match self {
             Top::Interface(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_interface(&self) -> bool {
-        self.as_interface().is_some()
+    pub(crate) fn is_interface_declaration(&self) -> bool {
+        self.as_interface_declaration().is_some()
     }
 
     pub(crate) fn as_namespace(&self) -> Option<&Namespace> {
