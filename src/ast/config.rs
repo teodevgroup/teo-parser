@@ -10,7 +10,7 @@ pub struct Config {
     pub(crate) string_path: Vec<String>,
     pub(crate) keyword: ConfigKeyword,
     pub(crate) identifier: Option<Identifier>,
-    pub(crate) items: Vec<ConfigItem>,
+    pub items: Vec<ConfigItem>,
 }
 
 impl Config {
