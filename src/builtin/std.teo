@@ -247,9 +247,9 @@ namespace std {
     }
     #end 
 
-    enum TestResetDatasetsConfig {
+    enum ResetDatasets {
         auto
-        names(names?: String[])
+        dataSets(names?: DataSet[])
     }
 
     enum Method {
@@ -325,7 +325,7 @@ namespace std {
     declare config test {
         resetAfterQuery: Bool?
         resetAfterMutation: Bool?
-        resetDatasets: TestResetDatasetsConfig?
+        resetDataSets: ResetDatasets?
     }
 
     /// @name Map
