@@ -57,6 +57,8 @@ impl UnitResolveResult {
                 let top = context.schema.find_top_by_path(&path).unwrap();
                 if top.is_model() {
                     Type::Model
+                } else if top.is_data_set() {
+                    Type::DataSet
                 } else {
                     Type::Undetermined
                 }
