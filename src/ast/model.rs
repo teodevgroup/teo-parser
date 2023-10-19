@@ -11,16 +11,16 @@ use crate::ast::span::Span;
 pub struct Model {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) decorators: Vec<Decorator>,
+    pub decorators: Vec<Decorator>,
     pub(crate) empty_decorator_spans: Vec<Span>,
-    pub(crate) identifier: Identifier,
-    pub(crate) fields: Vec<Field>,
+    pub identifier: Identifier,
+    pub fields: Vec<Field>,
     pub(crate) empty_field_decorator_spans: Vec<Span>,
     pub(crate) unattached_field_decorators: Vec<Decorator>,
-    pub(crate) handlers: Vec<HandlerDeclaration>,
+    pub handlers: Vec<HandlerDeclaration>,
     pub(crate) resolved: RefCell<Option<ModelResolved>>,
 }
 
@@ -57,10 +57,10 @@ impl Model {
 
 #[derive(Debug)]
 pub struct ModelResolved {
-    pub(crate) scalar_fields: Vec<String>,
-    pub(crate) scalar_fields_without_virtuals: Vec<String>,
-    pub(crate) scalar_fields_and_cached_properties_without_virtuals: Vec<String>,
-    pub(crate) direct_relations: Vec<String>,
-    pub(crate) relations: Vec<String>,
-    pub(crate) actual_availability: Availability,
+    pub scalar_fields: Vec<String>,
+    pub scalar_fields_without_virtuals: Vec<String>,
+    pub scalar_fields_and_cached_properties_without_virtuals: Vec<String>,
+    pub direct_relations: Vec<String>,
+    pub relations: Vec<String>,
+    pub actual_availability: Availability,
 }

@@ -33,14 +33,14 @@ impl HandlerGroupDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) struct HandlerDeclaration {
+pub struct HandlerDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub string_path: Vec<String>,
     pub comment: Option<Comment>,
-    pub(crate) decorators: Vec<Decorator>,
+    pub decorators: Vec<Decorator>,
     pub(crate) empty_decorators_spans: Vec<Span>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) input_type: TypeExpr,
     pub(crate) output_type: TypeExpr,
     pub(crate) input_format: HandlerInputFormat,

@@ -30,7 +30,7 @@ pub struct ModelPropertyFieldSettings {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum FieldClass {
+pub enum FieldClass {
     ModelPrimitiveField(ModelPrimitiveFieldSettings),
     ModelRelation(ModelRelationSettings),
     ModelProperty(ModelPropertyFieldSettings),
@@ -98,21 +98,21 @@ impl FieldClass {
 }
 
 #[derive(Debug)]
-pub(crate) struct FieldResolved {
-    pub(crate) class: FieldClass,
+pub struct FieldResolved {
+    pub class: FieldClass,
     pub(crate) actual_availability: Availability,
 }
 
 #[derive(Debug)]
-pub(crate) struct Field {
+pub struct Field {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) decorators: Vec<Decorator>,
+    pub decorators: Vec<Decorator>,
     pub(crate) empty_decorators_spans: Vec<Span>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) type_expr: TypeExpr,
     pub(crate) resolved: RefCell<Option<FieldResolved>>,
 }
