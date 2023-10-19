@@ -16,7 +16,7 @@ pub(crate) enum SourceType {
 pub struct Source {
     pub(crate) id: usize,
     pub(crate) r#type: SourceType,
-    pub(crate) file_path: String,
+    pub file_path: String,
     pub(crate) tops: BTreeMap<usize, Top>,
     pub(crate) references: SourceReferences,
 }

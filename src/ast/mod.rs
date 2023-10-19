@@ -1,9 +1,9 @@
 pub mod schema;
-pub(crate) mod span;
+pub mod span;
 pub(crate) mod identifier;
 pub(crate) mod identifier_path;
 pub(crate) mod config_declaration;
-pub(crate) mod config;
+pub mod config;
 pub(crate) mod config_item;
 pub(crate) mod config_keyword;
 pub(crate) mod model;
@@ -42,3 +42,4 @@ pub(crate) mod struct_declaration;
 pub(crate) mod function_declaration;
 pub(crate) mod callable_variant;
 pub(crate) mod type_info;
+pub mod info_provider;

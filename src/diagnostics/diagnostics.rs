@@ -1,7 +1,7 @@
 use std::any::TypeId;
 use crate::ast::span::Span;
 
-pub(crate) trait DiagnosticsLog {
+pub trait DiagnosticsLog {
     fn span(&self) -> &Span;
 
     fn message(&self) -> &str;
@@ -25,6 +25,7 @@ pub struct DiagnosticsError {
 }
 
 impl DiagnosticsLog for DiagnosticsError {
+
     fn span(&self) -> &Span {
         &self.span
     }
@@ -86,8 +87,9 @@ impl DiagnosticsLog for &DiagnosticsError {
 }
 
 impl DiagnosticsError {
-    pub(crate) fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
-        Self { span, message: message.into(), source_path }
+
+    pub fn new(span: Span, message: impl Into<String>, source_path: impl Into<String>) -> Self {
+        Self { span, message: message.into(), source_path: source_path.into() }
     }
 }
 
@@ -99,6 +101,7 @@ pub struct DiagnosticsWarning {
 }
 
 impl DiagnosticsLog for DiagnosticsWarning {
+
     fn span(&self) -> &Span {
         &self.span
     }
@@ -129,6 +132,7 @@ impl DiagnosticsLog for DiagnosticsWarning {
 }
 
 impl DiagnosticsLog for &DiagnosticsWarning {
+
     fn span(&self) -> &Span {
         &self.span
     }
@@ -159,8 +163,9 @@ impl DiagnosticsLog for &DiagnosticsWarning {
 }
 
 impl DiagnosticsWarning {
-    pub(crate) fn new(span: Span, message: impl Into<String>, source_path: String) -> Self {
-        Self { span, message: message.into(), source_path }
+
+    pub fn new(span: Span, message: impl Into<String>, source_path: impl Into<String>) -> Self {
+        Self { span, message: message.into(), source_path: source_path.into() }
     }
 }
 
@@ -172,30 +177,30 @@ pub struct Diagnostics {
 
 impl Diagnostics {
 
-    pub(crate) fn new() -> Diagnostics {
+    pub fn new() -> Diagnostics {
         Diagnostics {
             errors: Vec::new(),
             warnings: Vec::new(),
         }
     }
 
-    pub(crate) fn has_errors(&self) -> bool {
+    pub fn has_errors(&self) -> bool {
         !self.errors.is_empty()
     }
 
-    pub(crate) fn has_warnings(&self) -> bool {
+    pub fn has_warnings(&self) -> bool {
         !self.warnings.is_empty()
     }
 
-    pub(crate) fn warnings(&self) -> &Vec<DiagnosticsWarning> {
+    pub fn warnings(&self) -> &Vec<DiagnosticsWarning> {
         &self.warnings
     }
 
-    pub(crate) fn errors(&self) -> &Vec<DiagnosticsError> {
+    pub fn errors(&self) -> &Vec<DiagnosticsError> {
         &self.errors
     }
 
-    pub(crate) fn insert<T>(&mut self, item: T) where T: DiagnosticsLog + 'static {
+    pub fn insert<T>(&mut self, item: T) where T: DiagnosticsLog + 'static {
         if TypeId::of::<T>() == TypeId::of::<DiagnosticsWarning>() {
             self.warnings.push(item.into_warning());
         } else if TypeId::of::<T>() == TypeId::of::<DiagnosticsError>() {

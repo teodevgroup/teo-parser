@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
@@ -9,4 +10,5 @@ pub struct ConfigItem {
     pub(crate) string_path: Vec<String>,
     pub identifier: Identifier,
     pub expression: Expression,
+    pub define_availability: Availability,
 }

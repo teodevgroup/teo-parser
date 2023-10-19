@@ -37,6 +37,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
         keyword: keyword.unwrap(),
         identifier,
         items,
+        define_availability: context.current_availability_flag(),
     }
 }
 
@@ -59,6 +60,7 @@ fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem 
         span,
         path: context.next_path(),
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
+        define_availability: context.current_availability_flag(),
         identifier: identifier.unwrap(),
         expression: expression.unwrap(),
     }
