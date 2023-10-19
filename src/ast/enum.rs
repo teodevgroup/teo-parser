@@ -7,6 +7,7 @@ use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::identifier::Identifier;
+use crate::ast::info_provider::InfoProvider;
 use crate::ast::literals::{NumericLiteral, StringLiteral};
 use crate::ast::span::Span;
 
@@ -35,10 +36,6 @@ impl Enum {
         *self.path.last().unwrap()
     }
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
     }
@@ -53,6 +50,17 @@ impl Enum {
 
     pub(crate) fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+}
+
+impl InfoProvider for Enum {
+
+    fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
+
+    fn availability(&self) -> Availability {
+        self.define_availability.bi_and(self.resolved().actual_availability)
     }
 }
 
@@ -91,10 +99,6 @@ impl EnumMember {
         *self.path.last().unwrap()
     }
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
-    }
-
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
     }
@@ -109,6 +113,17 @@ impl EnumMember {
 
     pub(crate) fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+}
+
+impl InfoProvider for EnumMember {
+
+    fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    }
+
+    fn availability(&self) -> Availability {
+        self.define_availability.bi_and(self.resolved().actual_availability)
     }
 }
 
