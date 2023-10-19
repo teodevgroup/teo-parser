@@ -10,7 +10,8 @@ use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorat
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
-    if context.has_examined_default_path(&model.string_path, model.availability) {
+    let actual_availability = context.current_availability();
+    if context.has_examined_default_path(&model.string_path, model.define_availability) {
         context.insert_duplicated_identifier(model.identifier.span);
     }
     context.clear_examined_fields();
@@ -57,8 +58,9 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
         scalar_fields_and_cached_properties_without_virtuals,
         relations,
         direct_relations,
+        actual_availability,
     });
-    context.add_examined_default_path(model.string_path.clone(), model.availability);
+    context.add_examined_default_path(model.string_path.clone(), model.define_availability);
 }
 
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {

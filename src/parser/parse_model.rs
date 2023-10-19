@@ -53,7 +53,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         decorators,
         empty_decorator_spans,

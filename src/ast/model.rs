@@ -12,7 +12,7 @@ pub struct Model {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) availability: Availability,
+    pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) empty_decorator_spans: Vec<Span>,
@@ -38,6 +38,10 @@ impl Model {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
+    pub fn is_available(&self) -> bool {
+        self.define_availability.contains(self.resolved().actual_availability)
+    }
+
     pub(crate) fn resolve(&self, resolved: ModelResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
@@ -57,5 +61,6 @@ pub struct ModelResolved {
     pub(crate) scalar_fields_without_virtuals: Vec<String>,
     pub(crate) scalar_fields_and_cached_properties_without_virtuals: Vec<String>,
     pub(crate) direct_relations: Vec<String>,
-    pub(crate) relations: Vec<String>
+    pub(crate) relations: Vec<String>,
+    pub(crate) actual_availability: Availability,
 }

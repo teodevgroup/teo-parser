@@ -157,8 +157,10 @@ impl<'a> ParserContext<'a> {
         self.diagnostics.insert(DiagnosticsWarning::new(span, message.into(), path.clone()));
     }
 
-    pub(super) fn push_availability_flag(&mut self, new_flag: Availability) {
-        self.current_availability_flag_state.push(new_flag);
+    pub(super) fn push_availability_flag(&mut self, new_flag: Availability) -> Availability {
+        let calculated_flag = self.current_availability_flag_state.last().unwrap().bi_and(new_flag);
+        self.current_availability_flag_state.push(calculated_flag);
+        calculated_flag
     }
 
     pub(super) fn pop_availability_flag(&mut self, span: Span) {

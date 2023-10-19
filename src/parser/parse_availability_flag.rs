@@ -10,35 +10,56 @@ pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContex
                 match current.as_str() {
                     "noDatabase" => {
                         let flag = Availability::no_database();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     }
                     "database" => {
                         let flag = Availability::database();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     }
                     "mongo" => {
                         let flag = Availability::mongo();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     },
                     "sql" => {
                         let flag = Availability::sql();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     },
                     "mysql" => {
                         let flag = Availability::mysql();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     },
                     "postgres" => {
                         let flag = Availability::postgres();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     },
                     "sqlite" => {
                         let flag = Availability::sqlite();
-                        context.push_availability_flag(flag);
+                        let result = context.push_availability_flag(flag);
+                        if result.is_none() {
+                            context.insert_error(parse_span(&current), "unreachable availability flag");
+                        }
                     },
                     _ => {
                         context.insert_error(parse_span(&current), "unknown availability flag");
-                        context.push_availability_flag(Availability::default());
+                        context.push_availability_flag(Availability::none());
                     }
                 }
             }

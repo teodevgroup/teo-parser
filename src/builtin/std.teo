@@ -316,6 +316,7 @@ namespace std {
         gitCommit: Bool?
     }
 
+    #if available(database)
     declare config debug {
         logQueries: Bool?
         logMigrations: Bool?
@@ -327,6 +328,9 @@ namespace std {
         resetAfterMutation: Bool?
         resetDataSets: ResetDatasets?
     }
+    #end
+
+    #if available(database)
 
     /// @name Map
     /// Specify an underlying database table name for the model
@@ -494,13 +498,21 @@ namespace std {
     /// When generating clients, the outout is always optional
     declare unique model field decorator outputOmissible
 
+    #if available(mongo)
+
     /// @name Auto
     /// The field value is automatically set by the underlying database
     declare unique model field decorator auto
 
+    #end
+
+    #if available(sql)
+
     /// @name Auto Increment
     /// The field value is a serial number automatically set by the underlying database
     declare unique model field decorator autoIncrement
+
+    #end
 
     /// @name Default
     /// Specify a default value for this field
@@ -600,6 +612,8 @@ namespace std {
     /// Define unique index for this cached property
     declare unique model property decorator unique(sort: Sort?, length: Int?, map: String?)
 
+    #end
+
     /// @name Method
     /// Specify an HTTP method for this handler
     declare unique handler decorator method(method?: Method)
@@ -607,6 +621,8 @@ namespace std {
     /// @name Path
     /// Specify a path for this handler
     declare unique handler decorator path(path?: String, ignoreNamespacePrefix: Bool?)
+
+    #if available(database)
 
     /// @name Add
     /// Add a new numeric value 
@@ -982,6 +998,8 @@ namespace std {
     /// Perform map and collect results on array
     declare pipeline item map<T, U>(pipeline?: Pipeline<T, U>): T[] -> U[]
 
+    #end
+
     /// @name Data
     /// This interface is common for action output
     interface Data<T> {
@@ -994,6 +1012,8 @@ namespace std {
         data: T
         meta: U
     }
+
+    #if available(database)
 
     @internal
     model DataSetRecord {
@@ -1030,4 +1050,6 @@ namespace std {
 
         nameB: String
     }
+
+    #end
 }

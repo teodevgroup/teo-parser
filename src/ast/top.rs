@@ -157,7 +157,7 @@ impl Top {
             Top::ConfigDeclaration(_) => true,
             Top::Constant(t) => t.availability.contains(availability),
             Top::Enum(t) => t.availability.contains(availability),
-            Top::Model(t) => t.availability.contains(availability),
+            Top::Model(t) => t.define_availability.contains(availability),
             Top::DataSet(t) => t.availability.contains(availability),
             Top::Middleware(_) => true,
             Top::HandlerGroup(t) => true,

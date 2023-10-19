@@ -19,6 +19,10 @@ impl Availability {
         Self(NO_DATABASE)
     }
 
+    pub fn none() -> Self {
+        Self(0)
+    }
+
     pub fn database() -> Self {
         Self(DATABASE)
     }
@@ -47,12 +51,12 @@ impl Availability {
         self.0 & user.0 != 0
     }
 
-    pub fn none(&self) -> Self {
-        Self(0)
-    }
-
     pub fn is_none(&self) -> bool {
         self.0 == 0
+    }
+
+    pub(crate) fn bi_and(&self, other: Availability) -> Availability {
+        Self(self.0 & other.0)
     }
 }
 
