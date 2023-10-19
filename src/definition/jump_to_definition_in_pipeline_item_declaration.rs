@@ -8,7 +8,7 @@ use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_ty
 pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, source: &Source, pipeline_item_declaration: &PipelineItemDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = pipeline_item_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
-    let availability = pipeline_item_declaration.availability;
+    let availability = pipeline_item_declaration.define_availability;
     if let Some(argument_list_declaration) = &pipeline_item_declaration.argument_list_declaration {
         if argument_list_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument_list_declaration(

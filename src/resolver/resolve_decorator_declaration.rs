@@ -8,7 +8,7 @@ pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a Decor
     if let Some(generics_declaration) = &decorator_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &decorator_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration, decorator_declaration.availability);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, decorator_declaration.define_availability);
         }
     }
     if let Some(argument_list_declaration) = &decorator_declaration.argument_list_declaration {
@@ -25,11 +25,11 @@ pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a Decor
                 vec![]
             },
             context,
-            decorator_declaration.availability
+            decorator_declaration.define_availability
         )
     }
     for variant in &decorator_declaration.variants {
-        resolve_decorator_declaration_variant(variant, context, decorator_declaration.availability);
+        resolve_decorator_declaration_variant(variant, context, decorator_declaration.define_availability);
     }
 }
 

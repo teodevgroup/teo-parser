@@ -37,6 +37,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut Pars
         comment,
         identifier: identifier.unwrap(),
         handler_declarations,
+        define_availability: context.current_availability_flag(),
     }
 }
 

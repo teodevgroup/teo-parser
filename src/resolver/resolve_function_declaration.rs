@@ -18,7 +18,7 @@ pub(super) fn resolve_function_declaration<'a>(
     if let Some(generics_declaration) = &function_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &function_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration, function_declaration.availability);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, function_declaration.define_availability);
         }
     }
     let mut generics_declarations = vec![];
@@ -41,7 +41,7 @@ pub(super) fn resolve_function_declaration<'a>(
             &generics_declarations,
             &generics_constraints,
             context,
-            function_declaration.availability,
+            function_declaration.define_availability,
         );
     }
     resolve_type_expr(
@@ -50,6 +50,6 @@ pub(super) fn resolve_function_declaration<'a>(
         &generics_constraints,
         keywords_map,
         context,
-        function_declaration.availability,
+        function_declaration.define_availability,
     );
 }

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr, TypeShape};
@@ -13,6 +14,7 @@ pub struct HandlerGroupDeclaration {
     pub(crate) comment: Option<Comment>,
     pub identifier: Identifier,
     pub(crate) handler_declarations: Vec<HandlerDeclaration>,
+    pub(crate) define_availability: Availability,
 }
 
 impl HandlerGroupDeclaration {

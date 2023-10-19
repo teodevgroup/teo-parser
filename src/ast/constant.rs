@@ -18,7 +18,7 @@ pub(crate) struct Constant {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) identifier: Identifier,
-    pub(crate) availability: Availability,
+    pub(crate) define_availability: Availability,
     pub(crate) type_expr: Option<TypeExpr>,
     pub(crate) expression: Expression,
     pub(crate) resolved: RefCell<Option<ConstantResolved>>,

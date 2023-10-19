@@ -63,7 +63,7 @@ pub(super) fn resolve_field_class<'a>(
         },
         &btreemap! {},
         context,
-        field.availability
+        field.define_availability
     );
 }
 

@@ -6,13 +6,13 @@ use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
-    if context.has_examined_default_path(&interface_declaration.string_path, interface_declaration.availability) {
+    if context.has_examined_default_path(&interface_declaration.string_path, interface_declaration.define_availability) {
         context.insert_duplicated_identifier(interface_declaration.identifier.span);
     }
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &interface_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration, interface_declaration.availability);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, interface_declaration.define_availability);
         }
     }
     for extend in &interface_declaration.extends {
@@ -30,7 +30,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
             },
             &btreemap! {},
             context,
-            interface_declaration.availability,
+            interface_declaration.define_availability,
         );
         if !extend.resolved().is_interface_object() {
             context.insert_diagnostics_error(extend.span(), "TypeError: type is not interface");
@@ -45,5 +45,5 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
             context,
         )
     }
-    context.add_examined_default_path(interface_declaration.string_path.clone(), interface_declaration.availability);
+    context.add_examined_default_path(interface_declaration.string_path.clone(), interface_declaration.define_availability);
 }

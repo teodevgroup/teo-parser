@@ -12,7 +12,7 @@ pub struct PipelineItemDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) availability: Availability,
+    pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,

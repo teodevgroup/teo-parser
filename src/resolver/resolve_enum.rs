@@ -15,7 +15,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
     if r#enum.resolved.load(Ordering::SeqCst) {
         return
     }
-    if context.has_examined_default_path(&r#enum.string_path, r#enum.availability) {
+    if context.has_examined_default_path(&r#enum.string_path, r#enum.define_availability) {
         context.insert_duplicated_identifier(r#enum.identifier.span);
     }
     context.clear_examined_fields();
@@ -28,7 +28,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
     for (index, member) in r#enum.members.iter().enumerate() {
         resolve_enum_member(member, context, r#enum.option, index, &option_member_map);
     }
-    context.add_examined_default_path(r#enum.string_path.clone(), r#enum.availability);
+    context.add_examined_default_path(r#enum.string_path.clone(), r#enum.define_availability);
     r#enum.resolved.store(true, Ordering::SeqCst);
 }
 
@@ -86,7 +86,7 @@ pub(super) fn resolve_enum_member<'a>(
     }
     // argument list
     if let Some(argument_list_declaration) = &member.argument_list_declaration {
-        resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context, member.availability);
+        resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context, member.define_availability);
     }
 }
 

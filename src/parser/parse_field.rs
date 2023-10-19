@@ -32,7 +32,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         span,
         path: context.next_path(),
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         decorators,
         empty_decorators_spans,

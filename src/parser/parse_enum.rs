@@ -5,6 +5,8 @@ use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_arith_expr::parse_arith_expr;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_identifier::parse_identifier;
@@ -43,7 +45,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         decorators,
         interface,
@@ -82,7 +84,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         decorators,
         identifier: identifier.unwrap(),
@@ -98,6 +100,8 @@ fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> 
             Rule::arith_expr => return EnumMemberExpression::ArithExpr(parse_arith_expr(current, context)),
             Rule::string_literal => return EnumMemberExpression::StringLiteral(parse_string_literal(&current)),
             Rule::numeric_literal => return EnumMemberExpression::NumericLiteral(parse_numeric_literal(&current, context)),
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             _ => panic!("unreachable 1"),
         }
     }

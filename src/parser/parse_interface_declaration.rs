@@ -1,6 +1,8 @@
 use crate::ast::field::Field;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::type_expr::TypeExpr;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -32,6 +34,8 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
             Rule::BLOCK_OPEN | Rule::COLON | Rule::BLOCK_CLOSE | Rule::EMPTY_LINES | Rule::WHITESPACE | Rule::INTERFACE_KEYWORD => (),
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -41,7 +45,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         identifier: identifier.unwrap(),
         generics_declaration,

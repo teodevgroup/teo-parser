@@ -9,7 +9,7 @@ use crate::ast::span::Span;
 pub struct StructDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) availability: Availability,
+    pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,

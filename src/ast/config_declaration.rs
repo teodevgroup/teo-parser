@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
@@ -11,6 +12,7 @@ pub struct ConfigDeclaration {
     pub(crate) comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) fields: Vec<Field>,
+    pub(crate) define_availability: Availability,
 }
 
 impl ConfigDeclaration {

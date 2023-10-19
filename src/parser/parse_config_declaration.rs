@@ -2,6 +2,8 @@ use crate::ast::comment::Comment;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_identifier::parse_identifier;
@@ -26,6 +28,8 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
             Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
@@ -39,5 +43,6 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
         comment,
         identifier: identifier.unwrap(),
         fields,
+        define_availability: context.current_availability_flag(),
     }
 }

@@ -7,13 +7,13 @@ use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_gen
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDeclaration, context: &'a ResolverContext<'a>) {
-    if context.has_examined_default_path(&struct_declaration.string_path, struct_declaration.availability) {
+    if context.has_examined_default_path(&struct_declaration.string_path, struct_declaration.define_availability) {
         context.insert_duplicated_identifier(struct_declaration.identifier.span);
     }
     if let Some(generics_declaration) = &struct_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &struct_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration, struct_declaration.availability);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, struct_declaration.define_availability);
         }
     }
     let r#type = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
@@ -28,5 +28,5 @@ pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDecla
             context,
         )
     }
-    context.add_examined_default_path(struct_declaration.string_path.clone(), struct_declaration.availability);
+    context.add_examined_default_path(struct_declaration.string_path.clone(), struct_declaration.define_availability);
 }

@@ -10,7 +10,7 @@ use crate::r#type::r#type::Type;
 pub(super) fn jump_to_definition_in_enum_declaration(schema: &Schema, source: &Source, enum_declaration: &Enum, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = enum_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
-    let availability = enum_declaration.availability;
+    let availability = enum_declaration.define_availability;
     for member in &enum_declaration.members {
         if member.span.contains_line_col(line_col) {
             return jump_to_definition_in_enum_member_declaration(

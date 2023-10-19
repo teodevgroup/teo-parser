@@ -36,7 +36,7 @@ pub(super) fn parse_struct_declaration(pair: Pair<'_>, context: &mut ParserConte
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         identifier: identifier.unwrap(),
         generics_declaration,

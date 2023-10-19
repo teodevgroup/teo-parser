@@ -10,7 +10,7 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
     if let Some(generics_declaration) = &pipeline_item_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, context);
         if let Some(generics_constraint) = &pipeline_item_declaration.generics_constraint {
-            resolve_generics_constraint(generics_constraint, context, generics_declaration, pipeline_item_declaration.availability);
+            resolve_generics_constraint(generics_constraint, context, generics_declaration, pipeline_item_declaration.define_availability);
         }
     }
     if let Some(argument_list_declaration) = &pipeline_item_declaration.argument_list_declaration {
@@ -27,7 +27,7 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
                 vec![]
             },
             context,
-            pipeline_item_declaration.availability,
+            pipeline_item_declaration.define_availability,
         );
     }
     if let Some(input_type) = &pipeline_item_declaration.input_type {
@@ -45,7 +45,7 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
             },
             &btreemap!{},
             context,
-            pipeline_item_declaration.availability,
+            pipeline_item_declaration.define_availability,
         );
     }
     if let Some(output_type) = &pipeline_item_declaration.output_type {
@@ -63,11 +63,11 @@ pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &
             },
             &btreemap!{},
             context,
-            pipeline_item_declaration.availability,
+            pipeline_item_declaration.define_availability,
         );
     }
     for variant in &pipeline_item_declaration.variants {
-        resolve_pipeline_item_declaration_variant(variant, context, pipeline_item_declaration.availability);
+        resolve_pipeline_item_declaration_variant(variant, context, pipeline_item_declaration.define_availability);
     }
 }
 

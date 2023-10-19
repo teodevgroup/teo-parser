@@ -7,7 +7,7 @@ use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_
 pub(super) fn jump_to_definition_in_decorator_declaration(schema: &Schema, source: &Source, decorator_declaration: &DecoratorDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = decorator_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
-    let availability = decorator_declaration.availability;
+    let availability = decorator_declaration.define_availability;
     if let Some(argument_list_declaration) = &decorator_declaration.argument_list_declaration {
         if argument_list_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument_list_declaration(

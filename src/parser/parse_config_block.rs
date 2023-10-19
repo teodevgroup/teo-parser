@@ -3,6 +3,8 @@ use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expr::Expression;
 use crate::ast::identifier::Identifier;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
@@ -24,6 +26,8 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::config_item => items.push(parse_config_item(current, context)),
             Rule::comment_block => (),
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => context.insert_unparsed(parse_span(&current)),
         }

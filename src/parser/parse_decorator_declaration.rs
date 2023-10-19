@@ -58,7 +58,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
         span,
         path,
         string_path: string_path.unwrap(),
-        availability: context.current_availability_flag(),
+        define_availability: context.current_availability_flag(),
         comment,
         exclusive,
         unique,

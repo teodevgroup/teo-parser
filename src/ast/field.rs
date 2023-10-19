@@ -107,7 +107,7 @@ pub(crate) struct Field {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) availability: Availability,
+    pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) empty_decorators_spans: Vec<Span>,

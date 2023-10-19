@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::Model;
+use crate::parser::parse_availability_end::parse_availability_end;
+use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
@@ -44,6 +46,8 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::field_declaration => fields.push(parse_field(current, context)),
             Rule::handler_declaration => handlers.push(parse_handler_declaration(current, context)),
+            Rule::availability_start => parse_availability_flag(current, context),
+            Rule::availability_end => parse_availability_end(current, context),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

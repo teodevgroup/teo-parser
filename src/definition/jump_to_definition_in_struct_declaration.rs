@@ -11,7 +11,7 @@ use crate::search::search_availability::search_availability;
 pub(super) fn jump_to_definition_in_struct_declaration(schema: &Schema, source: &Source, struct_declaration: &StructDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = struct_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
-    let availability = struct_declaration.availability;
+    let availability = struct_declaration.define_availability;
     for function_declaration in &struct_declaration.function_declarations {
         if function_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_function_declaration(
