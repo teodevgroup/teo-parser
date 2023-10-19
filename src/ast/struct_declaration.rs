@@ -11,10 +11,10 @@ pub struct StructDeclaration {
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) function_declarations: Vec<FunctionDeclaration>,
+    pub function_declarations: Vec<FunctionDeclaration>,
     pub(crate) span: Span,
 }
 

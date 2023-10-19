@@ -52,7 +52,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
         option,
         identifier: identifier.unwrap(),
         members,
-        resolved: AtomicBool::new(false),
+        resolved: RefCell::new(None),
     }
 }
 

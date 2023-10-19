@@ -22,7 +22,7 @@ pub struct Enum {
     pub(crate) option: bool,
     pub(crate) identifier: Identifier,
     pub members: Vec<EnumMember>,
-    pub(crate) resolved: AtomicBool,
+    pub(crate) resolved: RefCell<Option<EnumResolved>>,
 }
 
 impl Enum {
@@ -38,18 +38,30 @@ impl Enum {
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
+
+    pub(crate) fn resolve(&self, resolved: EnumResolved) {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub(crate) fn resolved(&self) -> &EnumResolved {
+        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct EnumResolved {
+    pub(crate) actual_availability: Availability,
 }
 
 #[derive(Debug)]
 pub(crate) struct EnumMemberResolved {
     pub(crate) value: Value,
-}
+    pub(crate) actual_availability: Availability,
 
-impl EnumMemberResolved {
-
-    pub(crate) fn new(value: Value) -> Self {
-        Self { value }
-    }
 }
 
 #[derive(Debug)]

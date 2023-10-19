@@ -9,14 +9,14 @@ use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 
 #[derive(Debug)]
-pub(crate) struct FunctionDeclaration {
+pub struct FunctionDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
-    pub(crate) r#static: bool,
-    pub(crate) identifier: Identifier,
+    pub r#static: bool,
+    pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
