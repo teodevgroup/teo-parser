@@ -47,6 +47,9 @@ fn parse_user_source(
     let source = parse_source_file(path, base, parser_context);
     let source_id = source.id;
     sources.insert(source.id, source);
+    if parser_context.schema_references.main_source.is_none() {
+        parser_context.schema_references.main_source = Some(source_id);
+    }
     let import_paths: Vec<String> = sources.get(&source_id).unwrap().imports().iter().map(|i| i.file_path.clone()).collect();
     for import in import_paths {
         if !parser_context.is_source_parsing_or_parsed(&import) {

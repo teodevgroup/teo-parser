@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::constant::Constant;
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_identifier::parse_identifier;

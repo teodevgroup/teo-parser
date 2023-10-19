@@ -1,6 +1,6 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::availability::Availability;
-use crate::ast::expr::ExpressionKind;
+use crate::ast::expression::ExpressionKind;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;

@@ -1,5 +1,5 @@
 use crate::ast::availability::Availability;
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;

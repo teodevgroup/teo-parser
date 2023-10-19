@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::availability::Availability;
-use crate::ast::expr::Expression;
+use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 

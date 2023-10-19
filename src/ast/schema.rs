@@ -22,6 +22,10 @@ pub struct Schema {
 
 impl Schema {
 
+    pub fn main_source(&self) -> &Source {
+        self.source(self.references.main_source.unwrap()).unwrap()
+    }
+
     pub(crate) fn source(&self, id: usize) -> Option<&Source> {
         self.sources.get(&id)
     }

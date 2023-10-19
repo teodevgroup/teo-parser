@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use crate::ast::availability::Availability;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
-use crate::ast::expr::Expression;
+use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
@@ -71,7 +71,7 @@ pub(crate) struct ConfigResolved {
     pub(crate) actual_availability: Availability
 }
 
-impl InfoProvider for Config {
+impl InfoProvider for &Config {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()

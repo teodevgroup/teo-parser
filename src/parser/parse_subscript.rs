@@ -1,4 +1,4 @@
-use crate::ast::expr::Expression;
+use crate::ast::expression::Expression;
 use crate::ast::subscript::Subscript;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;

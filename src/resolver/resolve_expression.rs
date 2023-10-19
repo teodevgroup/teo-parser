@@ -3,7 +3,7 @@ use std::default::Default;
 use maplit::{btreemap, hashset};
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::group::Group;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::diagnostics::diagnostics::DiagnosticsError;

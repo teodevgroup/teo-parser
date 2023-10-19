@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
-use crate::ast::expr::Expression;
+use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;

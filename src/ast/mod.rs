@@ -13,7 +13,7 @@ pub(crate) mod source;
 pub(crate) mod arith;
 pub(crate) mod namespace;
 pub(crate) mod import;
-pub(crate) mod expr;
+pub mod expression;
 pub(crate) mod reference;
 pub(crate) mod handler;
 pub(crate) mod interface;

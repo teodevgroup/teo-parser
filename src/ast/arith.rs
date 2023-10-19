@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expr::Expression;
+use crate::ast::expression::Expression;
 use crate::ast::span::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::expr::{Expression, ExpressionKind};
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
