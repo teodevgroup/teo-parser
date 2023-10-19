@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use crate::ast::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::data_set::DataSet;
@@ -33,10 +34,10 @@ impl Schema {
         self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
     }
 
-    pub(crate) fn find_config_declaration_by_name(&self, name: &str) -> Option<&ConfigDeclaration> {
-        for config_declarations in self.config_declarations() {
-            if config_declarations.identifier.name() == name {
-                return Some(config_declarations)
+    pub(crate) fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
+        for config_declaration in self.config_declarations() {
+            if config_declaration.identifier.name() == name && config_declaration.define_availability.contains(availability) {
+                return Some(config_declaration)
             }
         }
         None

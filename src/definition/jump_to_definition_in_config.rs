@@ -1,4 +1,5 @@
 use crate::ast::config::Config;
+use crate::ast::info_provider::InfoProvider;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
@@ -11,7 +12,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
     if config.keyword.span.contains_line_col(line_col) {
-        if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name()) {
+        if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
             return vec![Definition {
                 path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
                 selection_span: config.keyword.span,
@@ -24,7 +25,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
     }
     for item in &config.items {
         if item.identifier.span.contains_line_col(line_col) {
-            if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name()) {
+            if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
                 if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier.name() == item.identifier.name()) {
                     return vec![Definition {
                         path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
@@ -40,7 +41,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             }
         } else if item.expression.span().contains_line_col(line_col) {
             let undetermined = Type::Undetermined;
-            let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name()) {
+            let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
                 if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier.name() == item.identifier.name()) {
                     field.type_expr.resolved()
                 } else {

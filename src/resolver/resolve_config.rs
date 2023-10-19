@@ -16,7 +16,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
             actual_availability: availability
         });
     }
-    if let Some(config_declaration) = context.schema.find_config_declaration_by_name(config.keyword.name()) {
+    if let Some(config_declaration) = context.schema.find_config_declaration_by_name(config.keyword.name(), availability) {
         let exist_keys: HashSet<&str> = config.items.iter().map(|i| i.identifier.name()).collect();
         let defined_keys: HashSet<&str> = config_declaration.fields.iter().map(|f| f.identifier.name()).collect();
         let differences = exist_keys.difference(&defined_keys);
@@ -48,9 +48,9 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
             }
         }
         if !missing_names.is_empty() {
-            context.insert_diagnostics_error(config.keyword.span, format!("Missing required config items: {}", missing_names.join(", ")));
+            context.insert_diagnostics_error(config.keyword.span, format!("missing required config items: {}", missing_names.join(", ")));
         }
     } else {
-        context.insert_diagnostics_error(config.keyword.span, "ConfigError: configuration is undefined");
+        context.insert_diagnostics_error(config.keyword.span, "configuration is undefined");
     }
 }

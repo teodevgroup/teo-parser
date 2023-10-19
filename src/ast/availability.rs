@@ -47,8 +47,8 @@ impl Availability {
         Self(SQLITE)
     }
 
-    pub fn contains(&self, user: Availability) -> bool {
-        self.0 & user.0 != 0
+    pub fn contains(&self, actual: Availability) -> bool {
+        self.0 & actual.0 != 0
     }
 
     pub fn is_none(&self) -> bool {
