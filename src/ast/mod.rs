@@ -7,7 +7,7 @@ pub mod config;
 pub(crate) mod config_item;
 pub(crate) mod config_keyword;
 pub(crate) mod model;
-pub(crate) mod r#enum;
+pub mod r#enum;
 pub(crate) mod comment;
 pub(crate) mod source;
 pub(crate) mod arith;

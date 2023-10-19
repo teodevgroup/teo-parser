@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::sync::atomic::AtomicBool;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
@@ -35,7 +34,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
             Rule::decorator => decorators.push(parse_decorator(current, context)),
             Rule::empty_decorator => (),
             Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::enum_member_declaration => members.push(parse_enum_member(current, context)),
+            Rule::enum_member_declaration => members.push(parse_enum_member(current, context, interface, option)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -56,7 +55,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
     }
 }
 
-fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember {
+fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: bool, option: bool) -> EnumMember {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut string_path = None;
@@ -76,7 +75,12 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext) -> EnumMember 
             Rule::empty_decorator => (),
             Rule::comment_block | Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
             Rule::enum_member_expression => expression = Some(parse_enum_member_expression(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
+            Rule::argument_list_declaration => {
+                if !interface {
+                    context.insert_error(parse_span(&current), "non interface enum cannot have argument list")
+                }
+                argument_list_declaration = Some(parse_argument_list_declaration(current, context));
+            },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

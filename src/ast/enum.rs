@@ -18,9 +18,9 @@ pub struct Enum {
     pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
-    pub(crate) interface: bool,
-    pub(crate) option: bool,
-    pub(crate) identifier: Identifier,
+    pub interface: bool,
+    pub option: bool,
+    pub identifier: Identifier,
     pub members: Vec<EnumMember>,
     pub(crate) resolved: RefCell<Option<EnumResolved>>,
 }
@@ -37,6 +37,10 @@ impl Enum {
 
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
+
+    pub fn is_available(&self) -> bool {
+        self.define_availability.contains(self.resolved().actual_availability)
     }
 
     pub(crate) fn resolve(&self, resolved: EnumResolved) {
@@ -58,10 +62,9 @@ pub(crate) struct EnumResolved {
 }
 
 #[derive(Debug)]
-pub(crate) struct EnumMemberResolved {
-    pub(crate) value: Value,
+pub struct EnumMemberResolved {
+    pub value: Value,
     pub(crate) actual_availability: Availability,
-
 }
 
 #[derive(Debug)]
@@ -92,11 +95,15 @@ impl EnumMember {
         self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
     }
 
+    pub fn is_available(&self) -> bool {
+        self.define_availability.contains(self.resolved().actual_availability)
+    }
+
     pub(crate) fn resolve(&self, resolved: EnumMemberResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &EnumMemberResolved {
+    pub fn resolved(&self) -> &EnumMemberResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 

@@ -247,12 +247,12 @@ namespace std {
     }
     #end 
 
-    enum ResetDatasets {
+    interface enum ResetDatasets {
         auto
         dataSets(names?: DataSet[])
     }
 
-    enum Method {
+    interface enum Method {
         get
         post
         put
