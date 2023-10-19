@@ -277,7 +277,7 @@ config_block = {
     config_keywords
     ~ identifier?
     ~ BLOCK_OPEN
-    ~ (config_item | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (config_item | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -296,7 +296,7 @@ enum_declaration = {
     ~ ENUM_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (enum_member_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (enum_member_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -338,10 +338,10 @@ field_declaration = {
 // dataset
 // #############
 dataset_declaration = {
-    (AUTOSEED_KEYWORD | NOTRACK_KEYWORD)? ~ DATASET_KEYWORD ~ identifier ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | dataset_group_declaration)* ~ BLOCK_CLOSE
+    (AUTOSEED_KEYWORD | NOTRACK_KEYWORD)? ~ DATASET_KEYWORD ~ identifier ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | availability_start | availability_end | dataset_group_declaration)* ~ BLOCK_CLOSE
 }
 dataset_group_declaration = {
-    GROUP_KEYWORD ~ identifier_path ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | dataset_group_record_declaration)* ~ BLOCK_CLOSE
+    GROUP_KEYWORD ~ identifier_path ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | availability_start | availability_end | dataset_group_record_declaration)* ~ BLOCK_CLOSE
 }
 dataset_group_record_declaration = {
     RECORD_KEYWORD ~ identifier ~ dictionary_literal
@@ -403,7 +403,7 @@ pipeline_item_variant_declaration = {
 
 handler_group_declaration = {
     triple_comment_block? ~ DECLARE_KEYWORD ~ HANDLER_KEYWORD ~ GROUP_KEYWORD ~ identifier ~ BLOCK_OPEN
-    ~ (comment_block | handler_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (comment_block | handler_declaration | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -428,7 +428,7 @@ config_declaration = {
   CONFIG_KEYWORD ~
   identifier ~
   BLOCK_OPEN ~
-  (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  (field_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
   BLOCK_CLOSE
 }
 
@@ -438,7 +438,7 @@ config_declaration = {
 
 interface_declaration = {
     triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ ("," ~ type_expression)* ~ ","?)? ~ generics_constraint? ~ BLOCK_OPEN
-    ~ (field_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -476,7 +476,7 @@ struct_declaration = {
   generics_declaration? ~
   generics_constraint? ~
   BLOCK_OPEN ~
-  (function_declaration | comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  (function_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
   BLOCK_CLOSE
 }
 
