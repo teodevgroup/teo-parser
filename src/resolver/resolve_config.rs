@@ -1,11 +1,21 @@
 use std::collections::HashSet;
 use itertools::Itertools;
 use maplit::btreemap;
-use crate::ast::config::Config;
+use crate::ast::config::{Config, ConfigResolved};
+use crate::ast::config_item::ConfigItemResolved;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContext<'a>) {
+    let availability = context.current_availability();
+    config.resolve(ConfigResolved {
+        actual_availability: availability
+    });
+    for item in &config.items {
+        item.resolve(ConfigItemResolved {
+            actual_availability: availability
+        });
+    }
     if let Some(config_declaration) = context.schema.find_config_declaration_by_name(config.keyword.name()) {
         let exist_keys: HashSet<&str> = config.items.iter().map(|i| i.identifier.name()).collect();
         let defined_keys: HashSet<&str> = config_declaration.fields.iter().map(|f| f.identifier.name()).collect();

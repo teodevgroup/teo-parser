@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
@@ -42,6 +43,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
         identifier,
         items,
         define_availability: context.current_availability_flag(),
+        resolved: RefCell::new(None),
     }
 }
 
@@ -67,5 +69,6 @@ fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem 
         define_availability: context.current_availability_flag(),
         identifier: identifier.unwrap(),
         expression: expression.unwrap(),
+        resolved: RefCell::new(None),
     }
 }
