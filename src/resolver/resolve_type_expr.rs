@@ -216,6 +216,10 @@ fn resolve_type_item<'a>(
                 request_zero_generics("Model", type_item, context);
                 Some(Type::Model)
             }
+            "DataSet" => {
+                request_zero_generics("DataSet", type_item, context);
+                Some(Type::DataSet)
+            }
             "Array" => {
                 request_single_generics("Array", type_item, context);
                 Some(Type::Array(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {

@@ -25,6 +25,7 @@ pub enum Type {
     File,
     Regex,
     Model,
+    DataSet,
     Array(Box<Type>),
     Dictionary(Box<Type>),
     Tuple(Vec<Type>),
@@ -184,6 +185,13 @@ impl Type {
     pub(crate) fn is_model(&self) -> bool {
         match self {
             Type::Model => true,
+            _ => false,
+        }
+    }
+
+    pub(crate) fn is_data_set(&self) -> bool {
+        match self {
+            Type::DataSet => true,
             _ => false,
         }
     }
@@ -453,6 +461,7 @@ impl Type {
             Type::File => false,
             Type::Regex => false,
             Type::Model => false,
+            Type::DataSet => false,
             Type::Array(_) => true,
             Type::Dictionary(_) => true,
             Type::Tuple(_) => true,
@@ -495,6 +504,7 @@ impl Type {
             Type::File => false,
             Type::Regex => false,
             Type::Model => false,
+            Type::DataSet => false,
             Type::Array(inner) => inner.contains_generics(),
             Type::Dictionary(inner) => inner.contains_generics(),
             Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
@@ -593,6 +603,7 @@ impl Type {
             Type::File => passed.is_file(),
             Type::Regex => passed.is_regex(),
             Type::Model => passed.is_model(),
+            Type::DataSet => passed.is_data_set(),
             Type::Array(inner) => passed.is_array() && inner.as_ref().test(passed.as_array().unwrap()),
             Type::Dictionary(inner) => passed.is_dictionary() && inner.as_ref().test(passed.as_dictionary().unwrap()),
             Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
@@ -680,6 +691,7 @@ impl Type {
             Type::File => self.clone(),
             Type::Regex => self.clone(),
             Type::Model => self.clone(),
+            Type::DataSet => self.clone(),
             Type::Array(t) => Type::Array(Box::new(f_ref(t, &f))),
             Type::Dictionary(t) => Type::Dictionary(Box::new(f_ref(t, &f))),
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| f_ref(t, &f)).collect()),
@@ -725,6 +737,7 @@ impl Display for Type {
             Type::File => f.write_str("File"),
             Type::Regex => f.write_str("Regex"),
             Type::Model => f.write_str("Model"),
+            Type::DataSet => f.write_str("DataSet"),
             Type::Array(inner) => if inner.is_union() {
                 f.write_str(&format!("({})[]", inner))
             } else {
