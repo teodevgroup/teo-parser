@@ -27,7 +27,7 @@ pub struct Enum {
 
 impl Enum {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 
@@ -68,7 +68,7 @@ pub struct EnumMember {
 
 impl EnumMember {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

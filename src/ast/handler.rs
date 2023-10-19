@@ -19,7 +19,7 @@ pub struct HandlerGroupDeclaration {
 
 impl HandlerGroupDeclaration {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 
@@ -49,7 +49,7 @@ pub(crate) struct HandlerDeclaration {
 
 impl HandlerDeclaration {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

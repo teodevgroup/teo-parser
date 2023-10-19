@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub(crate) enum ReferenceType {
+pub enum ReferenceType {
     EnumDecorator,
     EnumMemberDecorator,
     ModelDecorator,
@@ -11,10 +11,4 @@ pub(crate) enum ReferenceType {
     HandlerDecorator,
     PipelineItem,
     Default,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct Reference {
-    pub(crate) path: Vec<usize>,
-    pub(crate) r#type: ReferenceType,
 }

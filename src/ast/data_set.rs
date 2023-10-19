@@ -21,7 +21,7 @@ pub struct DataSet {
 
 impl DataSet {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 
@@ -67,7 +67,7 @@ pub struct DataSetRecord {
 
 impl DataSetRecord {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

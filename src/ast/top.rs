@@ -36,7 +36,7 @@ pub(crate) enum Top {
 
 impl Top {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         match self {
             Top::Import(i) => i.source_id(),
             Top::Constant(c) => c.source_id(),

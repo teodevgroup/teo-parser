@@ -9,15 +9,15 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct DecoratorDeclaration {
-    pub(crate) span: Span,
+    pub span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub(crate) comment: Option<Comment>,
     pub(crate) exclusive: bool,
     pub(crate) unique: bool,
-    pub(crate) decorator_class: ReferenceType,
-    pub(crate) identifier: Identifier,
+    pub decorator_class: ReferenceType,
+    pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
@@ -26,7 +26,7 @@ pub struct DecoratorDeclaration {
 
 impl DecoratorDeclaration {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

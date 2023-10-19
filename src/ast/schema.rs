@@ -26,7 +26,7 @@ impl Schema {
         self.source(self.references.main_source.unwrap()).unwrap()
     }
 
-    pub(crate) fn source(&self, id: usize) -> Option<&Source> {
+    pub fn source(&self, id: usize) -> Option<&Source> {
         self.sources.get(&id)
     }
 

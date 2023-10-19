@@ -17,7 +17,7 @@ pub struct ConfigDeclaration {
 
 impl ConfigDeclaration {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

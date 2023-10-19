@@ -29,7 +29,7 @@ pub struct Namespace {
 
 impl Namespace {
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 

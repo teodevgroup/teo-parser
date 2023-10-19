@@ -24,7 +24,7 @@ impl Import {
         }
     }
 
-    pub(crate) fn source_id(&self) -> usize {
+    pub fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 
