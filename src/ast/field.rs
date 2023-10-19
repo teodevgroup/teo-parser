@@ -100,6 +100,7 @@ impl FieldClass {
 #[derive(Debug)]
 pub(crate) struct FieldResolved {
     pub(crate) class: FieldClass,
+    pub(crate) actual_availability: Availability,
 }
 
 #[derive(Debug)]
@@ -140,5 +141,13 @@ impl Field {
 
     pub(crate) fn resolved(&self) -> &FieldResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
+    }
+
+    pub(crate) fn is_resolved(&self) -> bool {
+        self.resolved.borrow().is_some()
+    }
+
+    pub fn is_available(&self) -> bool {
+        self.define_availability.contains(self.resolved().actual_availability)
     }
 }

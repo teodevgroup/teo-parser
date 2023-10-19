@@ -24,6 +24,7 @@ pub(super) fn resolve_field_class<'a>(
         FieldParentType::Interface => {
             field.resolve(FieldResolved {
                 class: FieldClass::InterfaceField,
+                actual_availability: context.current_availability()
             });
         }
         FieldParentType::Model => {
@@ -46,6 +47,7 @@ pub(super) fn resolve_field_class<'a>(
             };
             field.resolve(FieldResolved {
                 class: field_class,
+                actual_availability: context.current_availability()
             });
         }
     }
