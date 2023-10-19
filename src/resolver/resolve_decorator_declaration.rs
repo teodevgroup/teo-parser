@@ -6,7 +6,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a DecoratorDeclaration, context: &'a ResolverContext<'a>) {
     if let Some(generics_declaration) = &decorator_declaration.generics_declaration {
-        resolve_generics_declaration(generics_declaration, context);
+        resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &decorator_declaration.generics_constraint {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, decorator_declaration.define_availability);
         }
@@ -39,7 +39,7 @@ fn resolve_decorator_declaration_variant<'a>(
     availability: Availability,
 ) {
     if let Some(generics_declaration) = &decorator_declaration_variant.generics_declaration {
-        resolve_generics_declaration(generics_declaration, context);
+        resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &decorator_declaration_variant.generics_constraint {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, availability);
         }

@@ -11,7 +11,7 @@ pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDecla
         context.insert_duplicated_identifier(struct_declaration.identifier.span);
     }
     if let Some(generics_declaration) = &struct_declaration.generics_declaration {
-        resolve_generics_declaration(generics_declaration, context);
+        resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &struct_declaration.generics_constraint {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, struct_declaration.define_availability);
         }

@@ -10,7 +10,7 @@ pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclarat
         context.insert_duplicated_identifier(interface_declaration.identifier.span);
     }
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
-        resolve_generics_declaration(generics_declaration, context);
+        resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &interface_declaration.generics_constraint {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, interface_declaration.define_availability);
         }
