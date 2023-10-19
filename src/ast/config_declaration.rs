@@ -9,7 +9,7 @@ pub struct ConfigDeclaration {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) comment: Option<Comment>,
+    pub comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) fields: Vec<Field>,
     pub(crate) define_availability: Availability,

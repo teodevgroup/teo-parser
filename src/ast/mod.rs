@@ -8,7 +8,7 @@ pub(crate) mod config_item;
 pub(crate) mod config_keyword;
 pub(crate) mod model;
 pub mod r#enum;
-pub(crate) mod comment;
+pub mod comment;
 pub(crate) mod source;
 pub(crate) mod arith;
 pub(crate) mod namespace;

@@ -12,7 +12,7 @@ pub struct InterfaceDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
-    pub(crate) comment: Option<Comment>,
+    pub comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,

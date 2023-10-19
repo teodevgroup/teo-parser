@@ -13,7 +13,7 @@ pub struct Model {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
-    pub(crate) comment: Option<Comment>,
+    pub comment: Option<Comment>,
     pub(crate) decorators: Vec<Decorator>,
     pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) identifier: Identifier,

@@ -21,7 +21,7 @@ pub struct Namespace {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
-    pub(crate) comment: Option<Comment>,
+    pub comment: Option<Comment>,
     pub(crate) identifier: Identifier,
     pub(crate) tops: BTreeMap<usize, Top>,
     pub(crate) references: NamespaceReferences,

@@ -14,7 +14,7 @@ pub struct FunctionDeclaration {
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,
     pub(crate) define_availability: Availability,
-    pub(crate) comment: Option<Comment>,
+    pub comment: Option<Comment>,
     pub r#static: bool,
     pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
