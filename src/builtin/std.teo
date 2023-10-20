@@ -162,7 +162,7 @@ namespace std {
     }
 
     #if available(mysql)
-    interface enum DatabaseType {
+    interface enum MySQLDatabaseType {
         varChar(len?: Int)
         text
         char(len?: Int)
@@ -194,7 +194,7 @@ namespace std {
     #end
 
     #if available(postgres)
-    interface enum DatabaseType {
+    interface enum PostgreSQLDatabaseType {
         text
         char(len?: Int)
         varChar(len?: Int)
@@ -225,7 +225,7 @@ namespace std {
     #end
 
     #if available(sqlite)
-    interface enum DatabaseType {
+    interface enum SQLiteDatabaseType {
         text
         integer
         real
@@ -235,7 +235,7 @@ namespace std {
     #end    
 
     #if available(mongo)
-    interface enum DatabaseType {
+    interface enum MongoDBDatabaseType {
         string
         bool
         int
@@ -334,7 +334,7 @@ namespace std {
 
     /// @name Map
     /// Specify an underlying database table name for the model
-    declare unique model decorator map(table_name?: String)
+    declare unique model decorator map(tableName?: String)
 
     /// @name Id
     /// Specify the model's primary index
@@ -374,44 +374,51 @@ namespace std {
     /// @name Can Mutate
     declare unique model decorator canWrite(pipeline?: Pipeline<Self, Ignored>)
 
-    /// @name Disable
+    /// @name Action
     /// Specify disabled actions
-    declare unique model decorator disable(actions?: Action)
+    declare unique model decorator action {
+        variant(enable?: (Action | Action[]))
+        variant(disable: (Action | Action[]))
+    }
 
-    /// @name Identity
-    /// Specify whether the model is used as identity
-    declare unique model decorator identity
+    /// @name Generate Client
+    /// Specify whether generate client for this model
+    declare unique model decorator generateClient(generate?: Bool)
 
-    /// @name Internal
-    /// Specify the model is internal
-    declare unique model decorator internal
+    /// @name Generate Entity
+    /// Specify whether generate entity for this model
+    declare unique model decorator generateEntity(generate?: Bool)
+
+    /// @name Show in Studio
+    /// Specify whether show this model in Teo Studio
+    declare unique model decorator showInStudio(show?: Bool)
 
     /// @name Map
     /// Specify an underlying database column name for the model field
-    declare unique model field decorator map(table_name?: String)
+    declare unique model field decorator map(columnName?: String)
 
     #if available(mysql)
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType)
+    declare unique model field decorator db(type?: MySQLDatabaseType)
     #end
 
     #if available(postgres)
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType)
+    declare unique model field decorator db(type?: PostgreSQLDatabaseType)
     #end
 
     #if available(sqlite)
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType)
+    declare unique model field decorator db(type?: SQLiteDatabaseType)
     #end
 
     #if available(mongo)
     /// @name Database Type
     /// Specify an underlying database type for the model field
-    declare unique model field decorator db(type?: DatabaseType)
+    declare unique model field decorator db(type?: MongoDBDatabaseType)
     #end
 
     /// @name Readonly
@@ -533,14 +540,6 @@ namespace std {
     /// @name On Output
     /// This pipeline is triggered on output
     declare unique model field decorator onOutput(pipeline?: Pipeline<ThisFieldType, ThisFieldType>)
-
-    /// @name Auth Identity
-    /// This field is used as auth identity
-    declare unique model field decorator authIdentity
-
-    /// @name Auth By
-    /// This field is used as signing in identity checker
-    declare unique model field decorator authBy(pipeline?: Pipeline<ThisFieldType, Ignored>)
 
     /// @name Queryable
     /// This field can be queried by the client

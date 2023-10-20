@@ -149,7 +149,7 @@ impl Field {
     }
 }
 
-impl InfoProvider for Field {
+impl InfoProvider for &Field {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
