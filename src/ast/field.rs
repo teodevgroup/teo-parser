@@ -40,53 +40,53 @@ pub enum FieldClass {
 
 impl FieldClass {
 
-    pub(crate) fn is_model_relation(&self) -> bool {
+    pub fn is_model_relation(&self) -> bool {
         self.as_model_relation().is_some()
     }
 
-    pub(crate) fn as_model_relation(&self) -> Option<&ModelRelationSettings> {
+    pub fn as_model_relation(&self) -> Option<&ModelRelationSettings> {
         match self {
             FieldClass::ModelRelation(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_primitive_field(&self) -> bool {
+    pub fn is_model_primitive_field(&self) -> bool {
         self.as_model_primitive_field().is_some()
     }
 
-    pub(crate) fn as_model_primitive_field(&self) -> Option<&ModelPrimitiveFieldSettings> {
+    pub fn as_model_primitive_field(&self) -> Option<&ModelPrimitiveFieldSettings> {
         match self {
             FieldClass::ModelPrimitiveField(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_property(&self) -> bool {
+    pub fn is_model_property(&self) -> bool {
         self.as_model_property().is_some()
     }
 
-    pub(crate) fn as_model_property(&self) -> Option<&ModelPropertyFieldSettings> {
+    pub fn as_model_property(&self) -> Option<&ModelPropertyFieldSettings> {
         match self {
             FieldClass::ModelProperty(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn is_interface_field(&self) -> bool {
+    pub fn is_interface_field(&self) -> bool {
         match self {
             FieldClass::InterfaceField => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_model_field(&self) -> bool {
+    pub fn is_model_field(&self) -> bool {
         self.is_model_field() ||
         self.is_model_relation() ||
         self.is_model_property()
     }
 
-    pub(crate) fn reference_type(&self) -> ReferenceType {
+    pub fn reference_type(&self) -> ReferenceType {
         match self {
             FieldClass::ModelPrimitiveField(_) => ReferenceType::ModelFieldDecorator,
             FieldClass::ModelRelation(_) => ReferenceType::ModelRelationDecorator,
@@ -139,7 +139,7 @@ impl Field {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &FieldResolved {
+    pub fn resolved(&self) -> &FieldResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 

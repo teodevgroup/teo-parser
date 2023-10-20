@@ -11,7 +11,7 @@ use crate::ast::span::Span;
 pub struct DecoratorDeclaration {
     pub span: Span,
     pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub comment: Option<Comment>,
     pub(crate) exclusive: bool,
@@ -32,6 +32,10 @@ impl DecoratorDeclaration {
 
     pub(crate) fn id(&self) -> usize {
         *self.path.last().unwrap()
+    }
+
+    pub fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 
     pub fn namespace_str_path(&self) -> Vec<&str> {
