@@ -180,7 +180,7 @@ namespace std {
         double
         decimal(precision?: Int, scale?: Int)
         dateTime(len?: Int)
-        date(len?: Int)
+        date
         time(len?: Int)
         timestamp(len?: Int)
         json
