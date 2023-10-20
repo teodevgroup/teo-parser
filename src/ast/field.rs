@@ -4,6 +4,7 @@ use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
+use crate::ast::info_provider::InfoProvider;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 
@@ -127,10 +128,6 @@ impl Field {
         *self.path.last().unwrap()
     }
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
-    }
-
     pub(crate) fn name(&self) -> &str {
         self.identifier.name.as_str()
     }
@@ -149,5 +146,16 @@ impl Field {
 
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
+    }
+}
+
+impl InfoProvider for Field {
+
+    fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    }
+
+    fn availability(&self) -> Availability {
+        self.define_availability.bi_and(self.resolved().actual_availability)
     }
 }

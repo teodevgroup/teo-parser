@@ -5,6 +5,7 @@ use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::handler::HandlerDeclaration;
 use crate::ast::identifier::Identifier;
+use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -34,10 +35,6 @@ impl Model {
         *self.path.last().unwrap()
     }
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
     }
@@ -63,4 +60,15 @@ pub struct ModelResolved {
     pub direct_relations: Vec<String>,
     pub relations: Vec<String>,
     pub actual_availability: Availability,
+}
+
+impl InfoProvider for Model {
+
+    fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
+
+    fn availability(&self) -> Availability {
+        self.define_availability.bi_and(self.resolved().actual_availability)
+    }
 }

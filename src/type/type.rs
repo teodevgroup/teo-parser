@@ -3,8 +3,9 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use educe::Educe;
+use serde::Serialize;
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
 #[educe(Hash, PartialEq)]
 pub enum Type {

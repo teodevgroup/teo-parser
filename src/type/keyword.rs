@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
+use serde::Serialize;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize)]
 pub enum Keyword {
     SelfIdentifier,
     ThisFieldType,
