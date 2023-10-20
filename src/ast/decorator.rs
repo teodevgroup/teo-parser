@@ -5,15 +5,15 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct DecoratorResolved {
-    pub(crate) path: Vec<usize>,
+    pub path: Vec<usize>,
 }
 
 #[derive(Debug)]
 pub struct Decorator {
-    pub(crate) span: Span,
-    pub(crate) identifier_path: IdentifierPath,
-    pub(crate) argument_list: Option<ArgumentList>,
-    pub(crate) resolved: RefCell<Option<DecoratorResolved>>,
+    pub span: Span,
+    pub identifier_path: IdentifierPath,
+    pub argument_list: Option<ArgumentList>,
+    pub resolved: RefCell<Option<DecoratorResolved>>,
 }
 
 impl Decorator {
@@ -22,11 +22,11 @@ impl Decorator {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &DecoratorResolved {
+    pub fn resolved(&self) -> &DecoratorResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }

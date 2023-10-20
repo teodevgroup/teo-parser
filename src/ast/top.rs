@@ -17,7 +17,7 @@ use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 
 #[derive(Debug)]
-pub(crate) enum Top {
+pub enum Top {
     Import(Import),
     Config(Config),
     ConfigDeclaration(ConfigDeclaration),
@@ -55,7 +55,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         match self {
             Top::Import(i) => i.id(),
             Top::Constant(c) => c.id(),
@@ -74,7 +74,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn identifier_span(&self) -> Option<Span> {
+    pub fn identifier_span(&self) -> Option<Span> {
         match self {
             Top::Import(i) => None,
             Top::Constant(c) => Some(c.identifier.span),
@@ -93,7 +93,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn name(&self) -> Option<&str> {
+    pub fn name(&self) -> Option<&str> {
         match self {
             Top::Import(i) => None,
             Top::Constant(c) => Some(c.identifier.name()),
@@ -112,7 +112,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn path(&self) -> &Vec<usize> {
+    pub fn path(&self) -> &Vec<usize> {
         match self {
             Top::Import(i) => &i.path,
             Top::Constant(c) => &c.path,
@@ -131,7 +131,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             Top::Import(i) => i.span,
             Top::Constant(c) => c.span,
@@ -150,7 +150,7 @@ impl Top {
         }
     }
 
-    pub(crate) fn available_test(&self, availability: Availability) -> bool {
+    pub fn available_test(&self, availability: Availability) -> bool {
         match self {
             Top::Import(_) => true,
             Top::Config(_) => true,
@@ -169,158 +169,158 @@ impl Top {
         }
     }
 
-    pub(crate) fn as_import(&self) -> Option<&Import> {
+    pub fn as_import(&self) -> Option<&Import> {
         match self {
             Top::Import(i) => Some(i),
             _ => None
         }
     }
 
-    pub(crate) fn is_import(&self) -> bool {
+    pub fn is_import(&self) -> bool {
         self.as_import().is_some()
     }
 
-    pub(crate) fn as_constant(&self) -> Option<&Constant> {
+    pub fn as_constant(&self) -> Option<&Constant> {
         match self {
             Top::Constant(c) => Some(c),
             _ => None,
         }
     }
 
-    pub(crate) fn is_constant(&self) -> bool {
+    pub fn is_constant(&self) -> bool {
         self.as_constant().is_some()
     }
 
-    pub(crate) fn as_enum(&self) -> Option<&Enum> {
+    pub fn as_enum(&self) -> Option<&Enum> {
         match self {
             Top::Enum(i) => Some(i),
             _ => None
         }
     }
 
-    pub(crate) fn is_enum(&self) -> bool {
+    pub fn is_enum(&self) -> bool {
         self.as_enum().is_some()
     }
 
-    pub(crate) fn as_model(&self) -> Option<&Model> {
+    pub fn as_model(&self) -> Option<&Model> {
         match self {
             Top::Model(i) => Some(i),
             _ => None
         }
     }
 
-    pub(crate) fn is_model(&self) -> bool {
+    pub fn is_model(&self) -> bool {
         self.as_model().is_some()
     }
 
-    pub(crate) fn as_config(&self) -> Option<&Config> {
+    pub fn as_config(&self) -> Option<&Config> {
         match self {
             Top::Config(c) => Some(c),
             _ => None
         }
     }
 
-    pub(crate) fn is_config(&self) -> bool {
+    pub fn is_config(&self) -> bool {
         self.as_config().is_some()
     }
 
-    pub(crate) fn as_config_declaration(&self) -> Option<&ConfigDeclaration> {
+    pub fn as_config_declaration(&self) -> Option<&ConfigDeclaration> {
         match self {
             Top::ConfigDeclaration(c) => Some(c),
             _ => None
         }
     }
 
-    pub(crate) fn is_config_declaration(&self) -> bool {
+    pub fn is_config_declaration(&self) -> bool {
         self.as_config_declaration().is_some()
     }
 
 
-    pub(crate) fn as_data_set(&self) -> Option<&DataSet> {
+    pub fn as_data_set(&self) -> Option<&DataSet> {
         match self {
             Top::DataSet(d) => Some(d),
             _ => None,
         }
     }
 
-    pub(crate) fn is_data_set(&self) -> bool {
+    pub fn is_data_set(&self) -> bool {
         self.as_data_set().is_some()
     }
 
-    pub(crate) fn as_middleware_declaration(&self) -> Option<&MiddlewareDeclaration> {
+    pub fn as_middleware_declaration(&self) -> Option<&MiddlewareDeclaration> {
         match self {
             Top::Middleware(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_middleware_declaration(&self) -> bool {
+    pub fn is_middleware_declaration(&self) -> bool {
         self.as_middleware_declaration().is_some()
     }
 
-    pub(crate) fn as_handler_group_declaration(&self) -> Option<&HandlerGroupDeclaration> {
+    pub fn as_handler_group_declaration(&self) -> Option<&HandlerGroupDeclaration> {
         match self {
             Top::HandlerGroup(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_handler_group_declaration(&self) -> bool {
+    pub fn is_handler_group_declaration(&self) -> bool {
         self.as_handler_group_declaration().is_some()
     }
 
-    pub(crate) fn as_interface_declaration(&self) -> Option<&InterfaceDeclaration> {
+    pub fn as_interface_declaration(&self) -> Option<&InterfaceDeclaration> {
         match self {
             Top::Interface(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_interface_declaration(&self) -> bool {
+    pub fn is_interface_declaration(&self) -> bool {
         self.as_interface_declaration().is_some()
     }
 
-    pub(crate) fn as_namespace(&self) -> Option<&Namespace> {
+    pub fn as_namespace(&self) -> Option<&Namespace> {
         match self {
             Top::Namespace(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_namespace(&self) -> bool {
+    pub fn is_namespace(&self) -> bool {
         self.as_namespace().is_some()
     }
 
-    pub(crate) fn as_decorator_declaration(&self) -> Option<&DecoratorDeclaration> {
+    pub fn as_decorator_declaration(&self) -> Option<&DecoratorDeclaration> {
         match self {
             Top::DecoratorDeclaration(d) => Some(d),
             _ => None,
         }
     }
 
-    pub(crate) fn is_decorator_declaration(&self) -> bool {
+    pub fn is_decorator_declaration(&self) -> bool {
         self.as_decorator_declaration().is_some()
     }
 
-    pub(crate) fn as_pipeline_item_declaration(&self) -> Option<&PipelineItemDeclaration> {
+    pub fn as_pipeline_item_declaration(&self) -> Option<&PipelineItemDeclaration> {
         match self {
             Top::PipelineItemDeclaration(p) => Some(p),
             _ => None,
         }
     }
 
-    pub(crate) fn is_pipeline_item_declaration(&self) -> bool {
+    pub fn is_pipeline_item_declaration(&self) -> bool {
         self.as_pipeline_item_declaration().is_some()
     }
 
-    pub(crate) fn as_struct_declaration(&self) -> Option<&StructDeclaration> {
+    pub fn as_struct_declaration(&self) -> Option<&StructDeclaration> {
         match self {
             Top::StructDeclaration(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn is_struct_declaration(&self) -> bool {
+    pub fn is_struct_declaration(&self) -> bool {
         self.as_struct_declaration().is_some()
     }
 }

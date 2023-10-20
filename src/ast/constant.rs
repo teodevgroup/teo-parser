@@ -13,7 +13,7 @@ pub(crate) struct ConstantResolved {
 }
 
 #[derive(Debug)]
-pub(crate) struct Constant {
+pub struct Constant {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) string_path: Vec<String>,

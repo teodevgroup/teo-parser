@@ -30,15 +30,15 @@ impl Schema {
         self.sources.get(&id)
     }
 
-    pub(crate) fn source_at_path(&self, path: &str) -> Option<&Source> {
+    pub fn source_at_path(&self, path: &str) -> Option<&Source> {
         self.sources().iter().find_map(|s| if s.file_path.as_str() == path { Some(*s) } else { None })
     }
 
-    pub(crate) fn builtin_sources(&self) -> Vec<&Source> {
+    pub fn builtin_sources(&self) -> Vec<&Source> {
         self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
     }
 
-    pub(crate) fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
+    pub fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
         for config_declaration in self.config_declarations() {
             if config_declaration.identifier.name() == name && config_declaration.define_availability.contains(availability) {
                 return Some(config_declaration)
@@ -47,7 +47,7 @@ impl Schema {
         None
     }
 
-    pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
+    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
         if path.len() < 2 {
             return None;
         }

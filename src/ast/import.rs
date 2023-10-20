@@ -4,11 +4,11 @@ use crate::ast::span::Span;
 use crate::definition::definition::Definition;
 
 #[derive(Debug)]
-pub(crate) struct Import {
+pub struct Import {
     pub(crate) path: Vec<usize>,
     pub(crate) identifiers: Vec<Identifier>,
     pub(crate) source: StringLiteral,
-    pub(crate) file_path: String,
+    pub file_path: String,
     pub(crate) span: Span,
 }
 
