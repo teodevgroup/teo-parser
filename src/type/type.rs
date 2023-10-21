@@ -71,371 +71,371 @@ pub enum Type {
 
 impl Type {
 
-    pub(crate) fn is_undetermined(&self) -> bool {
+    pub fn is_undetermined(&self) -> bool {
         match self {
             Type::Undetermined => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_ignored(&self) -> bool {
+    pub fn is_ignored(&self) -> bool {
         match self {
             Type::Ignored => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_any(&self) -> bool {
+    pub fn is_any(&self) -> bool {
         match self {
             Type::Any => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_null(&self) -> bool {
+    pub fn is_null(&self) -> bool {
         match self {
             Type::Null => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_bool(&self) -> bool {
+    pub fn is_bool(&self) -> bool {
         match self {
             Type::Bool => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_int(&self) -> bool {
+    pub fn is_int(&self) -> bool {
         match self {
             Type::Int => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_int64(&self) -> bool {
+    pub fn is_int64(&self) -> bool {
         match self {
             Type::Int64 => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_float32(&self) -> bool {
+    pub fn is_float32(&self) -> bool {
         match self {
             Type::Float32 => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_float(&self) -> bool {
+    pub fn is_float(&self) -> bool {
         match self {
             Type::Float => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_decimal(&self) -> bool {
+    pub fn is_decimal(&self) -> bool {
         match self {
             Type::Decimal => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_string(&self) -> bool {
+    pub fn is_string(&self) -> bool {
         match self {
             Type::String => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_object_id(&self) -> bool {
+    pub fn is_object_id(&self) -> bool {
         match self {
             Type::ObjectId => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_date(&self) -> bool {
+    pub fn is_date(&self) -> bool {
         match self {
             Type::Date => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_datetime(&self) -> bool {
+    pub fn is_datetime(&self) -> bool {
         match self {
             Type::DateTime => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_file(&self) -> bool {
+    pub fn is_file(&self) -> bool {
         match self {
             Type::File => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_regex(&self) -> bool {
+    pub fn is_regex(&self) -> bool {
         match self {
             Type::Regex => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_model(&self) -> bool {
+    pub fn is_model(&self) -> bool {
         match self {
             Type::Model => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_data_set(&self) -> bool {
+    pub fn is_data_set(&self) -> bool {
         match self {
             Type::DataSet => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_array(&self) -> bool {
+    pub fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
 
-    pub(crate) fn as_array(&self) -> Option<&Type> {
+    pub fn as_array(&self) -> Option<&Type> {
         match self {
             Self::Array(inner) => Some(inner.as_ref()),
             _ => None,
         }
     }
 
-    pub(crate) fn is_dictionary(&self) -> bool {
+    pub fn is_dictionary(&self) -> bool {
         self.as_dictionary().is_some()
     }
 
-    pub(crate) fn as_dictionary(&self) -> Option<&Type> {
+    pub fn as_dictionary(&self) -> Option<&Type> {
         match self {
             Self::Dictionary(v) => Some(v.as_ref()),
             _ => None,
         }
     }
 
-    pub(crate) fn is_tuple(&self) -> bool {
+    pub fn is_tuple(&self) -> bool {
         self.as_tuple().is_some()
     }
 
-    pub(crate) fn as_tuple(&self) -> Option<&Vec<Type>> {
+    pub fn as_tuple(&self) -> Option<&Vec<Type>> {
         match self {
             Self::Tuple(types) => Some(types),
             _ => None,
         }
     }
 
-    pub(crate) fn is_range(&self) -> bool {
+    pub fn is_range(&self) -> bool {
         self.as_range().is_some()
     }
 
-    pub(crate) fn as_range(&self) -> Option<&Type> {
+    pub fn as_range(&self) -> Option<&Type> {
         match self {
             Self::Range(t) => Some(t.as_ref()),
             _ => None,
         }
     }
 
-    pub(crate) fn is_union(&self) -> bool {
+    pub fn is_union(&self) -> bool {
         self.as_union().is_some()
     }
 
-    pub(crate) fn as_union(&self) -> Option<&Vec<Type>> {
+    pub fn as_union(&self) -> Option<&Vec<Type>> {
         match self {
             Self::Union(types) => Some(types),
             _ => None,
         }
     }
 
-    pub(crate) fn is_enum_variant(&self) -> bool {
+    pub fn is_enum_variant(&self) -> bool {
         self.as_enum_variant().is_some()
     }
 
-    pub(crate) fn as_enum_variant(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_enum_variant(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
             Self::EnumVariant(path, name) => Some((path, name)),
             _ => None,
         }
     }
 
-    pub(crate) fn is_interface_object(&self) -> bool {
+    pub fn is_interface_object(&self) -> bool {
         self.as_interface_object().is_some()
     }
 
-    pub(crate) fn as_interface_object(&self) -> Option<(&Vec<usize>, &Vec<Type>, &Vec<String>)> {
+    pub fn as_interface_object(&self) -> Option<(&Vec<usize>, &Vec<Type>, &Vec<String>)> {
         match self {
             Self::InterfaceObject(path, types, name) => Some((path, types, name)),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_object(&self) -> bool {
+    pub fn is_model_object(&self) -> bool {
         self.as_model_object().is_some()
     }
 
-    pub(crate) fn as_model_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_model_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
             Self::ModelObject(path, name) => Some((path, name)),
             _ => None,
         }
     }
 
-    pub(crate) fn is_struct_object(&self) -> bool {
+    pub fn is_struct_object(&self) -> bool {
         self.as_struct_object().is_some()
     }
 
-    pub(crate) fn as_struct_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_struct_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
             Self::StructObject(path, name) => Some((path, name)),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_scalar_fields(&self) -> bool {
+    pub fn is_model_scalar_fields(&self) -> bool {
         self.as_model_scalar_fields().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_model_scalar_fields(&self) -> Option<(&Type, Option<&String>)> {
         match self {
             Self::ModelScalarFields(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_scalar_fields_without_virtuals(&self) -> bool {
+    pub fn is_model_scalar_fields_without_virtuals(&self) -> bool {
         self.as_model_scalar_fields_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_model_scalar_fields_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
         match self {
             Self::ModelScalarFieldsWithoutVirtuals(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> bool {
+    pub fn is_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> bool {
         self.as_model_scalar_fields_and_cached_properties_without_virtuals().is_some()
     }
 
-    pub(crate) fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
         match self {
             Self::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_relations(&self) -> bool {
+    pub fn is_model_relations(&self) -> bool {
         self.as_model_scalar_fields().is_some()
     }
 
-    pub(crate) fn as_model_relations(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_model_relations(&self) -> Option<(&Type, Option<&String>)> {
         match self {
             Self::ModelRelations(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_model_direct_relations(&self) -> bool {
+    pub fn is_model_direct_relations(&self) -> bool {
         self.as_model_direct_relations().is_some()
     }
 
-    pub(crate) fn as_model_direct_relations(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_model_direct_relations(&self) -> Option<(&Type, Option<&String>)> {
         match self {
             Self::ModelDirectRelations(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_field_type(&self) -> bool {
+    pub fn is_field_type(&self) -> bool {
         self.as_field_type().is_some()
     }
 
-    pub(crate) fn as_field_type(&self) -> Option<(&Type, &Type)> {
+    pub fn as_field_type(&self) -> Option<(&Type, &Type)> {
         match self {
             Self::FieldType(path, field) => Some((path, field)),
             _ => None,
         }
     }
 
-    pub(crate) fn is_field_reference(&self) -> bool {
+    pub fn is_field_reference(&self) -> bool {
         self.as_field_reference().is_some()
     }
 
-    pub(crate) fn as_field_reference(&self) -> Option<&str> {
+    pub fn as_field_reference(&self) -> Option<&str> {
         match self {
             Self::FieldReference(name) => Some(name.as_str()),
             _ => None,
         }
     }
 
-    pub(crate) fn is_generic_item(&self) -> bool {
+    pub fn is_generic_item(&self) -> bool {
         self.as_generic_item().is_some()
     }
 
-    pub(crate) fn as_generic_item(&self) -> Option<&str> {
+    pub fn as_generic_item(&self) -> Option<&str> {
         match self {
             Self::GenericItem(name) => Some(name),
             _ => None,
         }
     }
 
-    pub(crate) fn is_keyword(&self) -> bool {
+    pub fn is_keyword(&self) -> bool {
         self.as_keyword().is_some()
     }
 
-    pub(crate) fn as_keyword(&self) -> Option<&Keyword> {
+    pub fn as_keyword(&self) -> Option<&Keyword> {
         match self {
             Self::Keyword(kw) => Some(kw),
             _ => None,
         }
     }
 
-    pub(crate) fn is_optional(&self) -> bool {
+    pub fn is_optional(&self) -> bool {
         self.as_optional().is_some()
     }
 
-    pub(crate) fn as_optional(&self) -> Option<&Type> {
+    pub fn as_optional(&self) -> Option<&Type> {
         match self {
             Type::Optional(t) => Some(t),
             _ => None,
         }
     }
 
-    pub(crate) fn is_pipeline(&self) -> bool {
+    pub fn is_pipeline(&self) -> bool {
         self.as_pipeline().is_some()
     }
 
-    pub(crate) fn as_pipeline(&self) -> Option<(&Type, &Type)> {
+    pub fn as_pipeline(&self) -> Option<(&Type, &Type)> {
         match self {
             Type::Pipeline((a, b)) => Some((a.as_ref(), b.as_ref())),
             _ => None,
         }
     }
 
-    pub(crate) fn is_int_32_or_64(&self) -> bool {
+    pub fn is_int_32_or_64(&self) -> bool {
         match self {
             Type::Int | Type::Int64 => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_float_32_or_64(&self) -> bool {
+    pub fn is_float_32_or_64(&self) -> bool {
         match self {
             Type::Float32 | Type::Float => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_any_int_or_float(&self) -> bool {
+    pub fn is_any_int_or_float(&self) -> bool {
         self.is_int_32_or_64() || self.is_float_32_or_64()
     }
 
-    pub(crate) fn is_any_model_field_reference(&self) -> bool {
+    pub fn is_any_model_field_reference(&self) -> bool {
         self.is_model_scalar_fields() ||
             self.is_model_scalar_fields_without_virtuals() ||
             self.is_model_scalar_fields_and_cached_properties_without_virtuals() ||
@@ -443,7 +443,7 @@ impl Type {
             self.is_model_direct_relations()
     }
 
-    pub(crate) fn is_container(&self) -> bool {
+    pub fn is_container(&self) -> bool {
         match self {
             Type::Undetermined => false,
             Type::Ignored => false,
@@ -486,7 +486,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn contains_generics(&self) -> bool {
+    pub fn contains_generics(&self) -> bool {
         match self {
             Type::Undetermined => false,
             Type::Ignored => false,
@@ -529,7 +529,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
+    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
         if let Some(name) = self.as_generic_item() {
             if let Some(t) = map.get(name) {
                 (*t).clone()
@@ -557,7 +557,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn replace_keywords(&self, map: &BTreeMap<Keyword, &Type>) -> Self {
+    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, &Type>) -> Self {
         if let Some(name) = self.as_keyword() {
             if let Some(t) = map.get(name) {
                 (*t).clone()
@@ -585,7 +585,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn test(&self, passed: &Type) -> bool {
+    pub fn test(&self, passed: &Type) -> bool {
         match self {
             Type::Undetermined => false,
             Type::Ignored => true,
@@ -628,7 +628,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn unwrap_optional(&self) -> &Type {
+    pub fn unwrap_optional(&self) -> &Type {
         if self.is_optional() {
             self.as_optional().unwrap()
         } else {
@@ -636,7 +636,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn unwrap_array(&self) -> &Type {
+    pub fn unwrap_array(&self) -> &Type {
         if self.is_array() {
             self.as_array().unwrap()
         } else {
@@ -644,7 +644,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn flatten(&self) -> Type {
+    pub fn flatten(&self) -> Type {
         if let Some(inner) = self.as_optional() {
             if inner.is_optional() {
                 return inner.flatten();
@@ -653,14 +653,14 @@ impl Type {
         self.clone()
     }
 
-    pub(crate) fn satisfies(&self, constraint: &Type) -> bool {
+    pub fn satisfies(&self, constraint: &Type) -> bool {
         if self.is_model_object() && constraint.is_model() {
             return true
         }
         constraint.test(self)
     }
 
-    pub(crate) fn field_name(&self) -> Option<&str> {
+    pub fn field_name(&self) -> Option<&str> {
         match self {
             Type::FieldReference(n) => Some(n.as_str()),
             Type::ModelScalarFields(_, name) => name.as_ref().map(|n| n.as_str()),
@@ -672,7 +672,7 @@ impl Type {
         }
     }
 
-    pub(crate) fn replace_field_type<F>(&self, f: F) -> Type where F: Fn(&Type, &Type) -> Type {
+    pub fn replace_field_type<F>(&self, f: F) -> Type where F: Fn(&Type, &Type) -> Type {
         let f_ref = |t: &Type, f: &dyn Fn(&Type, &Type) -> Type| { t.replace_field_type(f) };
         match self {
             Type::Undetermined => self.clone(),

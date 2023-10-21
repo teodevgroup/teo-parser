@@ -114,7 +114,7 @@ pub struct Field {
     pub decorators: Vec<Decorator>,
     pub(crate) empty_decorators_spans: Vec<Span>,
     pub identifier: Identifier,
-    pub(crate) type_expr: TypeExpr,
+    pub type_expr: TypeExpr,
     pub(crate) resolved: RefCell<Option<FieldResolved>>,
 }
 

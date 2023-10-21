@@ -37,7 +37,7 @@ impl Namespace {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn str_path(&self) -> Vec<&str> {
+    pub fn str_path(&self) -> Vec<&str> {
         self.string_path.iter().map(AsRef::as_ref).collect()
     }
 

@@ -1,14 +1,17 @@
 use maplit::btreemap;
-use crate::ast::interface::InterfaceDeclaration;
+use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class};
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_interface<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_interface_declaration<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&interface_declaration.string_path, interface_declaration.define_availability) {
         context.insert_duplicated_identifier(interface_declaration.identifier.span);
     }
+    interface_declaration.resolve(InterfaceDeclarationResolved {
+        actual_availability: context.current_availability()
+    });
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &interface_declaration.generics_constraint {

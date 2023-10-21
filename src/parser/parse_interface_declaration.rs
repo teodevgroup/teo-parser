@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::field::Field;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::type_expr::TypeExpr;
@@ -52,5 +53,6 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         generics_constraint,
         extends,
         fields,
+        resolved: RefCell::new(None),
     }
 }

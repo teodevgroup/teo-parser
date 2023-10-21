@@ -160,7 +160,7 @@ impl Display for TypeExprKind {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeExpr {
+pub struct TypeExpr {
     pub(crate) kind: TypeExprKind,
     pub(crate) resolved: RefCell<Option<Type>>,
 }
@@ -175,7 +175,7 @@ impl TypeExpr {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &Type {
+    pub fn resolved(&self) -> &Type {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 }

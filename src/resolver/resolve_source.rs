@@ -6,7 +6,7 @@ use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolve_data_set::{resolve_data_set, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration;
 use crate::resolver::resolve_enum::resolve_enum;
-use crate::resolver::resolve_interface::resolve_interface;
+use crate::resolver::resolve_interface::resolve_interface_declaration;
 use crate::resolver::resolve_middleware::resolve_middleware;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_info};
 use crate::resolver::resolve_namespace::{resolve_namespace_first, resolve_namespace_second, resolve_namespace_third};
@@ -24,7 +24,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::Config(config) => resolve_config(config, context),
             Top::DataSet(_) => (), // do not resolve yet
             Top::Middleware(middleware) => resolve_middleware(middleware, context),
-            Top::Interface(interface) => resolve_interface(interface, context),
+            Top::Interface(interface) => resolve_interface_declaration(interface, context),
             Top::Namespace(namespace) => resolve_namespace_first(namespace, context),
             Top::ConfigDeclaration(config_declaration) => resolve_config_declaration(config_declaration, context),
             Top::HandlerGroup(handler_group) => resolve_handler_group_types(handler_group, context),
