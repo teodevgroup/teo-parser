@@ -28,4 +28,8 @@ impl ConfigDeclaration {
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
+
+    pub fn get_field(&self, name: &str) -> Option<&Field> {
+        self.fields.iter().find(|f| f.identifier.name() == name)
+    }
 }

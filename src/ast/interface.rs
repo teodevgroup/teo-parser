@@ -59,7 +59,7 @@ pub struct InterfaceDeclarationResolved {
     pub actual_availability: Availability,
 }
 
-impl InfoProvider for &InterfaceDeclaration {
+impl InfoProvider for InterfaceDeclaration {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()

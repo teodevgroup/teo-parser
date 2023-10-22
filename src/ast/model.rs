@@ -62,7 +62,7 @@ pub struct ModelResolved {
     pub actual_availability: Availability,
 }
 
-impl InfoProvider for &Model {
+impl InfoProvider for Model {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()

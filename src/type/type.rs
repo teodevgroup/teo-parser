@@ -644,6 +644,22 @@ impl Type {
         }
     }
 
+        pub fn unwrap_dictionary(&self) -> &Type {
+            if self.is_dictionary() {
+                self.as_dictionary().unwrap()
+            } else {
+                self
+            }
+        }
+
+    pub fn unwrap_tuple_index(&self, index: i32) -> Option<&Type> {
+        if self.is_tuple() {
+            self.as_tuple().unwrap().get(index  as usize)
+        } else {
+            None
+        }
+    }
+
     pub fn flatten(&self) -> Type {
         if let Some(inner) = self.as_optional() {
             if inner.is_optional() {

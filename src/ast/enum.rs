@@ -53,7 +53,7 @@ impl Enum {
     }
 }
 
-impl InfoProvider for &Enum {
+impl InfoProvider for Enum {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
@@ -116,7 +116,7 @@ impl EnumMember {
     }
 }
 
-impl InfoProvider for &EnumMember {
+impl InfoProvider for EnumMember {
 
     fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
