@@ -4,23 +4,23 @@ use crate::ast::span::Span;
 use crate::ast::unit::Unit;
 
 #[derive(Debug)]
-pub(crate) struct Pipeline {
-    pub(crate) unit: Box<Unit>,
-    pub(crate) span: Span,
-    pub(crate) resolved: RefCell<Option<PipelineResolved>>,
+pub struct Pipeline {
+    pub unit: Box<Unit>,
+    pub span: Span,
+    pub resolved: RefCell<Option<PipelineResolved>>,
 }
 
 impl Pipeline {
 
-    pub(crate) fn resolve(&self, resolved: PipelineResolved) {
+    pub fn resolve(&self, resolved: PipelineResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &PipelineResolved {
+    pub fn resolved(&self) -> &PipelineResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }

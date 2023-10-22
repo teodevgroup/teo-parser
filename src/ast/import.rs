@@ -5,16 +5,16 @@ use crate::definition::definition::Definition;
 
 #[derive(Debug)]
 pub struct Import {
-    pub(crate) path: Vec<usize>,
-    pub(crate) identifiers: Vec<Identifier>,
-    pub(crate) source: StringLiteral,
+    pub path: Vec<usize>,
+    pub identifiers: Vec<Identifier>,
+    pub source: StringLiteral,
     pub file_path: String,
-    pub(crate) span: Span,
+    pub span: Span,
 }
 
 impl Import {
 
-    pub(crate) fn new(path: Vec<usize>, identifiers: Vec<Identifier>, source: StringLiteral, file_path: String, span: Span) -> Self {
+    pub fn new(path: Vec<usize>, identifiers: Vec<Identifier>, source: StringLiteral, file_path: String, span: Span) -> Self {
         Self {
             path,
             identifiers,
@@ -28,7 +28,7 @@ impl Import {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 }

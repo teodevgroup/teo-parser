@@ -14,9 +14,9 @@ use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
-pub(crate) struct Negation {
-    pub(crate) expression: Box<Expression>,
-    pub(crate) span: Span,
+pub struct Negation {
+    pub expression: Box<Expression>,
+    pub span: Span,
 }
 
 impl Display for Negation {
@@ -28,9 +28,9 @@ impl Display for Negation {
 }
 
 #[derive(Debug)]
-pub(crate) struct BitwiseNegation {
-    pub(crate) expression: Box<Expression>,
-    pub(crate) span: Span,
+pub struct BitwiseNegation {
+    pub expression: Box<Expression>,
+    pub span: Span,
 }
 
 impl Display for BitwiseNegation {
@@ -42,9 +42,9 @@ impl Display for BitwiseNegation {
 }
 
 #[derive(Debug)]
-pub(crate) struct NullishCoalescing {
-    pub(crate) expressions: Vec<Expression>,
-    pub(crate) span: Span,
+pub struct NullishCoalescing {
+    pub expressions: Vec<Expression>,
+    pub span: Span,
 }
 
 impl Display for NullishCoalescing {
@@ -61,7 +61,7 @@ impl Display for NullishCoalescing {
 }
 
 #[derive(Debug)]
-pub(crate) enum ExpressionKind {
+pub enum ExpressionKind {
     Group(Group),
     ArithExpr(ArithExpr),
     NumericLiteral(NumericLiteral),
@@ -83,7 +83,7 @@ pub(crate) enum ExpressionKind {
 
 impl ExpressionKind {
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             ExpressionKind::Group(e) => e.span,
             ExpressionKind::ArithExpr(e) => e.span(),
@@ -105,144 +105,144 @@ impl ExpressionKind {
         }
     }
 
-    pub(crate) fn as_numeric_literal(&self) -> Option<&NumericLiteral> {
+    pub fn as_numeric_literal(&self) -> Option<&NumericLiteral> {
         match self {
             ExpressionKind::NumericLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_numeric_literal(&self) -> bool {
+    pub fn is_numeric_literal(&self) -> bool {
         self.as_numeric_literal().is_some()
     }
 
-    pub(crate) fn as_string_literal(&self) -> Option<&StringLiteral> {
+    pub fn as_string_literal(&self) -> Option<&StringLiteral> {
         match self {
             ExpressionKind::StringLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_string_literal(&self) -> bool {
+    pub fn is_string_literal(&self) -> bool {
         self.as_string_literal().is_some()
     }
 
-    pub(crate) fn as_regex_literal(&self) -> Option<&RegexLiteral> {
+    pub fn as_regex_literal(&self) -> Option<&RegexLiteral> {
         match self {
             ExpressionKind::RegexLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_regex_literal(&self) -> bool {
+    pub fn is_regex_literal(&self) -> bool {
         self.as_regex_literal().is_some()
     }
 
-    pub(crate) fn as_bool_literal(&self) -> Option<&BoolLiteral> {
+    pub fn as_bool_literal(&self) -> Option<&BoolLiteral> {
         match self {
             ExpressionKind::BoolLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_bool_literal(&self) -> bool {
+    pub fn is_bool_literal(&self) -> bool {
         self.as_bool_literal().is_some()
     }
 
-    pub(crate) fn as_null_literal(&self) -> Option<&NullLiteral> {
+    pub fn as_null_literal(&self) -> Option<&NullLiteral> {
         match self {
             ExpressionKind::NullLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_null_literal(&self) -> bool {
+    pub fn is_null_literal(&self) -> bool {
         self.as_null_literal().is_some()
     }
 
-    pub(crate) fn as_enum_variant_literal(&self) -> Option<&EnumVariantLiteral> {
+    pub fn as_enum_variant_literal(&self) -> Option<&EnumVariantLiteral> {
         match self {
             ExpressionKind::EnumVariantLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_enum_variant_literal(&self) -> bool {
+    pub fn is_enum_variant_literal(&self) -> bool {
         self.as_enum_variant_literal().is_some()
     }
 
-    pub(crate) fn as_tuple(&self) -> Option<&TupleLiteral> {
+    pub fn as_tuple(&self) -> Option<&TupleLiteral> {
         match self {
             ExpressionKind::TupleLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn as_array_literal(&self) -> Option<&ArrayLiteral> {
+    pub fn as_array_literal(&self) -> Option<&ArrayLiteral> {
         match self {
             ExpressionKind::ArrayLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn is_array_literal(&self) -> bool {
+    pub fn is_array_literal(&self) -> bool {
         self.as_array_literal().is_some()
     }
 
-    pub(crate) fn as_dictionary(&self) -> Option<&DictionaryLiteral> {
+    pub fn as_dictionary(&self) -> Option<&DictionaryLiteral> {
         match self {
             ExpressionKind::DictionaryLiteral(n) => Some(n),
             _ => None,
         }
     }
 
-    pub(crate) fn as_identifier(&self) -> Option<&Identifier> {
+    pub fn as_identifier(&self) -> Option<&Identifier> {
         match self {
             ExpressionKind::Identifier(i) => Some(i),
             _ => None,
         }
     }
 
-    pub(crate) fn is_identifier(&self) -> bool {
+    pub fn is_identifier(&self) -> bool {
         self.as_identifier().is_some()
     }
 
-    pub(crate) fn as_unit(&self) -> Option<&Unit> {
+    pub fn as_unit(&self) -> Option<&Unit> {
         match self {
             ExpressionKind::Unit(u) => Some(u),
             _ => None,
         }
     }
 
-    pub(crate) fn as_argument_list(&self) -> Option<&ArgumentList> {
+    pub fn as_argument_list(&self) -> Option<&ArgumentList> {
         match self {
             ExpressionKind::ArgumentList(a) => Some(a),
             _ => None,
         }
     }
 
-    pub(crate) fn as_subscript(&self) -> Option<&Subscript> {
+    pub fn as_subscript(&self) -> Option<&Subscript> {
         match self {
             ExpressionKind::Subscript(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn as_call(&self) -> Option<&Call> {
+    pub fn as_call(&self) -> Option<&Call> {
         match self {
             ExpressionKind::Call(c) => Some(c),
             _ => None,
         }
     }
 
-    pub(crate) fn as_pipeline(&self) -> Option<&Pipeline> {
+    pub fn as_pipeline(&self) -> Option<&Pipeline> {
         match self {
             ExpressionKind::Pipeline(p) => Some(p),
             _ => None,
         }
     }
 
-    pub(crate) fn as_arith_expr(&self) -> Option<&ArithExpr> {
+    pub fn as_arith_expr(&self) -> Option<&ArithExpr> {
         match self {
             ExpressionKind::ArithExpr(a) => Some(a),
             _ => None,
@@ -276,29 +276,29 @@ impl Display for ExpressionKind {
 
 #[derive(Debug)]
 pub struct Expression {
-    pub(crate) kind: ExpressionKind,
-    pub(crate) resolved: RefCell<Option<ExpressionResolved>>,
+    pub kind: ExpressionKind,
+    pub resolved: RefCell<Option<ExpressionResolved>>,
 }
 
 impl Expression {
 
-    pub(crate) fn new(kind: ExpressionKind) -> Self {
+    pub fn new(kind: ExpressionKind) -> Self {
         Self { kind, resolved: RefCell::new(None) }
     }
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         self.kind.span()
     }
 
-    pub(crate) fn resolve(&self, resolved: ExpressionResolved) {
+    pub fn resolve(&self, resolved: ExpressionResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ExpressionResolved {
+    pub fn resolved(&self) -> &ExpressionResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
@@ -325,14 +325,14 @@ impl ExpressionResolved {
         self.value.as_ref()
     }
 
-    pub(crate) fn undetermined() -> Self {
+    pub fn undetermined() -> Self {
         ExpressionResolved {
             r#type: Type::Undetermined,
             value: None,
         }
     }
 
-    pub(crate) fn type_only(t: Type) -> Self {
+    pub fn type_only(t: Type) -> Self {
         ExpressionResolved {
             r#type: t,
             value: None

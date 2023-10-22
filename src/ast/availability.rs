@@ -55,7 +55,7 @@ impl Availability {
         self.0 == 0
     }
 
-    pub(crate) fn bi_and(&self, other: Availability) -> Availability {
+    pub fn bi_and(&self, other: Availability) -> Availability {
         Self(self.0 & other.0)
     }
 }

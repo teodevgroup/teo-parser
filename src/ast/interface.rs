@@ -11,16 +11,16 @@ use crate::ast::span::Span;
 #[derive(Debug)]
 pub struct InterfaceDeclaration {
     pub span: Span,
-    pub(crate) path: Vec<usize>,
+    pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub identifier: Identifier,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) extends: Vec<TypeExpr>,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
+    pub extends: Vec<TypeExpr>,
     pub fields: Vec<Field>,
-        pub(crate) resolved: RefCell<Option<InterfaceDeclarationResolved>>
+        pub resolved: RefCell<Option<InterfaceDeclarationResolved>>
 }
 
 impl InterfaceDeclaration {
@@ -29,11 +29,11 @@ impl InterfaceDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn extends(&self) -> &Vec<TypeExpr> {
+    pub fn extends(&self) -> &Vec<TypeExpr> {
         &self.extends
     }
 
@@ -41,22 +41,22 @@ impl InterfaceDeclaration {
         self.define_availability.contains(self.resolved().actual_availability)
     }
 
-    pub(crate) fn resolve(&self, resolved: InterfaceDeclarationResolved) {
+    pub fn resolve(&self, resolved: InterfaceDeclarationResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &InterfaceDeclarationResolved {
+    pub fn resolved(&self) -> &InterfaceDeclarationResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
 
 #[derive(Debug)]
 pub struct InterfaceDeclarationResolved {
-    pub(crate) actual_availability: Availability,
+    pub actual_availability: Availability,
 }
 
 impl InfoProvider for &InterfaceDeclaration {

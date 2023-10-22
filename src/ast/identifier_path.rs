@@ -14,7 +14,7 @@ impl IdentifierPath {
         self.identifiers.iter().map(|i| i.name.as_str()).collect()
     }
 
-    pub(crate) fn from_identifier(identifier: Identifier) -> Self {
+    pub fn from_identifier(identifier: Identifier) -> Self {
         Self {
             span: identifier.span,
             identifiers: vec![identifier],

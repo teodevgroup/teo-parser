@@ -3,9 +3,9 @@ use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct Unit {
-    pub(crate) expressions: Vec<Expression>,
-    pub(crate) span: Span,
+pub struct Unit {
+    pub expressions: Vec<Expression>,
+    pub span: Span,
 }
 
 impl Display for Unit {

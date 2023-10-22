@@ -9,7 +9,7 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum FieldHint {
+pub enum FieldHint {
     ModelField,
     InterfaceField,
 }
@@ -101,21 +101,21 @@ impl FieldClass {
 #[derive(Debug)]
 pub struct FieldResolved {
     pub class: FieldClass,
-    pub(crate) actual_availability: Availability,
+    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
 pub struct Field {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
-    pub(crate) empty_decorators_spans: Vec<Span>,
+    pub empty_decorators_spans: Vec<Span>,
     pub identifier: Identifier,
     pub type_expr: TypeExpr,
-    pub(crate) resolved: RefCell<Option<FieldResolved>>,
+    pub resolved: RefCell<Option<FieldResolved>>,
 }
 
 impl Field {
@@ -124,15 +124,15 @@ impl Field {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         self.identifier.name.as_str()
     }
 
-    pub(crate) fn resolve(&self, resolved: FieldResolved) {
+    pub fn resolve(&self, resolved: FieldResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
@@ -140,7 +140,7 @@ impl Field {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 

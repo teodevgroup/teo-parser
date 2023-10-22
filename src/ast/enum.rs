@@ -13,17 +13,17 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct Enum {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
+    pub span: Span,
+    pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) decorators: Vec<Decorator>,
+    pub decorators: Vec<Decorator>,
     pub interface: bool,
     pub option: bool,
     pub identifier: Identifier,
     pub members: Vec<EnumMember>,
-    pub(crate) resolved: RefCell<Option<EnumResolved>>,
+    pub resolved: RefCell<Option<EnumResolved>>,
 }
 
 impl Enum {
@@ -32,7 +32,7 @@ impl Enum {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -40,15 +40,15 @@ impl Enum {
         self.define_availability.contains(self.resolved().actual_availability)
     }
 
-    pub(crate) fn resolve(&self, resolved: EnumResolved) {
+    pub fn resolve(&self, resolved: EnumResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &EnumResolved {
+    pub fn resolved(&self) -> &EnumResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
@@ -65,28 +65,28 @@ impl InfoProvider for &Enum {
 }
 
 #[derive(Debug)]
-pub(crate) struct EnumResolved {
-    pub(crate) actual_availability: Availability,
+pub struct EnumResolved {
+    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
 pub struct EnumMemberResolved {
     pub value: Value,
-    pub(crate) actual_availability: Availability,
+    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
 pub struct EnumMember {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) decorators: Vec<Decorator>,
+    pub decorators: Vec<Decorator>,
     pub identifier: Identifier,
-    pub(crate) expression: Option<EnumMemberExpression>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) resolved: RefCell<Option<EnumMemberResolved>>,
+    pub expression: Option<EnumMemberExpression>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub resolved: RefCell<Option<EnumMemberResolved>>,
 }
 
 impl EnumMember {
@@ -95,7 +95,7 @@ impl EnumMember {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -103,7 +103,7 @@ impl EnumMember {
         self.define_availability.contains(self.resolved().actual_availability)
     }
 
-    pub(crate) fn resolve(&self, resolved: EnumMemberResolved) {
+    pub fn resolve(&self, resolved: EnumMemberResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
@@ -111,7 +111,7 @@ impl EnumMember {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
@@ -128,7 +128,7 @@ impl InfoProvider for &EnumMember {
 }
 
 #[derive(Debug)]
-pub(crate) enum EnumMemberExpression {
+pub enum EnumMemberExpression {
     StringLiteral(StringLiteral),
     NumericLiteral(NumericLiteral),
     ArithExpr(ArithExpr),
@@ -136,29 +136,29 @@ pub(crate) enum EnumMemberExpression {
 
 impl EnumMemberExpression {
 
-    pub(crate) fn is_string_literal(&self) -> bool {
+    pub fn is_string_literal(&self) -> bool {
         self.as_string_literal().is_some()
     }
 
-    pub(crate) fn as_string_literal(&self) -> Option<&StringLiteral> {
+    pub fn as_string_literal(&self) -> Option<&StringLiteral> {
         match self {
             Self::StringLiteral(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn is_arith_expr(&self) -> bool {
+    pub fn is_arith_expr(&self) -> bool {
         self.as_arith_expr().is_some()
     }
 
-    pub(crate) fn as_arith_expr(&self) -> Option<&ArithExpr> {
+    pub fn as_arith_expr(&self) -> Option<&ArithExpr> {
         match self {
             Self::ArithExpr(s) => Some(s),
             _ => None,
         }
     }
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             Self::StringLiteral(s) => s.span,
             Self::NumericLiteral(n) => n.span,

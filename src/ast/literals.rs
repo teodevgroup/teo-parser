@@ -7,9 +7,9 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct NumericLiteral {
-    pub(crate) value: Value,
-    pub(crate) span: Span,
+pub struct NumericLiteral {
+    pub value: Value,
+    pub span: Span,
 }
 
 impl Display for NumericLiteral {
@@ -21,9 +21,9 @@ impl Display for NumericLiteral {
 
 
 #[derive(Debug)]
-pub(crate) struct StringLiteral {
-    pub(crate) value: String,
-    pub(crate) span: Span,
+pub struct StringLiteral {
+    pub value: String,
+    pub span: Span,
 }
 
 impl Display for StringLiteral {
@@ -34,9 +34,9 @@ impl Display for StringLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct RegexLiteral {
-    pub(crate) value: Regex,
-    pub(crate) span: Span,
+pub struct RegexLiteral {
+    pub value: Regex,
+    pub span: Span,
 }
 
 impl Display for RegexLiteral {
@@ -49,9 +49,9 @@ impl Display for RegexLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct BoolLiteral {
-    pub(crate) value: bool,
-    pub(crate) span: Span,
+pub struct BoolLiteral {
+    pub value: bool,
+    pub span: Span,
 }
 
 impl Display for BoolLiteral {
@@ -62,8 +62,8 @@ impl Display for BoolLiteral {
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct NullLiteral {
-    pub(crate) span: Span,
+pub struct NullLiteral {
+    pub span: Span,
 }
 
 impl Display for NullLiteral {
@@ -74,10 +74,10 @@ impl Display for NullLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct EnumVariantLiteral {
-    pub(crate) span: Span,
-    pub(crate) identifier: Identifier,
-    pub(crate) argument_list: Option<ArgumentList>,
+pub struct EnumVariantLiteral {
+    pub span: Span,
+    pub identifier: Identifier,
+    pub argument_list: Option<ArgumentList>,
 }
 
 impl Display for EnumVariantLiteral {
@@ -93,9 +93,9 @@ impl Display for EnumVariantLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct TupleLiteral {
-    pub(crate) expressions: Vec<Expression>,
-    pub(crate) span: Span,
+pub struct TupleLiteral {
+    pub expressions: Vec<Expression>,
+    pub span: Span,
 }
 
 impl Display for TupleLiteral {
@@ -116,9 +116,9 @@ impl Display for TupleLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct ArrayLiteral {
-    pub(crate) expressions: Vec<Expression>,
-    pub(crate) span: Span,
+pub struct ArrayLiteral {
+    pub expressions: Vec<Expression>,
+    pub span: Span,
 }
 
 impl Display for ArrayLiteral {
@@ -136,9 +136,9 @@ impl Display for ArrayLiteral {
 }
 
 #[derive(Debug)]
-pub(crate) struct DictionaryLiteral {
-    pub(crate) expressions: Vec<(Expression, Expression)>,
-    pub(crate) span: Span,
+pub struct DictionaryLiteral {
+    pub expressions: Vec<(Expression, Expression)>,
+    pub span: Span,
 }
 
 impl Display for DictionaryLiteral {

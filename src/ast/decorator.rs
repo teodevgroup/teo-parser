@@ -18,7 +18,7 @@ pub struct Decorator {
 
 impl Decorator {
 
-    pub(crate) fn resolve(&self, resolved: DecoratorResolved) {
+    pub fn resolve(&self, resolved: DecoratorResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 

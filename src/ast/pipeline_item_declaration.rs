@@ -9,18 +9,18 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct PipelineItemDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub identifier: Identifier,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) input_type: Option<TypeExpr>,
-    pub(crate) output_type: Option<TypeExpr>,
-    pub(crate) variants: Vec<PipelineItemDeclarationVariant>,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
+    pub input_type: Option<TypeExpr>,
+    pub output_type: Option<TypeExpr>,
+    pub variants: Vec<PipelineItemDeclarationVariant>,
 }
 
 impl PipelineItemDeclaration {
@@ -29,7 +29,7 @@ impl PipelineItemDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -37,11 +37,11 @@ impl PipelineItemDeclaration {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
-    pub(crate) fn has_variants(&self) -> bool {
+    pub fn has_variants(&self) -> bool {
         !self.variants.is_empty()
     }
 
-    pub(crate) fn callable_variants(&self) -> Vec<CallableVariant> {
+    pub fn callable_variants(&self) -> Vec<CallableVariant> {
         if self.has_variants() {
             self.variants.iter().map(|v| CallableVariant {
                 generics_declarations: if let Some(generics_declaration) = v.generics_declaration.as_ref() {
@@ -79,12 +79,12 @@ impl PipelineItemDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) struct PipelineItemDeclarationVariant {
-    pub(crate) span: Span,
+pub struct PipelineItemDeclarationVariant {
+    pub span: Span,
     pub comment: Option<Comment>,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) input_type: TypeExpr,
-    pub(crate) output_type: TypeExpr,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
+    pub input_type: TypeExpr,
+    pub output_type: TypeExpr,
 }

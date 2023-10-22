@@ -10,17 +10,17 @@ use crate::ast::struct_declaration::StructDeclaration;
 
 #[derive(Debug)]
 pub struct FunctionDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub r#static: bool,
     pub identifier: Identifier,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) return_type: TypeExpr,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
+    pub return_type: TypeExpr,
 }
 
 impl FunctionDeclaration {
@@ -29,7 +29,7 @@ impl FunctionDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -37,7 +37,7 @@ impl FunctionDeclaration {
         self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
     }
 
-    pub(crate) fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
+    pub fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
         let mut generics_declaration = vec![];
         let mut generics_constraint = vec![];
         if let Some(d) = struct_declaration.generics_declaration.as_ref() {

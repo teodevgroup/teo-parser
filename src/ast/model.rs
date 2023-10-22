@@ -10,19 +10,19 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct Model {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
+    pub span: Span,
+    pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
-    pub(crate) empty_decorator_spans: Vec<Span>,
+    pub empty_decorator_spans: Vec<Span>,
     pub identifier: Identifier,
     pub fields: Vec<Field>,
-    pub(crate) empty_field_decorator_spans: Vec<Span>,
-    pub(crate) unattached_field_decorators: Vec<Decorator>,
+    pub empty_field_decorator_spans: Vec<Span>,
+    pub unattached_field_decorators: Vec<Decorator>,
     pub handlers: Vec<HandlerDeclaration>,
-    pub(crate) resolved: RefCell<Option<ModelResolved>>,
+    pub resolved: RefCell<Option<ModelResolved>>,
 }
 
 impl Model {
@@ -31,7 +31,7 @@ impl Model {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -39,15 +39,15 @@ impl Model {
         self.define_availability.contains(self.resolved().actual_availability)
     }
 
-    pub(crate) fn resolve(&self, resolved: ModelResolved) {
+    pub fn resolve(&self, resolved: ModelResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ModelResolved {
+    pub fn resolved(&self) -> &ModelResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }

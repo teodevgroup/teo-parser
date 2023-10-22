@@ -8,20 +8,20 @@ use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 
 #[derive(Debug, Clone)]
-pub(crate) struct ConstantResolved {
-    pub(crate) expression_resolved: ExpressionResolved,
+pub struct ConstantResolved {
+    pub expression_resolved: ExpressionResolved,
 }
 
 #[derive(Debug)]
 pub struct Constant {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) identifier: Identifier,
-    pub(crate) define_availability: Availability,
-    pub(crate) type_expr: Option<TypeExpr>,
-    pub(crate) expression: Expression,
-    pub(crate) resolved: RefCell<Option<ConstantResolved>>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub identifier: Identifier,
+    pub define_availability: Availability,
+    pub type_expr: Option<TypeExpr>,
+    pub expression: Expression,
+    pub resolved: RefCell<Option<ConstantResolved>>,
 }
 
 impl Constant {
@@ -30,7 +30,7 @@ impl Constant {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -38,15 +38,15 @@ impl Constant {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
-    pub(crate) fn resolve(&self, resolved: ConstantResolved) {
+    pub fn resolve(&self, resolved: ConstantResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ConstantResolved {
+    pub fn resolved(&self) -> &ConstantResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }

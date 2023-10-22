@@ -4,9 +4,9 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct GenericsDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) identifiers: Vec<Identifier>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub identifiers: Vec<Identifier>,
 }
 
 impl GenericsDeclaration {
@@ -15,24 +15,24 @@ impl GenericsDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
-    pub(crate) fn names(&self) -> Vec<&str> {
+    pub fn names(&self) -> Vec<&str> {
         self.identifiers.iter().map(|i| i.name()).collect()
     }
 }
 
 #[derive(Debug)]
 pub struct GenericsConstraint {
-    pub(crate) span: Span,
-    pub(crate) items: Vec<GenericsConstraintItem>
+    pub span: Span,
+    pub items: Vec<GenericsConstraintItem>
 }
 
 #[derive(Debug)]
 pub struct GenericsConstraintItem {
-    pub(crate) span: Span,
-    pub(crate) identifier: Identifier,
-    pub(crate) type_expr: TypeExpr,
+    pub span: Span,
+    pub identifier: Identifier,
+    pub type_expr: TypeExpr,
 }

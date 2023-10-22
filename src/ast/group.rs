@@ -4,9 +4,9 @@ use crate::ast::span::Span;
 
 /// A group represents something like this (1 + 2) * 5
 #[derive(Debug)]
-pub(crate) struct Group {
-    pub(crate) expression: Box<Expression>,
-    pub(crate) span: Span,
+pub struct Group {
+    pub expression: Box<Expression>,
+    pub span: Span,
 }
 
 impl Display for Group {

@@ -7,10 +7,10 @@ use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
 pub struct Argument {
-    pub(crate) name: Option<Identifier>,
-    pub(crate) value: Expression,
-    pub(crate) span: Span,
-    pub(crate) resolved: RefCell<Option<ArgumentResolved>>,
+    pub name: Option<Identifier>,
+    pub value: Expression,
+    pub span: Span,
+    pub resolved: RefCell<Option<ArgumentResolved>>,
 }
 
 impl Argument {
@@ -19,19 +19,19 @@ impl Argument {
         &self.value.resolved().r#type
     }
 
-    pub(crate) fn resolve(&self, resolved: ArgumentResolved) {
+    pub fn resolve(&self, resolved: ArgumentResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ArgumentResolved {
+    pub fn resolved(&self) -> &ArgumentResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 
-    pub(crate) fn resolved_name(&self) -> Option<&str> {
+    pub fn resolved_name(&self) -> Option<&str> {
         if let Some(name) = &self.name {
             Some(name.name())
         } else {

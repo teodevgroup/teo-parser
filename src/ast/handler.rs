@@ -8,13 +8,13 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct HandlerGroupDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
     pub comment: Option<Comment>,
     pub identifier: Identifier,
-    pub(crate) handler_declarations: Vec<HandlerDeclaration>,
-    pub(crate) define_availability: Availability,
+    pub handler_declarations: Vec<HandlerDeclaration>,
+    pub define_availability: Availability,
 }
 
 impl HandlerGroupDeclaration {
@@ -23,7 +23,7 @@ impl HandlerGroupDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -34,17 +34,17 @@ impl HandlerGroupDeclaration {
 
 #[derive(Debug)]
 pub struct HandlerDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
+    pub span: Span,
+    pub path: Vec<usize>,
     pub string_path: Vec<String>,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
-    pub(crate) empty_decorators_spans: Vec<Span>,
+    pub empty_decorators_spans: Vec<Span>,
     pub identifier: Identifier,
-    pub(crate) input_type: TypeExpr,
-    pub(crate) output_type: TypeExpr,
-    pub(crate) input_format: HandlerInputFormat,
-    pub(crate) resolved: RefCell<Option<HandlerDeclarationResolved>>,
+    pub input_type: TypeExpr,
+    pub output_type: TypeExpr,
+    pub input_format: HandlerInputFormat,
+    pub resolved: RefCell<Option<HandlerDeclarationResolved>>,
 }
 
 impl HandlerDeclaration {
@@ -53,7 +53,7 @@ impl HandlerDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -61,39 +61,39 @@ impl HandlerDeclaration {
         self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
     }
 
-    pub(crate) fn handler_group_id(&self) -> usize {
+    pub fn handler_group_id(&self) -> usize {
         *self.path.get(self.path.len() - 2).unwrap()
     }
 
-    pub(crate) fn resolve(&self, resolved: HandlerDeclarationResolved) {
+    pub fn resolve(&self, resolved: HandlerDeclarationResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &HandlerDeclarationResolved {
+    pub fn resolved(&self) -> &HandlerDeclarationResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
 
 #[derive(Debug)]
-pub(crate) enum HandlerInputFormat {
+pub enum HandlerInputFormat {
     Json,
     Form,
 }
 
 impl HandlerInputFormat {
 
-    pub(crate) fn is_json(&self) -> bool {
+    pub fn is_json(&self) -> bool {
         match self {
             HandlerInputFormat::Json => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_form(&self) -> bool {
+    pub fn is_form(&self) -> bool {
         match self {
             HandlerInputFormat::Form => true,
             _ => false,
@@ -102,7 +102,7 @@ impl HandlerInputFormat {
 }
 
 #[derive(Debug)]
-pub(crate) struct HandlerDeclarationResolved {
-    pub(crate) input_shape: TypeShape,
-    pub(crate) output_shape: TypeShape,
+pub struct HandlerDeclarationResolved {
+    pub input_shape: TypeShape,
+    pub output_shape: TypeShape,
 }

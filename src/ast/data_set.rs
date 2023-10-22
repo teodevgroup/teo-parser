@@ -8,15 +8,15 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct DataSet {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) parent_path: Vec<String>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) identifier: Identifier,
-    pub(crate) define_availability: Availability,
-    pub(crate) auto_seed: bool,
-    pub(crate) notrack: bool,
-    pub(crate) groups: Vec<DataSetGroup>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub parent_path: Vec<String>,
+    pub string_path: Vec<String>,
+    pub identifier: Identifier,
+    pub define_availability: Availability,
+    pub auto_seed: bool,
+    pub notrack: bool,
+    pub groups: Vec<DataSetGroup>,
 }
 
 impl DataSet {
@@ -25,7 +25,7 @@ impl DataSet {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -41,12 +41,12 @@ pub struct DataSetGroupResolved {
 
 #[derive(Debug)]
 pub struct DataSetGroup {
-    pub(crate) path: Vec<usize>,
-    pub(crate) identifier_path: IdentifierPath,
-    pub(crate) define_availability: Availability,
-    pub(crate) span: Span,
-    pub(crate) records: Vec<DataSetRecord>,
-    pub(crate) resolved: RefCell<Option<DataSetGroupResolved>>,
+    pub path: Vec<usize>,
+    pub identifier_path: IdentifierPath,
+    pub define_availability: Availability,
+    pub span: Span,
+    pub records: Vec<DataSetRecord>,
+    pub resolved: RefCell<Option<DataSetGroupResolved>>,
 }
 
 #[derive(Debug)]
@@ -56,13 +56,13 @@ pub struct DataSetRecordResolved {
 
 #[derive(Debug)]
 pub struct DataSetRecord {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
-    pub(crate) identifier: Identifier,
-    pub(crate) dictionary: DictionaryLiteral,
-    pub(crate) resolved: RefCell<Option<DataSetRecordResolved>>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
+    pub identifier: Identifier,
+    pub dictionary: DictionaryLiteral,
+    pub resolved: RefCell<Option<DataSetRecordResolved>>,
 }
 
 impl DataSetRecord {
@@ -71,7 +71,7 @@ impl DataSetRecord {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 }

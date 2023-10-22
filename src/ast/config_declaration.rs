@@ -6,13 +6,13 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct ConfigDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
     pub comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
-    pub(crate) fields: Vec<Field>,
-    pub(crate) define_availability: Availability,
+    pub identifier: Identifier,
+    pub fields: Vec<Field>,
+    pub define_availability: Availability,
 }
 
 impl ConfigDeclaration {
@@ -21,7 +21,7 @@ impl ConfigDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 

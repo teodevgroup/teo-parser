@@ -16,8 +16,8 @@ use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 
 pub struct Schema {
-    pub(crate) sources: BTreeMap<usize, Source>,
-    pub(crate) references: SchemaReferences,
+    pub sources: BTreeMap<usize, Source>,
+    pub references: SchemaReferences,
 }
 
 impl Schema {
@@ -137,32 +137,32 @@ impl Schema {
     }
 }
 
-pub(crate) struct SchemaReferences {
-    pub(crate) builtin_sources: Vec<usize>,
-    pub(crate) main_source: Option<usize>,
-    pub(crate) configs: Vec<Vec<usize>>,
-    pub(crate) server: Option<Vec<usize>>,
-    pub(crate) debug: Option<Vec<usize>>,
-    pub(crate) test: Option<Vec<usize>>,
-    pub(crate) connectors: Vec<Vec<usize>>,
-    pub(crate) entities: Vec<Vec<usize>>,
-    pub(crate) clients: Vec<Vec<usize>>,
-    pub(crate) enums: Vec<Vec<usize>>,
-    pub(crate) models: Vec<Vec<usize>>,
-    pub(crate) data_sets: Vec<Vec<usize>>,
-    pub(crate) interfaces: Vec<Vec<usize>>,
-    pub(crate) namespaces: Vec<Vec<usize>>,
-    pub(crate) config_declarations: Vec<Vec<usize>>,
-    pub(crate) decorator_declarations: Vec<Vec<usize>>,
-    pub(crate) pipeline_item_declarations: Vec<Vec<usize>>,
-    pub(crate) middlewares: Vec<Vec<usize>>,
-    pub(crate) handler_groups: Vec<Vec<usize>>,
-    pub(crate) struct_declarations: Vec<Vec<usize>>,
+pub struct SchemaReferences {
+    pub builtin_sources: Vec<usize>,
+    pub main_source: Option<usize>,
+    pub configs: Vec<Vec<usize>>,
+    pub server: Option<Vec<usize>>,
+    pub debug: Option<Vec<usize>>,
+    pub test: Option<Vec<usize>>,
+    pub connectors: Vec<Vec<usize>>,
+    pub entities: Vec<Vec<usize>>,
+    pub clients: Vec<Vec<usize>>,
+    pub enums: Vec<Vec<usize>>,
+    pub models: Vec<Vec<usize>>,
+    pub data_sets: Vec<Vec<usize>>,
+    pub interfaces: Vec<Vec<usize>>,
+    pub namespaces: Vec<Vec<usize>>,
+    pub config_declarations: Vec<Vec<usize>>,
+    pub decorator_declarations: Vec<Vec<usize>>,
+    pub pipeline_item_declarations: Vec<Vec<usize>>,
+    pub middlewares: Vec<Vec<usize>>,
+    pub handler_groups: Vec<Vec<usize>>,
+    pub struct_declarations: Vec<Vec<usize>>,
 }
 
 impl SchemaReferences {
 
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             builtin_sources: vec![],
             main_source: None,
@@ -187,7 +187,7 @@ impl SchemaReferences {
         }
     }
 
-    pub(crate) fn add_config(&mut self, config: &Config) {
+    pub fn add_config(&mut self, config: &Config) {
         self.configs.push(config.path.clone());
         if config.keyword.is_client() {
             self.clients.push(config.path.clone());

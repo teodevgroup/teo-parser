@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub(crate) enum Arity {
+pub enum Arity {
     Scalar,
     Array,
     Dictionary,
@@ -7,7 +7,7 @@ pub(crate) enum Arity {
 
 impl Arity {
 
-    pub(crate) fn is_scalar(&self) -> bool {
+    pub fn is_scalar(&self) -> bool {
         use Arity::*;
         match self {
             Scalar => true,
@@ -15,7 +15,7 @@ impl Arity {
         }
     }
 
-    pub(crate) fn is_array(&self) -> bool {
+    pub fn is_array(&self) -> bool {
         use Arity::*;
         match self {
             Array => true,
@@ -23,7 +23,7 @@ impl Arity {
         }
     }
 
-    pub(crate) fn is_dictionary(&self) -> bool {
+    pub fn is_dictionary(&self) -> bool {
         use Arity::*;
         match self {
             Dictionary => true,

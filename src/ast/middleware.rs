@@ -4,11 +4,11 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct MiddlewareDeclaration {
-    pub(crate) span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub span: Span,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
     pub identifier: Identifier,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
 }
 
 impl MiddlewareDeclaration {
@@ -17,7 +17,7 @@ impl MiddlewareDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 

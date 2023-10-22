@@ -3,9 +3,9 @@ use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct Subscript {
-    pub(crate) expression: Box<Expression>,
-    pub(crate) span: Span,
+pub struct Subscript {
+    pub expression: Box<Expression>,
+    pub span: Span,
 }
 
 impl Display for Subscript {

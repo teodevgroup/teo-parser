@@ -3,14 +3,14 @@ use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct ArgumentListDeclaration {
-    pub(crate) span: Span,
-    pub(crate) argument_declarations: Vec<ArgumentDeclaration>,
+pub struct ArgumentListDeclaration {
+    pub span: Span,
+    pub argument_declarations: Vec<ArgumentDeclaration>,
 }
 
 impl ArgumentListDeclaration {
 
-    pub(crate) fn every_argument_is_optional(&self) -> bool {
+    pub fn every_argument_is_optional(&self) -> bool {
         for argument_declaration in &self.argument_declarations {
             if !argument_declaration.type_expr.resolved().is_optional() {
                 return false
@@ -19,17 +19,17 @@ impl ArgumentListDeclaration {
         true
     }
 
-    pub(crate) fn get(&self, name: &str) -> Option<&ArgumentDeclaration> {
+    pub fn get(&self, name: &str) -> Option<&ArgumentDeclaration> {
         self.argument_declarations.iter().find(|d| d.name.name() == name)
     }
 }
 
 #[derive(Debug)]
-pub(crate) struct ArgumentDeclaration {
-    pub(crate) span: Span,
-    pub(crate) name: Identifier,
-    pub(crate) name_optional: bool,
-    pub(crate) type_expr: TypeExpr,
+pub struct ArgumentDeclaration {
+    pub span: Span,
+    pub name: Identifier,
+    pub name_optional: bool,
+    pub type_expr: TypeExpr,
 }
 
 impl ArgumentListDeclaration {

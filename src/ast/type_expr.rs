@@ -22,11 +22,11 @@ impl Display for TypeOp {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeBinaryOp {
-    pub(crate) span: Span,
-    pub(crate) lhs: Box<TypeExprKind>,
-    pub(crate) op: TypeOp,
-    pub(crate) rhs: Box<TypeExprKind>,
+pub struct TypeBinaryOp {
+    pub span: Span,
+    pub lhs: Box<TypeExprKind>,
+    pub op: TypeOp,
+    pub rhs: Box<TypeExprKind>,
 }
 
 impl Display for TypeBinaryOp {
@@ -42,10 +42,10 @@ impl Display for TypeBinaryOp {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeGroup {
-    pub(crate) span: Span,
-    pub(crate) kind: Box<TypeExprKind>,
-    pub(crate) optional: bool,
+pub struct TypeGroup {
+    pub span: Span,
+    pub kind: Box<TypeExprKind>,
+    pub optional: bool,
 }
 
 impl Display for TypeGroup {
@@ -62,10 +62,10 @@ impl Display for TypeGroup {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeTuple {
-    pub(crate) span: Span,
-    pub(crate) kinds: Vec<TypeExprKind>,
-    pub(crate) optional: bool,
+pub struct TypeTuple {
+    pub span: Span,
+    pub kinds: Vec<TypeExprKind>,
+    pub optional: bool,
 }
 
 impl Display for TypeTuple {
@@ -85,11 +85,11 @@ impl Display for TypeTuple {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeSubscript {
-    pub(crate) span: Span,
-    pub(crate) type_item: TypeItem,
-    pub(crate) type_expr: Box<TypeExprKind>,
-    pub(crate) optional: bool,
+pub struct TypeSubscript {
+    pub span: Span,
+    pub type_item: TypeItem,
+    pub type_expr: Box<TypeExprKind>,
+    pub optional: bool,
 }
 
 impl Display for TypeSubscript {
@@ -107,7 +107,7 @@ impl Display for TypeSubscript {
 }
 
 #[derive(Debug)]
-pub(crate) enum TypeExprKind {
+pub enum TypeExprKind {
     Expr(Box<TypeExprKind>),
     BinaryOp(TypeBinaryOp),
     TypeItem(TypeItem),
@@ -119,7 +119,7 @@ pub(crate) enum TypeExprKind {
 
 impl TypeExprKind {
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             TypeExprKind::Expr(e) => e.span(),
             TypeExprKind::BinaryOp(b) => b.span,
@@ -131,11 +131,11 @@ impl TypeExprKind {
         }
     }
 
-    pub(crate) fn is_field_reference(&self) -> bool {
+    pub fn is_field_reference(&self) -> bool {
         self.as_field_reference().is_some()
     }
 
-    pub(crate) fn as_field_reference(&self) -> Option<&EnumVariantLiteral> {
+    pub fn as_field_reference(&self) -> Option<&EnumVariantLiteral> {
         match self {
             Self::FieldReference(e) => Some(e),
             _ => None,
@@ -161,17 +161,17 @@ impl Display for TypeExprKind {
 
 #[derive(Debug)]
 pub struct TypeExpr {
-    pub(crate) kind: TypeExprKind,
-    pub(crate) resolved: RefCell<Option<Type>>,
+    pub kind: TypeExprKind,
+    pub resolved: RefCell<Option<Type>>,
 }
 
 impl TypeExpr {
 
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         self.kind.span()
     }
 
-    pub(crate) fn resolve(&self, resolved: Type) {
+    pub fn resolve(&self, resolved: Type) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
@@ -187,13 +187,13 @@ impl Display for TypeExpr {
 }
 
 #[derive(Debug)]
-pub(crate) struct TypeItem {
-    pub(crate) span: Span,
-    pub(crate) identifier_path: IdentifierPath,
-    pub(crate) generics: Vec<TypeExprKind>,
-    pub(crate) arity: Arity,
-    pub(crate) item_optional: bool,
-    pub(crate) collection_optional: bool,
+pub struct TypeItem {
+    pub span: Span,
+    pub identifier_path: IdentifierPath,
+    pub generics: Vec<TypeExprKind>,
+    pub arity: Arity,
+    pub item_optional: bool,
+    pub collection_optional: bool,
 }
 
 impl Display for TypeItem {
@@ -229,7 +229,7 @@ impl Display for TypeItem {
 }
 
 #[derive(Debug)]
-pub(crate) enum TypeShape {
+pub enum TypeShape {
     Any,
     Map(HashMap<String, TypeShape>),
     Type(Type),
@@ -238,29 +238,29 @@ pub(crate) enum TypeShape {
 
 impl TypeShape {
 
-    pub(crate) fn is_any(&self) -> bool {
+    pub fn is_any(&self) -> bool {
         match self {
             TypeShape::Any => true,
             _ => false,
         }
     }
 
-    pub(crate) fn is_map(&self) -> bool {
+    pub fn is_map(&self) -> bool {
         self.as_map().is_some()
     }
 
-    pub(crate) fn as_map(&self) -> Option<&HashMap<String, TypeShape>> {
+    pub fn as_map(&self) -> Option<&HashMap<String, TypeShape>> {
         match self {
             TypeShape::Map(m) => Some(m),
             _ => None,
         }
     }
 
-    pub(crate) fn is_type(&self) -> bool {
+    pub fn is_type(&self) -> bool {
         self.as_type().is_some()
     }
 
-    pub(crate) fn as_type(&self) -> Option<&Type> {
+    pub fn as_type(&self) -> Option<&Type> {
         match self {
             TypeShape::Type(t) => Some(t),
             _ => None,

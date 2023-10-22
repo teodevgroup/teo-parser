@@ -3,7 +3,7 @@ use super::span::Span;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Identifier {
-    pub(crate) name: String,
+    pub name: String,
     pub span: Span,
 }
 

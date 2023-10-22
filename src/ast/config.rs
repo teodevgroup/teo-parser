@@ -10,13 +10,13 @@ use crate::ast::span::Span;
 #[derive(Debug)]
 pub struct Config {
     pub span: Span,
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
     pub define_availability: Availability,
-    pub(crate) keyword: ConfigKeyword,
+    pub keyword: ConfigKeyword,
     pub identifier: Option<Identifier>,
     pub items: Vec<ConfigItem>,
-    pub(crate) resolved: RefCell<Option<ConfigResolved>>,
+    pub resolved: RefCell<Option<ConfigResolved>>,
 }
 
 impl Config {
@@ -25,7 +25,7 @@ impl Config {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -53,22 +53,22 @@ impl Config {
         self.define_availability.contains(self.resolved().actual_availability)
     }
 
-    pub(crate) fn resolve(&self, resolved: ConfigResolved) {
+    pub fn resolve(&self, resolved: ConfigResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &ConfigResolved {
+    pub fn resolved(&self) -> &ConfigResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub(crate) fn is_resolved(&self) -> bool {
+    pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
     }
 }
 
 #[derive(Debug)]
-pub(crate) struct ConfigResolved {
-    pub(crate) actual_availability: Availability
+pub struct ConfigResolved {
+    pub actual_availability: Availability
 }
 
 impl InfoProvider for &Config {

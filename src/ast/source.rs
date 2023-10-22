@@ -8,22 +8,22 @@ use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub(crate) enum SourceType {
+pub enum SourceType {
     Builtin,
     Normal,
 }
 
 pub struct Source {
-    pub(crate) id: usize,
-    pub(crate) r#type: SourceType,
+    pub id: usize,
+    pub r#type: SourceType,
     pub file_path: String,
-    pub(crate) tops: BTreeMap<usize, Top>,
-    pub(crate) references: SourceReferences,
+    pub tops: BTreeMap<usize, Top>,
+    pub references: SourceReferences,
 }
 
 impl Source {
 
-    pub(crate) fn new(id: usize, r#type: SourceType, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
+    pub fn new(id: usize, r#type: SourceType, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
         Self {
             id,
             r#type,
@@ -33,31 +33,31 @@ impl Source {
         }
     }
 
-    pub(crate) fn tops(&self) -> Vec<&Top> {
+    pub fn tops(&self) -> Vec<&Top> {
         self.tops.values().collect()
     }
 
-    pub(crate) fn imports(&self) -> Vec<&Import> {
+    pub fn imports(&self) -> Vec<&Import> {
         self.references.imports.iter().map(|id| self.tops.get(id).unwrap().as_import().unwrap()).collect()
     }
 
-    pub(crate) fn namespaces(&self) -> Vec<&Namespace> {
+    pub fn namespaces(&self) -> Vec<&Namespace> {
         self.references.namespaces.iter().map(|m| self.get_namespace(*m).unwrap()).collect()
     }
 
-    pub(crate) fn get_connector(&self) -> Option<&Config> {
+    pub fn get_connector(&self) -> Option<&Config> {
         self.references.connector.map(|id| self.tops.get(&id).unwrap().as_config().unwrap())
     }
 
-    pub(crate) fn get_namespace(&self, id: usize) -> Option<&Namespace> {
+    pub fn get_namespace(&self, id: usize) -> Option<&Namespace> {
         self.tops.get(&id).unwrap().as_namespace()
     }
 
-    pub(crate) fn find_top_by_id(&self, id: usize) -> Option<&Top> {
+    pub fn find_top_by_id(&self, id: usize) -> Option<&Top> {
         self.tops.get(&id)
     }
 
-    pub(crate) fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
+    pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
         self.tops().iter().find(|t| {
             if let Some(n) = t.name() {
                 (n == name) && filter(t) && t.available_test(availability)
@@ -67,7 +67,7 @@ impl Source {
         }).map(|t| *t)
     }
 
-    pub(crate) fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
+    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
         if *path.first().unwrap() != self.id {
             return None;
         }
@@ -87,7 +87,7 @@ impl Source {
         }
     }
 
-    pub(crate) fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
+    pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter, availability)
         } else {
@@ -102,11 +102,11 @@ impl Source {
         }
     }
 
-    pub(crate) fn parent_namespace_for_namespace(&self, namespace: &Namespace) -> Option<&Namespace> {
+    pub fn parent_namespace_for_namespace(&self, namespace: &Namespace) -> Option<&Namespace> {
         self.find_child_namespace_by_string_path(&namespace.parent_str_path())
     }
 
-    pub(crate) fn find_child_namespace_by_path(&self, path: &Vec<usize>) -> Option<&Namespace> {
+    pub fn find_child_namespace_by_path(&self, path: &Vec<usize>) -> Option<&Namespace> {
         if *path.first().unwrap() != self.id {
             return None;
         }
@@ -123,7 +123,7 @@ impl Source {
         ns
     }
 
-    pub(crate) fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
+    pub fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
         if path.len() == 0 { return None }
         let mut ns = self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|r| *r);
         for (index, item) in path.iter().enumerate() {
@@ -139,26 +139,26 @@ impl Source {
     }
 }
 
-pub(crate) struct SourceReferences {
-    pub(crate) imports: BTreeSet<usize>,
-    pub(crate) connector: Option<usize>,
-    pub(crate) constants: BTreeSet<usize>,
-    pub(crate) configs: BTreeSet<usize>,
-    pub(crate) enums: BTreeSet<usize>,
-    pub(crate) models: BTreeSet<usize>,
-    pub(crate) data_sets: BTreeSet<usize>,
-    pub(crate) interfaces: BTreeSet<usize>,
-    pub(crate) namespaces: BTreeSet<usize>,
-    pub(crate) config_declarations: BTreeSet<usize>,
-    pub(crate) decorator_declarations: BTreeSet<usize>,
-    pub(crate) pipeline_item_declarations: BTreeSet<usize>,
-    pub(crate) middlewares: BTreeSet<usize>,
-    pub(crate) handler_groups: BTreeSet<usize>,
+pub struct SourceReferences {
+    pub imports: BTreeSet<usize>,
+    pub connector: Option<usize>,
+    pub constants: BTreeSet<usize>,
+    pub configs: BTreeSet<usize>,
+    pub enums: BTreeSet<usize>,
+    pub models: BTreeSet<usize>,
+    pub data_sets: BTreeSet<usize>,
+    pub interfaces: BTreeSet<usize>,
+    pub namespaces: BTreeSet<usize>,
+    pub config_declarations: BTreeSet<usize>,
+    pub decorator_declarations: BTreeSet<usize>,
+    pub pipeline_item_declarations: BTreeSet<usize>,
+    pub middlewares: BTreeSet<usize>,
+    pub handler_groups: BTreeSet<usize>,
 }
 
 impl SourceReferences {
 
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             imports: btreeset!{},
             connector: None,

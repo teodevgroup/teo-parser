@@ -7,15 +7,15 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct StructDeclaration {
-    pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub path: Vec<usize>,
+    pub string_path: Vec<String>,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub identifier: Identifier,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
     pub function_declarations: Vec<FunctionDeclaration>,
-    pub(crate) span: Span,
+    pub span: Span,
 }
 
 impl StructDeclaration {
@@ -24,7 +24,7 @@ impl StructDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 

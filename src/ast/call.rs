@@ -4,10 +4,10 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
-pub(crate) struct Call {
-    pub(crate) span: Span,
-    pub(crate) identifier: Identifier,
-    pub(crate) argument_list: ArgumentList,
+pub struct Call {
+    pub span: Span,
+    pub identifier: Identifier,
+    pub argument_list: ArgumentList,
 }
 
 impl Display for Call {

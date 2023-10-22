@@ -64,29 +64,29 @@ impl Display for Op {
 }
 
 #[derive(Debug)]
-pub(crate) struct UnaryOp {
-    pub(crate) span: Span,
-    pub(crate) op: Op,
-    pub(crate) rhs: Box<ArithExpr>,
+pub struct UnaryOp {
+    pub span: Span,
+    pub op: Op,
+    pub rhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
-pub(crate) struct UnaryPostfixOp {
-    pub(crate) span: Span,
-    pub(crate) op: Op,
-    pub(crate) lhs: Box<ArithExpr>,
+pub struct UnaryPostfixOp {
+    pub span: Span,
+    pub op: Op,
+    pub lhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
-pub(crate) struct BinaryOp {
-    pub(crate) span: Span,
-    pub(crate) lhs: Box<ArithExpr>,
-    pub(crate) op: Op,
-    pub(crate) rhs: Box<ArithExpr>,
+pub struct BinaryOp {
+    pub span: Span,
+    pub lhs: Box<ArithExpr>,
+    pub op: Op,
+    pub rhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
-pub(crate) enum ArithExpr {
+pub enum ArithExpr {
     Expression(Box<Expression>),
     UnaryOp(UnaryOp),
     BinaryOp(BinaryOp),
@@ -94,7 +94,7 @@ pub(crate) enum ArithExpr {
 }
 
 impl ArithExpr {
-    pub(crate) fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             ArithExpr::Expression(e) => e.span(),
             ArithExpr::UnaryOp(u) => u.span,

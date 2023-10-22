@@ -10,18 +10,18 @@ use crate::ast::span::Span;
 #[derive(Debug)]
 pub struct DecoratorDeclaration {
     pub span: Span,
-    pub(crate) path: Vec<usize>,
+    pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub(crate) define_availability: Availability,
+    pub define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) exclusive: bool,
-    pub(crate) unique: bool,
+    pub exclusive: bool,
+    pub unique: bool,
     pub decorator_class: ReferenceType,
     pub identifier: Identifier,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
-    pub(crate) variants: Vec<DecoratorDeclarationVariant>,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
+    pub variants: Vec<DecoratorDeclarationVariant>,
 }
 
 impl DecoratorDeclaration {
@@ -30,7 +30,7 @@ impl DecoratorDeclaration {
         *self.path.first().unwrap()
     }
 
-    pub(crate) fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
@@ -42,11 +42,11 @@ impl DecoratorDeclaration {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
-    pub(crate) fn has_variants(&self) -> bool {
+    pub fn has_variants(&self) -> bool {
         !self.variants.is_empty()
     }
 
-    pub(crate) fn callable_variants(&self) -> Vec<CallableVariant> {
+    pub fn callable_variants(&self) -> Vec<CallableVariant> {
         if self.has_variants() {
             self.variants.iter().map(|v| CallableVariant {
                 generics_declarations: if let Some(generics_declaration) = v.generics_declaration.as_ref() {
@@ -84,10 +84,10 @@ impl DecoratorDeclaration {
 }
 
 #[derive(Debug)]
-pub(crate) struct DecoratorDeclarationVariant {
-    pub(crate) span: Span,
+pub struct DecoratorDeclarationVariant {
+    pub span: Span,
     pub comment: Option<Comment>,
-    pub(crate) generics_declaration: Option<GenericsDeclaration>,
-    pub(crate) argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub(crate) generics_constraint: Option<GenericsConstraint>,
+    pub generics_declaration: Option<GenericsDeclaration>,
+    pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub generics_constraint: Option<GenericsConstraint>,
 }
