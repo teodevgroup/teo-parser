@@ -652,9 +652,9 @@ impl Type {
             }
         }
 
-    pub fn unwrap_tuple_index(&self, index: i32) -> Option<&Type> {
+    pub fn unwrap_tuple_index(&self, index: usize) -> Option<&Type> {
         if self.is_tuple() {
-            self.as_tuple().unwrap().get(index  as usize)
+            self.as_tuple().unwrap().get(index )
         } else {
             None
         }
