@@ -10,16 +10,16 @@ use crate::ast::span::Span;
 
 #[derive(Debug)]
 pub struct InterfaceDeclaration {
-    pub(crate) span: Span,
+    pub span: Span,
     pub(crate) path: Vec<usize>,
-    pub(crate) string_path: Vec<String>,
+    pub string_path: Vec<String>,
     pub(crate) define_availability: Availability,
     pub comment: Option<Comment>,
-    pub(crate) identifier: Identifier,
+    pub identifier: Identifier,
     pub(crate) generics_declaration: Option<GenericsDeclaration>,
     pub(crate) generics_constraint: Option<GenericsConstraint>,
     pub(crate) extends: Vec<TypeExpr>,
-    pub(crate) fields: Vec<Field>,
+    pub fields: Vec<Field>,
         pub(crate) resolved: RefCell<Option<InterfaceDeclarationResolved>>
 }
 
