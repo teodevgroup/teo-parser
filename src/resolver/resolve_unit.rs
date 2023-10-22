@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::expression::{Expression, ExpressionKind};
+use crate::ast::expression::{Expression, ExpressionKind, ExpressionResolved};
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
@@ -67,7 +67,7 @@ impl UnitResolveResult {
     }
 }
 
-pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> Type {
+pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
     if unit.expressions.len() == 1 {
         resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
     } else {

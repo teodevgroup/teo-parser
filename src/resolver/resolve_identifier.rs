@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use crate::ast::availability::Availability;
+use crate::ast::expression::ExpressionResolved;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference::ReferenceType;
@@ -13,30 +14,37 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 pub(super) fn resolve_identifier_into_type<'a>(
     identifier: &Identifier,
     context: &'a ResolverContext<'a>,
-) -> Type {
+) -> ExpressionResolved {
     if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
         // maybe add error here
         track_path_upwards_into_type(&reference, context)
     } else {
         context.insert_diagnostics_error(identifier.span, "undefined identifier");
-        Type::Undetermined
+        ExpressionResolved::undetermined()
     }
 }
 
-fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverContext<'a>) -> Type {
+fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverContext<'a>) -> ExpressionResolved {
     let top = context.schema.find_top_by_path(path).unwrap();
     match top {
-        Top::Config(c) => Type::Undetermined,
+        Top::Config(c) => ExpressionResolved::undetermined(),
         Top::Constant(c) => {
             if !c.is_resolved() {
                 resolve_constant(c, context);
             }
-            c.resolved().r#type.clone()
+            c.resolved().expression_resolved.clone()
         }
-        Top::Enum(e) => Type::Undetermined,
-        Top::Model(m) => Type::Model,
-        Top::Interface(i) => Type::Undetermined,
-        Top::Namespace(n) => Type::Undetermined,
+        Top::Enum(e) => ExpressionResolved::undetermined(),
+        Top::Model(m) => ExpressionResolved {
+            r#type: Type::Model,
+            value: Some(m.string_path.into()),
+        },
+        Top::DataSet(d) => ExpressionResolved {
+            r#type: Type::DataSet,
+            value: Some(d.string_path.into())
+        },
+        Top::Interface(i) => ExpressionResolved::undetermined(),
+        Top::Namespace(n) => ExpressionResolved::undetermined(),
         _ => unreachable!(),
     }
 }

@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
+use teo_teon::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;
 use crate::ast::call::Call;
@@ -276,7 +277,7 @@ impl Display for ExpressionKind {
 #[derive(Debug)]
 pub struct Expression {
     pub(crate) kind: ExpressionKind,
-    pub(crate) resolved: RefCell<Option<Type>>,
+    pub(crate) resolved: RefCell<Option<ExpressionResolved>>,
 }
 
 impl Expression {
@@ -289,11 +290,11 @@ impl Expression {
         self.kind.span()
     }
 
-    pub(crate) fn resolve(&self, resolved: Type) {
+    pub(crate) fn resolve(&self, resolved: ExpressionResolved) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub(crate) fn resolved(&self) -> &Type {
+    pub(crate) fn resolved(&self) -> &ExpressionResolved {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
@@ -305,5 +306,29 @@ impl Expression {
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.kind, f)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ExpressionResolved {
+    pub r#type: Type,
+    pub value: Option<Value>,
+}
+
+impl ExpressionResolved {
+
+    pub fn r#type(&self) -> &Type {
+        &self.r#type
+    }
+
+    pub fn value(&self) -> Option<&Value> {
+        self.value.as_ref()
+    }
+
+    pub(crate) fn undetermined() -> Self {
+        ExpressionResolved {
+            r#type: Type::Undetermined,
+            value: None,
+        }
     }
 }

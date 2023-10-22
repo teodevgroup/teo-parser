@@ -16,7 +16,7 @@ pub struct Argument {
 impl Argument {
 
     pub fn get_type(&self) -> &Type {
-        self.value.resolved()
+        &self.value.resolved().r#type
     }
 
     pub(crate) fn resolve(&self, resolved: ArgumentResolved) {

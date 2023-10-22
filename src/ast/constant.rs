@@ -1,15 +1,15 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use crate::ast::availability::Availability;
-use crate::ast::expression::{Expression};
+use crate::ast::expression::{Expression, ExpressionResolved};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct ConstantResolved {
-    pub(crate) r#type: Type,
+    pub(crate) expression_resolved: ExpressionResolved,
 }
 
 #[derive(Debug)]
