@@ -24,7 +24,7 @@ pub(super) fn jump_to_definition_in_constant<'a>(
             &namespace_path,
             line_col,
             if constant.is_resolved() {
-                &constant.resolved().r#type
+                constant.resolved().expression_resolved.r#type()
             } else {
                 &undetermined
             },

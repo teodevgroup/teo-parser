@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
+use teo_teon::types::enum_variant::EnumVariant;
+use teo_teon::Value;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind, ExpressionResolved};
 use crate::ast::literals::EnumVariantLiteral;
@@ -11,7 +13,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_constant::resolve_constant;
-use crate::resolver::resolve_expression::{resolve_enum_variant_literal, resolve_expression};
+use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -19,7 +21,7 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 #[derive(Debug)]
 pub(super) enum UnitResolveResult {
     Reference(Vec<usize>),
-    Type(Type),
+    Result(ExpressionResolved),
 }
 
 impl UnitResolveResult {
@@ -35,32 +37,41 @@ impl UnitResolveResult {
         }
     }
 
-    pub(super) fn is_type(&self) -> bool {
-        self.as_type().is_some()
+    pub(super) fn is_result(&self) -> bool {
+        self.as_result().is_some()
     }
 
-    pub(super) fn as_type(&self) -> Option<&Type> {
+    pub(super) fn as_result(&self) -> Option<&ExpressionResolved> {
         match self {
-            Self::Type(t) => Some(t),
+            Self::Result(t) => Some(t),
             _ => None,
         }
     }
 
     pub(super) fn is_undetermined(&self) -> bool {
-        self.is_type() && self.as_type().unwrap().is_undetermined()
+        self.is_result() && self.as_result().unwrap().r#type().is_undetermined()
     }
 
-    pub(super) fn into_type<'a>(self, context: &'a ResolverContext<'a>) -> Type {
+    pub(super) fn into_resolved<'a>(self, context: &'a ResolverContext<'a>) -> ExpressionResolved {
         match self {
-            Self::Type(t) => t,
+            Self::Result(t) => t,
             Self::Reference(path) => {
                 let top = context.schema.find_top_by_path(&path).unwrap();
                 if top.is_model() {
-                    Type::Model
+                    ExpressionResolved {
+                        r#type: Type::Model,
+                        value: Some(top.as_model().unwrap().string_path.clone().into()),
+                    }
                 } else if top.is_data_set() {
-                    Type::DataSet
+                    ExpressionResolved {
+                        r#type: Type::DataSet,
+                        value: Some(top.as_data_set().unwrap().string_path.clone().into()),
+                    }
                 } else {
-                    Type::Undetermined
+                    ExpressionResolved {
+                        r#type: Type::Undetermined,
+                        value: None,
+                    }
                 }
             }
         }
@@ -80,37 +91,37 @@ pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>,
                     if !constant.is_resolved() {
                         resolve_constant(constant, context);
                     }
-                    UnitResolveResult::Type(constant.resolved().r#type.clone())
+                    UnitResolveResult::Result(constant.resolved().expression_resolved.clone())
                 } else {
                     UnitResolveResult::Reference(reference)
                 }
             } else {
                 context.insert_diagnostics_error(identifier.span, "reference is not found");
-                UnitResolveResult::Type(Type::Undetermined)
+                UnitResolveResult::Result(ExpressionResolved::undetermined())
             }
         } else {
-            UnitResolveResult::Type(resolve_expression(first_expression, context, &expected, keywords_map))
+            UnitResolveResult::Result(resolve_expression(first_expression, context, &expected, keywords_map))
         };
         if current.is_undetermined() {
-            return current.as_type().unwrap().clone();
+            return current.as_result().unwrap().clone();
         } else {
             for (index, item) in unit.expressions.iter().enumerate() {
                 if index == 0 { continue }
                 current = resolve_current_item_for_unit(unit.expressions.get(index - 1).unwrap().span(), &current, item, context);
             }
         }
-        current.into_type(context)
+        current.into_resolved(context)
     }
 }
 
 fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a Expression, context: &'a ResolverContext<'a>) -> UnitResolveResult {
     match current {
-        UnitResolveResult::Type(current_value) => {
-            if let Some((path, _)) = current_value.as_struct_object() {
+        UnitResolveResult::Result(current_value) => {
+            if let Some((path, _)) = current_value.r#type().as_struct_object() {
                 match &item.kind {
                     ExpressionKind::Identifier(_) => {
-                        context.insert_diagnostics_error(item.span(), "Builtin instance fields and methods are not implemented yet");
-                        UnitResolveResult::Type(Type::Undetermined)
+                        context.insert_diagnostics_error(item.span(), "builtin instance fields are not implemented yet");
+                        UnitResolveResult::Result(ExpressionResolved::undetermined())
                     }
                     ExpressionKind::Call(call) => {
                         let struct_declaration = context.schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
@@ -119,10 +130,10 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration), &btreemap!{
                                 Keyword::SelfIdentifier => &struct_object,
                             }, context, None);
-                            UnitResolveResult::Type(new.return_type.resolved().clone())
+                            UnitResolveResult::Result(ExpressionResolved::type_only(new.return_type.resolved().clone()))
                         } else {
                             context.insert_diagnostics_error(last_span, "struct function is not found");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                     }
                     ExpressionKind::Subscript(subscript) => {
@@ -139,10 +150,10 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             );
                             if let Some(argument_list_declaration) = &subscript_function.argument_list_declaration {
                                 if let Some(argument_declaration) = argument_list_declaration.argument_declarations.first() {
-                                    if argument_declaration.type_expr.resolved().test(&resolve_result) {
+                                    if argument_declaration.type_expr.resolved().test(resolve_result.r#type()) {
 
                                     } else {
-                                        context.insert_diagnostics_error(subscript.expression.span(), format!("expect {}, found {}", argument_declaration.type_expr.resolved(), resolve_result))
+                                        context.insert_diagnostics_error(subscript.expression.span(), format!("expect {}, found {}", argument_declaration.type_expr.resolved(), resolve_result.r#type()))
                                     }
                                 } else {
                                     context.insert_diagnostics_error(subscript.span, "invalid subscript function declaration")
@@ -150,17 +161,17 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             } else {
                                 context.insert_diagnostics_error(subscript.span, "invalid subscript function declaration")
                             }
-                            UnitResolveResult::Type(subscript_function.return_type.resolved().clone())
+                            UnitResolveResult::Result(ExpressionResolved::type_only(subscript_function.return_type.resolved().clone()))
                         } else {
                             context.insert_diagnostics_error(subscript.span, "cannot subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                     }
                     _ => unreachable!(),
                 }
             } else {
                 context.insert_diagnostics_error(last_span, "This feature is not implemented yet");
-                return UnitResolveResult::Type(Type::Undetermined)
+                return UnitResolveResult::Result(ExpressionResolved::undetermined())
             }
         }
         UnitResolveResult::Reference(path) => {
@@ -173,10 +184,10 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                 resolve_argument_list(last_span, Some(argument_list), new.callable_variants(struct_declaration), &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 },  context, None);
-                                UnitResolveResult::Type(new.return_type.resolved().clone())
+                                UnitResolveResult::Result(ExpressionResolved::type_only(new.return_type.resolved().clone()))
                             } else {
                                 context.insert_diagnostics_error(last_span, "Constructor is not found");
-                                return UnitResolveResult::Type(Type::Undetermined)
+                                return UnitResolveResult::Result(ExpressionResolved::undetermined())
                             }
                         }
                         ExpressionKind::Call(call) => {
@@ -184,19 +195,19 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                 resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration),  &btreemap!{
                                     Keyword::SelfIdentifier => &struct_object,
                                 }, context, None);
-                                UnitResolveResult::Type(new.return_type.resolved().clone())
+                                UnitResolveResult::Result(ExpressionResolved::type_only(new.return_type.resolved().clone()))
                             } else {
                                 context.insert_diagnostics_error(last_span, "static struct function is not found");
-                                return UnitResolveResult::Type(Type::Undetermined)
+                                return UnitResolveResult::Result(ExpressionResolved::undetermined())
                             }
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Struct cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Identifier(i) => {
                             context.insert_diagnostics_error(i.span, "Struct fields are not accessible");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }
@@ -205,23 +216,23 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     match &item.kind {
                         ExpressionKind::Identifier(identifier) => {
                             if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
-                                return UnitResolveResult::Type(item.expression.resolved().clone());
+                                return UnitResolveResult::Result(item.expression.resolved().clone());
                             } else {
                                 context.insert_diagnostics_error(item.span(), "Undefined field");
-                                return UnitResolveResult::Type(Type::Undetermined)
+                                return UnitResolveResult::Result(ExpressionResolved::undetermined())
                             }
                         },
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Config cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Config cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Config cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }
@@ -230,7 +241,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                     if !constant.is_resolved() {
                         resolve_constant(constant, context);
                     }
-                    UnitResolveResult::Type(constant.resolved().r#type.clone())
+                    UnitResolveResult::Result(constant.resolved().expression_resolved.clone())
                 }
                 Top::Enum(r#enum) => {
                     match &item.kind {
@@ -242,7 +253,15 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             } else {
                                 context.insert_diagnostics_error(i.span, "enum member not found");
                             }
-                            return UnitResolveResult::Type(Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()));
+                            return UnitResolveResult::Result(ExpressionResolved {
+                                r#type: Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()),
+                                value: Some(Value::EnumVariant(EnumVariant {
+                                    value: Box::new(Value::String(i.name().to_owned())),
+                                    display: format!(".{}", i.name()),
+                                    path: r#enum.string_path.clone(),
+                                    args: None,
+                                })),
+                            });
                         }
                         ExpressionKind::Call(c) => {
                             if let Some(member_declaration) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
@@ -267,15 +286,23 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                             } else {
                                 context.insert_diagnostics_error(c.identifier.span, "enum member not found");
                             }
-                            return UnitResolveResult::Type(Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()));
+                            return UnitResolveResult::Result(ExpressionResolved {
+                                r#type: Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()),
+                                value: Some(Value::EnumVariant(EnumVariant {
+                                    value: Box::new(Value::String(c.identifier.name().to_owned())),
+                                    display: format!(".{}", c.identifier.name()),
+                                    path: r#enum.string_path.clone(),
+                                    args: None,
+                                })),
+                            });
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Enum cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Enum cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }
@@ -285,15 +312,15 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         ExpressionKind::Identifier(_) => todo!("return model field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Model cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Model cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Model cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }
@@ -303,15 +330,15 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         ExpressionKind::Identifier(_) => todo!("return interface field enum here"),
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Interface cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Call(c) => {
                             context.insert_diagnostics_error(c.span, "Interface cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Interface cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }
@@ -323,7 +350,7 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                                 return UnitResolveResult::Reference(top.path().clone())
                             } else {
                                 context.insert_diagnostics_error(identifier.span, "Invalid reference");
-                                return UnitResolveResult::Type(Type::Undetermined)
+                                return UnitResolveResult::Result(ExpressionResolved::undetermined())
                             }
                         },
                         ExpressionKind::Call(c) => {
@@ -331,11 +358,11 @@ fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResul
                         }
                         ExpressionKind::ArgumentList(a) => {
                             context.insert_diagnostics_error(a.span, "Namespace cannot be called");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         ExpressionKind::Subscript(s) => {
                             context.insert_diagnostics_error(s.span, "Namespace cannot be subscript");
-                            return UnitResolveResult::Type(Type::Undetermined)
+                            return UnitResolveResult::Result(ExpressionResolved::undetermined())
                         }
                         _ => unreachable!()
                     }

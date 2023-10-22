@@ -23,7 +23,7 @@ pub(super) fn jump_to_definition_in_tuple_literal<'a>(
                 expression,
                 namespace_path,
                 line_col,
-                expression.resolved(),
+                expression.resolved().r#type(),
                 availability,
             );
         }

@@ -23,7 +23,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
                 key_expression,
                 namespace_path,
                 line_col,
-                key_expression.resolved(),
+                key_expression.resolved().r#type(),
                 availability
             );
         }
@@ -34,7 +34,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
                 value_expression,
                 namespace_path,
                 line_col,
-                value_expression.resolved(),
+                value_expression.resolved().r#type(),
                 availability,
             );
         }

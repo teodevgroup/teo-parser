@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use std::default::Default;
-use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use indexmap::IndexMap;
 use maplit::{btreemap, hashset};
 use teo_teon::types::enum_variant::EnumVariant;
@@ -380,7 +380,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     };
     ExpressionResolved {
         r#type: new_type,
-        value: if unresolved { None } else { Value::Array(retval_values) }
+        value: if unresolved { None } else { Some(Value::Array(retval_values)) }
     }
 }
 
@@ -432,7 +432,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                         match v.r#type() {
                             Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => ExpressionResolved {
                                 r#type: v.r#type.clone(),
-                                value: if let Some(v) = v.value { Some(-v) } else { None }
+                                value: if let Some(v) = v.value { Some(v.neg().unwrap()) } else { None }
                             },
                             _ => {
                                 context.insert_diagnostics_error(unary.span, "invalid expression");
@@ -476,37 +476,37 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
         ArithExpr::BinaryOp(binary) => {
             let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected, keywords_map);
             let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected, keywords_map);
-            let new_type = if !lhs.is_undetermined() && !rhs.is_undetermined() {
+            let new_type = if !lhs.r#type().is_undetermined() && !rhs.r#type().is_undetermined() {
                 match binary.op {
                     Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Mod => {
                         if lhs.r#type().is_int64() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
-                        } else if lhs.is_int() && rhs.is_int_32_or_64() {
+                        } else if lhs.r#type().is_int() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
-                        } else if lhs.is_float() && rhs.is_any_int_or_float() {
+                        } else if lhs.r#type().is_float() && rhs.r#type().is_any_int_or_float() {
                             lhs.r#type().clone()
-                        } else if lhs.is_float32() && rhs.is_any_int_or_float() {
+                        } else if lhs.r#type().is_float32() && rhs.r#type().is_any_int_or_float() {
                             lhs.r#type().clone()
-                        } else if binary.op == Op::Add && lhs.is_string() && rhs.is_string() {
+                        } else if binary.op == Op::Add && lhs.r#type().is_string() && rhs.r#type().is_string() {
                             lhs.r#type().clone()
-                        } else if lhs.is_decimal() && rhs.is_decimal() {
+                        } else if lhs.r#type().is_decimal() && rhs.r#type().is_decimal() {
                             lhs.r#type().clone()
                         } else {
                             context.insert_diagnostics_error(binary.span, "invalid expression");
                             Type::Undetermined
                         }
                     }
-                    Op::And | Op::Or => if lhs.test(&rhs) {
+                    Op::And | Op::Or => if lhs.r#type().test(rhs.r#type()) {
                         lhs.r#type.clone()
-                    } else if rhs.test(&lhs) {
+                    } else if rhs.r#type().test(lhs.r#type()) {
                         rhs.r#type.clone()
                     } else {
                         Type::Union(vec![lhs.r#type().clone(), rhs.r#type.clone()])
                     }
                     Op::BitAnd | Op::BitXor | Op::BitOr | Op::BitLS | Op::BitRS => {
-                        if lhs.is_int64() && rhs.is_int_32_or_64() {
+                        if lhs.r#type().is_int64() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
-                        } else if lhs.is_int() && rhs.is_int_32_or_64() {
+                        } else if lhs.r#type().is_int() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
                         } else {
                             context.insert_diagnostics_error(binary.span, "invalid expression");

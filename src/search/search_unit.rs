@@ -78,7 +78,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
                     UnitSearchResult::Type(Type::Undetermined)
                 }
             } else {
-                UnitSearchResult::Type(expression.resolved().clone())
+                UnitSearchResult::Type(expression.resolved().r#type().clone())
             });
             if expression.span().contains_line_col(line_col) {
                 if let Some(current) = current {
@@ -92,7 +92,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
             if current.is_some() && current.as_ref().unwrap().is_reference() {
                 let top = schema.find_top_by_path(current.as_ref().unwrap().as_reference().unwrap()).unwrap();
                 if top.is_constant() {
-                    current = Some(UnitSearchResult::Type(top.as_constant().unwrap().resolved().r#type.clone()));
+                    current = Some(UnitSearchResult::Type(top.as_constant().unwrap().resolved().expression_resolved.r#type.clone()));
                 }
             }
         } else {
@@ -189,7 +189,7 @@ pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier.name()));
                                             } else {
-                                                current = Some(UnitSearchResult::Type(item.expression.resolved().clone()));
+                                                current = Some(UnitSearchResult::Type(item.expression.resolved().r#type.clone()));
                                             }
                                         } else {
                                             return default;

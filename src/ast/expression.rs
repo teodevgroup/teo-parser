@@ -331,4 +331,11 @@ impl ExpressionResolved {
             value: None,
         }
     }
+
+    pub(crate) fn type_only(t: Type) -> Self {
+        ExpressionResolved {
+            r#type: t,
+            value: None
+        }
+    }
 }

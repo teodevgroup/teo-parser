@@ -120,18 +120,18 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     let desired_type_original = argument_declaration.type_expr.resolved();
                     let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(&named_argument.value, context, &desired_type, keywords_map);
-                    if !desired_type.test(named_argument.value.resolved()) {
-                        if !named_argument.value.resolved().is_undetermined() {
-                            errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved())))
+                    if !desired_type.test(named_argument.value.resolved().r#type()) {
+                        if !named_argument.value.resolved().r#type.is_undetermined() {
+                            errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved().r#type())))
                         }
                     } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
-                        generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().clone());
+                        generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().r#type.clone());
                     } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                         guess_extend_and_check(
                             callable_span,
                             callable_variant,
                             &desired_type,
-                            named_argument.value.resolved(),
+                            named_argument.value.resolved().r#type(),
                             &mut generics_map,
                             keywords_map,
                             &mut errors,
@@ -165,18 +165,18 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         let desired_type_original = argument_declaration.type_expr.resolved();
                         let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                         resolve_expression(&unnamed_argument.value, context, &desired_type, keywords_map);
-                        if !desired_type.test(unnamed_argument.value.resolved()) {
-                            if !unnamed_argument.value.resolved().is_undetermined() {
-                                errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved())))
+                        if !desired_type.test(unnamed_argument.value.resolved().r#type()) {
+                            if !unnamed_argument.value.resolved().r#type().is_undetermined() {
+                                errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved().r#type())))
                             }
                         } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
-                            generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().clone());
+                            generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().r#type().clone());
                         } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                             guess_extend_and_check(
                                 callable_span,
                                 callable_variant,
                                 &desired_type,
-                                unnamed_argument.value.resolved(),
+                                unnamed_argument.value.resolved().r#type(),
                                 &mut generics_map,
                                 keywords_map,
                                 &mut errors,

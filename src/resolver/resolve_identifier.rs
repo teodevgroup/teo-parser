@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use teo_teon::Value;
 use crate::ast::availability::Availability;
 use crate::ast::expression::ExpressionResolved;
 use crate::ast::identifier::Identifier;
@@ -37,11 +38,11 @@ fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverCont
         Top::Enum(e) => ExpressionResolved::undetermined(),
         Top::Model(m) => ExpressionResolved {
             r#type: Type::Model,
-            value: Some(m.string_path.into()),
+            value: Some(Value::from(m.string_path.clone())),
         },
         Top::DataSet(d) => ExpressionResolved {
             r#type: Type::DataSet,
-            value: Some(d.string_path.into())
+            value: Some(Value::from(d.string_path.clone()))
         },
         Top::Interface(i) => ExpressionResolved::undetermined(),
         Top::Namespace(n) => ExpressionResolved::undetermined(),
