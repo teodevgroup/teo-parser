@@ -13,6 +13,7 @@ pub enum SourceType {
     Normal,
 }
 
+#[derive(Debug)]
 pub struct Source {
     pub id: usize,
     pub r#type: SourceType,
@@ -139,6 +140,7 @@ impl Source {
     }
 }
 
+#[derive(Debug)]
 pub struct SourceReferences {
     pub imports: BTreeSet<usize>,
     pub connector: Option<usize>,

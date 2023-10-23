@@ -15,6 +15,7 @@ use crate::ast::source::Source;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 
+#[derive(Debug)]
 pub struct Schema {
     pub sources: BTreeMap<usize, Source>,
     pub references: SchemaReferences,
@@ -137,6 +138,7 @@ impl Schema {
     }
 }
 
+#[derive(Debug)]
 pub struct SchemaReferences {
     pub builtin_sources: Vec<usize>,
     pub main_source: Option<usize>,

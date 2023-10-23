@@ -46,7 +46,23 @@ pub(super) fn resolve_interface_declaration<'a>(interface_declaration: &'a Inter
             interface_declaration.generics_declaration.as_ref(),
             interface_declaration.generics_constraint.as_ref(),
             context,
-        )
+        );
+        resolve_type_expr(
+            &field.type_expr,
+            &if let Some(generics_declaration) = interface_declaration.generics_declaration.as_ref() {
+                vec![generics_declaration]
+            } else {
+                vec![]
+            },
+            &if let Some(generics_constraint) = interface_declaration.generics_constraint.as_ref() {
+                vec![generics_constraint]
+            } else {
+                vec![]
+            },
+            &btreemap! {},
+            context,
+            interface_declaration.define_availability,
+        );
     }
     context.add_examined_default_path(interface_declaration.string_path.clone(), interface_declaration.define_availability);
 }
