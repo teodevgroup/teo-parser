@@ -138,6 +138,10 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             context,
                         );
                     }
+                    named_argument.resolve(ArgumentResolved {
+                        name: named_argument.name.as_ref().unwrap().name.clone().to_string(),
+                        expect: argument_declaration.type_expr.resolved().clone(),
+                    });
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name.name()).map(|s| *s).collect();
                 } else {
                     let undetermined = Type::Undetermined;
@@ -184,7 +188,8 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             );
                         }
                         unnamed_argument.resolve(ArgumentResolved {
-                            name: name.to_string()
+                            name: name.to_string(),
+                            expect: argument_declaration.type_expr.resolved().clone(),
                         });
                         declaration_names = declaration_names.iter().filter(|d| *d != name).map(|s| *s).collect();
                     }

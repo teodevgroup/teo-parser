@@ -11,7 +11,7 @@ pub struct ArgumentList {
 impl Default for ArgumentList {
 
     fn default() -> Self {
-        Self { arguments: Vec::default(), span: Span::default(), }
+        Self { arguments: Vec::default(), span: Span::default() }
     }
 }
 
@@ -20,6 +20,7 @@ impl ArgumentList {
     pub fn arguments(&self) -> &Vec<Argument> {
         &self.arguments
     }
+
 }
 
 impl Display for ArgumentList {

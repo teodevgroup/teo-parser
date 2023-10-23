@@ -57,5 +57,6 @@ impl Display for Argument {
 
 #[derive(Debug)]
 pub struct ArgumentResolved {
-    pub name: String
+    pub name: String,
+    pub expect: Type,
 }
