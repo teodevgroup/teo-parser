@@ -4,7 +4,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 
-pub(crate) fn search_identifier_path_in_source(
+pub fn search_identifier_path_in_source(
     schema: &Schema,
     source: &Source,
     ns_str_path: &Vec<&str>,

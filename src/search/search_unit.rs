@@ -43,7 +43,7 @@ impl UnitSearchResult {
     }
 }
 
-pub(crate) fn search_unit<HAL, HS, HI, OUTPUT>(
+pub fn search_unit<HAL, HS, HI, OUTPUT>(
     schema: &Schema,
     source: &Source,
     unit: &Unit,

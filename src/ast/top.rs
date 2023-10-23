@@ -5,6 +5,7 @@ use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;

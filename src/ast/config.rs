@@ -3,6 +3,7 @@ use crate::ast::availability::Availability;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
@@ -20,14 +21,6 @@ pub struct Config {
 }
 
 impl Config {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
 
     pub fn name(&self) -> &str {
         if let Some(identifier) = &self.identifier {
@@ -69,6 +62,25 @@ impl Config {
 #[derive(Debug)]
 pub struct ConfigResolved {
     pub actual_availability: Availability
+}
+
+impl Identifiable for Config {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
+    }
 }
 
 impl InfoProvider for Config {

@@ -43,3 +43,4 @@ pub mod function_declaration;
 pub mod callable_variant;
 pub mod type_info;
 pub mod info_provider;
+pub mod identifiable;

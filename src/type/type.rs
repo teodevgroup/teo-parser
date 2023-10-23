@@ -660,6 +660,22 @@ impl Type {
         }
     }
 
+    pub fn is_cached_enum(&self) -> bool {
+        self.is_model_relations() ||
+            self.is_model_direct_relations() ||
+            self.is_model_scalar_fields_and_cached_properties_without_virtuals() ||
+            self.is_model_scalar_fields_without_virtuals() ||
+            self.is_model_scalar_fields()
+    }
+
+    pub fn unwrap_union_enum(&self) -> Option<&Type> {
+        if self.is_union() {
+            self.as_union().unwrap().iter().find(|t| t.is_enum_variant() || t.is_cached_enum())
+        } else {
+            None
+        }
+    }
+
     pub fn flatten(&self) -> Type {
         if let Some(inner) = self.as_optional() {
             if inner.is_optional() {

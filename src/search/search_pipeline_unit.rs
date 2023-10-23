@@ -10,7 +10,7 @@ use crate::ast::unit::Unit;
 use crate::search::search_identifier_path::search_identifier_path_in_source;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
-pub(crate) fn search_pipeline_unit<HAL, HI, OUTPUT>(
+pub fn search_pipeline_unit<HAL, HI, OUTPUT>(
     schema: &Schema,
     source: &Source,
     unit: &Unit,

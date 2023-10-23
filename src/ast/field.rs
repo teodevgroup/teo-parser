@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
@@ -120,14 +121,6 @@ pub struct Field {
 
 impl Field {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     pub fn name(&self) -> &str {
         self.identifier.name.as_str()
     }
@@ -146,6 +139,25 @@ impl Field {
 
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
+    }
+}
+
+impl Identifiable for Field {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 }
 

@@ -8,7 +8,7 @@ pub mod diagnostics;
 pub mod utils;
 pub(crate) mod completion;
 pub(crate) mod definition;
-pub(crate) mod search;
+pub mod search;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;

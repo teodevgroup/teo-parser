@@ -6,6 +6,7 @@ use crate::ast::arith::ArithExpr;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::literals::{NumericLiteral, StringLiteral};
@@ -28,14 +29,6 @@ pub struct Enum {
 
 impl Enum {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
     }
@@ -50,6 +43,25 @@ impl Enum {
 
     pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+}
+
+impl Identifiable for Enum {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 }
 
@@ -113,6 +125,25 @@ impl EnumMember {
 
     pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+}
+
+impl Identifiable for EnumMember {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 }
 

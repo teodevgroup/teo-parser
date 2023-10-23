@@ -3,6 +3,7 @@ use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::type_expr::TypeExpr;
@@ -57,6 +58,25 @@ impl InterfaceDeclaration {
 #[derive(Debug)]
 pub struct InterfaceDeclarationResolved {
     pub actual_availability: Availability,
+}
+
+impl Identifiable for InterfaceDeclaration {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
+    }
 }
 
 impl InfoProvider for InterfaceDeclaration {
