@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::sync::atomic::AtomicBool;
 use teo_teon::value::Value;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::arith::ArithExpr;
