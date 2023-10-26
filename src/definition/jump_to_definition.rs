@@ -33,6 +33,7 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
                 Top::Middleware(m) => jump_to_definition_in_middleware_declaration(schema, source, m, line_col),
                 Top::DataSet(_) => vec![],
                 Top::Namespace(_) => vec![],
+                Top::UseMiddlewareBlock(_) => vec![],
             };
         }
     }

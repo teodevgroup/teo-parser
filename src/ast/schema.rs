@@ -160,6 +160,7 @@ pub struct SchemaReferences {
     pub middlewares: Vec<Vec<usize>>,
     pub handler_groups: Vec<Vec<usize>>,
     pub struct_declarations: Vec<Vec<usize>>,
+    pub use_middlewares_blocks: Vec<Vec<usize>>,
 }
 
 impl SchemaReferences {
@@ -186,6 +187,7 @@ impl SchemaReferences {
             middlewares: vec![],
             handler_groups: vec![],
             struct_declarations: vec![],
+            use_middlewares_blocks: vec![],
         }
     }
 

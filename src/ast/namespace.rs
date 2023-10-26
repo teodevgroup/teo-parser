@@ -151,6 +151,7 @@ pub struct NamespaceReferences {
     pub middlewares: BTreeSet<usize>,
     pub handler_groups: BTreeSet<usize>,
     pub struct_declarations: BTreeSet<usize>,
+    pub use_middlewares_block: Option<usize>,
 }
 
 impl NamespaceReferences {
@@ -171,6 +172,7 @@ impl NamespaceReferences {
             middlewares: btreeset!{},
             handler_groups: btreeset!{},
             struct_declarations: btreeset!{},
+            use_middlewares_block: None,
         }
     }
 }

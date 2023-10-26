@@ -31,6 +31,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
             Top::StructDeclaration(s) => resolve_struct_declaration(s, context),
+            Top::UseMiddlewareBlock(u) => (),
         }
     }
 }
@@ -42,6 +43,7 @@ pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             Top::Model(model) => resolve_model_decorators(model, context),
             Top::HandlerGroup(handler_group) => resolve_handler_group_decorators(handler_group, context),
+            Top::UseMiddlewareBlock(u) => (),
             _ => ()
         }
     }

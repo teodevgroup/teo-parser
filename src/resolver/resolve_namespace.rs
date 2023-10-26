@@ -32,6 +32,7 @@ pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a
             Top::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Top::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
             Top::StructDeclaration(s) => resolve_struct_declaration(s, context),
+            Top::UseMiddlewareBlock(u) => (),
         }
     }
     context.pop_namespace();
@@ -44,6 +45,7 @@ pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'
             Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             Top::Model(model) => resolve_model_decorators(model, context),
+            Top::UseMiddlewareBlock(u) => (),
             _ => ()
         }
     }

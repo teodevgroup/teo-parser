@@ -5,7 +5,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_middleware(pair: Pair<'_>, context: &mut ParserContext) -> MiddlewareDeclaration {
+pub(super) fn parse_middleware_declaration(pair: Pair<'_>, context: &mut ParserContext) -> MiddlewareDeclaration {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut string_path = None;

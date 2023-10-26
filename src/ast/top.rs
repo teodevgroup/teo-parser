@@ -16,6 +16,7 @@ use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
+use crate::ast::use_middlewares::UseMiddlewaresBlock;
 
 #[derive(Debug)]
 pub enum Top {
@@ -33,6 +34,7 @@ pub enum Top {
     DecoratorDeclaration(DecoratorDeclaration),
     PipelineItemDeclaration(PipelineItemDeclaration),
     StructDeclaration(StructDeclaration),
+    UseMiddlewareBlock(UseMiddlewaresBlock),
 }
 
 impl Top {
@@ -53,6 +55,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => d.source_id(),
             Top::PipelineItemDeclaration(p) => p.source_id(),
             Top::StructDeclaration(s) => s.source_id(),
+            Top::UseMiddlewareBlock(u) => u.source_id(),
         }
     }
 
@@ -72,6 +75,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => d.id(),
             Top::PipelineItemDeclaration(p) => p.id(),
             Top::StructDeclaration(s) => s.id(),
+            Top::UseMiddlewareBlock(u) => u.id(),
         }
     }
 
@@ -91,6 +95,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => Some(d.identifier.span),
             Top::PipelineItemDeclaration(p) => Some(p.identifier.span),
             Top::StructDeclaration(s) => Some(s.identifier.span),
+            Top::UseMiddlewareBlock(u) => None,
         }
     }
 
@@ -110,6 +115,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => Some(d.identifier.name()),
             Top::PipelineItemDeclaration(p) => Some(p.identifier.name()),
             Top::StructDeclaration(s) => Some(s.identifier.name()),
+            Top::UseMiddlewareBlock(u) => None,
         }
     }
 
@@ -129,6 +135,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => &d.path,
             Top::PipelineItemDeclaration(p) => &p.path,
             Top::StructDeclaration(s) => &s.path,
+            Top::UseMiddlewareBlock(u) => &u.path,
         }
     }
 
@@ -148,6 +155,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => d.span,
             Top::PipelineItemDeclaration(p) => p.span,
             Top::StructDeclaration(s) => s.span,
+            Top::UseMiddlewareBlock(u) => u.span,
         }
     }
 
@@ -167,6 +175,7 @@ impl Top {
             Top::DecoratorDeclaration(t) => t.define_availability.contains(availability),
             Top::PipelineItemDeclaration(t) => t.define_availability.contains(availability),
             Top::StructDeclaration(t) => t.define_availability.contains(availability),
+            Top::UseMiddlewareBlock(u) => true,
         }
     }
 
@@ -323,5 +332,16 @@ impl Top {
 
     pub fn is_struct_declaration(&self) -> bool {
         self.as_struct_declaration().is_some()
+    }
+
+    pub fn as_use_middlewares_block(&self) -> Option<&UseMiddlewaresBlock> {
+        match self {
+            Top::UseMiddlewareBlock(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_use_middlewares_block(&self) -> bool {
+        self.as_use_middlewares_block().is_some()
     }
 }

@@ -15,11 +15,12 @@ use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
-use crate::parser::parse_middleware::parse_middleware;
+use crate::parser::parse_middleware_declaration::parse_middleware_declaration;
 use crate::parser::parse_model::parse_model_declaration;
 use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_struct_declaration::parse_struct_declaration;
+use crate::parser::parse_use_middlewares_block::parse_use_middlewares_block;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
@@ -61,6 +62,12 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                     references.connector = Some(config.id());
                 }
                 tops.insert(config.id(), Top::Config(config));
+            },
+            Rule::use_middlewares_block => { // middlewares [ ... ]
+                let middlewares = parse_use_middlewares_block(current, context);
+                references.use_middlewares_block = Some(middlewares.id());
+                context.schema_references.use_middlewares_blocks.push(middlewares.path.clone());
+                tops.insert(middlewares.id(), Top::UseMiddlewareBlock(middlewares));
             },
             Rule::model_declaration => { // model A { ... }
                 let model = parse_model_declaration(current, context);
@@ -111,7 +118,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 tops.insert(pipeline_item_declaration.id(), Top::PipelineItemDeclaration(pipeline_item_declaration));
             },
             Rule::middleware_declaration => {
-                let middleware_declaration = parse_middleware(current, context);
+                let middleware_declaration = parse_middleware_declaration(current, context);
                 references.middlewares.insert(middleware_declaration.id());
                 context.schema_references.middlewares.push(middleware_declaration.path.clone());
                 tops.insert(middleware_declaration.id(), Top::Middleware(middleware_declaration));

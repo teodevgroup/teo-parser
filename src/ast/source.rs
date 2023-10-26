@@ -156,6 +156,7 @@ pub struct SourceReferences {
     pub pipeline_item_declarations: BTreeSet<usize>,
     pub middlewares: BTreeSet<usize>,
     pub handler_groups: BTreeSet<usize>,
+    pub use_middlewares_block: Option<usize>,
 }
 
 impl SourceReferences {
@@ -176,6 +177,7 @@ impl SourceReferences {
             pipeline_item_declarations: btreeset!{},
             middlewares: btreeset!{},
             handler_groups: btreeset!{},
+            use_middlewares_block: None,
         }
     }
 }

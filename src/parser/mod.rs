@@ -29,13 +29,13 @@ mod parse_decorator_declaration;
 mod parse_pipeline_item_declaration;
 mod parse_generics;
 mod parse_argument_list_declaration;
-mod parse_middleware;
+mod parse_middleware_declaration;
 mod parse_handler_group;
 mod parse_struct_declaration;
 mod parse_function_declaration;
 mod parse_availability_flag;
 mod parse_availability_end;
-
+mod parse_use_middlewares_block;
 mod pest_parser;
 mod parser_context;
 pub(super) mod parse;
