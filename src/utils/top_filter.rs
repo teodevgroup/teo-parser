@@ -18,6 +18,9 @@ pub fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn F
         ReferenceType::PipelineItem => Arc::new(|top: &Top| {
             top.as_pipeline_item_declaration().is_some()
         }),
+        ReferenceType::Middleware => Arc::new(|top: &Top| {
+            top.as_middleware_declaration().is_some()
+        }),
         ReferenceType::Default => Arc::new(|top: &Top| {
             top.is_enum() || top.is_model() || top.is_interface_declaration() || top.is_struct_declaration() || top.is_config() || top.is_constant() || top.is_namespace()
         }),

@@ -12,6 +12,7 @@ use crate::resolver::resolve_middleware::resolve_middleware;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_info};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration;
+use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_namespace_first<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
@@ -45,7 +46,7 @@ pub(super) fn resolve_namespace_second<'a>(namespace: &'a Namespace, context: &'
             Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
             Top::Model(model) => resolve_model_decorators(model, context),
-            Top::UseMiddlewareBlock(u) => (),
+            Top::UseMiddlewareBlock(u) => resolve_use_middlewares_block(u, context),
             _ => ()
         }
     }

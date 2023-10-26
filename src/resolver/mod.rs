@@ -26,3 +26,4 @@ mod resolve_struct_declaration;
 mod resolve_function_declaration;
 mod resolve_type;
 mod resolve_unit;
+mod resolve_use_middlewares_block;

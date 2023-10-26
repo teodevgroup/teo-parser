@@ -10,5 +10,6 @@ pub enum ReferenceType {
     InterfaceFieldDecorator,
     HandlerDecorator,
     PipelineItem,
+    Middleware,
     Default,
 }
