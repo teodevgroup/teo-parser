@@ -7,6 +7,7 @@ use crate::parser::pest_parser::{Pair, Rule};
 pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &mut ParserContext) -> UseMiddlewaresBlock {
     let span = parse_span(&pair);
     let path = context.next_path();
+    let namespace_string_path = context.current_string_path();
     let mut array_literal = None;
     for current in pair.into_inner() {
         match current.as_rule() {
@@ -18,6 +19,7 @@ pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &mut ParserCo
     UseMiddlewaresBlock {
         span,
         path,
+        namespace_string_path,
         array_literal: array_literal.unwrap()
     }
 }
