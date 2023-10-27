@@ -207,6 +207,10 @@ impl ExpressionKind {
         self.as_identifier().is_some()
     }
 
+    pub fn is_unit(&self) -> bool {
+        self.as_unit().is_some()
+    }
+
     pub fn as_unit(&self) -> Option<&Unit> {
         match self {
             ExpressionKind::Unit(u) => Some(u),
