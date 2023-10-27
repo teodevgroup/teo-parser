@@ -43,3 +43,9 @@ pub fn top_filter_for_pipeline() -> Arc<dyn Fn(&Top) -> bool> {
         top.is_pipeline_item_declaration() || top.is_namespace()
     })
 }
+
+pub fn top_filter_for_middleware() -> Arc<dyn Fn(&Top) -> bool> {
+    Arc::new(|top: &Top| {
+        top.is_middleware_declaration() || top.is_namespace()
+    })
+}
