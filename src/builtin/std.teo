@@ -619,7 +619,7 @@ namespace std {
 
     /// @name Path
     /// Specify a path for this handler
-    declare unique handler decorator path(path?: String, ignoreNamespacePrefix: Bool?)
+    declare unique handler decorator path(path?: String, ignorePrefix: Bool?)
 
     #if available(database)
 

@@ -1,10 +1,13 @@
 use std::cell::RefCell;
+use serde::Serialize;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::type_expr::{TypeExpr, TypeShape};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use super::info_provider::InfoProvider;
 
 #[derive(Debug)]
 pub struct HandlerGroupDeclaration {
@@ -49,20 +52,16 @@ pub struct HandlerDeclaration {
 
 impl HandlerDeclaration {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    pub fn name(&self) -> &str {
+        self.string_path.last().map(AsRef::as_ref).unwrap()
     }
 
     pub fn handler_group_id(&self) -> usize {
         *self.path.get(self.path.len() - 2).unwrap()
+    }
+
+    pub fn handler_group_name(&self) -> &str {
+        self.string_path.get(self.path.len() - 2).unwrap()
     }
 
     pub fn resolve(&self, resolved: HandlerDeclarationResolved) {
@@ -78,7 +77,7 @@ impl HandlerDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum HandlerInputFormat {
     Json,
     Form,
@@ -98,6 +97,36 @@ impl HandlerInputFormat {
             HandlerInputFormat::Form => true,
             _ => false,
         }
+    }
+}
+
+impl Identifiable for HandlerDeclaration {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
+    }
+}
+
+impl InfoProvider for HandlerDeclaration {
+
+    fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    }
+
+    fn availability(&self) -> Availability {
+        Availability::default()
     }
 }
 
