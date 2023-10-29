@@ -7,7 +7,7 @@ use crate::r#type::Type;
 use crate::r#type::shape_reference::ShapeReference;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::shape::input::Input;
-use crate::shape::r#static::STATIC_WHERE_INPUT_FOR_TYPE;
+use crate::shape::r#static::{STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::shape::shape::Shape;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
@@ -21,7 +21,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         model_shape_resolved.map.insert("Include".to_owned(), input);
     }
     // where input
-    if let Some(input) = resolve_model_where_input_shape(model, true) {
+    if let Some(input) = resolve_model_where_input_shape(model, true, false) {
         model_shape_resolved.map.insert("WhereInput".to_owned(), input);
     }
     // where unique input
@@ -29,7 +29,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         model_shape_resolved.map.insert("WhereUniqueInput".to_owned(), input);
     }
     // scalar where with aggregates input
-    if let Some(input) = resolve_model_scalar_where_with_aggregates_input_shape(model) {
+    if let Some(input) = resolve_model_where_input_shape(model, false, true) {
         model_shape_resolved.map.insert("ScalarWhereWithAggregatesInput".to_owned(), input);
     }
     model.shape_resolve(model_shape_resolved);
@@ -83,19 +83,31 @@ fn resolve_model_include_shape(model: &Model) -> Option<Input> {
     }
 }
 
-fn resolve_model_where_input_shape(model: &Model, include_relations: bool) -> Option<Input> {
+fn resolve_model_where_input_shape(model: &Model, include_relations: bool, with_aggregates: bool) -> Option<Input> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_queryable(field) && !is_field_writeonly(field) {
-                if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
-                    map.insert(field.name().to_owned(), where_input_type.clone());
+                if with_aggregates {
+                    if let Some(where_input_type) = field_where_with_aggregates_input_for_type(field.type_expr.resolved()) {
+                        map.insert(field.name().to_owned(), where_input_type.clone());
+                    }
+                } else {
+                    if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
+                        map.insert(field.name().to_owned(), where_input_type.clone());
+                    }
                 }
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_queryable(field) {
-                if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
-                    map.insert(field.name().to_owned(), where_input_type.clone());
+                if with_aggregates {
+                    if let Some(where_input_type) = field_where_with_aggregates_input_for_type(field.type_expr.resolved()) {
+                        map.insert(field.name().to_owned(), where_input_type.clone());
+                    }
+                } else {
+                    if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
+                        map.insert(field.name().to_owned(), where_input_type.clone());
+                    }
                 }
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
@@ -181,10 +193,6 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Input> {
     }
 }
 
-fn resolve_model_scalar_where_with_aggregates_input_shape(model: &Model) -> Option<Input> {
-
-}
-
 fn relation_is_many(field: &Field) -> bool {
     field.type_expr.resolved().unwrap_optional().is_array()
 }
@@ -243,6 +251,38 @@ fn decorator_has_any_name(decorator: &Decorator, names: Vec<&str>) -> bool {
     }
     let name = *names.last().unwrap();
     names.contains(&name)
+}
+
+fn field_where_with_aggregates_input_for_type(t: &Type) -> Option<Input> {
+    if let Some((a, b)) = t.unwrap_optional().as_enum_variant() {
+        if t.is_optional() {
+            Some(Input::Type(Type::Union(vec![
+                Type::EnumVariant(a.clone(), b.clone()),
+                Type::Null,
+                Type::ShapeReference(ShapeReference::EnumNullableWithAggregatesFilter(Box::new(t.unwrap_optional().clone()))),
+            ]).to_optional()))
+        } else {
+            Some(Input::Type(Type::Union(vec![
+                Type::EnumVariant(a.clone(), b.clone()),
+                Type::ShapeReference(ShapeReference::EnumWithAggregatesFilter(Box::new(t.clone()))),
+            ]).to_optional()))
+        }
+    } else if let Some(inner) = t.unwrap_optional().as_array() {
+        if t.is_optional() {
+            Some(Input::Type(Type::Union(vec![
+                t.unwrap_optional().clone(),
+                Type::Null,
+                Type::ShapeReference(ShapeReference::ArrayNullableWithAggregatesFilter(Box::new(inner.clone()))),
+            ])))
+        } else {
+            Some(Input::Type(Type::Union(vec![
+                t.clone(),
+                Type::ShapeReference(ShapeReference::ArrayWithAggregatesFilter(Box::new(inner.clone()))),
+            ])))
+        }
+    } else {
+        STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE.get(t).cloned()
+    }
 }
 
 fn field_where_input_for_type<'a>(t: &Type) -> Option<Input> {
