@@ -224,16 +224,83 @@ pub(super) static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     string_nullable_filter_map.insert("not".to_owned(), Input::Type(Type::Union(vec![Type::String, Type::Null, Type::ShapeReference(ShapeReference::StringNullableFilter)]).to_optional()));
     result.insert("StringNullableFilter".to_owned(), Input::Shape(Shape::new(string_nullable_filter_map)));
     // enum filter
-
+    let mut enum_filter_map = indexmap! {};
+    enum_filter_map.insert("equals".to_owned(), Input::Type(Type::GenericItem("T".to_string()).to_optional()));
+    enum_filter_map.insert("in".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    enum_filter_map.insert("notIn".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    enum_filter_map.insert("not".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()), Type::ShapeReference(ShapeReference::EnumFilter(Box::new(Type::GenericItem("T".to_string()))))]).to_optional()));
+    result.insert("EnumFilter".to_owned(), Input::Shape(Shape::new(enum_filter_map)));
     // enum nullable filter
+    let mut enum_nullable_filter_map = indexmap! {};
+    enum_nullable_filter_map.insert("equals".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()), Type::Null]).to_optional()));
+    enum_nullable_filter_map.insert("in".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()), Type::Null]).wrap_in_array().to_optional()));
+    enum_nullable_filter_map.insert("notIn".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()), Type::Null]).wrap_in_array().to_optional()));
+    enum_nullable_filter_map.insert("not".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()), Type::Null, Type::ShapeReference(ShapeReference::EnumNullableFilter(Box::new(Type::GenericItem("T".to_string()))))]).to_optional()));
+    result.insert("EnumNullableFilter".to_owned(), Input::Shape(Shape::new(enum_nullable_filter_map)));
     // array filter
+    let mut array_filter_map = indexmap! {};
+    array_filter_map.insert("equals".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    array_filter_map.insert("has".to_owned(), Input::Type(Type::GenericItem("T".to_string()).to_optional()));
+    array_filter_map.insert("hasSome".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    array_filter_map.insert("hasEvery".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    array_filter_map.insert("isEmpty".to_owned(), Input::Type(Type::Bool.to_optional()));
+    array_filter_map.insert("length".to_owned(), Input::Type(Type::Int.to_optional()));
+    result.insert("ArrayFilter".to_owned(), Input::Shape(Shape::new(array_filter_map)));
     // array nullable filter
+    let mut array_nullable_filter_map = indexmap! {};
+    array_nullable_filter_map.insert("equals".to_owned(), Input::Type(Type::Union(vec![Type::GenericItem("T".to_string()).wrap_in_array(), Type::Null]).to_optional()));
+    array_nullable_filter_map.insert("has".to_owned(), Input::Type(Type::GenericItem("T".to_string()).to_optional()));
+    array_nullable_filter_map.insert("hasSome".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    array_nullable_filter_map.insert("hasEvery".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
+    array_nullable_filter_map.insert("isEmpty".to_owned(), Input::Type(Type::Bool.to_optional()));
+    array_nullable_filter_map.insert("length".to_owned(), Input::Type(Type::Int.to_optional()));
+    result.insert("ArrayFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map)));
+    // int atomic update operation input
+    let mut int_atomic_update_operation_input_map = indexmap! {};
+    int_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Int.to_optional()));
+    int_atomic_update_operation_input_map.insert("decrement".to_owned(), Input::Type(Type::Int.to_optional()));
+    int_atomic_update_operation_input_map.insert("multiply".to_owned(), Input::Type(Type::Int.to_optional()));
+    int_atomic_update_operation_input_map.insert("divide".to_owned(), Input::Type(Type::Int.to_optional()));
+    result.insert("IntAtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(int_atomic_update_operation_input_map)));
+    // int64 atomic update operation input
+    let mut int_64_atomic_update_operation_input_map = indexmap! {};
+    int_64_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Int64.to_optional()));
+    int_64_atomic_update_operation_input_map.insert("decrement".to_owned(), Input::Type(Type::Int64.to_optional()));
+    int_64_atomic_update_operation_input_map.insert("multiply".to_owned(), Input::Type(Type::Int64.to_optional()));
+    int_64_atomic_update_operation_input_map.insert("divide".to_owned(), Input::Type(Type::Int64.to_optional()));
+    result.insert("Int64AtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(int_64_atomic_update_operation_input_map)));
+    // float32 atomic update operation input
+    let mut float_32_atomic_update_operation_input_map = indexmap! {};
+    float_32_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Float32.to_optional()));
+    float_32_atomic_update_operation_input_map.insert("decrement".to_owned(), Input::Type(Type::Float32.to_optional()));
+    float_32_atomic_update_operation_input_map.insert("multiply".to_owned(), Input::Type(Type::Float32.to_optional()));
+    float_32_atomic_update_operation_input_map.insert("divide".to_owned(), Input::Type(Type::Float32.to_optional()));
+    result.insert("Float32AtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(float_32_atomic_update_operation_input_map)));
+    // float atomic update operation input
+    let mut float_atomic_update_operation_input_map = indexmap! {};
+    float_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Float.to_optional()));
+    float_atomic_update_operation_input_map.insert("decrement".to_owned(), Input::Type(Type::Float.to_optional()));
+    float_atomic_update_operation_input_map.insert("multiply".to_owned(), Input::Type(Type::Float.to_optional()));
+    float_atomic_update_operation_input_map.insert("divide".to_owned(), Input::Type(Type::Float.to_optional()));
+    result.insert("FloatAtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(float_atomic_update_operation_input_map)));
+    // decimal atomic update operation input
+    let mut decimal_atomic_update_operation_input_map = indexmap! {};
+    decimal_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Decimal.to_optional()));
+    decimal_atomic_update_operation_input_map.insert("decrement".to_owned(), Input::Type(Type::Decimal.to_optional()));
+    decimal_atomic_update_operation_input_map.insert("multiply".to_owned(), Input::Type(Type::Decimal.to_optional()));
+    decimal_atomic_update_operation_input_map.insert("divide".to_owned(), Input::Type(Type::Decimal.to_optional()));
+    result.insert("DecimalAtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(decimal_atomic_update_operation_input_map)));
+    // array atomic update operation input
+    let mut array_atomic_update_operation_input_map = indexmap! {};
+    array_atomic_update_operation_input_map.insert("push".to_owned(), Input::Type(Type::GenericItem("T".to_owned()).to_optional()));
+    result.insert("ArrayAtomicUpdateOperationInput".to_owned(), Input::Shape(Shape::new(array_atomic_update_operation_input_map)));
+
     result
 });
 
 pub(super) static STATIC_WHERE_INPUT_FOR_TYPE: Lazy<IndexMap<Type, Input>> = Lazy::new(|| {
     let mut result = indexmap! {};
-    result.insert(Type::String, Input::S)
+    //result.insert(Type::String, Input::S)
     //result.insert(Type::String.to_optional(), )
     result
 });

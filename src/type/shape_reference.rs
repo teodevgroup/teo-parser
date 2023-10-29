@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use educe::Educe;
 use serde::Serialize;
+use crate::r#type::Type;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
@@ -26,6 +27,16 @@ pub enum ShapeReference {
     ObjectIdNullableFilter,
     StringFilter,
     StringNullableFilter,
+    EnumFilter(Box<Type>),
+    EnumNullableFilter(Box<Type>),
+    ArrayFilter(Box<Type>),
+    ArrayNullableFilter(Box<Type>),
+    IntAtomicUpdateOperationInput,
+    Int64AtomicUpdateOperationInput,
+    Float32AtomicUpdateOperationInput,
+    FloatAtomicUpdateOperationInput,
+    DecimalAtomicUpdateOperationInput,
+    ArrayAtomicUpdateOperationInput,
     Args(Vec<usize>, Vec<String>),
     FindManyArgs(Vec<usize>, Vec<String>),
 }
@@ -54,6 +65,16 @@ impl Display for ShapeReference {
             ShapeReference::ObjectIdNullableFilter => f.write_str("ObjectIdNullableFilter"),
             ShapeReference::StringFilter => f.write_str("StringFilter"),
             ShapeReference::StringNullableFilter => f.write_str("StringNullableFilter"),
+            ShapeReference::EnumFilter(t) => f.write_str(&format!("EnumFilter<{}>", t.as_ref())),
+            ShapeReference::EnumNullableFilter(t) => f.write_str(&format!("EnumNullableFilter<{}>", t.as_ref())),
+            ShapeReference::ArrayFilter(t) => f.write_str(&format!("ArrayFilter<{}>", t.as_ref())),
+            ShapeReference::ArrayNullableFilter(t) => f.write_str(&format!("ArrayNullableFilter<{}>", t.as_ref())),
+            ShapeReference::IntAtomicUpdateOperationInput => f.write_str("IntAtomicUpdateOperationInput"),
+            ShapeReference::Int64AtomicUpdateOperationInput => f.write_str("Int64AtomicUpdateOperationInput"),
+            ShapeReference::Float32AtomicUpdateOperationInput => f.write_str("Float32AtomicUpdateOperationInput"),
+            ShapeReference::FloatAtomicUpdateOperationInput => f.write_str("FloatAtomicUpdateOperationInput"),
+            ShapeReference::DecimalAtomicUpdateOperationInput => f.write_str("DecimalAtomicUpdateOperationInput"),
+            ShapeReference::ArrayAtomicUpdateOperationInput => f.write_str("ArrayAtomicUpdateOperationInput"),
             ShapeReference::Args(_, k) => f.write_str(&format!("Args<{}>", k.join("."))),
             ShapeReference::FindManyArgs(_, k) => f.write_str(&format!("FindManyArgs<{}>", k.join("."))),
         }

@@ -1,7 +1,6 @@
 use indexmap::IndexMap;
 use indexmap::map::{Iter, Keys};
 use serde::Serialize;
-use crate::r#type::Type;
 use crate::shape::input::Input;
 
 #[derive(Debug, Serialize)]

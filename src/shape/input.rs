@@ -7,7 +7,7 @@ pub enum Input {
     Undetermined,
     Shape(Shape),
     Type(Type),
-    Enumerate(Box<Input>),
+    Enumerable(Box<Input>),
 }
 
 impl Input {
@@ -41,13 +41,13 @@ impl Input {
         }
     }
 
-    pub fn is_enumerate(&self) -> bool {
-        self.as_enumerate().is_some()
+    pub fn is_enumerable(&self) -> bool {
+        self.as_enumerable().is_some()
     }
 
-    pub fn as_enumerate(&self) -> Option<&Input> {
+    pub fn as_enumerable(&self) -> Option<&Input> {
         match self {
-            Input::Enumerate(t) => Some(t.as_ref()),
+            Input::Enumerable(t) => Some(t.as_ref()),
             _ => None,
         }
     }
