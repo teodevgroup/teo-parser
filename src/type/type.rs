@@ -4,7 +4,7 @@ use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use educe::Educe;
 use serde::Serialize;
-use crate::r#type::model_shape_reference::ModelShapeReference;
+use crate::r#type::shape_reference::ShapeReference;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
@@ -69,10 +69,22 @@ pub enum Type {
     Optional(Box<Type>),
     Pipeline((Box<Type>, Box<Type>)),
     // model caches
-    ModelShapeReference(ModelShapeReference),
+    ShapeReference(ShapeReference),
 }
 
 impl Type {
+
+    pub fn wrap_in_array(&self) -> Type {
+        Type::Array(Box::new(self.clone()))
+    }
+
+    pub fn to_optional(&self) -> Type {
+        if self.is_optional() {
+            self.clone()
+        } else {
+            Type::Optional(Box::new(self.clone()))
+        }
+    }
 
     pub fn is_undetermined(&self) -> bool {
         match self {
@@ -486,7 +498,7 @@ impl Type {
             Type::Keyword(_) => false,
             Type::Optional(_) => true,
             Type::Pipeline(_) => false,
-            Type::ModelShapeReference(_) => false,
+            Type::ShapeReference(_) => false,
         }
     }
 
@@ -530,7 +542,7 @@ impl Type {
             Type::Keyword(_) => false,
             Type::Optional(inner) => inner.contains_generics(),
             Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
-            Type::ModelShapeReference(_) => false,
+            Type::ShapeReference(_) => false,
         }
     }
 
@@ -630,7 +642,7 @@ impl Type {
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
-            Type::ModelShapeReference(r) => false,
+            Type::ShapeReference(r) => false,
         }
     }
 
@@ -751,7 +763,7 @@ impl Type {
             Type::Keyword(_) => self.clone(),
             Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
             Type::Pipeline((t1, t2)) => Type::Pipeline((Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f)))),
-            Type::ModelShapeReference(_) => self.clone(),
+            Type::ShapeReference(_) => self.clone(),
         }
     }
 }
@@ -827,7 +839,7 @@ impl Display for Type {
                 f.write_str(&format!("{}?", inner))
             },
             Type::Pipeline((i, o)) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
-            Type::ModelShapeReference(r) => Display::fmt(r, f),
+            Type::ShapeReference(r) => Display::fmt(r, f),
         }
     }
 }

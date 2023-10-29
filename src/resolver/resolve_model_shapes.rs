@@ -3,7 +3,7 @@ use indexmap::{IndexMap, indexmap};
 use crate::ast::field::Field;
 use crate::ast::model::{Model, ModelShapeResolved};
 use crate::r#type::Type;
-use crate::r#type::model_shape_reference::ModelShapeReference;
+use crate::r#type::shape_reference::ShapeReference;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::shape::input::Input;
 use crate::shape::shape::Shape;
@@ -18,6 +18,10 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     if let Some(input) = resolve_model_include_shape(model) {
         model_shape_resolved.map.insert("Include".to_owned(), input);
     }
+    // where input
+    if let Some(input) = resolve_model_where_input_shape(model) {
+        model_shape_resolved.map.insert("WhereInput".to_owned(), input);
+    }
 }
 
 fn resolve_model_select_shape(model: &Model) -> Option<Input> {
@@ -25,11 +29,11 @@ fn resolve_model_select_shape(model: &Model) -> Option<Input> {
     for field in &model.fields {
         if let Some(field_settings) = field.resolved().class.as_model_primitive_field() {
             if !field_settings.dropped && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), Input::Type(Type::Bool));
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
             }
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_getter(field) {
-                map.insert(field.name().to_owned(), Input::Type(Type::Bool));
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
             }
         }
     }
@@ -43,19 +47,19 @@ fn resolve_model_select_shape(model: &Model) -> Option<Input> {
 fn resolve_model_include_shape(model: &Model) -> Option<Input> {
     let mut map = indexmap! {};
     for field in &model.fields {
-        if let Some(relation_settings) = field.resolved().class.as_model_relation() {
+        if let Some(_) = field.resolved().class.as_model_relation() {
             if let Some((related_model_path, related_model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
-                if field.type_expr.resolved().unwrap_optional().is_array() {
+                if relation_is_many(field) {
                     // many
                     map.insert(
                         field.name().to_owned(),
-                        Input::Type(Type::ModelShapeReference(ModelShapeReference::FindManyArgs(related_model_path.clone(), related_model_string_path.clone())))
+                        Input::Type(Type::ShapeReference(ShapeReference::FindManyArgs(related_model_path.clone(), related_model_string_path.clone())).to_optional())
                     );
                 } else {
                     // single
                     map.insert(
                         field.name().to_owned(),
-                        Input::Type(Type::ModelShapeReference(ModelShapeReference::Args(related_model_path.clone(), related_model_string_path.clone())))
+                        Input::Type(Type::ShapeReference(ShapeReference::Args(related_model_path.clone(), related_model_string_path.clone())).to_optional())
                     );
                 }
             }
@@ -66,6 +70,14 @@ fn resolve_model_include_shape(model: &Model) -> Option<Input> {
     } else {
         Some(Input::Shape(Shape::new(map)))
     }
+}
+
+fn resolve_model_where_input_shape(model: &Model) -> Option<Input> {
+
+}
+
+fn relation_is_many(field: &Field) -> bool {
+    field.type_expr.resolved().unwrap_optional().is_array()
 }
 
 fn has_property_setter(field: &Field) -> bool {
