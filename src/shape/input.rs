@@ -5,6 +5,7 @@ use crate::shape::shape::Shape;
 #[derive(Debug, Serialize, Clone)]
 pub enum Input {
     Undetermined,
+    Or(Vec<Input>),
     Shape(Shape),
     Type(Type),
     Enumerable(Box<Input>),

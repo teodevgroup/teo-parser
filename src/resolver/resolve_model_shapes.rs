@@ -1,5 +1,6 @@
 use array_tool::vec::Shift;
 use indexmap::{IndexMap, indexmap};
+use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::model::{Model, ModelShapeResolved};
 use crate::r#type::Type;
@@ -20,10 +21,13 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         model_shape_resolved.map.insert("Include".to_owned(), input);
     }
     // where input
-    if let Some(input) = resolve_model_where_input_shape(model, context) {
+    if let Some(input) = resolve_model_where_input_shape(model) {
         model_shape_resolved.map.insert("WhereInput".to_owned(), input);
     }
     // where unique input
+    if let Some(input) = resolve_model_where_unique_input_shape(model) {
+        model_shape_resolved.map.insert("WhereUniqueInput".to_owned(), input);
+    }
 
     model.shape_resolve(model_shape_resolved);
 }
@@ -76,7 +80,7 @@ fn resolve_model_include_shape(model: &Model) -> Option<Input> {
     }
 }
 
-fn resolve_model_where_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Input> {
+fn resolve_model_where_input_shape(model: &Model) -> Option<Input> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -113,6 +117,46 @@ fn resolve_model_where_input_shape<'a>(model: &'a Model, context: &'a ResolverCo
         None
     } else {
         Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Input> {
+    let mut inputs = vec![];
+    for decorator in &model.decorators {
+        if decorator_has_any_name(decorator, vec!["id", "unique"]) {
+            if let Some(argument_list) = &decorator.argument_list {
+                if let Some(argument) = argument_list.arguments.first() {
+                    if let Some(array_literal) = argument.value.kind.as_array_literal() {
+                        let mut map = indexmap! {};
+                        for expression in &array_literal.expressions {
+                            if let Some(enum_variant_literal) = expression.kind.as_enum_variant_literal() {
+                                let name = enum_variant_literal.identifier.name();
+                                if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == name) {
+                                    map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().clone()));
+                                }
+                            }
+                        }
+                        if !map.is_empty() {
+                            inputs.push(Input::Shape(Shape::new(map)));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for field in &model.fields {
+        for decorator in &field.decorators {
+            if decorator_has_any_name(decorator, vec!["id", "unique"]) {
+                inputs.push(Input::Shape(Shape::new(indexmap! {
+                    field.name().to_owned() => Input::Type(field.type_expr.resolved().clone())
+                })));
+            }
+        }
+    }
+    if inputs.is_empty() {
+        None
+    } else {
+        Some(Input::Or(inputs))
     }
 }
 
@@ -162,6 +206,18 @@ fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) ->
         }
     }
     false
+}
+
+fn decorator_has_any_name(decorator: &Decorator, names: Vec<&str>) -> bool {
+    let mut names = decorator.identifier_path.names();
+    if *names.first().unwrap() == "std" {
+        names.shift();
+    }
+    if names.len() != 1 {
+        return false;
+    }
+    let name = *names.last().unwrap();
+    names.contains(&name)
 }
 
 fn field_where_input_for_type<'a>(t: &Type) -> Option<Input> {
