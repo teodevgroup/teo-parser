@@ -21,14 +21,17 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         model_shape_resolved.map.insert("Include".to_owned(), input);
     }
     // where input
-    if let Some(input) = resolve_model_where_input_shape(model) {
+    if let Some(input) = resolve_model_where_input_shape(model, true) {
         model_shape_resolved.map.insert("WhereInput".to_owned(), input);
     }
     // where unique input
     if let Some(input) = resolve_model_where_unique_input_shape(model) {
         model_shape_resolved.map.insert("WhereUniqueInput".to_owned(), input);
     }
-
+    // scalar where with aggregates input
+    if let Some(input) = resolve_model_scalar_where_with_aggregates_input_shape(model) {
+        model_shape_resolved.map.insert("ScalarWhereWithAggregatesInput".to_owned(), input);
+    }
     model.shape_resolve(model_shape_resolved);
 }
 
@@ -80,7 +83,7 @@ fn resolve_model_include_shape(model: &Model) -> Option<Input> {
     }
 }
 
-fn resolve_model_where_input_shape(model: &Model) -> Option<Input> {
+fn resolve_model_where_input_shape(model: &Model, include_relations: bool) -> Option<Input> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -96,19 +99,21 @@ fn resolve_model_where_input_shape(model: &Model) -> Option<Input> {
                 }
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
-            if let Some((related_model_path, related_model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
-                if relation_is_many(field) {
-                    // many
-                    map.insert(
-                        field.name().to_owned(),
-                        Input::Type(Type::ShapeReference(ShapeReference::ListRelationFilter(related_model_path.clone(), related_model_string_path.clone())).to_optional())
-                    );
-                } else {
-                    // single
-                    map.insert(
-                        field.name().to_owned(),
-                        Input::Type(Type::ShapeReference(ShapeReference::RelationFilter(related_model_path.clone(), related_model_string_path.clone())).to_optional())
-                    );
+            if include_relations {
+                if let Some((related_model_path, related_model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
+                    if relation_is_many(field) {
+                        // many
+                        map.insert(
+                            field.name().to_owned(),
+                            Input::Type(Type::ShapeReference(ShapeReference::ListRelationFilter(related_model_path.clone(), related_model_string_path.clone())).to_optional())
+                        );
+                    } else {
+                        // single
+                        map.insert(
+                            field.name().to_owned(),
+                            Input::Type(Type::ShapeReference(ShapeReference::RelationFilter(related_model_path.clone(), related_model_string_path.clone())).to_optional())
+                        );
+                    }
                 }
             }
         }
@@ -116,6 +121,22 @@ fn resolve_model_where_input_shape(model: &Model) -> Option<Input> {
     if map.is_empty() {
         None
     } else {
+        // insert the three ops
+        map.insert("AND".to_owned(), Input::Type(
+            Type::ShapeReference(
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).wrap_in_array().to_optional()
+            )
+        ));
+        map.insert("OR".to_owned(), Input::Type(
+            Type::ShapeReference(
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).wrap_in_array().to_optional()
+            )
+        ));
+        map.insert("NOT".to_owned(), Input::Type(
+            Type::ShapeReference(
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).to_optional()
+            )
+        ));
         Some(Input::Shape(Shape::new(map)))
     }
 }
@@ -158,6 +179,10 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Input> {
     } else {
         Some(Input::Or(inputs))
     }
+}
+
+fn resolve_model_scalar_where_with_aggregates_input_shape(model: &Model) -> Option<Input> {
+
 }
 
 fn relation_is_many(field: &Field) -> bool {

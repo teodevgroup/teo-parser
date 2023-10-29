@@ -8,7 +8,6 @@ pub enum Input {
     Or(Vec<Input>),
     Shape(Shape),
     Type(Type),
-    Enumerable(Box<Input>),
 }
 
 impl Input {
@@ -38,17 +37,6 @@ impl Input {
     pub fn as_type(&self) -> Option<&Type> {
         match self {
             Input::Type(t) => Some(t),
-            _ => None,
-        }
-    }
-
-    pub fn is_enumerable(&self) -> bool {
-        self.as_enumerable().is_some()
-    }
-
-    pub fn as_enumerable(&self) -> Option<&Input> {
-        match self {
-            Input::Enumerable(t) => Some(t.as_ref()),
             _ => None,
         }
     }
