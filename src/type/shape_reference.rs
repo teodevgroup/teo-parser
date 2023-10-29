@@ -39,6 +39,8 @@ pub enum ShapeReference {
     ArrayAtomicUpdateOperationInput,
     Args(Vec<usize>, Vec<String>),
     FindManyArgs(Vec<usize>, Vec<String>),
+    RelationFilter(Vec<usize>, Vec<String>),
+    ListRelationFilter(Vec<usize>, Vec<String>),
 }
 
 impl Display for ShapeReference {
@@ -77,6 +79,8 @@ impl Display for ShapeReference {
             ShapeReference::ArrayAtomicUpdateOperationInput => f.write_str("ArrayAtomicUpdateOperationInput"),
             ShapeReference::Args(_, k) => f.write_str(&format!("Args<{}>", k.join("."))),
             ShapeReference::FindManyArgs(_, k) => f.write_str(&format!("FindManyArgs<{}>", k.join("."))),
+            ShapeReference::RelationFilter(_, k) => f.write_str(&format!("RelationFilter<{}>", k.join("."))),
+            ShapeReference::ListRelationFilter(_, k) => f.write_str(&format!("ListRelationFilter<{}>", k.join("."))),
         }
     }
 }

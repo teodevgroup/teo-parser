@@ -3,7 +3,7 @@ use indexmap::map::{Iter, Keys};
 use serde::Serialize;
 use crate::shape::input::Input;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Shape {
     map: IndexMap<String, Input>,
 }

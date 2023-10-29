@@ -15,7 +15,7 @@ pub(super) static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     // bool nullable filter
     let mut bool_nullable_filter_map = indexmap! {};
     bool_nullable_filter_map.insert("equals".to_owned(), Input::Type(Type::Union(vec![Type::Bool, Type::Null]).to_optional()));
-    bool_filter_map.insert("not".to_owned(), Input::Type(Type::Union(vec![Type::Bool, Type::Null, Type::ShapeReference(ShapeReference::BoolNullableFilter)]).to_optional()));
+    bool_nullable_filter_map.insert("not".to_owned(), Input::Type(Type::Union(vec![Type::Bool, Type::Null, Type::ShapeReference(ShapeReference::BoolNullableFilter)]).to_optional()));
     result.insert("BoolNullableFilter".to_owned(), Input::Shape(Shape::new(bool_nullable_filter_map)));
     // int filter
     let mut int_filter_map = indexmap! {};
@@ -298,9 +298,27 @@ pub(super) static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     result
 });
 
-pub(super) static STATIC_WHERE_INPUT_FOR_TYPE: Lazy<IndexMap<Type, Input>> = Lazy::new(|| {
+pub static STATIC_WHERE_INPUT_FOR_TYPE: Lazy<IndexMap<Type, Input>> = Lazy::new(|| {
     let mut result = indexmap! {};
-    //result.insert(Type::String, Input::S)
-    //result.insert(Type::String.to_optional(), )
+    result.insert(Type::Bool, Input::Type(Type::Union(vec![Type::Bool, Type::ShapeReference(ShapeReference::BoolFilter)]).to_optional()));
+    result.insert(Type::Bool.to_optional(), Input::Type(Type::Union(vec![Type::Bool, Type::Null, Type::ShapeReference(ShapeReference::BoolNullableFilter)]).to_optional()));
+    result.insert(Type::Int, Input::Type(Type::Union(vec![Type::Int, Type::ShapeReference(ShapeReference::IntFilter)]).to_optional()));
+    result.insert(Type::Int.to_optional(), Input::Type(Type::Union(vec![Type::Int, Type::Null, Type::ShapeReference(ShapeReference::IntNullableFilter)]).to_optional()));
+    result.insert(Type::Int64, Input::Type(Type::Union(vec![Type::Int64, Type::ShapeReference(ShapeReference::Int64Filter)]).to_optional()));
+    result.insert(Type::Int64.to_optional(), Input::Type(Type::Union(vec![Type::Int64, Type::Null, Type::ShapeReference(ShapeReference::Int64NullableFilter)]).to_optional()));
+    result.insert(Type::Float32, Input::Type(Type::Union(vec![Type::Float32, Type::ShapeReference(ShapeReference::Float32Filter)]).to_optional()));
+    result.insert(Type::Float32.to_optional(), Input::Type(Type::Union(vec![Type::Float32, Type::Null, Type::ShapeReference(ShapeReference::Float32NullableFilter)]).to_optional()));
+    result.insert(Type::Float, Input::Type(Type::Union(vec![Type::Float, Type::ShapeReference(ShapeReference::FloatFilter)]).to_optional()));
+    result.insert(Type::Float.to_optional(), Input::Type(Type::Union(vec![Type::Float, Type::Null, Type::ShapeReference(ShapeReference::FloatNullableFilter)]).to_optional()));
+    result.insert(Type::Decimal, Input::Type(Type::Union(vec![Type::Decimal, Type::ShapeReference(ShapeReference::DecimalFilter)]).to_optional()));
+    result.insert(Type::Decimal.to_optional(), Input::Type(Type::Union(vec![Type::Decimal, Type::Null, Type::ShapeReference(ShapeReference::DecimalNullableFilter)]).to_optional()));
+    result.insert(Type::Date, Input::Type(Type::Union(vec![Type::Date, Type::ShapeReference(ShapeReference::DateFilter)]).to_optional()));
+    result.insert(Type::Date.to_optional(), Input::Type(Type::Union(vec![Type::Date, Type::Null, Type::ShapeReference(ShapeReference::DateNullableFilter)]).to_optional()));
+    result.insert(Type::DateTime, Input::Type(Type::Union(vec![Type::DateTime, Type::ShapeReference(ShapeReference::DateTimeFilter)]).to_optional()));
+    result.insert(Type::DateTime.to_optional(), Input::Type(Type::Union(vec![Type::DateTime, Type::Null, Type::ShapeReference(ShapeReference::DateTimeNullableFilter)]).to_optional()));
+    result.insert(Type::ObjectId, Input::Type(Type::Union(vec![Type::ObjectId, Type::ShapeReference(ShapeReference::ObjectIdFilter)]).to_optional()));
+    result.insert(Type::ObjectId.to_optional(), Input::Type(Type::Union(vec![Type::ObjectId, Type::Null, Type::ShapeReference(ShapeReference::ObjectIdNullableFilter)]).to_optional()));
+    result.insert(Type::String, Input::Type(Type::Union(vec![Type::String, Type::ShapeReference(ShapeReference::StringFilter)]).to_optional()));
+    result.insert(Type::String.to_optional(), Input::Type(Type::Union(vec![Type::String, Type::Null, Type::ShapeReference(ShapeReference::StringNullableFilter)]).to_optional()));
     result
 });

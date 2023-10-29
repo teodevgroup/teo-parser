@@ -2,7 +2,7 @@ use serde::Serialize;
 use crate::r#type::Type;
 use crate::shape::shape::Shape;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub enum Input {
     Undetermined,
     Shape(Shape),
