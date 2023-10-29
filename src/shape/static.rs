@@ -376,6 +376,27 @@ pub(super) static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     string_nullable_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::StringNullableFilter).to_optional()));
     string_nullable_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::StringNullableFilter).to_optional()));
     result.insert("StringNullableWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(string_nullable_filter_map)));
+    // enum with aggregates filter
+    enum_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
+    enum_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::EnumFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    enum_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::EnumFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    result.insert("EnumWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(enum_filter_map)));
+    // enum nullable with aggregates filter
+    enum_nullable_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
+    enum_nullable_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::EnumNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    enum_nullable_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::EnumNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    result.insert("EnumNullableWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(enum_nullable_filter_map)));
+    // array with aggregates filter
+    array_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
+    array_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    array_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    result.insert("ArrayWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(array_filter_map)));
+    // array nullable with aggregates filter
+    array_nullable_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
+    array_nullable_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    array_nullable_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
+    result.insert("ArrayWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map)));
+
     // int atomic update operation input
     let mut int_atomic_update_operation_input_map = indexmap! {};
     int_atomic_update_operation_input_map.insert("increment".to_owned(), Input::Type(Type::Int.to_optional()));

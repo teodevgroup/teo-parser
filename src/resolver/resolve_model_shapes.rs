@@ -124,18 +124,18 @@ fn resolve_model_where_input_shape(model: &Model, include_relations: bool) -> Op
         // insert the three ops
         map.insert("AND".to_owned(), Input::Type(
             Type::ShapeReference(
-                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).wrap_in_array().to_optional()
-            )
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            ).wrap_in_array().to_optional()
         ));
         map.insert("OR".to_owned(), Input::Type(
             Type::ShapeReference(
-                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).wrap_in_array().to_optional()
-            )
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            ).wrap_in_array().to_optional()
         ));
         map.insert("NOT".to_owned(), Input::Type(
             Type::ShapeReference(
-                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()).to_optional()
-            )
+                ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            ).to_optional()
         ));
         Some(Input::Shape(Shape::new(map)))
     }
