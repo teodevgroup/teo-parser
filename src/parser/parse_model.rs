@@ -67,5 +67,6 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         empty_field_decorator_spans,
         unattached_field_decorators,
         resolved: RefCell::new(None),
+        shape_resolved: RefCell::new(None),
     }
 }

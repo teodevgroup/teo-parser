@@ -54,5 +54,6 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         extends,
         fields,
         resolved: RefCell::new(None),
+        shape_resolved: RefCell::new(None),
     }
 }

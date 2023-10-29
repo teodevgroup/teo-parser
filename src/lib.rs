@@ -1,4 +1,5 @@
 pub mod r#type;
+pub mod shape;
 pub mod ast;
 pub mod parser;
 mod builtin;

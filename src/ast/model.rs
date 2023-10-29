@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use indexmap::IndexMap;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
@@ -8,6 +9,7 @@ use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
+use crate::shape::input::Input;
 
 #[derive(Debug)]
 pub struct Model {
@@ -24,6 +26,7 @@ pub struct Model {
     pub unattached_field_decorators: Vec<Decorator>,
     pub handlers: Vec<HandlerDeclaration>,
     pub resolved: RefCell<Option<ModelResolved>>,
+    pub shape_resolved: RefCell<Option<ModelShapeResolved>>,
 }
 
 impl Model {
@@ -42,6 +45,18 @@ impl Model {
 
     pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+
+    pub fn shape_resolve(&self, resolved: ModelShapeResolved) {
+        *(unsafe { &mut *self.shape_resolved.as_ptr() }) = Some(resolved);
+    }
+
+    pub fn shape_resolved(&self) -> &ModelShapeResolved {
+        (unsafe { &*self.shape_resolved.as_ptr() }).as_ref().unwrap()
+    }
+
+    pub fn is_shape_resolved(&self) -> bool {
+        self.shape_resolved.borrow().is_some()
     }
 }
 
@@ -83,4 +98,10 @@ impl InfoProvider for Model {
     fn availability(&self) -> Availability {
         self.define_availability.bi_and(self.resolved().actual_availability)
     }
+}
+
+#[derive(Debug)]
+pub struct ModelShapeResolved {
+    pub map: IndexMap<String, Input>,
+    pub without_map: IndexMap<String, IndexMap<String, Input>>,
 }
