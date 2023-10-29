@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, indexmap};
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
@@ -104,4 +104,14 @@ impl InfoProvider for Model {
 pub struct ModelShapeResolved {
     pub map: IndexMap<String, Input>,
     pub without_map: IndexMap<String, IndexMap<String, Input>>,
+}
+
+impl ModelShapeResolved {
+
+    pub fn new() -> Self {
+        Self {
+            map: indexmap! {},
+            without_map: indexmap! {},
+        }
+    }
 }

@@ -64,5 +64,6 @@ pub(super) fn resolve_interface_declaration<'a>(interface_declaration: &'a Inter
             interface_declaration.define_availability,
         );
     }
+
     context.add_examined_default_path(interface_declaration.string_path.clone(), interface_declaration.define_availability);
 }

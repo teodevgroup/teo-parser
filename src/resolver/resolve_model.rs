@@ -7,6 +7,7 @@ use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators};
 use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
+use crate::resolver::resolve_model_shapes::resolve_model_shapes;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
@@ -60,6 +61,7 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
         direct_relations,
         actual_availability,
     });
+    resolve_model_shapes(model, context);
     context.add_examined_default_path(model.string_path.clone(), model.define_availability);
 }
 
