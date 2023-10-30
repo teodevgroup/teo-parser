@@ -51,4 +51,12 @@ mod test {
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }
+
+    #[test]
+    fn test_shape_resolve() {
+        let path = "/Users/victor/Developer/teo-namespace-example/shape.teo";
+        let (schema, _) = parse(path, None, None);
+        //let completions = auto_complete_items(&schema, path, (4, 13));
+        //println!("{:?}", completions);
+    }
 }

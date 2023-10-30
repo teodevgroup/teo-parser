@@ -94,12 +94,27 @@ pub enum ArithExpr {
 }
 
 impl ArithExpr {
+
     pub fn span(&self) -> Span {
         match self {
             ArithExpr::Expression(e) => e.span(),
             ArithExpr::UnaryOp(u) => u.span,
             ArithExpr::BinaryOp(b) => b.span,
             ArithExpr::UnaryPostfixOp(u) => u.span,
+        }
+    }
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        match self {
+            ArithExpr::Expression(e) => e.unwrap_enumerable_enum_member_strings(),
+            _ => None,
+        }
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        match self {
+            ArithExpr::Expression(e) => e.unwrap_enumerable_enum_member_string(),
+            _ => None,
         }
     }
 }

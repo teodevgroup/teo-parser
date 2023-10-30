@@ -80,6 +80,17 @@ pub struct EnumVariantLiteral {
     pub argument_list: Option<ArgumentList>,
 }
 
+impl EnumVariantLiteral {
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        Some(vec![self.identifier.name()])
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        Some(self.identifier.name())
+    }
+}
+
 impl Display for EnumVariantLiteral {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -119,6 +130,27 @@ impl Display for TupleLiteral {
 pub struct ArrayLiteral {
     pub expressions: Vec<Expression>,
     pub span: Span,
+}
+
+impl ArrayLiteral {
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        let mut result = vec![];
+        for expression in &self.expressions {
+            if let Some(r) = expression.unwrap_enumerable_enum_member_string() {
+                result.push(r);
+            }
+        }
+        Some(result)
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        if self.expressions.len() < 1 {
+            None
+        } else {
+            self.expressions.first().unwrap().unwrap_enumerable_enum_member_string()
+        }
+    }
 }
 
 impl Display for ArrayLiteral {

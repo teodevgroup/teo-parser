@@ -252,6 +252,26 @@ impl ExpressionKind {
             _ => None,
         }
     }
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        match self {
+            ExpressionKind::ArithExpr(a) => a.unwrap_enumerable_enum_member_strings(),
+            ExpressionKind::Unit(u) => u.unwrap_enumerable_enum_member_strings(),
+            ExpressionKind::EnumVariantLiteral(e) => e.unwrap_enumerable_enum_member_strings(),
+            ExpressionKind::ArrayLiteral(a) => a.unwrap_enumerable_enum_member_strings(),
+            _ => None,
+        }
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        match self {
+            ExpressionKind::ArithExpr(a) => a.unwrap_enumerable_enum_member_string(),
+            ExpressionKind::Unit(u) => u.unwrap_enumerable_enum_member_string(),
+            ExpressionKind::EnumVariantLiteral(e) => e.unwrap_enumerable_enum_member_string(),
+            ExpressionKind::ArrayLiteral(a) => a.unwrap_enumerable_enum_member_string(),
+            _ => None,
+        }
+    }
 }
 
 impl Display for ExpressionKind {
@@ -304,6 +324,14 @@ impl Expression {
 
     pub fn is_resolved(&self) -> bool {
         self.resolved.borrow().is_some()
+    }
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        self.kind.unwrap_enumerable_enum_member_strings()
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        self.kind.unwrap_enumerable_enum_member_string()
     }
 }
 

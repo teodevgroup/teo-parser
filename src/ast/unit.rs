@@ -22,3 +22,22 @@ impl Display for Unit {
         Ok(())
     }
 }
+
+impl Unit {
+
+    pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
+        if self.expressions.len() != 1 {
+            None
+        } else {
+            self.expressions.first().unwrap().unwrap_enumerable_enum_member_strings()
+        }
+    }
+
+    pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
+        if self.expressions.len() != 1 {
+            None
+        } else {
+            self.expressions.first().unwrap().unwrap_enumerable_enum_member_string()
+        }
+    }
+}
