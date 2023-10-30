@@ -1,6 +1,7 @@
 use serde::Serialize;
 use crate::r#type::Type;
 use crate::shape::shape::Shape;
+use crate::shape::synthesized_enum::SynthesizedEnum;
 
 #[derive(Debug, Serialize, Clone)]
 pub enum Input {
@@ -8,6 +9,7 @@ pub enum Input {
     Or(Vec<Input>),
     Shape(Shape),
     Type(Type),
+    SynthesizedEnum(SynthesizedEnum),
 }
 
 impl Input {
@@ -37,6 +39,17 @@ impl Input {
     pub fn as_type(&self) -> Option<&Type> {
         match self {
             Input::Type(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_enum(&self) -> bool {
+        self.as_synthesized_enum().is_some()
+    }
+
+    pub fn as_synthesized_enum(&self) -> Option<&SynthesizedEnum> {
+        match self {
+            Input::SynthesizedEnum(s) => Some(s),
             _ => None,
         }
     }

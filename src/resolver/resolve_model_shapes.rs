@@ -1,5 +1,5 @@
 use array_tool::vec::Shift;
-use indexmap::{IndexMap, indexmap};
+use indexmap::indexmap;
 use crate::ast::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
@@ -11,6 +11,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::shape::input::Input;
 use crate::shape::r#static::{STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::shape::shape::Shape;
+use crate::shape::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
@@ -44,6 +45,30 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // order by input
     if let Some(input) = resolve_model_order_by_input_shape(model, context) {
         model_shape_resolved.map.insert("OrderByInput".to_owned(), input);
+    }
+    // scalar field enum
+    if let Some(input) = resolve_scalar_field_enum(model) {
+        model_shape_resolved.map.insert("ScalarFieldEnum".to_owned(), input);
+    }
+    // count aggregate input type
+    if let Some(input) = resolve_count_aggregate_input_type(model) {
+        model_shape_resolved.map.insert("CountAggregateInputType".to_owned(), input);
+    }
+    // sum aggregate input type
+    if let Some(input) = resolve_sum_aggregate_input_type(model) {
+        model_shape_resolved.map.insert("SumAggregateInputType".to_owned(), input);
+    }
+    // avg aggregate input type
+    if let Some(input) = resolve_avg_aggregate_input_type(model) {
+        model_shape_resolved.map.insert("AvgAggregateInputType".to_owned(), input);
+    }
+    // min aggregate input type
+    if let Some(input) = resolve_min_aggregate_input_type(model) {
+        model_shape_resolved.map.insert("MinAggregateInputType".to_owned(), input);
+    }
+    // max aggregate input type
+    if let Some(input) = resolve_max_aggregate_input_type(model) {
+        model_shape_resolved.map.insert("MaxAggregateInputType".to_owned(), input);
     }
 
     model.shape_resolve(model_shape_resolved);
@@ -233,6 +258,133 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_sortable(field) {
                 map.insert(field.name().to_owned(), Input::Type(Type::EnumVariant(sort.path.clone(), sort.string_path.clone())));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_scalar_field_enum(model: &Model) -> Option<Input> {
+    let mut members = vec![];
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                members.push(SynthesizedEnumMember {
+                    name: field.name().to_owned(),
+                    comment: field.comment.clone(),
+                });
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                members.push(SynthesizedEnumMember {
+                    name: field.name().to_owned(),
+                    comment: field.comment.clone(),
+                });
+            }
+        }
+    }
+    if !members.is_empty() {
+        Some(Input::SynthesizedEnum(SynthesizedEnum::new(members)))
+    } else {
+        None
+    }
+}
+
+fn resolve_count_aggregate_input_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        }
+    }
+    map.insert("_all".to_owned(), Input::Type(Type::Bool.to_optional()));
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if field.type_expr.resolved().is_any_number() && settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if field.type_expr.resolved().is_any_number() && settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_min_aggregate_input_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_max_aggregate_input_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Bool.to_optional()));
             }
         }
     }

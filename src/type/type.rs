@@ -450,6 +450,10 @@ impl Type {
         self.is_int_32_or_64() || self.is_float_32_or_64()
     }
 
+    pub fn is_any_number(&self) -> bool {
+        self.is_any_int_or_float() || self.is_decimal()
+    }
+
     pub fn is_any_model_field_reference(&self) -> bool {
         self.is_model_scalar_fields() ||
             self.is_model_scalar_fields_without_virtuals() ||
