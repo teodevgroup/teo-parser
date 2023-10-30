@@ -1,14 +1,17 @@
 use array_tool::vec::Shift;
 use indexmap::{IndexMap, indexmap};
+use crate::ast::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::model::{Model, ModelShapeResolved};
+use crate::ast::reference::ReferenceType;
 use crate::r#type::Type;
 use crate::r#type::shape_reference::ShapeReference;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::shape::input::Input;
 use crate::shape::r#static::{STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::shape::shape::Shape;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     let mut model_shape_resolved = ModelShapeResolved::new();
@@ -32,6 +35,17 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     if let Some(input) = resolve_model_where_input_shape(model, false, true) {
         model_shape_resolved.map.insert("ScalarWhereWithAggregatesInput".to_owned(), input);
     }
+    if model_shape_resolved.map.contains_key("WhereInput") {
+        // relation filter
+        model_shape_resolved.map.insert("RelationFilter".to_owned(), resolve_model_relation_filter(model));
+        // list relation filter
+        model_shape_resolved.map.insert("ListRelationFilter".to_owned(), resolve_model_list_relation_filter(model));
+    }
+    // order by input
+    if let Some(input) = resolve_model_order_by_input_shape(model, context) {
+        model_shape_resolved.map.insert("OrderByInput".to_owned(), input);
+    }
+
     model.shape_resolve(model_shape_resolved);
 }
 
@@ -190,6 +204,42 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Input> {
         None
     } else {
         Some(Input::Or(inputs))
+    }
+}
+
+fn resolve_model_relation_filter(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("is".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("isNot".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_model_list_relation_filter(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("every".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("some".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("none".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Input> {
+    let sort = context.schema.builtin_sources().get(0).unwrap().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && is_field_sortable(field) && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::EnumVariant(sort.path.clone(), sort.string_path.clone())));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached && is_field_sortable(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::EnumVariant(sort.path.clone(), sort.string_path.clone())));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
     }
 }
 
