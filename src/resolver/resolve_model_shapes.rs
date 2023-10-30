@@ -157,6 +157,38 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
             model_shape_resolved.without_map.insert(vec!["UpdateManyWithWhereInput".to_owned(), field.name().to_owned()], resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
+    // args
+    model_shape_resolved.map.insert("Args".to_owned(), resolve_args_type(model));
+    // find many args
+    model_shape_resolved.map.insert("FindManyArgs".to_owned(), resolve_find_many_args_type(model));
+    // find first args
+    model_shape_resolved.map.insert("FindFirstArgs".to_owned(), resolve_find_first_args_type(model));
+    // find unique args
+    model_shape_resolved.map.insert("FindUniqueArgs".to_owned(), resolve_find_unique_args_type(model));
+    // create args
+    model_shape_resolved.map.insert("CreateArgs".to_owned(), resolve_create_args_type(model));
+    // update args
+    model_shape_resolved.map.insert("UpdateArgs".to_owned(), resolve_update_args_type(model));
+    // upsert args
+    model_shape_resolved.map.insert("UpsertArgs".to_owned(), resolve_upsert_args_type(model));
+    // copy args
+    model_shape_resolved.map.insert("CopyArgs".to_owned(), resolve_copy_args_type(model));
+    // delete args
+    model_shape_resolved.map.insert("DeleteArgs".to_owned(), resolve_delete_args_type(model));
+    // create many args
+    model_shape_resolved.map.insert("CreateManyArgs".to_owned(), resolve_create_many_args_type(model));
+    // update many args
+    model_shape_resolved.map.insert("UpdateManyArgs".to_owned(), resolve_update_many_args_type(model));
+    // delete many args
+    model_shape_resolved.map.insert("DeleteManyArgs".to_owned(), resolve_delete_many_args_type(model));
+    // copy many args
+    model_shape_resolved.map.insert("CopyManyArgs".to_owned(), resolve_copy_many_args_type(model));
+    // count args
+    model_shape_resolved.map.insert("CountArgs".to_owned(), resolve_count_args_type(model));
+    // aggregate args
+    model_shape_resolved.map.insert("AggregateArgs".to_owned(), resolve_aggregate_args_type(model));
+    // group by args
+    model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model));
 
     model.shape_resolve(model_shape_resolved);
 }
@@ -742,6 +774,87 @@ fn resolve_update_many_with_where_input_type(model: &Model, without: Option<&str
         ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
     })));
     Input::Shape(Shape::new(map))
+}
+
+fn resolve_args_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_find_unique_args_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_find_first_args_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("cursor".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("take".to_owned(), Input::Type(Type::Int64).to_optional());
+    map.insert("skip".to_owned(), Input::Type(Type::Int64).to_optional());
+    map.insert("pageSize".to_owned(), Input::Type(Type::Int64).to_optional());
+    map.insert("pageNumber".to_owned(), Input::Type(Type::Int64).to_optional());
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_find_many_args_type(model: &Model) -> Input {
+    resolve_find_first_args_type(model)
+}
+
+fn resolve_create_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_update_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_upsert_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_copy_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_delete_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_create_many_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_update_many_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_copy_many_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_delete_many_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_count_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_aggregate_args_type(model: &Model) -> Input {
+
+}
+
+fn resolve_group_by_args_type(model: &Model) -> Input {
+
 }
 
 fn relation_is_many(field: &Field) -> bool {
