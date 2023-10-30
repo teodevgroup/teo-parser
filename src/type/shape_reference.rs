@@ -80,6 +80,8 @@ pub enum ShapeReference {
     UpdateNestedOneInputWithout(Vec<usize>, Vec<String>, String),
     UpdateNestedManyInput(Vec<usize>, Vec<String>),
     UpdateNestedManyInputWithout(Vec<usize>, Vec<String>, String),
+    ConnectOrCreateInput(Vec<usize>, Vec<String>),
+    ConnectOrCreateInputWithout(Vec<usize>, Vec<String>, String),
 }
 
 impl Display for ShapeReference {
@@ -159,6 +161,8 @@ impl Display for ShapeReference {
             ShapeReference::UpdateNestedOneInputWithout(_, k, r) => f.write_str(&format!("UpdateNestedOneInputWithout<{}, .{}>", k.join("."), r)),
             ShapeReference::UpdateNestedManyInput(_, k) => f.write_str(&format!("UpdateNestedManyInput<{}>", k.join("."))),
             ShapeReference::UpdateNestedManyInputWithout(_, k, r) => f.write_str(&format!("UpdateNestedManyInputWithout<{}, .{}>", k.join("."), r)),
+            ShapeReference::ConnectOrCreateInput(_, k) => f.write_str(&format!("ConnectOrCreateInput<{}>", k.join("."))),
+            ShapeReference::ConnectOrCreateInputWithout(_, k, r) => f.write_str(&format!("ConnectOrCreateInputWithout<{}, .{}>", k.join("."), r)),
         }
     }
 }

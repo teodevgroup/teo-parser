@@ -28,6 +28,7 @@ pub enum Type {
     Regex,
     Model,
     DataSet,
+    Enumerable(Box<Type>),
     Array(Box<Type>),
     Dictionary(Box<Type>),
     Tuple(Vec<Type>),
@@ -76,6 +77,14 @@ impl Type {
 
     pub fn wrap_in_array(&self) -> Type {
         Type::Array(Box::new(self.clone()))
+    }
+
+    pub fn to_enumerable(&self) -> Type {
+        if self.is_enumerable() {
+            self.clone()
+        } else {
+            Type::Enumerable(Box::new(self.clone()))
+        }
     }
 
     pub fn to_optional(&self) -> Type {
@@ -209,6 +218,17 @@ impl Type {
         match self {
             Type::DataSet => true,
             _ => false,
+        }
+    }
+
+    pub fn is_enumerable(&self) -> bool {
+        self.as_enumerable().is_some()
+    }
+
+    pub fn as_enumerable(&self) -> Option<&Type> {
+        match self {
+            Self::Enumerable(inner) => Some(inner.as_ref()),
+            _ => None,
         }
     }
 
@@ -482,6 +502,7 @@ impl Type {
             Type::Regex => false,
             Type::Model => false,
             Type::DataSet => false,
+            Type::Enumerable(_) => true,
             Type::Array(_) => true,
             Type::Dictionary(_) => true,
             Type::Tuple(_) => true,
@@ -526,6 +547,7 @@ impl Type {
             Type::Regex => false,
             Type::Model => false,
             Type::DataSet => false,
+            Type::Enumerable(inner) => inner.contains_generics(),
             Type::Array(inner) => inner.contains_generics(),
             Type::Dictionary(inner) => inner.contains_generics(),
             Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
@@ -626,6 +648,7 @@ impl Type {
             Type::Regex => passed.is_regex(),
             Type::Model => passed.is_model(),
             Type::DataSet => passed.is_data_set(),
+            Type::Enumerable(inner) => passed.is_enumerable() && inner.as_ref().test(passed.as_enumerable().unwrap()),
             Type::Array(inner) => passed.is_array() && inner.as_ref().test(passed.as_array().unwrap()),
             Type::Dictionary(inner) => passed.is_dictionary() && inner.as_ref().test(passed.as_dictionary().unwrap()),
             Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
@@ -747,6 +770,7 @@ impl Type {
             Type::Regex => self.clone(),
             Type::Model => self.clone(),
             Type::DataSet => self.clone(),
+            Type::Enumerable(t) => Type::Enumerable(Box::new(f_ref(t, &f))),
             Type::Array(t) => Type::Array(Box::new(f_ref(t, &f))),
             Type::Dictionary(t) => Type::Dictionary(Box::new(f_ref(t, &f))),
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| f_ref(t, &f)).collect()),
@@ -794,6 +818,7 @@ impl Display for Type {
             Type::Regex => f.write_str("Regex"),
             Type::Model => f.write_str("Model"),
             Type::DataSet => f.write_str("DataSet"),
+            Type::Enumerable(inner) => f.write_str(&format!("Range<{}>", inner)),
             Type::Array(inner) => if inner.is_union() {
                 f.write_str(&format!("({})[]", inner))
             } else {

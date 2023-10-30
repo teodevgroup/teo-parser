@@ -102,9 +102,34 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         }
     }
     // create nested one input
+    model_shape_resolved.map.insert("CreateNestedOneInput".to_owned(), resolve_create_nested_one_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["CreateNestedOneInput".to_owned(), field.name().to_owned()], resolve_create_nested_one_input_type(model, Some(field.name())));
+        }
+    }
     // create nested many input
+    model_shape_resolved.map.insert("CreateNestedManyInput".to_owned(), resolve_create_nested_many_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["CreateNestedManyInput".to_owned(), field.name().to_owned()], resolve_create_nested_many_input_type(model, Some(field.name())));
+        }
+    }
     // update nested one input
+    model_shape_resolved.map.insert("UpdateNestedOneInput".to_owned(), resolve_create_nested_one_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["UpdateNestedOneInput".to_owned(), field.name().to_owned()], resolve_update_nested_one_input_type(model, Some(field.name())));
+        }
+    }
     // update nested many input
+    model_shape_resolved.map.insert("UpdateNestedManyInput".to_owned(), resolve_update_nested_many_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["UpdateNestedManyInput".to_owned(), field.name().to_owned()], resolve_update_nested_many_input_type(model, Some(field.name())));
+        }
+    }
+
     model.shape_resolve(model_shape_resolved);
 }
 
@@ -545,6 +570,70 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
     } else {
         Some(Input::Shape(Shape::new(map)))
     }
+}
+
+fn resolve_create_nested_one_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("connectOrCreate".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_create_nested_many_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("connectOrCreate".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_update_nested_one_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("connectOrCreate".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_update_nested_many_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("connectOrCreate".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    Input::Shape(Shape::new(map))
 }
 
 fn relation_is_many(field: &Field) -> bool {
