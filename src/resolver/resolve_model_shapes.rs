@@ -70,7 +70,32 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     if let Some(input) = resolve_max_aggregate_input_type(model) {
         model_shape_resolved.map.insert("MaxAggregateInputType".to_owned(), input);
     }
-
+    // create input
+    if let Some(input) = resolve_create_input_type(model, None, context) {
+        model_shape_resolved.map.insert("CreateInput".to_owned(), input);
+    }
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
+                model_shape_resolved.without_map.insert(vec!["CreateInput".to_owned(), field.name().to_owned()], input);
+            }
+        }
+    }
+    // update input
+    if let Some(input) = resolve_update_input_type(model, None, context) {
+        model_shape_resolved.map.insert("UpdateInput".to_owned(), input);
+    }
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
+                model_shape_resolved.without_map.insert(vec!["UpdateInput".to_owned(), field.name().to_owned()], input);
+            }
+        }
+    }
+    // create nested one input
+    // create nested many input
+    // update nested one input
+    // update nested many input
     model.shape_resolve(model_shape_resolved);
 }
 
