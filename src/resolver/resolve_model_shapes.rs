@@ -9,7 +9,7 @@ use crate::r#type::Type;
 use crate::r#type::shape_reference::ShapeReference;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::shape::input::Input;
-use crate::shape::r#static::{STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
+use crate::shape::r#static::{STATIC_UPDATE_INPUT_FOR_TYPE, STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::shape::shape::Shape;
 use crate::shape::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -395,6 +395,124 @@ fn resolve_max_aggregate_input_type(model: &Model) -> Option<Input> {
     }
 }
 
+fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_readonly(field) {
+                let optional = is_field_input_omissible(field) || field_has_on_save(field) || field_has_default(field);
+                let mut t = field.type_expr.resolved().clone();
+                if optional {
+                    t = t.to_optional();
+                }
+                map.insert(field.name().to_owned(), Input::Type(t));
+            }
+        } else if let Some(_) = field.resolved().class.as_model_property() {
+            if has_property_setter(field) {
+                let optional = is_field_input_omissible(field);
+                let mut t = field.type_expr.resolved().clone();
+                if optional {
+                    t = t.to_optional();
+                }
+                map.insert(field.name().to_owned(), Input::Type(t));
+            }
+        } else if let Some(_) = field.resolved().class.as_model_relation() {
+            if let Some(without) = without {
+                if field.name() == without {
+                    continue
+                }
+            }
+            let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+            if relation_is_many(field) {
+                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::CreateNestedManyInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                } else {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::CreateNestedManyInput(that_model.0.clone(), that_model.1.clone())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                }
+            } else {
+                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::CreateNestedOneInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                } else {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::CreateNestedOneInput(that_model.0.clone(), that_model.1.clone())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                }
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_readonly(field) {
+                if let Some(input) = field_update_input_for_type(field.type_expr.resolved(), is_field_atomic(field)) {
+                    map.insert(field.name().to_owned(), input);
+                }
+            }
+        } else if let Some(_) = field.resolved().class.as_model_property() {
+            if has_property_setter(field) {
+                if let Some(input) = field_update_input_for_type(field.type_expr.resolved(), false) {
+                    map.insert(field.name().to_owned(), input);
+                }
+            }
+        } else if let Some(_) = field.resolved().class.as_model_relation() {
+            if let Some(without) = without {
+                if field.name() == without {
+                    continue
+                }
+            }
+            let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+            if relation_is_many(field) {
+                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::UpdateNestedManyInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                } else {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::UpdateNestedManyInput(that_model.0.clone(), that_model.1.clone())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                }
+            } else {
+                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::UpdateNestedOneInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                } else {
+                    let t = Input::Type(
+                        Type::ShapeReference(ShapeReference::UpdateNestedOneInput(that_model.0.clone(), that_model.1.clone())).to_optional()
+                    );
+                    map.insert(field.name().to_owned(), t);
+                }
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
 fn relation_is_many(field: &Field) -> bool {
     field.type_expr.resolved().unwrap_optional().is_array()
 }
@@ -413,6 +531,10 @@ fn is_field_writeonly(field: &Field) -> bool {
 
 fn is_field_readonly(field: &Field) -> bool {
     field_has_decorator_name(field, "readonly")
+}
+
+fn is_field_atomic(field: &Field) -> bool {
+    field_has_decorator_name(field, "atomic")
 }
 
 fn is_field_queryable(field: &Field) -> bool {
@@ -487,6 +609,47 @@ fn field_where_with_aggregates_input_for_type(t: &Type) -> Option<Input> {
     }
 }
 
+fn field_update_input_for_type<'a>(t: &Type, atomic: bool) -> Option<Input> {
+    if atomic {
+        if let Some(inner_type) = t.unwrap_optional().as_array() {
+            if t.is_optional() {
+                Some(Input::Type(Type::Union(vec![
+                    Type::Array(Box::new(inner_type.clone())),
+                    Type::Null,
+                    Type::ShapeReference(ShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.unwrap_optional().clone()))),
+                ]).to_optional()))
+            } else {
+                Some(Input::Type(Type::Union(vec![
+                    Type::Array(Box::new(inner_type.clone())),
+                    Type::ShapeReference(ShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.unwrap_optional().clone()))),
+                ]).to_optional()))
+            }
+        } else {
+            if let Some(input) = STATIC_UPDATE_INPUT_FOR_TYPE.get(t) {
+                Some(input.clone())
+            } else {
+                if t.is_optional() {
+                    Some(Input::Type(Type::Union(vec![
+                        t.unwrap_optional().clone(),
+                        Type::Null,
+                    ])))
+                } else {
+                    Some(Input::Type(t.clone()))
+                }
+            }
+        }
+    } else {
+        if t.is_optional() {
+            Some(Input::Type(Type::Union(vec![
+                t.unwrap_optional().clone(),
+                Type::Null,
+            ])))
+        } else {
+            Some(Input::Type(t.clone()))
+        }
+    }
+}
+
 fn field_where_input_for_type<'a>(t: &Type) -> Option<Input> {
     if let Some((a, b)) = t.unwrap_optional().as_enum_variant() {
         if t.is_optional() {
@@ -516,5 +679,52 @@ fn field_where_input_for_type<'a>(t: &Type) -> Option<Input> {
         }
     } else {
         STATIC_WHERE_INPUT_FOR_TYPE.get(t).cloned()
+    }
+}
+
+fn is_field_input_omissible(field: &Field) -> bool {
+    field_has_decorator_name(field, "inputOmissible")
+}
+
+fn is_field_output_omissible(field: &Field) -> bool {
+    field_has_decorator_name(field, "outputOmissible")
+}
+
+fn field_has_default(field: &Field) -> bool {
+    field_has_decorator_name(field, "default")
+}
+
+fn field_has_on_save(field: &Field) -> bool {
+    field_has_decorator_name(field, "onSave")
+}
+
+fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
+    let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
+    let argument_list = relation_decorator.argument_list.as_ref()?;
+    let that_model_ref = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+    let that_model = context.schema.find_top_by_path(that_model_ref.0)?.as_model()?;
+
+    let fields = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields");
+    let references = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references");
+    let local = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local");
+    let foreign = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign");
+    if fields.is_some() && references.is_some() {
+        let fields = fields.unwrap();
+        let references = references.unwrap();
+        //let fields_value = fields.value.unwrap_enumerable_enum_member_strings();
+        //let references_value = references.value.unwrap_enumerable_enum_member_strings();
+        println!("fields.value: {:?}", fields.value);
+        println!("references.value: {:?}", fields.value);
+        None
+    } else if local.is_some() && foreign.is_some() {
+        let local = local.unwrap();
+        let foreign = foreign.unwrap();
+        //let local_value = fields.value.unwrap_enumerable_enum_member_strings();
+        //let foreign_value = references.value.unwrap_enumerable_enum_member_strings();
+        println!("local.value: {:?}", local.value);
+        println!("foreign.value: {:?}", foreign.value);
+        None
+    } else {
+        None
     }
 }

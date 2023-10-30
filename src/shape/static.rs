@@ -489,3 +489,18 @@ pub static STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE: Lazy<IndexMap<Type, Inpu
     result.insert(Type::String.to_optional(), Input::Type(Type::Union(vec![Type::String, Type::Null, Type::ShapeReference(ShapeReference::StringNullableWithAggregatesFilter)]).to_optional()));
     result
 });
+
+pub static STATIC_UPDATE_INPUT_FOR_TYPE: Lazy<IndexMap<Type, Input>> = Lazy::new(|| {
+    let mut result = indexmap! {};
+    result.insert(Type::Int, Input::Type(Type::Union(vec![Type::Int, Type::ShapeReference(ShapeReference::IntAtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Int.to_optional(), Input::Type(Type::Union(vec![Type::Int, Type::Null, Type::ShapeReference(ShapeReference::IntAtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Int64, Input::Type(Type::Union(vec![Type::Int64, Type::ShapeReference(ShapeReference::Int64AtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Int64.to_optional(), Input::Type(Type::Union(vec![Type::Int64, Type::Null, Type::ShapeReference(ShapeReference::Int64AtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Float32, Input::Type(Type::Union(vec![Type::Float32, Type::ShapeReference(ShapeReference::Float32AtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Float32.to_optional(), Input::Type(Type::Union(vec![Type::Float32, Type::Null, Type::ShapeReference(ShapeReference::Float32AtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Float, Input::Type(Type::Union(vec![Type::Float, Type::ShapeReference(ShapeReference::FloatAtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Float.to_optional(), Input::Type(Type::Union(vec![Type::Float, Type::Null, Type::ShapeReference(ShapeReference::FloatAtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Decimal, Input::Type(Type::Union(vec![Type::Decimal, Type::ShapeReference(ShapeReference::DecimalAtomicUpdateOperationInput)]).to_optional()));
+    result.insert(Type::Decimal.to_optional(), Input::Type(Type::Union(vec![Type::Decimal, Type::Null, Type::ShapeReference(ShapeReference::DecimalAtomicUpdateOperationInput)]).to_optional()));
+    result
+});

@@ -103,7 +103,7 @@ impl InfoProvider for Model {
 #[derive(Debug)]
 pub struct ModelShapeResolved {
     pub map: IndexMap<String, Input>,
-    pub without_map: IndexMap<String, IndexMap<String, Input>>,
+    pub without_map: IndexMap<Vec<String>, Input>,
 }
 
 impl ModelShapeResolved {
