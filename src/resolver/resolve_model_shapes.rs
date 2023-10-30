@@ -130,9 +130,34 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         }
     }
     // connect or create input
+    model_shape_resolved.map.insert("ConnectOrCreateInput".to_owned(), resolve_connect_or_create_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["ConnectOrCreateInput".to_owned(), field.name().to_owned()], resolve_connect_or_create_input_type(model, Some(field.name())));
+        }
+    }
     // update with where unique input
+    model_shape_resolved.map.insert("UpdateWithWhereUniqueInput".to_owned(), resolve_update_with_where_unique_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["UpdateWithWhereUniqueInput".to_owned(), field.name().to_owned()], resolve_update_with_where_unique_input_type(model, Some(field.name())));
+        }
+    }
     // upsert with where unique input
+    model_shape_resolved.map.insert("UpsertWithWhereUniqueInput".to_owned(), resolve_upsert_with_where_unique_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["UpsertWithWhereUniqueInput".to_owned(), field.name().to_owned()], resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
+        }
+    }
     // update many with where input
+    model_shape_resolved.map.insert("UpdateManyWithWhereInput".to_owned(), resolve_update_many_with_where_input_type(model, None));
+    for field in &model.fields {
+        if field.resolved().class.as_model_relation().is_some() {
+            model_shape_resolved.without_map.insert(vec!["UpdateManyWithWhereInput".to_owned(), field.name().to_owned()], resolve_update_many_with_where_input_type(model, Some(field.name())));
+        }
+    }
+
     model.shape_resolve(model_shape_resolved);
 }
 
@@ -667,6 +692,55 @@ fn resolve_update_nested_many_input_type(model: &Model, without: Option<&str>) -
         ShapeReference::UpdateManyWithWhereInput(model.path.clone(), model.string_path.clone())
     }).to_enumerable().to_optional()));
     map.insert("deleteMany".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_connect_or_create_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    })));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_update_with_where_unique_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("update".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+    })));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_upsert_with_where_unique_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("create".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+    })));
+    map.insert("update".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+    })));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_update_many_with_where_input_type(model: &Model, without: Option<&str>) -> Input {
+    let mut map = indexmap! {};
+    map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
+    map.insert("update".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+    })));
     Input::Shape(Shape::new(map))
 }
 
