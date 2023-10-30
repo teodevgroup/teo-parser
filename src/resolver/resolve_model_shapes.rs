@@ -116,7 +116,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         }
     }
     // update nested one input
-    model_shape_resolved.map.insert("UpdateNestedOneInput".to_owned(), resolve_create_nested_one_input_type(model, None));
+    model_shape_resolved.map.insert("UpdateNestedOneInput".to_owned(), resolve_update_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             model_shape_resolved.without_map.insert(vec!["UpdateNestedOneInput".to_owned(), field.name().to_owned()], resolve_update_nested_one_input_type(model, Some(field.name())));
@@ -129,7 +129,10 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
             model_shape_resolved.without_map.insert(vec!["UpdateNestedManyInput".to_owned(), field.name().to_owned()], resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
-
+    // connect or create input
+    // update with where unique input
+    // upsert with where unique input
+    // update many with where input
     model.shape_resolve(model_shape_resolved);
 }
 
@@ -617,6 +620,19 @@ fn resolve_update_nested_one_input_type(model: &Model, without: Option<&str>) ->
         ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
     }).to_optional()));
     map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("set".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("update".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("upsert".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpsertWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpsertWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+    }).to_optional()));
+    map.insert("disconnect".to_owned(), Input::Type(Type::Bool.to_optional()));
+    map.insert("delete".to_owned(), Input::Type(Type::Bool.to_optional()));
     Input::Shape(Shape::new(map))
 }
 
@@ -633,6 +649,24 @@ fn resolve_update_nested_many_input_type(model: &Model, without: Option<&str>) -
         ShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
     }).to_enumerable().to_optional()));
     map.insert("connect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    map.insert("update".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("upsert".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpsertWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpsertWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("disconnect".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    map.insert("delete".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
+    map.insert("updateMany".to_owned(), Input::Type(Type::ShapeReference(if let Some(without) = without {
+        ShapeReference::UpdateManyWithWhereInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+    } else {
+        ShapeReference::UpdateManyWithWhereInput(model.path.clone(), model.string_path.clone())
+    }).to_enumerable().to_optional()));
+    map.insert("deleteMany".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_enumerable().to_optional()));
     Input::Shape(Shape::new(map))
 }
 

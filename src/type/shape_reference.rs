@@ -82,6 +82,12 @@ pub enum ShapeReference {
     UpdateNestedManyInputWithout(Vec<usize>, Vec<String>, String),
     ConnectOrCreateInput(Vec<usize>, Vec<String>),
     ConnectOrCreateInputWithout(Vec<usize>, Vec<String>, String),
+    UpdateWithWhereUniqueInput(Vec<usize>, Vec<String>),
+    UpdateWithWhereUniqueInputWithout(Vec<usize>, Vec<String>, String),
+    UpsertWithWhereUniqueInput(Vec<usize>, Vec<String>),
+    UpsertWithWhereUniqueInputWithout(Vec<usize>, Vec<String>, String),
+    UpdateManyWithWhereInput(Vec<usize>, Vec<String>),
+    UpdateManyWithWhereInputWithout(Vec<usize>, Vec<String>, String),
 }
 
 impl Display for ShapeReference {
@@ -163,6 +169,12 @@ impl Display for ShapeReference {
             ShapeReference::UpdateNestedManyInputWithout(_, k, r) => f.write_str(&format!("UpdateNestedManyInputWithout<{}, .{}>", k.join("."), r)),
             ShapeReference::ConnectOrCreateInput(_, k) => f.write_str(&format!("ConnectOrCreateInput<{}>", k.join("."))),
             ShapeReference::ConnectOrCreateInputWithout(_, k, r) => f.write_str(&format!("ConnectOrCreateInputWithout<{}, .{}>", k.join("."), r)),
+            ShapeReference::UpdateWithWhereUniqueInput(_, k) => f.write_str(&format!("UpdateWithWhereUniqueInput<{}>", k.join("."))),
+            ShapeReference::UpdateWithWhereUniqueInputWithout(_, k, r) => f.write_str(&format!("UpdateWithWhereUniqueInput<{}, .{}>", k.join("."), r)),
+            ShapeReference::UpsertWithWhereUniqueInput(_, k) => f.write_str(&format!("UpsertWithWhereUniqueInput<{}>", k.join("."))),
+            ShapeReference::UpsertWithWhereUniqueInputWithout(_, k, r) => f.write_str(&format!("UpsertWithWhereUniqueInput<{}, .{}>", k.join("."), r)),
+            ShapeReference::UpdateManyWithWhereInput(_, k) => f.write_str(&format!("UpdateManyWithWhereInput<{}>", k.join("."))),
+            ShapeReference::UpdateManyWithWhereInputWithout(_, k, r) => f.write_str(&format!("UpdateManyWithWhereInput<{}, .{}>", k.join("."), r)),
         }
     }
 }
