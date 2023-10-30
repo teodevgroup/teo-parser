@@ -13,9 +13,10 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
 use crate::r#type::Type;
 use crate::r#type::shape_reference::ShapeReference;
-use crate::resolver::resolve_identifier::resolve_identifier;
+use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier_path};
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::search::search_identifier_path::search_identifier_path_in_source;
 use crate::shape::input::Input;
 use crate::shape::r#static::{STATIC_UPDATE_INPUT_FOR_TYPE, STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::shape::shape::Shape;
@@ -753,11 +754,17 @@ fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContex
             None
         }
     } else if local.is_some() && foreign.is_some() && through.is_some() {
-        let _local = local.unwrap();
-        let _foreign = foreign.unwrap();
+        let local = local.unwrap();
+        let foreign = foreign.unwrap();
         let through = through.unwrap();
         let through_path = unwrap_model_path_in_expression_kind(&through.value.kind, that_model, context)?;
-        find_indirect_relation_field_in_model(that_model, through_path, context)
+        let local_value = local.value.unwrap_enumerable_enum_member_string();
+        let foreign_value = foreign.value.unwrap_enumerable_enum_member_string();
+        if local_value.is_some() && foreign_value.is_some() {
+            find_indirect_relation_field_in_model(that_model, through_path, foreign_value.unwrap(), local_value.unwrap(), context)
+        } else {
+            None
+        }
     } else {
         None
     }
@@ -780,14 +787,18 @@ fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, referen
     None
 }
 
-fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
+fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, local: &str, foreign: &str, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
     for field in &model.fields {
         if field.resolved().class.is_model_relation() {
             let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
             let argument_list = relation_decorator.argument_list.as_ref()?;
             let through = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "through")?;
+            let local_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local")?;
+            let foreign_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign")?;
+            let local_value = local_arg.value.unwrap_enumerable_enum_member_string()?;
+            let foreign_value = foreign_arg.value.unwrap_enumerable_enum_member_string()?;
             if let Some(path) = unwrap_model_path_in_expression_kind(&through.value.kind, model, context) {
-                if path == through_path {
+                if path == through_path && local_value == local && foreign_value == foreign {
                     return Some(field);
                 }
             }
@@ -813,13 +824,18 @@ fn unwrap_model_path_in_arith_expr<'a>(arith_expr: &'a ArithExpr, model: &'a Mod
 }
 
 fn unwrap_model_path_in_identifier<'a>(identifier: &'a Identifier, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
-    let resolved = resolve_identifier(identifier, context, ReferenceType::Default, model.availability());
-    resolved.map(|v| println!("identifier: {:?}", v));
-    None
+    resolve_identifier(identifier, context, ReferenceType::Default, model.availability())
 }
 
 fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
     let resolved = resolve_unit(unit, context, &Type::Undetermined, &btreemap! {});
-    resolved.value.map(|v| println!("unit: {}", v));
+    if let Some(value) = &resolved.value {
+        let path: Vec<&str> = value.as_array()?.iter().map(|i| i.as_str()).collect::<Option<Vec<_>>>()?;
+        return search_identifier_path_in_source(context.schema, context.source(), &if context.current_namespace().is_some() {
+            context.current_namespace().unwrap().str_path()
+        } else {
+            vec![]
+        }, &path, &top_filter_for_reference_type(ReferenceType::Default), model.availability());
+    }
     None
 }

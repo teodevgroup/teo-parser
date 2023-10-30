@@ -61,11 +61,11 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
         direct_relations,
         actual_availability,
     });
-    resolve_model_shapes(model, context);
     context.add_examined_default_path(model.string_path.clone(), model.define_availability);
 }
 
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+    resolve_model_shapes(model, context);
     // decorators
     let model_type = Type::ModelObject(model.path.clone(), model.string_path.clone());
     for decorator in &model.decorators {
