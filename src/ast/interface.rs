@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, indexmap};
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
@@ -54,20 +54,20 @@ impl InterfaceDeclaration {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-
-    pub fn shape_resolve(&self, resolved: InterfaceDeclarationShapeResolved) {
-        *(unsafe { &mut *self.shape_resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn shape_resolved(&self) -> &InterfaceDeclarationShapeResolved {
+    fn shape_resolved(&self) -> &InterfaceDeclarationShapeResolved {
         (unsafe { &*self.shape_resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    pub fn is_shape_resolved(&self) -> bool {
-        self.shape_resolved.borrow().is_some()
+    fn shape_resolved_mut(&self) -> &mut InterfaceDeclarationShapeResolved {
+        (unsafe { &mut *self.shape_resolved.as_ptr() }).as_mut().unwrap()
+    }
+
+    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Input> {
+        self.shape_resolved().map.get(generics)
+    }
+
+    pub fn set_shape(&self, generics: Vec<Type>, input: Input) {
+        self.shape_resolved_mut().map.insert(generics, input);
     }
 }
 
@@ -109,4 +109,13 @@ impl InfoProvider for InterfaceDeclaration {
 #[derive(Debug)]
 pub struct InterfaceDeclarationShapeResolved {
     pub map: IndexMap<Vec<Type>, Input>,
+}
+
+impl InterfaceDeclarationShapeResolved {
+
+    pub fn new() -> Self {
+        Self {
+            map: indexmap! {}
+        }
+    }
 }
