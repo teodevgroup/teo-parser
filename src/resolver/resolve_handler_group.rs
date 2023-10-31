@@ -1,13 +1,14 @@
 use maplit::btreemap;
 use crate::ast::availability::Availability;
-use crate::ast::handler::{HandlerDeclaration, HandlerDeclarationResolved, HandlerGroupDeclaration, HandlerInputFormat};
+use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::ast::reference::ReferenceType;
-use crate::ast::type_expr::{TypeShape};
 use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
-use crate::resolver::resolve_type_expr::{resolve_type_expr, resolve_type_shape};
+use crate::resolver::resolve_interface_shapes::{collect_inputs_from_interface_declaration_shape_cache, resolve_shape_cache_for_interface_declaration};
+use crate::resolver::resolve_type_expr::{resolve_type_expr};
 use crate::resolver::resolver_context::ResolverContext;
+use crate::shape::shape::Shape;
 
 pub(super) fn resolve_handler_group_types<'a>(
     handler_group: &'a HandlerGroupDeclaration,
@@ -42,15 +43,23 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     }
     resolve_type_expr(&handler_declaration.input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     resolve_type_expr(&handler_declaration.output_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
-    handler_declaration.resolve(HandlerDeclarationResolved {
-        input_shape: resolve_type_shape(handler_declaration.input_type.resolved(), context),
-        output_shape: resolve_type_shape(handler_declaration.output_type.resolved(), context),
-    });
-    match handler_declaration.input_format {
-        HandlerInputFormat::Form => validate_form_input_type(&handler_declaration.resolved().input_shape, handler_declaration.input_type.span(), context),
-        HandlerInputFormat::Json => validate_json_input_type(&handler_declaration.resolved().input_shape, handler_declaration.input_type.span(), context),
+    if let Some((path, generics, string_path)) = handler_declaration.input_type.resolved().as_interface_object() {
+        let interface_declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+        if interface_declaration.shape(generics).is_none() {
+            interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
+        }
     }
-    validate_json_output_type(&handler_declaration.resolved().output_shape, handler_declaration.output_type.span(), context);
+    if let Some((path, generics, string_path)) = handler_declaration.output_type.resolved().as_interface_object() {
+        let interface_declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+        if interface_declaration.shape(generics).is_none() {
+            interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
+        }
+    }
+    match handler_declaration.input_format {
+        HandlerInputFormat::Form => validate_form_type(&handler_declaration.input_type.resolved(), handler_declaration.input_type.span(), context, is_valid_form_input_type),
+        HandlerInputFormat::Json => validate_form_type(&handler_declaration.input_type.resolved(), handler_declaration.input_type.span(), context, is_valid_json_input_type),
+    }
+    validate_form_type(&handler_declaration.output_type.resolved(), handler_declaration.output_type.span(), context, is_valid_json_output_type);
 }
 
 pub(super) fn resolve_handler_declaration_decorators<'a>(
@@ -63,47 +72,37 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
     }
 }
 
-fn validate_form_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {
-    match shape {
-        TypeShape::Any => (),
-        TypeShape::Map(map) => {
-            for r#type in map.values() {
-                if let Some(msg) = is_valid_form_input_shape(r#type, context) {
-                    context.insert_diagnostics_error(span, msg);
-                    return
+fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
+    match r#type {
+        Type::Any => (),
+        Type::InterfaceObject(path, gen, _) => {
+            let interface = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+            let input = collect_inputs_from_interface_declaration_shape_cache(interface, gen, context);
+            for shape in &input {
+                for (_, v) in shape.iter() {
+                    if let Some(t) = v.as_type() {
+                        if let Some(e) = t.as_enum_variant() {
+                            let enum_declaration = context.schema.find_top_by_path(e.0).unwrap().as_enum().unwrap();
+                            if enum_declaration.interface || enum_declaration.option {
+                                context.insert_diagnostics_error(span, "interface or option enum is disallowed");
+                                break
+                            }
+                        } else {
+                            if let Some(msg) = f(t) {
+                                context.insert_diagnostics_error(span, msg);
+                                break
+                            }
+                        }
+                    }
                 }
             }
         }
-        _ => context.insert_diagnostics_error(span, "TypeError: form handler input type should be interface or any")
+        _ => context.insert_diagnostics_error(span, "handler argument type should be interface or any")
 
     }
 }
 
-fn validate_json_input_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {
-    match shape {
-        TypeShape::Any => (),
-        TypeShape::Map(map) => {
-            for r#type in map.values() {
-                if let Some(msg) = is_valid_json_input_shape(r#type, context) {
-                    context.insert_diagnostics_error(span, msg);
-                    return
-                }
-            }
-        }
-        _ => context.insert_diagnostics_error(span, "TypeError: handler input type should be interface or any")
-    }
-}
-
-fn is_valid_form_input_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
-    match shape {
-        TypeShape::Any => None,
-        TypeShape::Type(t) => is_valid_form_input_type(t, context),
-        TypeShape::Map(map) => map.values().find_map(|s| is_valid_form_input_shape(s, context)),
-        TypeShape::Undetermined => Some("TypeError: handler input type should be interface or any"),
-    }
-}
-
-fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
@@ -119,50 +118,32 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::DateTime => None,
         Type::File => None,
         Type::Array(_) => None,
-        Type::Dictionary(_) => Some("TypeError: invalid form handler input type: Dictionary is not supported"),
-        Type::Tuple(_) => Some("TypeError: invalid form handler input type: Tuple is not supported"),
-        Type::Range(_) => Some("TypeError: invalid form handler input type: Range is not supported"),
-        Type::Union(_) => Some("TypeError: invalid form handler input type: Union is not supported"),
+        Type::Dictionary(_) => Some("invalid form handler input type: Dictionary is not supported"),
+        Type::Tuple(_) => Some("invalid form handler input type: Tuple is not supported"),
+        Type::Range(_) => Some("invalid form handler input type: Range is not supported"),
+        Type::Union(_) => Some("invalid form handler input type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(path, _) => {
-            let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
-            if r#enum.interface {
-                Some("TypeError: invalid handler input type: Interface enum is not supported")
-            } else if r#enum.option {
-                Some("TypeError: invalid handler input type: Option enum is not supported")
-            } else {
-                None
-            }
-        }
-        Type::Model => Some("TypeError: invalid form handler input type: Model is not supported"),
+        Type::EnumVariant(_, _) => None,
+        Type::Model => Some("invalid form handler input type: Model is not supported"),
         Type::InterfaceObject(path, items, _) => None,
-        Type::ModelScalarFields(_, _) => Some("TypeError: invalid form handler input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid form handler input type: ModelScalarFieldAndCachedProperty is not supported"),
-        Type::FieldType(_, _) => Some("TypeError: invalid form handler input type: FieldType is not supported"),
-        Type::FieldReference(_) => Some("TypeError: invalid form handler input type: FieldReference is not supported"),
-        Type::GenericItem(_) => Some("TypeError: invalid form handler input type: GenericsItem is not supported"),
-        Type::Optional(inner) => is_valid_form_input_type(inner.as_ref(), context),
-        Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::ModelObject(_, _) => Some("TypeError: invalid form handler input type: Object is not supported"),
-        Type::Keyword(_) => Some("TypeError: found keyword type"),
-        Type::Regex => Some("TypeError: invalid form handler input type: Regex is not supported"),
-        Type::StructObject(_, _) => Some("TypeError: invalid form handler input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid form handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFields(_, _) => Some("invalid form handler input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid form handler input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::FieldType(_, _) => Some("invalid form handler input type: FieldType is not supported"),
+        Type::FieldReference(_) => Some("invalid form handler input type: FieldReference is not supported"),
+        Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
+        Type::Optional(inner) => is_valid_form_input_type(inner.as_ref()),
+        Type::Undetermined => Some("found unresolved type"),
+        Type::ModelObject(_, _) => Some("invalid form handler input type: Object is not supported"),
+        Type::Keyword(_) => Some("found keyword type"),
+        Type::Regex => Some("invalid form handler input type: Regex is not supported"),
+        Type::StructObject(_, _) => Some("invalid form handler input type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid form handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid form handler input type: Pipeline is not supported"),
         _ => None,
     }
 }
 
-fn is_valid_json_input_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
-    match shape {
-        TypeShape::Any => None,
-        TypeShape::Type(t) => is_valid_json_input_type(t, context),
-        TypeShape::Map(map) => map.values().find_map(|s| is_valid_json_input_shape(s, context)),
-        TypeShape::Undetermined => Some("TypeError: handler input type should be interface or any"),
-    }
-}
-
-fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
@@ -176,57 +157,39 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'
         Type::ObjectId => None,
         Type::Date => None,
         Type::DateTime => None,
-        Type::File => Some("TypeError: invalid form handler input type: file is not supported in json input"),
-        Type::Array(inner) => is_valid_json_input_type(inner.as_ref(), context),
+        Type::File => Some("invalid form handler input type: file is not supported in json input"),
+        Type::Array(inner) => is_valid_json_input_type(inner.as_ref()),
         Type::Dictionary(v) => {
-            if let Some(msg) = is_valid_json_input_type(v.as_ref(), context) {
+            if let Some(msg) = is_valid_json_input_type(v.as_ref()) {
                 return Some(msg);
             }
             None
         }
-        Type::Tuple(_) => Some("TypeError: invalid handler input type: Tuple is not supported"),
-        Type::Range(_) => Some("TypeError: invalid handler input type: Range is not supported"),
-        Type::Union(_) => Some("TypeError: invalid handler input type: Union is not supported"),
+        Type::Tuple(_) => Some("invalid handler input type: Tuple is not supported"),
+        Type::Range(_) => Some("invalid handler input type: Range is not supported"),
+        Type::Union(_) => Some("invalid handler input type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(path, _) => {
-            let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
-            if r#enum.interface {
-                Some("TypeError: invalid handler input type: Interface enum is not supported")
-            } else if r#enum.option {
-                Some("TypeError: invalid handler input type: Option enum is not supported")
-            } else {
-                None
-            }
-        }
-        Type::Model => Some("TypeError: invalid form handler input type: Model is not supported"),
+        Type::EnumVariant(path, _) => None,
+        Type::Model => Some("invalid form handler input type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_, _) => Some("TypeError: invalid handler input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid handler input type: ModelScalarFieldAndCachedProperty is not supported"),
-        Type::FieldType(_, _) => Some("TypeError: invalid handler input type: FieldType is not supported"),
-        Type::FieldReference(_) => Some("TypeError: invalid handler input type: FieldReference is not supported"),
-        Type::GenericItem(_) => Some("TypeError: invalid form handler input type: GenericsItem is not supported"),
-        Type::Optional(inner) => is_valid_json_input_type(inner.as_ref(), context),
-        Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::ModelObject(_, _) => Some("TypeError: invalid handler input type: Object is not supported"),
-        Type::Keyword(_) => Some("TypeError: found keyword type"),
-        Type::Regex => Some("TypeError: invalid handler input type: Regex is not supported"),
-        Type::StructObject(_, _) => Some("TypeError: invalid handler input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFields(_, _) => Some("invalid handler input type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid handler input type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::FieldType(_, _) => Some("invalid handler input type: FieldType is not supported"),
+        Type::FieldReference(_) => Some("invalid handler input type: FieldReference is not supported"),
+        Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
+        Type::Optional(inner) => is_valid_json_input_type(inner.as_ref()),
+        Type::Undetermined => Some("found unresolved type"),
+        Type::ModelObject(_, _) => Some("invalid handler input type: Object is not supported"),
+        Type::Keyword(_) => Some("found keyword type"),
+        Type::Regex => Some("invalid handler input type: Regex is not supported"),
+        Type::StructObject(_, _) => Some("invalid handler input type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid handler input type: Pipeline is not supported"),
         _ => None,
     }
 }
 
-fn is_valid_json_output_shape<'a>(shape: &'a TypeShape, context: &'a ResolverContext<'a>) -> Option<&'static str> {
-    match shape {
-        TypeShape::Any => None,
-        TypeShape::Type(t) => is_valid_json_output_type(t, context),
-        TypeShape::Map(map) => map.values().find_map(|s| is_valid_json_output_shape(s, context)),
-        TypeShape::Undetermined => Some("TypeError: handler output type should be interface or any"),
-    }
-}
-
-fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<'a>) -> Option<&'static str> {
+fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
@@ -240,59 +203,34 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type, context: &'a ResolverContext<
         Type::ObjectId => None,
         Type::Date => None,
         Type::DateTime => None,
-        Type::File => Some("TypeError: invalid form handler output type: file is not supported in json output"),
-        Type::Array(inner) => is_valid_json_output_type(inner.as_ref(), context),
+        Type::File => Some("invalid form handler output type: file is not supported in json output"),
+        Type::Array(inner) => is_valid_json_output_type(inner.as_ref()),
         Type::Dictionary(v) => {
-            if let Some(msg) = is_valid_json_output_type(v.as_ref(), context) {
+            if let Some(msg) = is_valid_json_output_type(v.as_ref()) {
                 return Some(msg);
             }
             None
         }
-        Type::Tuple(_) => Some("TypeError: invalid handler output type: Tuple is not supported"),
-        Type::Range(_) => Some("TypeError: invalid handler output type: Range is not supported"),
-        Type::Union(_) => Some("TypeError: invalid handler output type: Union is not supported"),
+        Type::Tuple(_) => Some("invalid handler output type: Tuple is not supported"),
+        Type::Range(_) => Some("invalid handler output type: Range is not supported"),
+        Type::Union(_) => Some("invalid handler output type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(path, _) => {
-            let r#enum = context.schema.find_top_by_path(path).unwrap().as_enum().unwrap();
-            if r#enum.interface {
-                Some("TypeError: invalid handler output type: Interface enum is not supported")
-            } else if r#enum.option {
-                Some("TypeError: invalid handler output type: Option enum is not supported")
-            } else {
-                None
-            }
-        }
-        Type::Model => Some("TypeError: invalid form handler output type: Model is not supported"),
+        Type::EnumVariant(path, _) => None,
+        Type::Model => Some("invalid form handler output type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_, _) => Some("TypeError: invalid handler output type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("TypeError: invalid handler output type: ModelScalarFieldAndCachedProperty is not supported"),
-        Type::FieldType(_, _) => Some("TypeError: invalid handler output type: FieldType is not supported"),
-        Type::FieldReference(_) => Some("TypeError: invalid handler output type: FieldReference is not supported"),
-        Type::GenericItem(_) => Some("TypeError: invalid form handler output type: GenericsItem is not supported"),
-        Type::Optional(inner) => is_valid_json_output_type(inner.as_ref(), context),
-        Type::Undetermined => Some("TypeError: found unresolved type"),
-        Type::ModelObject(_, _) => Some("TypeError: invalid handler output type: Object is not supported"),
-        Type::Keyword(_) => Some("TypeError: found keyword type"),
-        Type::Regex => Some("TypeError: invalid handler output type: Regex is not supported"),
-        Type::StructObject(_, _) => Some("TypeError: invalid handler output type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("TypeError: invalid handler output type: ModelScalarFieldsWithoutVirtuals is not supported"),
+        Type::ModelScalarFields(_, _) => Some("invalid handler output type: ModelScalarField is not supported"),
+        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid handler output type: ModelScalarFieldAndCachedProperty is not supported"),
+        Type::FieldType(_, _) => Some("invalid handler output type: FieldType is not supported"),
+        Type::FieldReference(_) => Some("invalid handler output type: FieldReference is not supported"),
+        Type::GenericItem(_) => Some("invalid form handler output type: GenericsItem is not supported"),
+        Type::Optional(inner) => is_valid_json_output_type(inner.as_ref()),
+        Type::Undetermined => Some("found unresolved type"),
+        Type::ModelObject(_, _) => Some("invalid handler output type: Object is not supported"),
+        Type::Keyword(_) => Some("found keyword type"),
+        Type::Regex => Some("invalid handler output type: Regex is not supported"),
+        Type::StructObject(_, _) => Some("invalid handler output type: StructObject is not supported"),
+        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid handler output type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid handler output type: Pipeline is not supported"),
         _ => None,
-    }
-}
-
-
-fn validate_json_output_type<'a>(shape: &'a TypeShape, span: Span, context: &'a ResolverContext<'a>) {
-    match shape {
-        TypeShape::Any => (),
-        TypeShape::Map(map) => {
-            for r#type in map.values() {
-                if let Some(msg) = is_valid_json_output_shape(r#type, context) {
-                    context.insert_diagnostics_error(span, msg);
-                    return
-                }
-            }
-        }
-        _ => context.insert_diagnostics_error(span, "TypeError: handler output type should be interface or any")
     }
 }

@@ -4,7 +4,7 @@ use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::identifiable::Identifiable;
-use crate::ast::type_expr::{TypeExpr, TypeShape};
+use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use super::info_provider::InfoProvider;
@@ -47,7 +47,6 @@ pub struct HandlerDeclaration {
     pub input_type: TypeExpr,
     pub output_type: TypeExpr,
     pub input_format: HandlerInputFormat,
-    pub resolved: RefCell<Option<HandlerDeclarationResolved>>,
 }
 
 impl HandlerDeclaration {
@@ -62,18 +61,6 @@ impl HandlerDeclaration {
 
     pub fn handler_group_name(&self) -> &str {
         self.string_path.get(self.path.len() - 2).unwrap()
-    }
-
-    pub fn resolve(&self, resolved: HandlerDeclarationResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &HandlerDeclarationResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
     }
 }
 
@@ -128,10 +115,4 @@ impl InfoProvider for HandlerDeclaration {
     fn availability(&self) -> Availability {
         Availability::default()
     }
-}
-
-#[derive(Debug)]
-pub struct HandlerDeclarationResolved {
-    pub input_shape: TypeShape,
-    pub output_shape: TypeShape,
 }

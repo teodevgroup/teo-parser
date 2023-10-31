@@ -197,6 +197,7 @@ pub struct TypeItem {
 }
 
 impl Display for TypeItem {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.identifier_path, f)?;
         if self.generics.len() > 0 {
@@ -225,45 +226,5 @@ impl Display for TypeItem {
             }
         }
         Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub enum TypeShape {
-    Any,
-    Map(HashMap<String, TypeShape>),
-    Type(Type),
-    Undetermined,
-}
-
-impl TypeShape {
-
-    pub fn is_any(&self) -> bool {
-        match self {
-            TypeShape::Any => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_map(&self) -> bool {
-        self.as_map().is_some()
-    }
-
-    pub fn as_map(&self) -> Option<&HashMap<String, TypeShape>> {
-        match self {
-            TypeShape::Map(m) => Some(m),
-            _ => None,
-        }
-    }
-
-    pub fn is_type(&self) -> bool {
-        self.as_type().is_some()
-    }
-
-    pub fn as_type(&self) -> Option<&Type> {
-        match self {
-            TypeShape::Type(t) => Some(t),
-            _ => None,
-        }
     }
 }

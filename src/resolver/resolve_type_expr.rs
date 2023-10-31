@@ -1,17 +1,15 @@
-use std::collections::{BTreeMap, HashMap};
-use maplit::hashmap;
+use std::collections::BTreeMap;
 use crate::ast::arity::Arity;
 use crate::ast::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
-use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp, TypeShape};
+use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp};
 use crate::ast::reference::ReferenceType;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
-use crate::resolver::resolve_type::calculate_generics_map;
+use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_type_expr<'a>(
@@ -457,39 +455,3 @@ fn preferred_name<'a>(span: Span, prefer: &str, current: &str, context: &'a Reso
     context.insert_diagnostics_warning(span, format!("TypeWarning: Prefer '{prefer}' over '{current}'"))
 }
 
-pub(super) fn resolve_type_shape<'a>(r#type: &Type, context: &'a ResolverContext<'a>) -> TypeShape {
-    if r#type.is_any() {
-        TypeShape::Any
-    } else if r#type.is_ignored() {
-        TypeShape::Any
-    } else if r#type.is_interface_object() {
-        let interface = context.schema.find_top_by_path(r#type.as_interface_object().unwrap().0).unwrap().as_interface_declaration().unwrap();
-        let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), r#type.as_interface_object().unwrap().1);
-        TypeShape::Map(fetch_all_interface_fields(interface, generics_map, context))
-    } else {
-        TypeShape::Type(r#type.clone())
-    }
-}
-
-fn fetch_all_interface_fields<'a>(
-    interface: &'a InterfaceDeclaration,
-    generics_map: BTreeMap<String, Type>,
-    context: &'a ResolverContext<'a>,
-) -> HashMap<String, TypeShape> {
-    let mut retval = hashmap!{};
-    for extend in &interface.extends {
-        if extend.resolved().is_interface_object() {
-            let interface = context.schema.find_top_by_path(extend.resolved().as_interface_object().unwrap().0).unwrap().as_interface_declaration().unwrap();
-            let types = extend.resolved().replace_generics(&generics_map);
-            let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), types.as_interface_object().unwrap().1);
-            retval.extend(fetch_all_interface_fields(interface, generics_map, context));
-        }
-    }
-    for field in &interface.fields {
-        retval.insert(
-            field.name().to_owned(),
-            resolve_type_shape(&field.type_expr.resolved().replace_generics(&generics_map), context)
-        );
-    }
-    retval
-}

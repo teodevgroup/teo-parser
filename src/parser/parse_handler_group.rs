@@ -84,6 +84,5 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserCont
         input_type: input_type.unwrap(),
         output_type: output_type.unwrap(),
         input_format,
-        resolved: RefCell::new(None),
     }
 }

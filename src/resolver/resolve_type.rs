@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::ast::generics::GenericsDeclaration;
 use crate::r#type::r#type::Type;
+use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(crate) fn resolve_type_contains_type<'a, F>(r#type: &Type, f: F, context: &'a ResolverContext<'a>) -> bool where F: Fn(&Type) -> bool {
@@ -33,14 +34,3 @@ pub(crate) fn resolve_type_contains_type<'a, F>(r#type: &Type, f: F, context: &'
     }
 }
 
-pub(super) fn calculate_generics_map<'a>(
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    types: &'a Vec<Type>,
-) -> BTreeMap<String, Type> {
-    if let Some(generics_declaration) = generics_declaration {
-        if generics_declaration.identifiers.len() == types.len() {
-            return generics_declaration.identifiers.iter().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap().clone())).collect();
-        }
-    }
-    btreemap!{}
-}
