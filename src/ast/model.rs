@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use indexmap::{IndexMap, indexmap};
+use serde::Serialize;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
@@ -100,7 +101,7 @@ impl InfoProvider for Model {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ModelShapeResolved {
     pub map: IndexMap<String, Input>,
     pub without_map: IndexMap<Vec<String>, Input>,

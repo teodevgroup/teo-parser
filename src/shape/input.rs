@@ -53,4 +53,8 @@ impl Input {
             _ => None,
         }
     }
+
+    pub fn is_optional(&self) -> bool {
+        self.is_type() && self.as_type().unwrap().is_optional()
+    }
 }

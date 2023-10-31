@@ -5,7 +5,7 @@ use crate::r#type::Type;
 use crate::shape::input::Input;
 use crate::shape::shape::Shape;
 
-pub(super) static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
+pub static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     let mut result = indexmap! {};
     // bool filter
     let mut bool_filter_map = indexmap! {};

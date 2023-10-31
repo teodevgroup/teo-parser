@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use indexmap::{IndexMap, indexmap};
+use serde::Serialize;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
@@ -54,7 +55,7 @@ impl InterfaceDeclaration {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
-    fn shape_resolved(&self) -> &InterfaceDeclarationShapeResolved {
+    pub fn shape_resolved(&self) -> &InterfaceDeclarationShapeResolved {
         (unsafe { &*self.shape_resolved.as_ptr() }).as_ref().unwrap()
     }
 
@@ -106,7 +107,7 @@ impl InfoProvider for InterfaceDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct InterfaceDeclarationShapeResolved {
     pub map: IndexMap<Vec<Type>, Input>,
 }

@@ -1,7 +1,9 @@
+use std::collections::{BTreeMap, BTreeSet};
 use indexmap::IndexMap;
-use indexmap::map::{Iter, Keys};
+use indexmap::map::{IntoIter, Iter, Keys};
 use serde::Serialize;
 use crate::shape::input::Input;
+use crate::r#type::Type;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Shape {
@@ -18,6 +20,10 @@ impl Shape {
         self.map.is_empty()
     }
 
+    pub fn into_iter(self) -> IntoIter<String, Input> {
+        self.map.into_iter()
+    }
+
     pub fn iter(&self) -> Iter<String, Input> {
         self.map.iter()
     }
@@ -32,5 +38,19 @@ impl Shape {
 
     pub fn keys(&self) -> Keys<String, Input> {
         self.map.keys()
+    }
+
+    pub fn extend<I: IntoIterator<Item = (String, Input)>>(&mut self, iterable: I) {
+        self.map.extend(iterable)
+    }
+
+    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
+        Self {
+            map: self.map.iter().map(|(k, i)| (k.clone(), if let Some(t) = i.as_type() {
+                Input::Type(t.replace_generics(map))
+            } else {
+                i.clone()
+            })).collect()
+        }
     }
 }
