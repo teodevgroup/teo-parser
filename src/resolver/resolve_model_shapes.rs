@@ -226,9 +226,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // aggregate args
     model_shape_resolved.map.insert("AggregateArgs".to_owned(), resolve_aggregate_args_type(model, &shape_available_context));
     // group by args
-    if shape_available_context.has_group_by() {
-        model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model, &shape_available_context));
-    }
+    model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model, &shape_available_context));
 
     model.shape_resolve(model_shape_resolved);
 }
