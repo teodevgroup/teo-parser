@@ -13,7 +13,7 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
 use crate::r#type::Type;
 use crate::r#type::shape_reference::ShapeReference;
-use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier_path};
+use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_in_source;
@@ -25,27 +25,33 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     let mut model_shape_resolved = ModelShapeResolved::new();
+    let mut shape_available_context = ShapeAvailableContext::new(); 
     // select
     if let Some(input) = resolve_model_select_shape(model) {
         model_shape_resolved.map.insert("Select".to_owned(), input);
+        shape_available_context.has_select = true;
     }
     // include
     if let Some(input) = resolve_model_include_shape(model) {
         model_shape_resolved.map.insert("Include".to_owned(), input);
+        shape_available_context.has_include = true;
     }
     // where input
     if let Some(input) = resolve_model_where_input_shape(model, true, false) {
         model_shape_resolved.map.insert("WhereInput".to_owned(), input);
+        shape_available_context.has_where = true;
     }
     // where unique input
     if let Some(input) = resolve_model_where_unique_input_shape(model) {
         model_shape_resolved.map.insert("WhereUniqueInput".to_owned(), input);
+        shape_available_context.has_where_unique = true;
     }
     // scalar where with aggregates input
     if let Some(input) = resolve_model_where_input_shape(model, false, true) {
         model_shape_resolved.map.insert("ScalarWhereWithAggregatesInput".to_owned(), input);
+        shape_available_context.has_where_with_aggregates = true;
     }
-    if model_shape_resolved.map.contains_key("WhereInput") {
+    if shape_available_context.has_where {
         // relation filter
         model_shape_resolved.map.insert("RelationFilter".to_owned(), resolve_model_relation_filter(model));
         // list relation filter
@@ -54,10 +60,12 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // order by input
     if let Some(input) = resolve_model_order_by_input_shape(model, context) {
         model_shape_resolved.map.insert("OrderByInput".to_owned(), input);
+        shape_available_context.has_order_by = true;
     }
     // scalar field enum
     if let Some(input) = resolve_scalar_field_enum(model) {
         model_shape_resolved.map.insert("ScalarFieldEnum".to_owned(), input);
+        shape_available_context.has_scalar_field_enum = true;
     }
     // count aggregate input type
     if let Some(input) = resolve_count_aggregate_input_type(model) {
@@ -66,18 +74,22 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // sum aggregate input type
     if let Some(input) = resolve_sum_aggregate_input_type(model) {
         model_shape_resolved.map.insert("SumAggregateInputType".to_owned(), input);
+        shape_available_context.has_sum_aggregate = true;
     }
     // avg aggregate input type
     if let Some(input) = resolve_avg_aggregate_input_type(model) {
         model_shape_resolved.map.insert("AvgAggregateInputType".to_owned(), input);
+        shape_available_context.has_avg_aggregate = true;
     }
     // min aggregate input type
     if let Some(input) = resolve_min_aggregate_input_type(model) {
         model_shape_resolved.map.insert("MinAggregateInputType".to_owned(), input);
+        shape_available_context.has_min_aggregate = true;
     }
     // max aggregate input type
     if let Some(input) = resolve_max_aggregate_input_type(model) {
         model_shape_resolved.map.insert("MaxAggregateInputType".to_owned(), input);
+        shape_available_context.has_max_aggregate = true;
     }
     // create input
     if let Some(input) = resolve_create_input_type(model, None, context) {
@@ -178,41 +190,45 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         model_shape_resolved.map.insert("MaxAggregateResult".to_owned(), input);
     }
     // aggregate result
-    model_shape_resolved.map.insert("AggregateResult".to_owned(), resolve_aggregate_result_type(model));
+    model_shape_resolved.map.insert("AggregateResult".to_owned(), resolve_aggregate_result_type(model, &shape_available_context));
     // group by result
-    model_shape_resolved.map.insert("GroupByResult".to_owned(), resolve_group_by_result_type(model));
+    model_shape_resolved.map.insert("GroupByResult".to_owned(), resolve_group_by_result_type(model, &shape_available_context));
     // args
-    model_shape_resolved.map.insert("Args".to_owned(), resolve_args_type(model));
+    if shape_available_context.has_args() {
+        model_shape_resolved.map.insert("Args".to_owned(), resolve_args_type(model, &shape_available_context));
+    }
     // find many args
-    model_shape_resolved.map.insert("FindManyArgs".to_owned(), resolve_find_many_args_type(model));
+    model_shape_resolved.map.insert("FindManyArgs".to_owned(), resolve_find_many_args_type(model, &shape_available_context));
     // find first args
-    model_shape_resolved.map.insert("FindFirstArgs".to_owned(), resolve_find_first_args_type(model));
+    model_shape_resolved.map.insert("FindFirstArgs".to_owned(), resolve_find_first_args_type(model, &shape_available_context));
     // find unique args
-    model_shape_resolved.map.insert("FindUniqueArgs".to_owned(), resolve_find_unique_args_type(model));
+    model_shape_resolved.map.insert("FindUniqueArgs".to_owned(), resolve_find_unique_args_type(model, &shape_available_context));
     // create args
-    model_shape_resolved.map.insert("CreateArgs".to_owned(), resolve_create_args_type(model));
+    model_shape_resolved.map.insert("CreateArgs".to_owned(), resolve_create_args_type(model, &shape_available_context));
     // update args
-    model_shape_resolved.map.insert("UpdateArgs".to_owned(), resolve_update_args_type(model));
+    model_shape_resolved.map.insert("UpdateArgs".to_owned(), resolve_update_args_type(model, &shape_available_context));
     // upsert args
-    model_shape_resolved.map.insert("UpsertArgs".to_owned(), resolve_upsert_args_type(model));
+    model_shape_resolved.map.insert("UpsertArgs".to_owned(), resolve_upsert_args_type(model, &shape_available_context));
     // copy args
-    model_shape_resolved.map.insert("CopyArgs".to_owned(), resolve_copy_args_type(model));
+    model_shape_resolved.map.insert("CopyArgs".to_owned(), resolve_copy_args_type(model, &shape_available_context));
     // delete args
     model_shape_resolved.map.insert("DeleteArgs".to_owned(), resolve_delete_args_type(model));
     // create many args
-    model_shape_resolved.map.insert("CreateManyArgs".to_owned(), resolve_create_many_args_type(model));
+    model_shape_resolved.map.insert("CreateManyArgs".to_owned(), resolve_create_many_args_type(model, &shape_available_context));
     // update many args
-    model_shape_resolved.map.insert("UpdateManyArgs".to_owned(), resolve_update_many_args_type(model));
+    model_shape_resolved.map.insert("UpdateManyArgs".to_owned(), resolve_update_many_args_type(model, &shape_available_context));
     // delete many args
     model_shape_resolved.map.insert("DeleteManyArgs".to_owned(), resolve_delete_many_args_type(model));
     // copy many args
-    model_shape_resolved.map.insert("CopyManyArgs".to_owned(), resolve_copy_many_args_type(model));
+    model_shape_resolved.map.insert("CopyManyArgs".to_owned(), resolve_copy_many_args_type(model, &shape_available_context));
     // count args
-    model_shape_resolved.map.insert("CountArgs".to_owned(), resolve_count_args_type(model));
+    model_shape_resolved.map.insert("CountArgs".to_owned(), resolve_count_args_type(model, &shape_available_context));
     // aggregate args
-    model_shape_resolved.map.insert("AggregateArgs".to_owned(), resolve_aggregate_args_type(model));
+    model_shape_resolved.map.insert("AggregateArgs".to_owned(), resolve_aggregate_args_type(model, &shape_available_context));
     // group by args
-    model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model));
+    if shape_available_context.has_group_by() {
+        model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model, &shape_available_context));
+    }
 
     model.shape_resolve(model_shape_resolved);
 }
@@ -947,17 +963,25 @@ fn resolve_max_aggregate_result_type(model: &Model) -> Option<Input> {
     }
 }
 
-fn resolve_aggregate_result_type(model: &Model) -> Input {
+fn resolve_aggregate_result_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CountAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_sum_aggregate {
+        map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_avg_aggregate {
+        map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_min_aggregate {
+        map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_max_aggregate {
+        map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_group_by_result_type(model: &Model) -> Input {
+fn resolve_group_by_result_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -970,33 +994,49 @@ fn resolve_group_by_result_type(model: &Model) -> Input {
             }
         }
     }
-    map.extend(resolve_aggregate_result_type(model).into_shape().unwrap().into_iter());
+    map.extend(resolve_aggregate_result_type(model, availability).into_shape().unwrap().into_iter());
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_args_type(model: &Model) -> Input {
+fn resolve_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_find_unique_args_type(model: &Model) -> Input {
+fn resolve_find_unique_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_find_first_args_type(model: &Model) -> Input {
+fn resolve_find_first_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_order_by {
+        map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     map.insert("cursor".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_scalar_field_enum {
+        map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     map.insert("take".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("skip".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("pageSize".to_owned(), Input::Type(Type::Int64.to_optional()));
@@ -1004,43 +1044,59 @@ fn resolve_find_first_args_type(model: &Model) -> Input {
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_find_many_args_type(model: &Model) -> Input {
-    resolve_find_first_args_type(model)
+fn resolve_find_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
+    resolve_find_first_args_type(model, availability)
 }
 
-fn resolve_create_args_type(model: &Model) -> Input {
+fn resolve_create_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CreateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_update_args_type(model: &Model) -> Input {
+fn resolve_update_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
     map.insert("update".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_upsert_args_type(model: &Model) -> Input {
+fn resolve_upsert_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
     map.insert("create".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CreateInput(model.path.clone(), model.string_path.clone()))));
     map.insert("update".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_copy_args_type(model: &Model) -> Input {
+fn resolve_copy_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone()))));
     map.insert("copy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
@@ -1050,29 +1106,41 @@ fn resolve_delete_args_type(model: &Model) -> Input {
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_create_many_args_type(model: &Model) -> Input {
+fn resolve_create_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CreateInput(model.path.clone(), model.string_path.clone())).to_enumerable()));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_update_many_args_type(model: &Model) -> Input {
+fn resolve_update_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
     map.insert("update".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_copy_many_args_type(model: &Model) -> Input {
+fn resolve_copy_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone()))));
     map.insert("copy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone()))));
-    map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_select {
+        map.insert("select".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Select(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Include(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
@@ -1082,11 +1150,15 @@ fn resolve_delete_many_args_type(model: &Model) -> Input {
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_count_args_type(model: &Model) -> Input {
+fn resolve_count_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_order_by {
+        map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_scalar_field_enum {
+        map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     map.insert("cursor".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("take".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("skip".to_owned(), Input::Type(Type::Int64.to_optional()));
@@ -1096,30 +1168,44 @@ fn resolve_count_args_type(model: &Model) -> Input {
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_aggregate_args_type(model: &Model) -> Input {
+fn resolve_aggregate_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_order_by {
+        map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_scalar_field_enum {
+        map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     map.insert("cursor".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("take".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("skip".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("pageSize".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("pageNumber".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CountAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_sum_aggregate {
+        map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_avg_aggregate {
+        map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_min_aggregate {
+        map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_max_aggregate {
+        map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
-fn resolve_group_by_args_type(model: &Model) -> Input {
+fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContext) -> Input {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("by".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("having".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarWhereWithAggregatesInput(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_order_by {
+        map.insert("orderBy".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     map.insert("distinct".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("cursor".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).to_optional()));
     map.insert("take".to_owned(), Input::Type(Type::Int64.to_optional()));
@@ -1127,10 +1213,18 @@ fn resolve_group_by_args_type(model: &Model) -> Input {
     map.insert("pageSize".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("pageNumber".to_owned(), Input::Type(Type::Int64.to_optional()));
     map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CountAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
-    map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    if availability.has_sum_aggregate {
+        map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_avg_aggregate {
+        map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_min_aggregate {
+        map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
+    if availability.has_max_aggregate {
+        map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).to_optional()));
+    }
     Input::Shape(Shape::new(map))
 }
 
@@ -1187,14 +1281,14 @@ fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) ->
 }
 
 fn decorator_has_any_name(decorator: &Decorator, names: Vec<&str>) -> bool {
-    let mut names = decorator.identifier_path.names();
-    if *names.first().unwrap() == "std" {
-        names.shift();
+    let mut decorator_names = decorator.identifier_path.names();
+    if *decorator_names.first().unwrap() == "std" {
+        decorator_names.shift();
     }
-    if names.len() != 1 {
+    if decorator_names.len() != 1 {
         return false;
     }
-    let name = *names.last().unwrap();
+    let name = *decorator_names.last().unwrap();
     names.contains(&name)
 }
 
@@ -1425,4 +1519,45 @@ fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a 
         }, &path, &top_filter_for_reference_type(ReferenceType::Default), model.availability());
     }
     None
+}
+
+struct ShapeAvailableContext {
+    has_select: bool,
+    has_include: bool,
+    has_where: bool,
+    has_where_unique: bool,
+    has_where_with_aggregates: bool,
+    has_order_by: bool,
+    has_scalar_field_enum: bool,
+    has_sum_aggregate: bool,
+    has_avg_aggregate: bool,
+    has_min_aggregate: bool,
+    has_max_aggregate: bool,
+}
+
+impl ShapeAvailableContext {
+    
+    fn new() -> Self {
+        Self {
+            has_select: false,
+            has_include: false,
+            has_where: false,
+            has_where_unique: false,
+            has_where_with_aggregates: false,
+            has_order_by: false,
+            has_scalar_field_enum: false,
+            has_sum_aggregate: false,
+            has_avg_aggregate: false,
+            has_min_aggregate: false,
+            has_max_aggregate: false,
+        }
+    }
+
+    fn has_args(&self) -> bool {
+        self.has_select && self.has_include
+    }
+
+    fn has_group_by(&self) -> bool {
+        self.has_scalar_field_enum
+    }
 }
