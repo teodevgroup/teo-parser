@@ -157,6 +157,30 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
             model_shape_resolved.without_map.insert(vec!["UpdateManyWithWhereInput".to_owned(), field.name().to_owned()], resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
+    // result
+    model_shape_resolved.map.insert("Result".to_owned(), resolve_result_type(model));
+    // count aggregate result
+    model_shape_resolved.map.insert("CountAggregateResult".to_owned(), resolve_count_aggregate_result_type(model));
+    // sum aggregate result
+    if let Some(input) = resolve_sum_aggregate_result_type(model) {
+        model_shape_resolved.map.insert("SumAggregateResult".to_owned(), input);
+    }
+    // avg aggregate result
+    if let Some(input) = resolve_avg_aggregate_result_type(model) {
+        model_shape_resolved.map.insert("AvgAggregateResult".to_owned(), input);
+    }
+    // min aggregate result
+    if let Some(input) = resolve_min_aggregate_result_type(model) {
+        model_shape_resolved.map.insert("MinAggregateResult".to_owned(), input);
+    }
+    // max aggregate result
+    if let Some(input) = resolve_max_aggregate_result_type(model) {
+        model_shape_resolved.map.insert("MaxAggregateResult".to_owned(), input);
+    }
+    // aggregate result
+    model_shape_resolved.map.insert("AggregateResult".to_owned(), resolve_aggregate_result_type(model));
+    // group by result
+    model_shape_resolved.map.insert("GroupByResult".to_owned(), resolve_group_by_result_type(model));
     // args
     model_shape_resolved.map.insert("Args".to_owned(), resolve_args_type(model));
     // find many args
@@ -773,6 +797,180 @@ fn resolve_update_many_with_where_input_type(model: &Model, without: Option<&str
     } else {
         ShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
     })));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_result_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(if is_field_output_omissible(field) {
+                    field.type_expr.resolved().to_optional()
+                } else {
+                    field.type_expr.resolved().clone()
+                }));
+            }
+        } else if let Some(_) = field.resolved().class.as_model_property() {
+            if has_property_getter(field) {
+                map.insert(field.name().to_owned(), Input::Type(if is_field_output_omissible(field) {
+                    field.type_expr.resolved().to_optional()
+                } else {
+                    field.type_expr.resolved().clone()
+                }));
+            }
+        } else if let Some(_) = field.resolved().class.as_model_relation() {
+            map.insert(field.name().to_owned(), Input::Type(if is_field_output_omissible(field) {
+                field.type_expr.resolved().to_optional()
+            } else {
+                field.type_expr.resolved().clone()
+            }));
+        }
+    }
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_count_aggregate_result_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(Type::Int64.to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(Type::Int64.to_optional()));
+            }
+        }
+    }
+    map.insert("_all".to_owned(), Input::Type(Type::Int64.to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                if field.type_expr.resolved().is_int_32_or_64() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Int64.to_optional()));
+                } else if field.type_expr.resolved().is_float_32_or_64() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Float.to_optional()));
+                } else if field.type_expr.resolved().is_decimal() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Decimal.to_optional()));
+                }
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if field.type_expr.resolved().is_any_number() && settings.cached {
+                if field.type_expr.resolved().is_int_32_or_64() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Int64.to_optional()));
+                } else if field.type_expr.resolved().is_float_32_or_64() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Float.to_optional()));
+                } else if field.type_expr.resolved().is_decimal() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Decimal.to_optional()));
+                }
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                if field.type_expr.resolved().is_decimal() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Decimal.to_optional()));
+                } else {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Float.to_optional()));
+                }
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if field.type_expr.resolved().is_any_number() && settings.cached {
+                if field.type_expr.resolved().is_decimal() {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Decimal.to_optional()));
+                } else {
+                    map.insert(field.name().to_owned(), Input::Type(Type::Float.to_optional()));
+                }
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_min_aggregate_result_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_max_aggregate_result_type(model: &Model) -> Option<Input> {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        }
+    }
+    if map.is_empty() {
+        None
+    } else {
+        Some(Input::Shape(Shape::new(map)))
+    }
+}
+
+fn resolve_aggregate_result_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::CountAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("_sum".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::SumAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("_avg".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::AvgAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MinAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::MaxAggregateResult(model.path.clone(), model.string_path.clone())).to_optional()));
+    Input::Shape(Shape::new(map))
+}
+
+fn resolve_group_by_result_type(model: &Model) -> Input {
+    let mut map = indexmap! {};
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                map.insert(field.name().to_owned(), Input::Type(field.type_expr.resolved().to_optional()));
+            }
+        }
+    }
+    map.extend(resolve_aggregate_result_type(model).into_shape().unwrap().into_iter());
     Input::Shape(Shape::new(map))
 }
 

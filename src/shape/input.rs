@@ -32,6 +32,13 @@ impl Input {
         }
     }
 
+    pub fn into_shape(self) -> Option<Shape> {
+        match self {
+            Input::Shape(s) => Some(s),
+            _ => None,
+        }
+    }
+
     pub fn is_type(&self) -> bool {
         self.as_type().is_some()
     }

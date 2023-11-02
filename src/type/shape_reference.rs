@@ -111,6 +111,14 @@ pub enum ShapeReference {
     Select(Vec<usize>, Vec<String>),
     Include(Vec<usize>, Vec<String>),
     OrderByInput(Vec<usize>, Vec<String>),
+    Result(Vec<usize>, Vec<String>),
+    CountAggregateResult(Vec<usize>, Vec<String>),
+    SumAggregateResult(Vec<usize>, Vec<String>),
+    AvgAggregateResult(Vec<usize>, Vec<String>),
+    MinAggregateResult(Vec<usize>, Vec<String>),
+    MaxAggregateResult(Vec<usize>, Vec<String>),
+    AggregateResult(Vec<usize>, Vec<String>),
+    GroupByResult(Vec<usize>, Vec<String>),
 }
 
 impl Display for ShapeReference {
@@ -221,6 +229,14 @@ impl Display for ShapeReference {
             ShapeReference::Select(_, k) => f.write_str(&format!("Select<{}>", k.join("."))),
             ShapeReference::Include(_, k) => f.write_str(&format!("Include<{}>", k.join("."))),
             ShapeReference::OrderByInput(_, k) => f.write_str(&format!("OrderByInput<{}>", k.join("."))),
+            ShapeReference::Result(_, k) => f.write_str(&format!("Result<{}>", k.join("."))),
+            ShapeReference::CountAggregateResult(_, k) => f.write_str(&format!("CountAggregateResult<{}>", k.join("."))),
+            ShapeReference::SumAggregateResult(_, k) => f.write_str(&format!("SumAggregateResult<{}>", k.join("."))),
+            ShapeReference::AvgAggregateResult(_, k) => f.write_str(&format!("AvgAggregateResult<{}>", k.join("."))),
+            ShapeReference::MinAggregateResult(_, k) => f.write_str(&format!("MinAggregateResult<{}>", k.join("."))),
+            ShapeReference::MaxAggregateResult(_, k) => f.write_str(&format!("MaxAggregateResult<{}>", k.join("."))),
+            ShapeReference::AggregateResult(_, k) => f.write_str(&format!("AggregateResult<{}>", k.join("."))),
+            ShapeReference::GroupByResult(_, k) => f.write_str(&format!("GroupByResult<{}>", k.join("."))),
         }
     }
 }
