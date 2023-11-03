@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use indexmap::IndexMap;
-use indexmap::map::{IntoIter, Iter, Keys};
+use indexmap::map::{IntoIter, Iter, IterMut, Keys};
 use serde::Serialize;
 use crate::shape::input::Input;
 use crate::r#type::Type;
@@ -27,6 +27,8 @@ impl Shape {
     pub fn iter(&self) -> Iter<String, Input> {
         self.map.iter()
     }
+
+    pub fn iter_mut(&mut self) -> IterMut<String, Input> { self.map.iter_mut() }
 
     pub fn get(&self, key: &str) -> Option<&Input> {
         self.map.get(key)

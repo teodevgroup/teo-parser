@@ -1,3 +1,4 @@
+use indexmap::indexmap;
 use serde::Serialize;
 use crate::r#type::Type;
 use crate::shape::shape::Shape;
@@ -19,6 +20,38 @@ impl Input {
             Input::Undetermined => true,
             _ => false,
         }
+    }
+
+    pub fn is_or(&self) -> bool {
+        self.as_or().is_some()
+    }
+
+    pub fn as_or(&self) -> Option<&Vec<Input>> {
+        match self {
+            Input::Or(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn or_to_shape(&self) -> Shape {
+        let mut result = Shape::new(indexmap! {});
+        let mut times = 0;
+        if self.is_or() {
+            for input in self.as_or().unwrap() {
+                if let Some(shape) = input.as_shape() {
+                    result.extend(shape.clone().into_iter());
+                    times += 1;
+                }
+            }
+        }
+        if times > 1 {
+            result.iter_mut().for_each(|(_, input)| {
+                if let Some(t) = input.as_type_mut() {
+                    *t = t.to_optional();
+                }
+            })
+        }
+        result
     }
 
     pub fn is_shape(&self) -> bool {
@@ -44,6 +77,13 @@ impl Input {
     }
 
     pub fn as_type(&self) -> Option<&Type> {
+        match self {
+            Input::Type(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    pub fn as_type_mut(&mut self) -> Option<&mut Type> {
         match self {
             Input::Type(t) => Some(t),
             _ => None,

@@ -113,4 +113,8 @@ impl ModelShapeResolved {
             map: indexmap! {},
         }
     }
+
+    pub fn get(&self, key: &str) -> Option<&Input> {
+        self.map.get(&(key.to_owned(), None))
+    }
 }
