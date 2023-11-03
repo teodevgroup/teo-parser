@@ -98,7 +98,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.without_map.insert(vec!["CreateInput".to_owned(), field.name().to_owned()], input);
+                model_shape_resolved.without_map.insert(("CreateInput".to_owned(), field.name().to_owned()), input);
             }
         }
     }
@@ -109,7 +109,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.without_map.insert(vec!["UpdateInput".to_owned(), field.name().to_owned()], input);
+                model_shape_resolved.without_map.insert(("UpdateInput".to_owned(), field.name().to_owned()), input);
             }
         }
     }
@@ -117,56 +117,56 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     model_shape_resolved.map.insert("CreateNestedOneInput".to_owned(), resolve_create_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["CreateNestedOneInput".to_owned(), field.name().to_owned()], resolve_create_nested_one_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("CreateNestedOneInput".to_owned(), field.name().to_owned()), resolve_create_nested_one_input_type(model, Some(field.name())));
         }
     }
     // create nested many input
     model_shape_resolved.map.insert("CreateNestedManyInput".to_owned(), resolve_create_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["CreateNestedManyInput".to_owned(), field.name().to_owned()], resolve_create_nested_many_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("CreateNestedManyInput".to_owned(), field.name().to_owned()), resolve_create_nested_many_input_type(model, Some(field.name())));
         }
     }
     // update nested one input
     model_shape_resolved.map.insert("UpdateNestedOneInput".to_owned(), resolve_update_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["UpdateNestedOneInput".to_owned(), field.name().to_owned()], resolve_update_nested_one_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("UpdateNestedOneInput".to_owned(), field.name().to_owned()), resolve_update_nested_one_input_type(model, Some(field.name())));
         }
     }
     // update nested many input
     model_shape_resolved.map.insert("UpdateNestedManyInput".to_owned(), resolve_update_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["UpdateNestedManyInput".to_owned(), field.name().to_owned()], resolve_update_nested_many_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("UpdateNestedManyInput".to_owned(), field.name().to_owned()), resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
     // connect or create input
     model_shape_resolved.map.insert("ConnectOrCreateInput".to_owned(), resolve_connect_or_create_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["ConnectOrCreateInput".to_owned(), field.name().to_owned()], resolve_connect_or_create_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("ConnectOrCreateInput".to_owned(), field.name().to_owned()), resolve_connect_or_create_input_type(model, Some(field.name())));
         }
     }
     // update with where unique input
     model_shape_resolved.map.insert("UpdateWithWhereUniqueInput".to_owned(), resolve_update_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["UpdateWithWhereUniqueInput".to_owned(), field.name().to_owned()], resolve_update_with_where_unique_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("UpdateWithWhereUniqueInput".to_owned(), field.name().to_owned()), resolve_update_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // upsert with where unique input
     model_shape_resolved.map.insert("UpsertWithWhereUniqueInput".to_owned(), resolve_upsert_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["UpsertWithWhereUniqueInput".to_owned(), field.name().to_owned()], resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("UpsertWithWhereUniqueInput".to_owned(), field.name().to_owned()), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // update many with where input
     model_shape_resolved.map.insert("UpdateManyWithWhereInput".to_owned(), resolve_update_many_with_where_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(vec!["UpdateManyWithWhereInput".to_owned(), field.name().to_owned()], resolve_update_many_with_where_input_type(model, Some(field.name())));
+            model_shape_resolved.without_map.insert(("UpdateManyWithWhereInput".to_owned(), field.name().to_owned()), resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
     // result

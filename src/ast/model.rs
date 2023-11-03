@@ -104,7 +104,7 @@ impl InfoProvider for Model {
 #[derive(Debug, Clone, Serialize)]
 pub struct ModelShapeResolved {
     pub map: IndexMap<String, Input>,
-    pub without_map: IndexMap<Vec<String>, Input>,
+    pub without_map: IndexMap<(String, String), Input>,
 }
 
 impl ModelShapeResolved {
