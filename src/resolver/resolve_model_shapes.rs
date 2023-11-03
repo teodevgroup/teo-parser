@@ -28,205 +28,205 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     let mut shape_available_context = ShapeAvailableContext::new(); 
     // select
     if let Some(input) = resolve_model_select_shape(model) {
-        model_shape_resolved.map.insert("Select".to_owned(), input);
+        model_shape_resolved.map.insert(("Select".to_owned(), None), input);
         shape_available_context.has_select = true;
     }
     // include
     if let Some(input) = resolve_model_include_shape(model) {
-        model_shape_resolved.map.insert("Include".to_owned(), input);
+        model_shape_resolved.map.insert(("Include".to_owned(), None), input);
         shape_available_context.has_include = true;
     }
     // where input
     if let Some(input) = resolve_model_where_input_shape(model, true, false) {
-        model_shape_resolved.map.insert("WhereInput".to_owned(), input);
+        model_shape_resolved.map.insert(("WhereInput".to_owned(), None), input);
         shape_available_context.has_where = true;
     }
     // where unique input
     if let Some(input) = resolve_model_where_unique_input_shape(model) {
-        model_shape_resolved.map.insert("WhereUniqueInput".to_owned(), input);
+        model_shape_resolved.map.insert(("WhereUniqueInput".to_owned(), None), input);
         shape_available_context.has_where_unique = true;
     }
     // scalar where with aggregates input
     if let Some(input) = resolve_model_where_input_shape(model, false, true) {
-        model_shape_resolved.map.insert("ScalarWhereWithAggregatesInput".to_owned(), input);
+        model_shape_resolved.map.insert(("ScalarWhereWithAggregatesInput".to_owned(), None), input);
         shape_available_context.has_where_with_aggregates = true;
     }
     if shape_available_context.has_where {
         // relation filter
-        model_shape_resolved.map.insert("RelationFilter".to_owned(), resolve_model_relation_filter(model));
+        model_shape_resolved.map.insert(("RelationFilter".to_owned(), None), resolve_model_relation_filter(model));
         // list relation filter
-        model_shape_resolved.map.insert("ListRelationFilter".to_owned(), resolve_model_list_relation_filter(model));
+        model_shape_resolved.map.insert(("ListRelationFilter".to_owned(), None), resolve_model_list_relation_filter(model));
     }
     // order by input
     if let Some(input) = resolve_model_order_by_input_shape(model, context) {
-        model_shape_resolved.map.insert("OrderByInput".to_owned(), input);
+        model_shape_resolved.map.insert(("OrderByInput".to_owned(), None), input);
         shape_available_context.has_order_by = true;
     }
     // scalar field enum
     if let Some(input) = resolve_scalar_field_enum(model) {
-        model_shape_resolved.map.insert("ScalarFieldEnum".to_owned(), input);
+        model_shape_resolved.map.insert(("ScalarFieldEnum".to_owned(), None), input);
         shape_available_context.has_scalar_field_enum = true;
     }
     // count aggregate input type
     if let Some(input) = resolve_count_aggregate_input_type(model) {
-        model_shape_resolved.map.insert("CountAggregateInputType".to_owned(), input);
+        model_shape_resolved.map.insert(("CountAggregateInputType".to_owned(), None), input);
     }
     // sum aggregate input type
     if let Some(input) = resolve_sum_aggregate_input_type(model) {
-        model_shape_resolved.map.insert("SumAggregateInputType".to_owned(), input);
+        model_shape_resolved.map.insert(("SumAggregateInputType".to_owned(), None), input);
         shape_available_context.has_sum_aggregate = true;
     }
     // avg aggregate input type
     if let Some(input) = resolve_avg_aggregate_input_type(model) {
-        model_shape_resolved.map.insert("AvgAggregateInputType".to_owned(), input);
+        model_shape_resolved.map.insert(("AvgAggregateInputType".to_owned(), None), input);
         shape_available_context.has_avg_aggregate = true;
     }
     // min aggregate input type
     if let Some(input) = resolve_min_aggregate_input_type(model) {
-        model_shape_resolved.map.insert("MinAggregateInputType".to_owned(), input);
+        model_shape_resolved.map.insert(("MinAggregateInputType".to_owned(), None), input);
         shape_available_context.has_min_aggregate = true;
     }
     // max aggregate input type
     if let Some(input) = resolve_max_aggregate_input_type(model) {
-        model_shape_resolved.map.insert("MaxAggregateInputType".to_owned(), input);
+        model_shape_resolved.map.insert(("MaxAggregateInputType".to_owned(), None), input);
         shape_available_context.has_max_aggregate = true;
     }
     // create input
     if let Some(input) = resolve_create_input_type(model, None, context) {
-        model_shape_resolved.map.insert("CreateInput".to_owned(), input);
+        model_shape_resolved.map.insert(("CreateInput".to_owned(), None), input);
     }
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.without_map.insert(("CreateInput".to_owned(), field.name().to_owned()), input);
+                model_shape_resolved.map.insert(("CreateInput".to_owned(), Some(field.name().to_owned())), input);
             }
         }
     }
     // update input
     if let Some(input) = resolve_update_input_type(model, None, context) {
-        model_shape_resolved.map.insert("UpdateInput".to_owned(), input);
+        model_shape_resolved.map.insert(("UpdateInput".to_owned(), None), input);
     }
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.without_map.insert(("UpdateInput".to_owned(), field.name().to_owned()), input);
+                model_shape_resolved.map.insert(("UpdateInput".to_owned(), Some(field.name().to_owned())), input);
             }
         }
     }
     // create nested one input
-    model_shape_resolved.map.insert("CreateNestedOneInput".to_owned(), resolve_create_nested_one_input_type(model, None));
+    model_shape_resolved.map.insert(("CreateNestedOneInput".to_owned(), None), resolve_create_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("CreateNestedOneInput".to_owned(), field.name().to_owned()), resolve_create_nested_one_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("CreateNestedOneInput".to_owned(), Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
         }
     }
     // create nested many input
-    model_shape_resolved.map.insert("CreateNestedManyInput".to_owned(), resolve_create_nested_many_input_type(model, None));
+    model_shape_resolved.map.insert(("CreateNestedManyInput".to_owned(), None), resolve_create_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("CreateNestedManyInput".to_owned(), field.name().to_owned()), resolve_create_nested_many_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("CreateNestedManyInput".to_owned(), Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
         }
     }
     // update nested one input
-    model_shape_resolved.map.insert("UpdateNestedOneInput".to_owned(), resolve_update_nested_one_input_type(model, None));
+    model_shape_resolved.map.insert(("UpdateNestedOneInput".to_owned(), None), resolve_update_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("UpdateNestedOneInput".to_owned(), field.name().to_owned()), resolve_update_nested_one_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("UpdateNestedOneInput".to_owned(), Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
         }
     }
     // update nested many input
-    model_shape_resolved.map.insert("UpdateNestedManyInput".to_owned(), resolve_update_nested_many_input_type(model, None));
+    model_shape_resolved.map.insert(("UpdateNestedManyInput".to_owned(), None), resolve_update_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("UpdateNestedManyInput".to_owned(), field.name().to_owned()), resolve_update_nested_many_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("UpdateNestedManyInput".to_owned(), Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
     // connect or create input
-    model_shape_resolved.map.insert("ConnectOrCreateInput".to_owned(), resolve_connect_or_create_input_type(model, None));
+    model_shape_resolved.map.insert(("ConnectOrCreateInput".to_owned(), None), resolve_connect_or_create_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("ConnectOrCreateInput".to_owned(), field.name().to_owned()), resolve_connect_or_create_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("ConnectOrCreateInput".to_owned(), Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
         }
     }
     // update with where unique input
-    model_shape_resolved.map.insert("UpdateWithWhereUniqueInput".to_owned(), resolve_update_with_where_unique_input_type(model, None));
+    model_shape_resolved.map.insert(("UpdateWithWhereUniqueInput".to_owned(), None), resolve_update_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("UpdateWithWhereUniqueInput".to_owned(), field.name().to_owned()), resolve_update_with_where_unique_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("UpdateWithWhereUniqueInput".to_owned(), Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // upsert with where unique input
-    model_shape_resolved.map.insert("UpsertWithWhereUniqueInput".to_owned(), resolve_upsert_with_where_unique_input_type(model, None));
+    model_shape_resolved.map.insert(("UpsertWithWhereUniqueInput".to_owned(), None), resolve_upsert_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("UpsertWithWhereUniqueInput".to_owned(), field.name().to_owned()), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("UpsertWithWhereUniqueInput".to_owned(), Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // update many with where input
-    model_shape_resolved.map.insert("UpdateManyWithWhereInput".to_owned(), resolve_update_many_with_where_input_type(model, None));
+    model_shape_resolved.map.insert(("UpdateManyWithWhereInput".to_owned(), None), resolve_update_many_with_where_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.without_map.insert(("UpdateManyWithWhereInput".to_owned(), field.name().to_owned()), resolve_update_many_with_where_input_type(model, Some(field.name())));
+            model_shape_resolved.map.insert(("UpdateManyWithWhereInput".to_owned(), Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
     // result
-    model_shape_resolved.map.insert("Result".to_owned(), resolve_result_type(model));
+    model_shape_resolved.map.insert(("Result".to_owned(), None), resolve_result_type(model));
     // count aggregate result
-    model_shape_resolved.map.insert("CountAggregateResult".to_owned(), resolve_count_aggregate_result_type(model));
+    model_shape_resolved.map.insert(("CountAggregateResult".to_owned(), None), resolve_count_aggregate_result_type(model));
     // sum aggregate result
     if let Some(input) = resolve_sum_aggregate_result_type(model) {
-        model_shape_resolved.map.insert("SumAggregateResult".to_owned(), input);
+        model_shape_resolved.map.insert(("SumAggregateResult".to_owned(), None), input);
     }
     // avg aggregate result
     if let Some(input) = resolve_avg_aggregate_result_type(model) {
-        model_shape_resolved.map.insert("AvgAggregateResult".to_owned(), input);
+        model_shape_resolved.map.insert(("AvgAggregateResult".to_owned(), None), input);
     }
     // min aggregate result
     if let Some(input) = resolve_min_aggregate_result_type(model) {
-        model_shape_resolved.map.insert("MinAggregateResult".to_owned(), input);
+        model_shape_resolved.map.insert(("MinAggregateResult".to_owned(), None), input);
     }
     // max aggregate result
     if let Some(input) = resolve_max_aggregate_result_type(model) {
-        model_shape_resolved.map.insert("MaxAggregateResult".to_owned(), input);
+        model_shape_resolved.map.insert(("MaxAggregateResult".to_owned(), None), input);
     }
     // aggregate result
-    model_shape_resolved.map.insert("AggregateResult".to_owned(), resolve_aggregate_result_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("AggregateResult".to_owned(), None), resolve_aggregate_result_type(model, &shape_available_context));
     // group by result
-    model_shape_resolved.map.insert("GroupByResult".to_owned(), resolve_group_by_result_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("GroupByResult".to_owned(), None), resolve_group_by_result_type(model, &shape_available_context));
     // args
     if shape_available_context.has_args() {
-        model_shape_resolved.map.insert("Args".to_owned(), resolve_args_type(model, &shape_available_context));
+        model_shape_resolved.map.insert(("Args".to_owned(), None), resolve_args_type(model, &shape_available_context));
     }
     // find many args
-    model_shape_resolved.map.insert("FindManyArgs".to_owned(), resolve_find_many_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("FindManyArgs".to_owned(), None), resolve_find_many_args_type(model, &shape_available_context));
     // find first args
-    model_shape_resolved.map.insert("FindFirstArgs".to_owned(), resolve_find_first_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("FindFirstArgs".to_owned(), None), resolve_find_first_args_type(model, &shape_available_context));
     // find unique args
-    model_shape_resolved.map.insert("FindUniqueArgs".to_owned(), resolve_find_unique_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("FindUniqueArgs".to_owned(), None), resolve_find_unique_args_type(model, &shape_available_context));
     // create args
-    model_shape_resolved.map.insert("CreateArgs".to_owned(), resolve_create_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("CreateArgs".to_owned(), None), resolve_create_args_type(model, &shape_available_context));
     // update args
-    model_shape_resolved.map.insert("UpdateArgs".to_owned(), resolve_update_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("UpdateArgs".to_owned(), None), resolve_update_args_type(model, &shape_available_context));
     // upsert args
-    model_shape_resolved.map.insert("UpsertArgs".to_owned(), resolve_upsert_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("UpsertArgs".to_owned(), None), resolve_upsert_args_type(model, &shape_available_context));
     // copy args
-    model_shape_resolved.map.insert("CopyArgs".to_owned(), resolve_copy_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("CopyArgs".to_owned(), None), resolve_copy_args_type(model, &shape_available_context));
     // delete args
-    model_shape_resolved.map.insert("DeleteArgs".to_owned(), resolve_delete_args_type(model));
+    model_shape_resolved.map.insert(("DeleteArgs".to_owned(), None), resolve_delete_args_type(model));
     // create many args
-    model_shape_resolved.map.insert("CreateManyArgs".to_owned(), resolve_create_many_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("CreateManyArgs".to_owned(), None), resolve_create_many_args_type(model, &shape_available_context));
     // update many args
-    model_shape_resolved.map.insert("UpdateManyArgs".to_owned(), resolve_update_many_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("UpdateManyArgs".to_owned(), None), resolve_update_many_args_type(model, &shape_available_context));
     // delete many args
-    model_shape_resolved.map.insert("DeleteManyArgs".to_owned(), resolve_delete_many_args_type(model));
+    model_shape_resolved.map.insert(("DeleteManyArgs".to_owned(), None), resolve_delete_many_args_type(model));
     // copy many args
-    model_shape_resolved.map.insert("CopyManyArgs".to_owned(), resolve_copy_many_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("CopyManyArgs".to_owned(), None), resolve_copy_many_args_type(model, &shape_available_context));
     // count args
-    model_shape_resolved.map.insert("CountArgs".to_owned(), resolve_count_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("CountArgs".to_owned(), None), resolve_count_args_type(model, &shape_available_context));
     // aggregate args
-    model_shape_resolved.map.insert("AggregateArgs".to_owned(), resolve_aggregate_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("AggregateArgs".to_owned(), None), resolve_aggregate_args_type(model, &shape_available_context));
     // group by args
-    model_shape_resolved.map.insert("GroupByArgs".to_owned(), resolve_group_by_args_type(model, &shape_available_context));
+    model_shape_resolved.map.insert(("GroupByArgs".to_owned(), None), resolve_group_by_args_type(model, &shape_available_context));
 
     model.shape_resolve(model_shape_resolved);
 }

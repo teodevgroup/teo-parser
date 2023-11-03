@@ -103,8 +103,7 @@ impl InfoProvider for Model {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ModelShapeResolved {
-    pub map: IndexMap<String, Input>,
-    pub without_map: IndexMap<(String, String), Input>,
+    pub map: IndexMap<(String, Option<String>), Input>,
 }
 
 impl ModelShapeResolved {
@@ -112,7 +111,6 @@ impl ModelShapeResolved {
     pub fn new() -> Self {
         Self {
             map: indexmap! {},
-            without_map: indexmap! {},
         }
     }
 }
