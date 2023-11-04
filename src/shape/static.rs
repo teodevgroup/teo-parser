@@ -254,7 +254,7 @@ pub static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     array_nullable_filter_map.insert("hasEvery".to_owned(), Input::Type(Type::GenericItem("T".to_string()).wrap_in_array().to_optional()));
     array_nullable_filter_map.insert("isEmpty".to_owned(), Input::Type(Type::Bool.to_optional()));
     array_nullable_filter_map.insert("length".to_owned(), Input::Type(Type::Int.to_optional()));
-    result.insert("ArrayFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map.clone())));
+    result.insert("ArrayNullableFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map.clone())));
 
     // bool with aggregates filter
     bool_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
@@ -395,7 +395,7 @@ pub static STATIC_TYPES: Lazy<IndexMap<String, Input>> = Lazy::new(|| {
     array_nullable_filter_map.insert("_count".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::Int64Filter).to_optional()));
     array_nullable_filter_map.insert("_min".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
     array_nullable_filter_map.insert("_max".to_owned(), Input::Type(Type::ShapeReference(ShapeReference::ArrayNullableFilter(Box::new(Type::GenericItem("T".to_owned())))).to_optional()));
-    result.insert("ArrayWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map)));
+    result.insert("ArrayNullableWithAggregatesFilter".to_owned(), Input::Shape(Shape::new(array_nullable_filter_map)));
 
     // int atomic update operation input
     let mut int_atomic_update_operation_input_map = indexmap! {};
