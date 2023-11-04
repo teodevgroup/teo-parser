@@ -37,6 +37,7 @@ pub enum Type {
     EnumVariant(Vec<usize>, Vec<String>),
     InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
     ModelObject(Vec<usize>, Vec<String>),
+    DataSetObject(Vec<usize>, Vec<String>),
     StructObject(Vec<usize>, Vec<String>),
     ModelScalarFields(
         Box<Type>,
@@ -310,6 +311,17 @@ impl Type {
         }
     }
 
+    pub fn is_data_set_object(&self) -> bool {
+        self.as_data_set_object().is_some()
+    }
+
+    pub fn as_data_set_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+        match self {
+            Self::DataSetObject(path, name) => Some((path, name)),
+            _ => None,
+        }
+    }
+
     pub fn is_model_object(&self) -> bool {
         self.as_model_object().is_some()
     }
@@ -524,6 +536,7 @@ impl Type {
             Type::InterfaceObject(_, _, _) => true,
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
+            Type::DataSetObject(_, _) => false,
             Type::ModelScalarFields(_, _) => false,
             Type::ModelScalarFieldsWithoutVirtuals(_, _) => false,
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => false,
@@ -570,6 +583,7 @@ impl Type {
             Type::InterfaceObject(_, types, _) => types.iter().any(|t| t.contains_generics()),
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
+            Type::DataSetObject(_, _) => false,
             Type::ModelScalarFields(inner, _) => inner.contains_generics(),
             Type::ModelScalarFieldsWithoutVirtuals(inner, _) => inner.contains_generics(),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => inner.contains_generics(),
@@ -671,6 +685,7 @@ impl Type {
             Type::EnumVariant(path, _) => passed.is_enum_variant() && passed.as_enum_variant().unwrap().0 == path,
             Type::InterfaceObject(path, generics, _) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
             Type::ModelObject(path, _) => passed.is_model_object() && passed.as_model_object().unwrap().0 == path,
+            Type::DataSetObject(path, _) => passed.is_data_set_object() && passed.as_data_set_object().unwrap().0 == path,
             Type::StructObject(path, _) => passed.is_struct_object() && passed.as_struct_object().unwrap().0 == path,
             Type::ModelScalarFields(path, _) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().0.test(path),
             Type::ModelScalarFieldsWithoutVirtuals(path, _) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().0.test(path),
@@ -795,6 +810,7 @@ impl Type {
             Type::InterfaceObject(_, _, _) => self.clone(),
             Type::ModelObject(_, _) => self.clone(),
             Type::StructObject(_, _) => self.clone(),
+            Type::DataSetObject(_, _) => self.clone(),
             Type::ModelScalarFields(_, _) => self.clone(),
             Type::ModelScalarFieldsWithoutVirtuals(_, _) => self.clone(),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => self.clone(),
@@ -865,6 +881,7 @@ impl Display for Type {
             Type::InterfaceObject(_, _, name) => f.write_str(&name.join(".")),
             Type::ModelObject(_, name) => f.write_str(&name.join(".")),
             Type::StructObject(_, name) => f.write_str(&name.join(".")),
+            Type::DataSetObject(_, name) => f.write_str(&name.join(".")),
             Type::ModelScalarFields(inner, _) => f.write_str(&format!("ModelScalarFields<{}>", inner)),
             Type::ModelScalarFieldsWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsWithoutVirtuals<{}>", inner)),
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),

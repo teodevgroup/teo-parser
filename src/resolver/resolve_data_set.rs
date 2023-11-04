@@ -80,62 +80,25 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                     } else if let Some(relation_settings) = field.resolved().class.as_model_relation() {
                         if let Some((model_path, model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
                             let reference_model = context.schema.find_top_by_path(model_path).unwrap().as_model().unwrap();
+                            let expect = Type::DataSetRecord(
+                                Box::new(Type::DataSetObject(data_set.path.clone(), data_set.string_path.clone())),
+                                Box::new(Type::ModelObject(reference_model.path.clone(), reference_model.string_path.clone()))
+                            );
                             if field.type_expr.resolved().unwrap_optional().is_array() {
                                 // to many relation
-
+                                resolve_expression(value_expression, context, &expect.wrap_in_array(), &btreemap! {});
                             } else {
                                 // to one relation
                                 if field.type_expr.resolved().is_optional() {
                                     // allow null
+                                    resolve_expression(value_expression, context, &expect.to_optional(), &btreemap! {});
+                                } else {
+                                    resolve_expression(value_expression, context, &expect, &btreemap! {});
                                 }
                             }
                         } else {
                             context.insert_diagnostics_error(key_span, "relation definition is invalid");
                         }
-                        //                 let referenced_model = parser.model_by_id(&field.r#type.type_id);
-//                 let v_span = value.span();
-//                 if field.r#type.arity.is_array() { // to many relation
-//                     if value.is_array_literal() {
-//                         let v = self.resolve_array_literal_for_dataset_record_relation(parser, source, value.as_array_literal().unwrap(), referenced_model, dataset_path, diagnostics);
-//                         let v = Self::unwrap_into_value_if_needed(parser, source, &v);
-//                         resolved.insert(if k.is_string() { k.as_str().unwrap().to_string() } else { "".to_owned() }, v);
-//                     } else {
-//                         let v = self.resolve_expression_kind(parser, source, value, false);
-//                         let v = Self::unwrap_into_value_if_needed(parser, source, &v);
-//                         if v.is_vec() {
-//                             for vec_item in v.as_vec().unwrap() {
-//                                 if vec_item.is_raw_enum_choice() {
-//                                     let record_name = vec_item.as_raw_enum_choice().unwrap();
-//                                     if parser.data_set_record_counts(referenced_model, dataset_path, record_name) < 1 {
-//                                         self.insert_data_set_record_relation_value_is_not_records_array(source, diagnostics, v_span.clone(), referenced_model.path().join(".").as_str(), dataset_path.join(".").as_str());
-//                                     }
-//                                 } else {
-//                                     self.insert_data_set_record_relation_value_is_not_records_array(source, diagnostics, v_span.clone(), referenced_model.path().join(".").as_str(), dataset_path.join(".").as_str());
-//                                 }
-//                             }
-//                         } else {
-//                             self.insert_data_set_record_relation_value_is_not_array(source, diagnostics, v_span.clone());
-//                         }
-//                         resolved.insert(if k.is_string() { k.as_str().unwrap().to_string() } else { "".to_owned() }, v);
-//                     }
-//                 } else { // to one relation
-//                     if value.is_null_literal() {
-//                         // do nothing yet
-//                     } else if value.is_enum_variant_literal() {
-//                         let v = self.resolve_expression_kind(parser, source, value, false);
-//                         let v = Self::unwrap_into_value_if_needed(parser, source, &v);
-//                         let record_name = v.as_raw_enum_choice().unwrap();
-//                         if parser.data_set_record_counts(referenced_model, dataset_path, record_name) < 1 {
-//                             self.insert_data_set_record_relation_value_is_not_enum_variant(source, diagnostics, v_span.clone(), referenced_model.path().join(".").as_str(), dataset_path.join(".").as_str());
-//                         }
-//                         resolved.insert(if k.is_string() { k.as_str().unwrap().to_string() } else { "".to_owned() }, v);
-//                     } else {
-//                         let v = self.resolve_expression_kind(parser, source, value, false);
-//                         let v = Self::unwrap_into_value_if_needed(parser, source, &v);
-//                         resolved.insert(if k.is_string() { k.as_str().unwrap().to_string() } else { "".to_owned() }, v);
-//                     }
-//                 }
-//                 // let v = self.resolve_expression_kind_for_data_set_record(parser, source, value, false);
                     } else if let Some(_) = field.resolved().class.as_model_property() {
                         if !has_property_setter(field) {
                             context.insert_diagnostics_error(key_span, "property doesn't have a setter")

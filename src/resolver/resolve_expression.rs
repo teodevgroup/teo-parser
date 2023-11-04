@@ -316,6 +316,27 @@ fn try_resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a 
         } else {
             Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
         }
+    } else if let Some((data_set_object, model_object)) = expected.as_data_set_record() {
+        let (Some(data_set_object), Some(model_object)) = (data_set_object.as_data_set_object(), model_object.as_model_object()) else {
+            return Err(context.generate_diagnostics_error(e.span, format!("invalid data set record type")));
+        };
+        let dataset = context.schema.find_top_by_path(data_set_object.0).unwrap().as_data_set().unwrap();
+        let Some(group) = dataset.groups.iter().find(|g| &g.resolved().model_path == model_object.0) else {
+            return Err(context.generate_diagnostics_error(e.span, format!("dataset group is not found")));
+        };
+        if group.records.iter().find(|r| r.identifier.name() == e.identifier.name()).is_some() {
+            Ok(ExpressionResolved {
+                r#type: expected.clone(),
+                value: Some(Value::EnumVariant(EnumVariant {
+                    value: Box::new(Value::String(e.identifier.name().to_owned())),
+                    display: format!(".{}", e.identifier.name()),
+                    path: dataset.string_path.clone(),
+                    args: None,
+                }))
+            })
+        } else {
+            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
+        }
     } else {
         Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
     }
