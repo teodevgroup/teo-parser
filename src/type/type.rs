@@ -63,6 +63,7 @@ pub enum Type {
         #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
         Option<String>
     ),
+    DataSetRecord(Box<Type>, Box<Type>),
     FieldType(Box<Type>, Box<Type>),
     FieldReference(String),
     GenericItem(String),
@@ -386,6 +387,17 @@ impl Type {
         }
     }
 
+    pub fn is_data_set_record(&self) -> bool {
+        self.as_data_set_record().is_some()
+    }
+
+    pub fn as_data_set_record(&self) -> Option<(&Type, &Type)> {
+        match self {
+            Self::DataSetRecord(a, b) => Some((a.as_ref(), b.as_ref())),
+            _ => None,
+        }
+    }
+
     pub fn is_field_type(&self) -> bool {
         self.as_field_type().is_some()
     }
@@ -517,6 +529,7 @@ impl Type {
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => false,
             Type::ModelRelations(_, _) => false,
             Type::ModelDirectRelations(_, _) => false,
+            Type::DataSetRecord(_, _) => false,
             Type::FieldType(_, _) => false,
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => false,
@@ -562,6 +575,7 @@ impl Type {
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => inner.contains_generics(),
             Type::ModelRelations(inner, _) => inner.contains_generics(),
             Type::ModelDirectRelations(inner, _) => inner.contains_generics(),
+            Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldReference(_) => false,
             Type::GenericItem(_) => true,
@@ -663,6 +677,7 @@ impl Type {
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, _) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().0.test(path),
             Type::ModelRelations(path, _) => passed.is_model_relations() && passed.as_model_relations().unwrap().0.test(path),
             Type::ModelDirectRelations(path, _) => passed.is_model_direct_relations() && passed.as_model_direct_relations().unwrap().0.test(path),
+            Type::DataSetRecord(a, b) => passed.is_data_set_record() && passed.as_data_set_record().unwrap().0.test(a) && passed.as_data_set_record().unwrap().1.test(b),
             Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
             Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
             Type::GenericItem(identifier) => true,
@@ -785,6 +800,7 @@ impl Type {
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => self.clone(),
             Type::ModelRelations(_, _) => self.clone(),
             Type::ModelDirectRelations(_, _) => self.clone(),
+            Type::DataSetRecord(_, _) => self.clone(),
             Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
             Type::FieldReference(_) => self.clone(),
             Type::GenericItem(_) => self.clone(),
@@ -854,6 +870,7 @@ impl Display for Type {
             Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),
             Type::ModelRelations(inner, _) => f.write_str(&format!("ModelRelations<{}>", inner)),
             Type::ModelDirectRelations(inner, _) => f.write_str(&format!("ModelDirectRelations<{}>", inner)),
+            Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetRecord<{}, {}>", a, b)),
             Type::FieldType(a, b) => if a.is_union() {
                 f.write_str(&format!("({})[{}]", a, b))
             } else {

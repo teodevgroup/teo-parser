@@ -1226,43 +1226,43 @@ fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContex
     Input::Shape(Shape::new(map))
 }
 
-fn relation_is_many(field: &Field) -> bool {
+pub(super) fn relation_is_many(field: &Field) -> bool {
     field.type_expr.resolved().unwrap_optional().is_array()
 }
 
-fn has_property_setter(field: &Field) -> bool {
+pub(super) fn has_property_setter(field: &Field) -> bool {
     field_has_decorator_name(field, "setter")
 }
 
-fn has_property_getter(field: &Field) -> bool {
+pub(super) fn has_property_getter(field: &Field) -> bool {
     field_has_decorator_name(field, "getter")
 }
 
-fn is_field_writeonly(field: &Field) -> bool {
+pub(super) fn is_field_writeonly(field: &Field) -> bool {
     field_has_decorator_name(field, "writeonly")
 }
 
-fn is_field_readonly(field: &Field) -> bool {
+pub(super) fn is_field_readonly(field: &Field) -> bool {
     field_has_decorator_name(field, "readonly")
 }
 
-fn is_field_atomic(field: &Field) -> bool {
+pub(super) fn is_field_atomic(field: &Field) -> bool {
     field_has_decorator_name(field, "atomic")
 }
 
-fn is_field_queryable(field: &Field) -> bool {
+pub(super) fn is_field_queryable(field: &Field) -> bool {
     !field_has_decorator_name(field, "unqueryable")
 }
 
-fn is_field_sortable(field: &Field) -> bool {
+pub(super) fn is_field_sortable(field: &Field) -> bool {
     !field_has_decorator_name(field, "unsortable")
 }
 
-fn field_has_decorator_name(field: &Field, name: &str) -> bool {
+pub(super) fn field_has_decorator_name(field: &Field, name: &str) -> bool {
     field_has_decorator(field, |names| names == vec![name])
 }
 
-fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) -> bool {
+pub(super) fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) -> bool {
     for decorator in &field.decorators {
         let names = if *decorator.identifier_path.names().first().unwrap() == "std" {
             let mut result = decorator.identifier_path.names();
@@ -1395,23 +1395,23 @@ fn field_where_input_for_type<'a>(t: &Type) -> Option<Input> {
     }
 }
 
-fn is_field_input_omissible(field: &Field) -> bool {
+pub(super) fn is_field_input_omissible(field: &Field) -> bool {
     field_has_decorator_name(field, "inputOmissible")
 }
 
-fn is_field_output_omissible(field: &Field) -> bool {
+pub(super) fn is_field_output_omissible(field: &Field) -> bool {
     field_has_decorator_name(field, "outputOmissible")
 }
 
-fn field_has_default(field: &Field) -> bool {
+pub(super) fn field_has_default(field: &Field) -> bool {
     field_has_decorator_name(field, "default")
 }
 
-fn field_has_on_save(field: &Field) -> bool {
+pub(super) fn field_has_on_save(field: &Field) -> bool {
     field_has_decorator_name(field, "onSave")
 }
 
-fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
+pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
     let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
     let argument_list = relation_decorator.argument_list.as_ref()?;
     let that_model_ref = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
@@ -1449,7 +1449,7 @@ fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContex
     }
 }
 
-fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, references: Vec<&str>) -> Option<&'a Field> {
+pub(super) fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, references: Vec<&str>) -> Option<&'a Field> {
     for field in &model.fields {
         if field.resolved().class.is_model_relation() {
             let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
@@ -1466,7 +1466,7 @@ fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, referen
     None
 }
 
-fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, local: &str, foreign: &str, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
+pub(super) fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, local: &str, foreign: &str, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
     for field in &model.fields {
         if field.resolved().class.is_model_relation() {
             let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
