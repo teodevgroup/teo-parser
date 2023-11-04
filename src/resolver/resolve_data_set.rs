@@ -47,6 +47,9 @@ fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, co
 
 pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a ResolverContext<'a>) {
     for group in &data_set.groups {
+        if !group.is_resolved() {
+            return;
+        };
         let model = context.schema.find_top_by_path(&group.resolved().model_path).unwrap().as_model().unwrap();
         for record in &group.records {
             let mut used_keys = vec![];
@@ -55,9 +58,11 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                 let key_resolved = resolve_expression(key_expression, context, &Type::String, &btreemap! {});
                 if !key_resolved.r#type.is_string() {
                     context.insert_diagnostics_error(key_span, "record key is not string");
+                    return;
                 }
                 if key_resolved.value.is_none() {
                     context.insert_diagnostics_error(key_span, "unresolved record key");
+                    return;
                 }
                 let key = key_resolved.value.as_ref().unwrap().as_str().unwrap();
                 if used_keys.contains(&key.to_string()) {
