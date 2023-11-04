@@ -16,7 +16,6 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
     let mut auto_seed = false;
     let mut notrack = false;
     let mut groups = vec![];
-    let parent_path = context.current_string_path();
     let path = context.next_parent_path();
     let mut string_path = None;
     for current in pair.into_inner() {
@@ -37,12 +36,12 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
         span,
         path,
         string_path: string_path.unwrap(),
-        parent_path,
         identifier: identifier.unwrap(),
         define_availability: context.current_availability_flag(),
         auto_seed,
         notrack,
         groups,
+        resolved: RefCell::new(None),
     }
 }
 
@@ -51,20 +50,26 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
     let mut identifier_path: Option<IdentifierPath> = None;
     let mut records = vec![];
     let path = context.next_parent_path();
+    let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
             Rule::BLOCK_OPEN => (),
-            Rule::identifier_path => identifier_path = Some(parse_identifier_path(current, context)),
+            Rule::identifier_path => {
+                identifier_path = Some(parse_identifier_path(current, context));
+                string_path = Some(context.next_parent_string_path(identifier_path.as_ref().unwrap().names().join(".")));
+            },
             Rule::dataset_group_record_declaration => records.push(parse_data_set_group_record(current, context)),
             Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     context.pop_parent_id();
+    context.pop_string_path();
     DataSetGroup {
         span,
         path,
+        string_path: string_path.unwrap(),
         identifier_path: identifier_path.unwrap(),
         define_availability: context.current_availability_flag(),
         records,
