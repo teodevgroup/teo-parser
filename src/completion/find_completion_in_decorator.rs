@@ -5,6 +5,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
+use crate::completion::find_completion_in_argument_list::find_completion_in_argument_list;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -29,7 +30,7 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
 ) -> Vec<CompletionItem> {
     if let Some(argument_list) = &decorator.argument_list {
         if argument_list.span.contains_line_col(line_col) {
-            return vec![]
+            return find_completion_in_argument_list(schema, source, argument_list, line_col, namespace_path);
         }
     }
     let mut user_typed_spaces = vec![];
