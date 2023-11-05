@@ -11,6 +11,9 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
     config.resolve(ConfigResolved {
         actual_availability: availability
     });
+    for unattached_identifier in &config.unattached_identifiers {
+        context.insert_diagnostics_error(unattached_identifier.span, "unattached config name");
+    }
     for item in &config.items {
         item.resolve(ConfigItemResolved {
             actual_availability: availability

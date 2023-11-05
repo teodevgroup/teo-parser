@@ -17,14 +17,23 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
     let mut keyword: Option<ConfigKeyword> = None;
     let mut identifier: Option<Identifier> = None;
     let mut items: Vec<ConfigItem> = vec![];
+    let mut inside_block = false;
+    let mut unattached_identifiers = vec![];
     let path = context.next_parent_path();
     let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_OPEN => string_path = Some(context.next_parent_string_path(if identifier.is_some() { identifier.as_ref().unwrap().name() } else { keyword.as_ref().unwrap().name() })),
+            Rule::BLOCK_OPEN => {
+                string_path = Some(context.next_parent_string_path(if identifier.is_some() { identifier.as_ref().unwrap().name() } else { keyword.as_ref().unwrap().name() }));
+                inside_block = true;
+            },
             Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
             Rule::config_keywords => keyword = Some(parse_config_keyword(current)),
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
+            Rule::identifier => if inside_block {
+                unattached_identifiers.push(parse_identifier(&current));
+            } else {
+                identifier = Some(parse_identifier(&current));
+            },
             Rule::config_item => items.push(parse_config_item(current, context)),
             Rule::comment_block => (),
             Rule::availability_start => parse_availability_flag(current, context),
@@ -41,6 +50,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
         string_path: string_path.unwrap(),
         keyword: keyword.unwrap(),
         identifier,
+        unattached_identifiers,
         items,
         define_availability: context.current_availability_flag(),
         resolved: RefCell::new(None),

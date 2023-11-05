@@ -17,6 +17,7 @@ pub struct Config {
     pub keyword: ConfigKeyword,
     pub identifier: Option<Identifier>,
     pub items: Vec<ConfigItem>,
+    pub unattached_identifiers: Vec<Identifier>,
     pub resolved: RefCell<Option<ConfigResolved>>,
 }
 

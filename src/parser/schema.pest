@@ -278,7 +278,7 @@ config_block = {
     config_keywords
     ~ identifier?
     ~ BLOCK_OPEN
-    ~ (config_item | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (config_item | identifier | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

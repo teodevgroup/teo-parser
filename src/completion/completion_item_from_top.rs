@@ -1,4 +1,6 @@
+use crate::ast::comment::Comment;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
+use crate::ast::field::Field;
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
@@ -24,13 +26,17 @@ pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
     }
 }
 
+fn documentation_from_comment(comment: Option<&Comment>) -> Option<String> {
+    comment.map(|c| {
+        format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
+    })
+}
+
 pub(super) fn completion_item_from_namespace(namespace: &Namespace) -> CompletionItem {
     CompletionItem {
         label: namespace.identifier.name.clone(),
         namespace_path: Some(readable_namespace_path(&namespace.string_path)),
-        documentation: namespace.comment.as_ref().map(|c| {
-            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
-        }),
+        documentation: documentation_from_comment(namespace.comment.as_ref()),
         detail: None,
     }
 }
@@ -39,9 +45,16 @@ pub(super) fn completion_item_from_decorator_declaration(decorator_declaration: 
     CompletionItem {
         label: decorator_declaration.identifier.name.clone(),
         namespace_path: Some(readable_namespace_path(&decorator_declaration.string_path)),
-        documentation: decorator_declaration.comment.as_ref().map(|c| {
-            format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
-        }),
+        documentation: documentation_from_comment(decorator_declaration.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_field(field: &Field) -> CompletionItem {
+    CompletionItem {
+        label: field.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&field.string_path)),
+        documentation: documentation_from_comment(field.comment.as_ref()),
         detail: None,
     }
 }
