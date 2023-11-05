@@ -22,16 +22,27 @@ pub struct HandlerGroupDeclaration {
 
 impl HandlerGroupDeclaration {
 
-    pub fn source_id(&self) -> usize {
+    pub fn namespace_str_path(&self) -> Vec<&str> {
+        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    }
+}
+
+impl Identifiable for HandlerGroupDeclaration {
+
+    fn source_id(&self) -> usize {
         *self.path.first().unwrap()
     }
 
-    pub fn id(&self) -> usize {
+    fn id(&self) -> usize {
         *self.path.last().unwrap()
     }
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).collect()
     }
 }
 

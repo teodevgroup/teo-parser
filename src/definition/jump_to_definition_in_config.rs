@@ -1,4 +1,5 @@
 use crate::ast::config::Config;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;

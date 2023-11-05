@@ -1,6 +1,7 @@
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -16,20 +17,31 @@ pub struct ConfigDeclaration {
 }
 
 impl ConfigDeclaration {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
+    
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
     pub fn get_field(&self, name: &str) -> Option<&Field> {
         self.fields.iter().find(|f| f.identifier.name() == name)
+    }
+}
+
+impl Identifiable for ConfigDeclaration {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(|s| s.as_str()).collect()
     }
 }

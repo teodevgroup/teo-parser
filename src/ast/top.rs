@@ -139,6 +139,26 @@ impl Top {
         }
     }
 
+    pub fn str_path(&self) -> Option<Vec<&str>> {
+        match self {
+            Top::Import(i) => None,
+            Top::Constant(c) => Some(c.str_path()),
+            Top::Enum(e) => Some(e.str_path()),
+            Top::Model(m) => Some(m.str_path()),
+            Top::Config(c) => Some(c.str_path()),
+            Top::ConfigDeclaration(c) => Some(c.str_path()),
+            Top::DataSet(d) => Some(d.str_path()),
+            Top::Middleware(m) => Some(m.str_path()),
+            Top::HandlerGroup(h) => Some(h.str_path()),
+            Top::Interface(i) => Some(i.str_path()),
+            Top::Namespace(n) => Some(n.str_path()),
+            Top::DecoratorDeclaration(d) => Some(d.str_path()),
+            Top::PipelineItemDeclaration(p) => Some(p.str_path()),
+            Top::StructDeclaration(s) => Some(s.str_path()),
+            Top::UseMiddlewareBlock(u) => None,
+        }
+    }
+
     pub fn span(&self) -> Span {
         match self {
             Top::Import(i) => i.span,

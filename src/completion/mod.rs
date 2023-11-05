@@ -16,5 +16,6 @@ mod find_completion_in_handler_group;
 mod find_completion_in_middleware_declaration;
 mod find_completion_in_use_middleware_block;
 mod find_completion_in_constant_declaration;
-mod find_completion_in_type_expr;
+pub(crate) mod find_completion_in_type_expr;
+mod find_top_completion_with_filter;
 mod collect_reference_completion;

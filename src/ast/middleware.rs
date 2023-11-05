@@ -1,5 +1,6 @@
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::callable_variant::CallableVariant;
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 
@@ -14,14 +15,6 @@ pub struct MiddlewareDeclaration {
 
 impl MiddlewareDeclaration {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
@@ -34,5 +27,24 @@ impl MiddlewareDeclaration {
             pipeline_input: None,
             pipeline_output: None,
         }]
+    }
+}
+
+impl Identifiable for MiddlewareDeclaration {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(|s| s.as_str()).collect()
     }
 }

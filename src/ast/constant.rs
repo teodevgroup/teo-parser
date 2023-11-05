@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use crate::ast::availability::Availability;
 use crate::ast::expression::{Expression, ExpressionResolved};
+use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
@@ -58,5 +59,24 @@ impl Display for Constant {
         Display::fmt(&self.identifier, f)?;
         f.write_str(" = ")?;
         Display::fmt(&self.expression, f)
+    }
+}
+
+impl Identifiable for Constant {
+
+    fn source_id(&self) -> usize {
+        *self.path.first().unwrap()
+    }
+
+    fn id(&self) -> usize {
+        *self.path.last().unwrap()
+    }
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+
+    fn str_path(&self) -> Vec<&str> {
+        self.string_path.iter().map(|s| s.as_str()).collect()
     }
 }
