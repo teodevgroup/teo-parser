@@ -28,5 +28,6 @@ mod find_completion_in_dictionary_literal;
 mod find_completion_in_identifier;
 mod find_completion_in_unit;
 mod find_completion_in_pipeline;
-mod find_top_completion_with_filter;
+pub(crate) mod find_top_completion_with_filter;
 mod collect_reference_completion;
+mod collect_argument_list_names;

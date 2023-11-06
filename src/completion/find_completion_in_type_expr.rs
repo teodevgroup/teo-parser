@@ -1,3 +1,4 @@
+use crate::ast::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::schema::Schema;
@@ -38,64 +39,64 @@ impl TypeExprFilter {
     }
 }
 
-pub(super) fn find_completion_in_type_expr(schema: &Schema, source: &Source, type_expr: &TypeExpr, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
-    find_completion_in_type_expr_kind(schema, source, &type_expr.kind, line_col, namespace_path, generics, filter)
+pub(super) fn find_completion_in_type_expr(schema: &Schema, source: &Source, type_expr: &TypeExpr, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
+    find_completion_in_type_expr_kind(schema, source, &type_expr.kind, line_col, namespace_path, generics, filter, availability)
 }
 
-fn find_completion_in_type_expr_kind(schema: &Schema, source: &Source, kind: &TypeExprKind, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_expr_kind(schema: &Schema, source: &Source, kind: &TypeExprKind, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     match kind {
-        TypeExprKind::Expr(kind) => find_completion_in_type_expr_kind(schema, source, kind.as_ref(), line_col, namespace_path, generics, filter),
-        TypeExprKind::BinaryOp(binary_op) => find_completion_in_type_expr_binary_op(schema, source, binary_op, line_col, namespace_path, generics, filter),
-        TypeExprKind::TypeItem(item) => find_completion_in_type_item(schema, source, item, line_col, namespace_path, generics, filter),
-        TypeExprKind::TypeGroup(group) => find_completion_in_type_expr_kind(schema, source, group.kind.as_ref(), line_col, namespace_path, generics, filter),
-        TypeExprKind::TypeTuple(tuple) => find_completion_in_type_tuple(schema, source, tuple, line_col, namespace_path, generics, filter),
-        TypeExprKind::TypeSubscript(subscript) => find_completion_in_type_subscript(schema, source, subscript, line_col, namespace_path, generics, filter),
+        TypeExprKind::Expr(kind) => find_completion_in_type_expr_kind(schema, source, kind.as_ref(), line_col, namespace_path, generics, filter, availability),
+        TypeExprKind::BinaryOp(binary_op) => find_completion_in_type_expr_binary_op(schema, source, binary_op, line_col, namespace_path, generics, filter, availability),
+        TypeExprKind::TypeItem(item) => find_completion_in_type_item(schema, source, item, line_col, namespace_path, generics, filter, availability),
+        TypeExprKind::TypeGroup(group) => find_completion_in_type_expr_kind(schema, source, group.kind.as_ref(), line_col, namespace_path, generics, filter, availability),
+        TypeExprKind::TypeTuple(tuple) => find_completion_in_type_tuple(schema, source, tuple, line_col, namespace_path, generics, filter, availability),
+        TypeExprKind::TypeSubscript(subscript) => find_completion_in_type_subscript(schema, source, subscript, line_col, namespace_path, generics, filter, availability),
         TypeExprKind::FieldReference(_) => vec![],
     }
 }
 
-fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, binary_op: &TypeBinaryOp, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, binary_op: &TypeBinaryOp, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     if binary_op.lhs.as_ref().span().contains_line_col(line_col) {
-        find_completion_in_type_expr_kind(schema, source, binary_op.lhs.as_ref(), line_col, namespace_path, generics, filter)
+        find_completion_in_type_expr_kind(schema, source, binary_op.lhs.as_ref(), line_col, namespace_path, generics, filter, availability)
     } else if binary_op.rhs.as_ref().span().contains_line_col(line_col) {
-        find_completion_in_type_expr_kind(schema, source, binary_op.rhs.as_ref(), line_col, namespace_path, generics, filter)
+        find_completion_in_type_expr_kind(schema, source, binary_op.rhs.as_ref(), line_col, namespace_path, generics, filter, availability)
     } else {
         vec![]
     }
 }
 
-fn find_completion_in_type_tuple(schema: &Schema, source: &Source, tuple: &TypeTuple, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_tuple(schema: &Schema, source: &Source, tuple: &TypeTuple, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     for kind in &tuple.kinds {
         if kind.span().contains_line_col(line_col) {
-            return find_completion_in_type_expr_kind(schema, source, kind, line_col, namespace_path, generics, filter);
+            return find_completion_in_type_expr_kind(schema, source, kind, line_col, namespace_path, generics, filter, availability);
         }
     }
     vec![]
 }
 
-fn find_completion_in_type_subscript(schema: &Schema, source: &Source, subscript: &TypeSubscript, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_subscript(schema: &Schema, source: &Source, subscript: &TypeSubscript, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     if subscript.type_expr.span().contains_line_col(line_col) {
-        find_completion_in_type_expr_kind(schema, source, subscript.type_expr.as_ref(), line_col, namespace_path, generics, filter)
+        find_completion_in_type_expr_kind(schema, source, subscript.type_expr.as_ref(), line_col, namespace_path, generics, filter, availability)
     } else if subscript.type_item.span.contains_line_col(line_col) {
-        find_completion_in_type_item(schema, source, &subscript.type_item, line_col, namespace_path, generics, filter)
+        find_completion_in_type_item(schema, source, &subscript.type_item, line_col, namespace_path, generics, filter, availability)
     } else {
         vec![]
     }
 }
 
-fn find_completion_in_type_item(schema: &Schema, source: &Source, item: &TypeItem, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_item(schema: &Schema, source: &Source, item: &TypeItem, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     for generic_kind in &item.generics {
         if generic_kind.span().contains_line_col(line_col) {
-            return find_completion_in_type_expr_kind(schema, source, generic_kind, line_col, namespace_path, generics, filter);
+            return find_completion_in_type_expr_kind(schema, source, generic_kind, line_col, namespace_path, generics, filter, availability);
         }
     }
     if item.identifier_path.span.contains_line_col(line_col) {
-        return find_completion_in_type_item_identifier_path(schema, source, &item.identifier_path, line_col, namespace_path, generics, filter);
+        return find_completion_in_type_item_identifier_path(schema, source, &item.identifier_path, line_col, namespace_path, generics, filter, availability);
     }
     vec![]
 }
 
-fn find_completion_in_type_item_identifier_path(schema: &Schema, source: &Source, identifier_path: &IdentifierPath, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter) -> Vec<CompletionItem> {
+fn find_completion_in_type_item_identifier_path(schema: &Schema, source: &Source, identifier_path: &IdentifierPath, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     let mut user_typed_spaces = vec![];
     for identifier in identifier_path.identifiers.iter() {
         if identifier.span.contains_line_col(line_col) {
@@ -109,12 +110,12 @@ fn find_completion_in_type_item_identifier_path(schema: &Schema, source: &Source
         results.extend(builtin_types(filter));
         results.extend(completion_items_from_generics(generics));
     }
-    results.extend(find_completion_for_referenced_types_with_filter(schema, source, namespace_path, &user_typed_spaces, filter));
+    results.extend(find_completion_for_referenced_types_with_filter(schema, source, namespace_path, &user_typed_spaces, filter, availability));
     results
 }
 
-fn find_completion_for_referenced_types_with_filter(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_spaces: &Vec<&str>, filter: TypeExprFilter) -> Vec<CompletionItem> {
-    find_top_completion_with_filter(schema, source, namespace_path, user_typed_spaces, &top_filter_for_type_expr_filter(filter))
+fn find_completion_for_referenced_types_with_filter(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_spaces: &Vec<&str>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
+    find_top_completion_with_filter(schema, source, namespace_path, user_typed_spaces, &top_filter_for_type_expr_filter(filter), availability)
 }
 
 fn completion_items_from_generics(generics: &Vec<&GenericsDeclaration>) -> Vec<CompletionItem> {

@@ -1,15 +1,16 @@
 use std::sync::Arc;
+use crate::ast::availability::Availability;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 
-pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>) -> Vec<Vec<usize>> {
+pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Vec<Vec<usize>> {
     let mut examined_sources = vec![];
-    collect_reference_completion_in_source_internal(schema, source, namespace_path, user_typed_prefix, filter, &mut examined_sources)
+    collect_reference_completion_in_source_internal(schema, source, namespace_path, user_typed_prefix, filter, &mut examined_sources, availability)
 }
 
-fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, source: &'a Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, examined_sources: &mut Vec<&'a str>) -> Vec<Vec<usize>> {
+fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, source: &'a Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, examined_sources: &mut Vec<&'a str>, availability: Availability) -> Vec<Vec<usize>> {
     examined_sources.push(&source.file_path);
     let mut result = vec![];
     let mut namespace_path_mut = namespace_path.clone();
@@ -30,7 +31,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
         } else if let Some(import) = top.as_import() {
             if !examined_sources.contains(&import.file_path.as_str()) {
                 if let Some(source) = schema.source_at_path(import.file_path.as_str()) {
-                    result.extend(collect_reference_completion_in_source_internal(schema, source, namespace_path, user_typed_prefix, filter, examined_sources));
+                    result.extend(collect_reference_completion_in_source_internal(schema, source, namespace_path, user_typed_prefix, filter, examined_sources, availability));
                 }
             }
         } else {
@@ -41,7 +42,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     }
     for builtin_source in schema.builtin_sources() {
         if !examined_sources.contains(&builtin_source.file_path.as_str()) {
-            result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, user_typed_prefix, filter, examined_sources));
+            result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, user_typed_prefix, filter, examined_sources, availability));
             if let Some(namespace) = builtin_source.find_child_namespace_by_string_path(&vec!["std"]) {
                 result.extend(collect_reference_completion_in_namespace(namespace, filter));
             }

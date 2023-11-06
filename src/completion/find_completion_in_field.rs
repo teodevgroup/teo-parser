@@ -13,16 +13,16 @@ pub(super) fn find_completion_in_field<'a>(schema: &Schema, source: &Source, fie
     namespace_path.pop();
     for decorator in &field.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, field.resolved().class.reference_type());
+            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, field.resolved().class.reference_type(), field.availability());
         }
     }
     for empty_decorator_span in &field.empty_decorators_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_completion_in_empty_decorator(schema, source, &namespace_path, field.resolved().class.reference_type());
+            return find_completion_in_empty_decorator(schema, source, &namespace_path, field.resolved().class.reference_type(), field.availability());
         }
     }
     if field.type_expr.span().contains_line_col(line_col) {
-        return find_completion_in_type_expr(schema, source, &field.type_expr, line_col, &field.namespace_str_path(), generics, field_class_to_type_expr_filter(field.resolved().class));
+        return find_completion_in_type_expr(schema, source, &field.type_expr, line_col, &field.namespace_str_path(), generics, field_class_to_type_expr_filter(field.resolved().class), field.availability());
     }
     vec![]
 }

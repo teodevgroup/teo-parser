@@ -1,3 +1,4 @@
+use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::Model;
 use crate::ast::reference::ReferenceType;
 use crate::ast::schema::Schema;
@@ -19,22 +20,22 @@ pub(super) fn find_completion_in_model(schema: &Schema, source: &Source, model: 
     namespace_path.pop();
     for decorator in &model.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, ReferenceType::ModelDecorator);
+            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, ReferenceType::ModelDecorator, model.availability());
         }
     }
     for empty_decorator_span in &model.empty_decorator_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_completion_in_empty_decorator(schema, source, &namespace_path, ReferenceType::ModelDecorator);
+            return find_completion_in_empty_decorator(schema, source, &namespace_path, ReferenceType::ModelDecorator, model.availability());
         }
     }
     for empty_decorator_span in &model.empty_field_decorator_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_top_completion_with_filter(schema, source, &namespace_path, &vec![], &top_filter_for_any_model_field_decorators());
+            return find_top_completion_with_filter(schema, source, &namespace_path, &vec![], &top_filter_for_any_model_field_decorators(), model.availability());
         }
     }
     for decorator in &model.unattached_field_decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator_with_filter(schema, source, decorator, &namespace_path, line_col, &top_filter_for_any_model_field_decorators());
+            return find_completion_in_decorator_with_filter(schema, source, decorator, &namespace_path, line_col, &top_filter_for_any_model_field_decorators(), model.availability());
         }
     }
     for handler_declaration in &model.handlers {

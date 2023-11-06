@@ -18,19 +18,19 @@ pub(super) fn find_completion_in_handler_group_declaration(schema: &Schema, sour
 
 pub(super) fn find_completion_in_handler_declaration(schema: &Schema, source: &Source, handler_declaration: &HandlerDeclaration, line_col: (usize, usize)) -> Vec<CompletionItem> {
     if handler_declaration.input_type.span().contains_line_col(line_col) {
-        return find_completion_in_type_expr(schema, source, &handler_declaration.input_type, line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput);
+        return find_completion_in_type_expr(schema, source, &handler_declaration.input_type, line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput, handler_declaration.availability());
     }
     if handler_declaration.output_type.span().contains_line_col(line_col) {
-        return find_completion_in_type_expr(schema, source, &handler_declaration.output_type, line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput);
+        return find_completion_in_type_expr(schema, source, &handler_declaration.output_type, line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput, handler_declaration.availability());
     }
     for decorator in &handler_declaration.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator(schema, source, decorator, &handler_declaration.namespace_str_path(), line_col, ReferenceType::HandlerDecorator);
+            return find_completion_in_decorator(schema, source, decorator, &handler_declaration.namespace_str_path(), line_col, ReferenceType::HandlerDecorator, handler_declaration.availability());
         }
     }
     for empty_decorator_span in &handler_declaration.empty_decorators_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_completion_in_empty_decorator(schema, source, &handler_declaration.namespace_str_path(), ReferenceType::HandlerDecorator);
+            return find_completion_in_empty_decorator(schema, source, &handler_declaration.namespace_str_path(), ReferenceType::HandlerDecorator, handler_declaration.availability());
         }
     }
     vec![]

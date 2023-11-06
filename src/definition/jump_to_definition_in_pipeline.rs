@@ -6,7 +6,7 @@ use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
-use crate::search::search_pipeline_unit::search_pipeline_unit;
+use crate::search::search_pipeline_unit_for_definition::search_pipeline_unit_for_definition;
 
 pub(super) fn jump_to_definition_in_pipeline<'a>(
     schema: &'a Schema,
@@ -38,7 +38,7 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    search_pipeline_unit(
+    search_pipeline_unit_for_definition(
         schema,
         source,
         unit,
