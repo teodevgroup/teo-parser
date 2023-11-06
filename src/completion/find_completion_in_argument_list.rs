@@ -33,7 +33,7 @@ fn completion_items_from_names(names: &Vec<Vec<&str>>) -> Vec<CompletionItem> {
     let mut result: BTreeSet<&str> = btreeset!{};
     for names in names {
         for name in names {
-            result.push(*name);
+            result.insert(*name);
         }
     }
     result.iter().map(|name| CompletionItem {

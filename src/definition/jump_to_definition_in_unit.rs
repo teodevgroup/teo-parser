@@ -8,7 +8,7 @@ use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
-use crate::search::search_unit::search_unit;
+use crate::search::search_unit_for_definition::search_unit_for_definition;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_unit<'a>(
@@ -31,7 +31,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             availability,
         )
     } else {
-        search_unit(
+        search_unit_for_definition(
             schema,
             source,
             unit,

@@ -43,7 +43,7 @@ impl UnitSearchResult {
     }
 }
 
-pub fn search_unit<HAL, HS, HI, OUTPUT>(
+pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
     schema: &Schema,
     source: &Source,
     unit: &Unit,
