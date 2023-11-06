@@ -405,7 +405,12 @@ fn resolve_model_list_relation_filter(model: &Model) -> Input {
 }
 
 fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Input> {
-    let sort = context.schema.builtin_sources().get(0).unwrap().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let builtin_source = if let Some(s) = context.schema.builtin_sources().get(0) {
+        *s
+    } else {
+        context.source()
+    };
+    let sort = builtin_source.find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {

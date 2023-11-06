@@ -1,7 +1,18 @@
 use crate::ast::comment::Comment;
+use crate::ast::config::Config;
+use crate::ast::config_declaration::ConfigDeclaration;
+use crate::ast::constant::Constant;
+use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::field::Field;
+use crate::ast::handler::HandlerGroupDeclaration;
+use crate::ast::interface::InterfaceDeclaration;
+use crate::ast::middleware::MiddlewareDeclaration;
+use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
+use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
+use crate::ast::r#enum::Enum;
+use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
 use crate::utils::output::readable_namespace_path;
@@ -9,19 +20,19 @@ use crate::utils::output::readable_namespace_path;
 pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
     match top {
         Top::Import(_) => unreachable!(),
-        Top::Config(_) => unreachable!(),
-        Top::ConfigDeclaration(_) => unreachable!(),
-        Top::Constant(_) => unreachable!(),
-        Top::Enum(_) => unreachable!(),
-        Top::Model(_) => unreachable!(),
-        Top::DataSet(_) => unreachable!(),
-        Top::Middleware(_) => unreachable!(),
-        Top::HandlerGroup(_) => unreachable!(),
-        Top::Interface(_) => unreachable!(),
+        Top::Config(c) => completion_item_from_config(c),
+        Top::ConfigDeclaration(c) => completion_item_from_config_declaration(c),
+        Top::Constant(c) => completion_item_from_constant(c),
+        Top::Enum(e) => completion_item_from_enum(e),
+        Top::Model(m) => completion_item_from_model(m),
+        Top::DataSet(d) => completion_item_from_data_set(d),
+        Top::Middleware(m) => completion_item_from_middleware(m),
+        Top::HandlerGroup(h) => completion_item_from_handler_group(h),
+        Top::Interface(i) => completion_item_from_interface(i),
         Top::Namespace(namespace) => completion_item_from_namespace(namespace),
         Top::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),
-        Top::PipelineItemDeclaration(_) => unreachable!(),
-        Top::StructDeclaration(_) => unreachable!(),
+        Top::PipelineItemDeclaration(p) => completion_item_from_pipeline_item_declaration(p),
+        Top::StructDeclaration(s) => completion_item_from_struct_declaration(s),
         Top::UseMiddlewareBlock(_) => unreachable!(),
     }
 }
@@ -55,6 +66,105 @@ pub(super) fn completion_item_from_field(field: &Field) -> CompletionItem {
         label: field.identifier.name.clone(),
         namespace_path: Some(readable_namespace_path(&field.string_path)),
         documentation: documentation_from_comment(field.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_config(config: &Config) -> CompletionItem {
+    CompletionItem {
+        label: config.name().to_owned(),
+        namespace_path: Some(readable_namespace_path(&config.string_path)),
+        documentation: None,
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_config_declaration(config_declaration: &ConfigDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: config_declaration.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&config_declaration.string_path)),
+        documentation: documentation_from_comment(config_declaration.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_constant(constant: &Constant) -> CompletionItem {
+    CompletionItem {
+        label: constant.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&constant.string_path)),
+        documentation: None,
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_enum(e: &Enum) -> CompletionItem {
+    CompletionItem {
+        label: e.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&e.string_path)),
+        documentation: documentation_from_comment(e.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_model(model: &Model) -> CompletionItem {
+    CompletionItem {
+        label: model.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&model.string_path)),
+        documentation: documentation_from_comment(model.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_data_set(data_set: &DataSet) -> CompletionItem {
+    CompletionItem {
+        label: data_set.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&data_set.string_path)),
+        documentation: None,
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_middleware(middleware: &MiddlewareDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: middleware.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&middleware.string_path)),
+        documentation: None,
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_handler_group(handler_group: &HandlerGroupDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: handler_group.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&handler_group.string_path)),
+        documentation: documentation_from_comment(handler_group.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_interface(interface_declaration: &InterfaceDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: interface_declaration.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&interface_declaration.string_path)),
+        documentation: documentation_from_comment(interface_declaration.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_pipeline_item_declaration(pipeline_item_declaration: &PipelineItemDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: pipeline_item_declaration.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&pipeline_item_declaration.string_path)),
+        documentation: documentation_from_comment(pipeline_item_declaration.comment.as_ref()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_struct_declaration(struct_declaration: &StructDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: struct_declaration.identifier.name.clone(),
+        namespace_path: Some(readable_namespace_path(&struct_declaration.string_path)),
+        documentation: documentation_from_comment(struct_declaration.comment.as_ref()),
         detail: None,
     }
 }
