@@ -1,6 +1,7 @@
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use indexmap::{IndexMap, indexmap};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
@@ -107,9 +108,25 @@ impl InfoProvider for InterfaceDeclaration {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct InterfaceDeclarationShapeResolved {
     pub map: IndexMap<Vec<Type>, Input>,
+}
+
+#[derive(Serialize)]
+pub struct InterfaceDeclarationShapeResolvedItemRef<'a> {
+    key: &'a Vec<Type>,
+    value: &'a Input,
+}
+
+impl Serialize for InterfaceDeclarationShapeResolved {
+
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.collect_seq(self.map.iter().map(|(key, value)| InterfaceDeclarationShapeResolvedItemRef {
+            key,
+            value
+        }))
+    }
 }
 
 impl InterfaceDeclarationShapeResolved {

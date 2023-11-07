@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use indexmap::{IndexMap, indexmap};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
@@ -101,9 +101,25 @@ impl InfoProvider for Model {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct ModelShapeResolved {
     pub map: IndexMap<(String, Option<String>), Input>,
+}
+
+#[derive(Serialize)]
+pub struct ModelShapeResolvedItemRef<'a> {
+    key: &'a (String, Option<String>),
+    value: &'a Input,
+}
+
+impl Serialize for ModelShapeResolved {
+
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.collect_seq(self.map.iter().map(|(key, value)| ModelShapeResolvedItemRef {
+            key,
+            value
+        }))
+    }
 }
 
 impl ModelShapeResolved {
