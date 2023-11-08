@@ -96,7 +96,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                                 // to one relation
                                 if field.type_expr.resolved().is_optional() {
                                     // allow null
-                                    resolve_expression(value_expression, context, &expect.to_optional(), &btreemap! {});
+                                    resolve_expression(value_expression, context, &expect.wrap_in_optional(), &btreemap! {});
                                 } else {
                                     resolve_expression(value_expression, context, &expect, &btreemap! {});
                                 }

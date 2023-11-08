@@ -6,31 +6,36 @@ use crate::r#type::Type;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct SynthesizedShape {
-    map: IndexMap<String, Type>,
+    generics: Vec<String>,
+    fields: IndexMap<String, Type>,
 }
 
 impl SynthesizedShape {
 
     pub fn new(map: IndexMap<String, Type>) -> Self {
-        Self { map }
+        Self { fields: map, generics: vec![] }
+    }
+
+    pub fn generics(&self) -> &Vec<String> {
+        &self.generics
     }
 
     pub fn is_empty(&self) -> bool {
-        self.map.is_empty()
+        self.fields.is_empty()
     }
 
     pub fn into_iter(self) -> IntoIter<String, Type> {
-        self.map.into_iter()
+        self.fields.into_iter()
     }
 
     pub fn iter(&self) -> Iter<String, Type> {
-        self.map.iter()
+        self.fields.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<String, Type> { self.map.iter_mut() }
+    pub fn iter_mut(&mut self) -> IterMut<String, Type> { self.fields.iter_mut() }
 
     pub fn get(&self, key: &str) -> Option<&Type> {
-        self.map.get(key)
+        self.fields.get(key)
     }
 
     pub fn has(&self, key: &str) -> bool {
@@ -38,16 +43,17 @@ impl SynthesizedShape {
     }
 
     pub fn keys(&self) -> Keys<String, Type> {
-        self.map.keys()
+        self.fields.keys()
     }
 
     pub fn extend<I: IntoIterator<Item = (String, Type)>>(&mut self, iterable: I) {
-        self.map.extend(iterable)
+        self.fields.extend(iterable)
     }
 
     pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
         Self {
-            map: self.map.iter().map(|(k, i)| (k.clone(), if let Some(t) = i.as_type() {
+            generics: vec![],
+            fields: self.fields.iter().map(|(k, i)| (k.clone(), if let Some(t) = i.as_type() {
                 t.replace_generics(map)
             } else {
                 i.clone()

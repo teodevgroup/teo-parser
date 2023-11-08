@@ -4,10 +4,11 @@ use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use educe::Educe;
 use serde::Serialize;
+use crate::r#type::reference::Reference;
 use crate::r#type::shape::SynthesizedShape;
+use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
-use crate::r#type::synthesized_enum_definition::SynthesizedEnumDefinition;
-use crate::r#type::synthesized_shape::SynthesizedShapeReference;
+use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
@@ -138,59 +139,86 @@ pub enum Type {
     ///
     SynthesizedShapeReference(SynthesizedShapeReference),
 
-    /// Namespace
+    /// Enum
     ///
-    Namespace,
+    Enum,
+
+    /// Enum Reference
+    ///
+    EnumReference(Reference),
+
+    /// Enum Variant
+    ///
+    EnumVariant(Reference),
+
+    /// Synthesized Enum Definition
+    ///
+    SynthesizedEnum(SynthesizedEnum),
+
+
+    /// Synthesized Enum Reference
+    ///
+    SynthesizedEnumReference(SynthesizedEnumReference),
+
+    /// Synthesized Enum Variant Reference
+    ///
+    SynthesizedEnumVariantReference(SynthesizedEnumReference),
 
     /// Model
     ///
     Model,
 
+    /// Model Reference
+    ///
+    ModelReference(Reference),
+
     /// Model Object
-    ModelObject(Vec<usize>, Vec<String>),
+    ModelObject(Reference),
 
-    /// Enum
+    /// Interface
     ///
-    Enum(Vec<usize>, Vec<String>),
+    InterfaceReference(Reference, Vec<Type>),
 
-    /// Enum Variant
+    /// Interface Object
     ///
-    EnumVariant(Vec<usize>, Vec<String>),
-
-    /// Synthesized Enum Reference
-    ///
-    SynthesizedEnumReference(SynthesizedEnum),
-
-    /// Synthesized Enum Variant Reference
-    ///
-    SynthesizedEnumVariantReference(SynthesizedEnum),
-
-    /// Synthesized Enum Definition
-    ///
-    SynthesizedEnumDefinition(SynthesizedEnumDefinition),
+    InterfaceObject(Reference, Vec<Type>),
 
     /// Struct
     ///
-    Struct(Vec<usize>, Vec<String>),
-
-    /// Function
-    ///
-    Function,
+    StructReference(Reference, Vec<Type>),
 
     /// Struct Object
     ///
-    StructObject(Vec<usize>, Vec<String>),
+    StructObject(Reference, Vec<Type>),
+
+    /// Struct Static Function
+    ///
+    StructStaticFunctionReference(Reference, Vec<Type>),
+
+    /// Struct Static Function
+    ///
+    StructInstanceFunctionReference(Reference, Vec<Type>),
+
+    /// Function
+    ///
+    /// These functions are declared outside of structs
+    ///
+    FunctionReference(Reference),
 
     /// Middleware
     ///
     Middleware,
+
+    /// Middleware Reference
+    ///
+    MiddlewareReference(Reference),
 
     /// Data Set
     ///
     DataSet,
 
     /// Data Set Object
-    DataSetObject(Vec<usize>, Vec<String>),
+    DataSetReference(Reference),
 
     /// Data Set Group
     ///
@@ -200,13 +228,13 @@ pub enum Type {
     ///
     DataSetRecord(Box<Type>, Box<Type>),
 
-    /// Interface
+    /// Namespace
     ///
-    Interface,
+    Namespace,
 
-    /// Interface Object
+    /// Namespace Reference
     ///
-    InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
+    NamespaceReference(Reference),
 
     /// Pipeline
     ///
@@ -215,52 +243,10 @@ pub enum Type {
 
 impl Type {
 
-    pub fn wrap_in_array(&self) -> Type {
-        Type::Array(Box::new(self.clone()))
-    }
-
-    pub fn to_enumerable(&self) -> Type {
-        if self.is_enumerable() {
-            self.clone()
-        } else {
-            Type::Enumerable(Box::new(self.clone()))
-        }
-    }
-
-    pub fn to_optional(&self) -> Type {
-        if self.is_optional() {
-            self.clone()
-        } else {
-            Type::Optional(Box::new(self.clone()))
-        }
-    }
-
     pub fn is_undetermined(&self) -> bool {
         match self {
             Type::Undetermined => true,
             _ => false,
-        }
-    }
-
-    pub fn is_shape(&self) -> bool {
-        self.as_shape().is_some()
-    }
-
-    pub fn as_shape(&self) -> Option<&SynthesizedShape> {
-        match self {
-            Type::SynthesizedShape(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn is_synthesized_shape(&self) -> bool {
-        self.as_synthesized_shape().is_some()
-    }
-
-    pub fn as_synthesized_shape(&self) -> Option<&SynthesizedShapeReference> {
-        match self {
-            Type::SynthesizedShapeReference(s) => Some(s),
-            _ => None,
         }
     }
 
@@ -275,6 +261,83 @@ impl Type {
         match self {
             Type::Any => true,
             _ => false,
+        }
+    }
+
+    pub fn is_union(&self) -> bool {
+        self.as_union().is_some()
+    }
+
+    pub fn as_union(&self) -> Option<&Vec<Type>> {
+        match self {
+            Self::Union(types) => Some(types),
+            _ => None,
+        }
+    }
+
+    pub fn is_enumerable(&self) -> bool {
+        self.as_enumerable().is_some()
+    }
+
+    pub fn as_enumerable(&self) -> Option<&Type> {
+        match self {
+            Self::Enumerable(inner) => Some(inner.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn is_optional(&self) -> bool {
+        self.as_optional().is_some()
+    }
+
+    pub fn as_optional(&self) -> Option<&Type> {
+        match self {
+            Type::Optional(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    pub fn is_field_type(&self) -> bool {
+        self.as_field_type().is_some()
+    }
+
+    pub fn as_field_type(&self) -> Option<(&Type, &Type)> {
+        match self {
+            Self::FieldType(path, field) => Some((path, field)),
+            _ => None,
+        }
+    }
+
+    pub fn is_field_reference(&self) -> bool {
+        self.as_field_reference().is_some()
+    }
+
+    pub fn as_field_reference(&self) -> Option<&str> {
+        match self {
+            Self::FieldReference(name) => Some(name.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn is_generic_item(&self) -> bool {
+        self.as_generic_item().is_some()
+    }
+
+    pub fn as_generic_item(&self) -> Option<&str> {
+        match self {
+            Self::GenericItem(name) => Some(name),
+            _ => None,
+        }
+    }
+
+    pub fn is_keyword(&self) -> bool {
+        self.as_keyword().is_some()
+    }
+
+    pub fn as_keyword(&self) -> Option<&Keyword> {
+        match self {
+            Self::Keyword(kw) => Some(kw),
+            _ => None,
         }
     }
 
@@ -369,40 +432,6 @@ impl Type {
         }
     }
 
-    pub fn is_model(&self) -> bool {
-        match self {
-            Type::Model => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_namespace(&self) -> bool {
-        match self {
-            Type::Namespace => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_data_set(&self) -> bool {
-        match self {
-            Type::DataSet => true,
-            _ => false,
-        }
-    }
-
-
-
-    pub fn is_enumerable(&self) -> bool {
-        self.as_enumerable().is_some()
-    }
-
-    pub fn as_enumerable(&self) -> Option<&Type> {
-        match self {
-            Self::Enumerable(inner) => Some(inner.as_ref()),
-            _ => None,
-        }
-    }
-
     pub fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
@@ -447,13 +476,42 @@ impl Type {
         }
     }
 
-    pub fn is_union(&self) -> bool {
-        self.as_union().is_some()
+    pub fn is_synthesized_shape(&self) -> bool {
+        self.as_synthesized_shape().is_some()
     }
 
-    pub fn as_union(&self) -> Option<&Vec<Type>> {
+    pub fn as_synthesized_shape(&self) -> Option<&SynthesizedShape> {
         match self {
-            Self::Union(types) => Some(types),
+            Type::SynthesizedShape(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_shape_reference(&self) -> bool {
+        self.as_synthesized_shape_reference().is_some()
+    }
+
+    pub fn as_synthesized_shape_reference(&self) -> Option<&SynthesizedShapeReference> {
+        match self {
+            Type::SynthesizedShapeReference(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_enum(&self) -> bool {
+        match self {
+            Type::Enum => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_enum_reference(&self) -> bool {
+        self.as_enum_reference().is_some()
+    }
+
+    pub fn as_enum_reference(&self) -> Option<&Reference> {
+        match self {
+            Type::EnumReference(a) => Some(a),
             _ => None,
         }
     }
@@ -462,60 +520,60 @@ impl Type {
         self.as_enum_variant().is_some()
     }
 
-    pub fn as_enum_variant(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_enum_variant(&self) -> Option<&Reference> {
         match self {
-            Self::EnumVariant(path, name) => Some((path, name)),
+            Type::EnumVariant(a) => Some(a),
             _ => None,
         }
     }
 
-    pub fn is_struct(&self) -> bool {
-        self.as_struct().is_some()
+    pub fn is_synthesized_enum(&self) -> bool {
+        self.as_synthesized_enum().is_some()
     }
 
-    pub fn as_struct(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_synthesized_enum(&self) -> Option<&SynthesizedEnum> {
         match self {
-            Self::Struct(a, b) => Some((a, b)),
+            Type::SynthesizedEnum(s) => Some(s),
             _ => None,
         }
     }
 
-    pub fn is_interface(&self) -> bool {
+    pub fn is_synthesized_enum_reference(&self) -> bool {
+        self.as_synthesized_enum_reference().is_some()
+    }
+
+    pub fn as_synthesized_enum_reference(&self) -> Option<&SynthesizedEnumReference> {
         match self {
-            Self::Interface => true,
+            Type::SynthesizedEnumReference(e) => Some(e),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_enum_variant_reference(&self) -> bool {
+        self.as_synthesized_enum_reference().is_some()
+    }
+
+    pub fn as_synthesized_enum_variant_reference(&self) -> Option<&SynthesizedEnumReference> {
+        match self {
+            Type::SynthesizedEnumVariantReference(a) => Some(a),
+            _ => None,
+        }
+    }
+
+    pub fn is_model(&self) -> bool {
+        match self {
+            Type::Model => true,
             _ => false,
         }
     }
 
-    pub fn is_interface_object(&self) -> bool {
-        self.as_interface_object().is_some()
+    pub fn is_model_reference(&self) -> bool {
+        self.as_model_reference().is_some()
     }
 
-    pub fn as_interface_object(&self) -> Option<(&Vec<usize>, &Vec<Type>, &Vec<String>)> {
+    pub fn as_model_reference(&self) -> Option<&Reference> {
         match self {
-            Self::InterfaceObject(path, types, name) => Some((path, types, name)),
-            _ => None,
-        }
-    }
-
-    pub fn is_data_set_object(&self) -> bool {
-        self.as_data_set_object().is_some()
-    }
-
-    pub fn as_data_set_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
-        match self {
-            Self::DataSetObject(path, name) => Some((path, name)),
-            _ => None,
-        }
-    }
-
-    pub fn is_data_set_group(&self) -> bool {
-        self.as_data_set_object().is_some()
-    }
-
-    pub fn as_data_set_group(&self) -> Option<&Type> {
-        match self {
-            Self::DataSetGroup(a) => Some((a.as_ref())),
+            Type::ModelReference(r) => Some(r),
             _ => None,
         }
     }
@@ -524,9 +582,42 @@ impl Type {
         self.as_model_object().is_some()
     }
 
-    pub fn as_model_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_model_object(&self) -> Option<&Reference> {
         match self {
-            Self::ModelObject(path, name) => Some((path, name)),
+            Type::ModelObject(r) => Some(r),
+            _ => None,
+        }
+    }
+
+    pub fn is_interface_reference(&self) -> bool {
+        self.as_interface_reference().is_some()
+    }
+
+    pub fn as_interface_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+        match self {
+            Type::InterfaceReference(r, g) => Some((r, g)),
+            _ => None,
+        }
+    }
+
+    pub fn is_interface_object(&self) -> bool {
+        self.as_interface_object().is_some()
+    }
+
+    pub fn as_interface_object(&self) -> Option<(&Reference, &Vec<Type>)> {
+        match self {
+            Type::InterfaceObject(r, g) => Some((r, g)),
+            _ => None,
+        }
+    }
+
+    pub fn is_struct_reference(&self) -> bool {
+        self.as_struct_reference().is_some()
+    }
+
+    pub fn as_struct_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+        match self {
+            Type::StructReference(r, g) => Some((r, g)),
             _ => None,
         }
     }
@@ -535,64 +626,89 @@ impl Type {
         self.as_struct_object().is_some()
     }
 
-    pub fn as_struct_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+    pub fn as_struct_object(&self) -> Option<(&Reference, &Vec<Type>)> {
         match self {
-            Self::StructObject(path, name) => Some((path, name)),
+            Type::StructObject(r, g) => Some((r, g)),
             _ => None,
         }
     }
 
-    pub fn is_model_scalar_fields(&self) -> bool {
-        self.as_model_scalar_fields().is_some()
+    pub fn is_struct_static_function_reference(&self) -> bool {
+        self.as_struct_static_function_reference().is_some()
     }
 
-    pub fn as_model_scalar_fields(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_struct_static_function_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
         match self {
-            Self::ModelScalarFields(path, name) => Some((path, name.as_ref())),
+            Type::StructStaticFunctionReference(r, g) => Some((r, g)),
             _ => None,
         }
     }
 
-    pub fn is_model_scalar_fields_without_virtuals(&self) -> bool {
-        self.as_model_scalar_fields_without_virtuals().is_some()
+    pub fn is_struct_instance_function_reference(&self) -> bool {
+        self.as_struct_instance_function_reference().is_some()
     }
 
-    pub fn as_model_scalar_fields_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_struct_instance_function_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
         match self {
-            Self::ModelScalarFieldsWithoutVirtuals(path, name) => Some((path, name.as_ref())),
+            Type::StructInstanceFunctionReference(r, g) => Some((r, g)),
             _ => None,
         }
     }
 
-    pub fn is_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> bool {
-        self.as_model_scalar_fields_and_cached_properties_without_virtuals().is_some()
+    pub fn is_function_reference(&self) -> bool {
+        self.as_function_reference().is_some()
     }
 
-    pub fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn as_function_reference(&self) -> Option<&Reference> {
         match self {
-            Self::ModelSerializableScalarFields(path, name) => Some((path, name.as_ref())),
+            Type::FunctionReference(r) => Some(r),
             _ => None,
         }
     }
 
-    pub fn is_model_relations(&self) -> bool {
-        self.as_model_scalar_fields().is_some()
+    pub fn is_middleware(&self) -> bool {
+        match self {
+            Type::Middleware => true,
+            _ => false,
+        }
     }
 
-    pub fn as_model_relations(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn is_middleware_reference(&self) -> bool {
+        self.as_middleware_reference().is_some()
+    }
+
+    pub fn as_middleware_reference(&self) -> Option<&Reference> {
         match self {
-            Self::ModelRelations(path, name) => Some((path, name.as_ref())),
+            Type::MiddlewareReference(r) => Some(r),
             _ => None,
         }
     }
 
-    pub fn is_model_direct_relations(&self) -> bool {
-        self.as_model_direct_relations().is_some()
+    pub fn is_data_set(&self) -> bool {
+        match self {
+            Type::DataSet => true,
+            _ => false,
+        }
     }
 
-    pub fn as_model_direct_relations(&self) -> Option<(&Type, Option<&String>)> {
+    pub fn is_data_set_reference(&self) -> bool {
+        self.as_data_set_reference().is_some()
+    }
+
+    pub fn as_data_set_reference(&self) -> Option<&Reference> {
         match self {
-            Self::ModelDirectRelations(path, name) => Some((path, name.as_ref())),
+            Type::DataSetReference(r) => Some(r),
+            _ => None,
+        }
+    }
+
+    pub fn is_data_set_group(&self) -> bool {
+        self.as_data_set_group().is_some()
+    }
+
+    pub fn as_data_set_group(&self) -> Option<&Type> {
+        match self {
+            Type::DataSetGroup(r) => Some(r.as_ref()),
             _ => None,
         }
     }
@@ -608,57 +724,20 @@ impl Type {
         }
     }
 
-    pub fn is_field_type(&self) -> bool {
-        self.as_field_type().is_some()
-    }
-
-    pub fn as_field_type(&self) -> Option<(&Type, &Type)> {
+    pub fn is_namespace(&self) -> bool {
         match self {
-            Self::FieldType(path, field) => Some((path, field)),
-            _ => None,
+            Type::Namespace => true,
+            _ => false,
         }
     }
 
-    pub fn is_field_reference(&self) -> bool {
-        self.as_field_reference().is_some()
+    pub fn is_namespace_reference(&self) -> bool {
+        self.as_namespace_reference().is_some()
     }
 
-    pub fn as_field_reference(&self) -> Option<&str> {
+    pub fn as_namespace_reference(&self) -> Option<&Reference> {
         match self {
-            Self::FieldReference(name) => Some(name.as_str()),
-            _ => None,
-        }
-    }
-
-    pub fn is_generic_item(&self) -> bool {
-        self.as_generic_item().is_some()
-    }
-
-    pub fn as_generic_item(&self) -> Option<&str> {
-        match self {
-            Self::GenericItem(name) => Some(name),
-            _ => None,
-        }
-    }
-
-    pub fn is_keyword(&self) -> bool {
-        self.as_keyword().is_some()
-    }
-
-    pub fn as_keyword(&self) -> Option<&Keyword> {
-        match self {
-            Self::Keyword(kw) => Some(kw),
-            _ => None,
-        }
-    }
-
-    pub fn is_optional(&self) -> bool {
-        self.as_optional().is_some()
-    }
-
-    pub fn as_optional(&self) -> Option<&Type> {
-        match self {
-            Type::Optional(t) => Some(t),
+            Type::NamespaceReference(r) => Some(r),
             _ => None,
         }
     }
@@ -671,6 +750,58 @@ impl Type {
         match self {
             Type::Pipeline((a, b)) => Some((a.as_ref(), b.as_ref())),
             _ => None,
+        }
+    }
+
+    pub fn wrap_in_array(&self) -> Type {
+        Type::Array(Box::new(self.clone()))
+    }
+
+    pub fn wrap_in_enumerable(&self) -> Type {
+        if self.is_enumerable() {
+            self.clone()
+        } else {
+            Type::Enumerable(Box::new(self.clone()))
+        }
+    }
+
+    pub fn wrap_in_optional(&self) -> Type {
+        if self.is_optional() {
+            self.clone()
+        } else {
+            Type::Optional(Box::new(self.clone()))
+        }
+    }
+
+    pub fn unwrap_optional(&self) -> &Type {
+        if self.is_optional() {
+            self.as_optional().unwrap()
+        } else {
+            self
+        }
+    }
+
+    pub fn unwrap_array(&self) -> &Type {
+        if self.is_array() {
+            self.as_array().unwrap()
+        } else {
+            self
+        }
+    }
+
+    pub fn unwrap_dictionary(&self) -> &Type {
+        if self.is_dictionary() {
+            self.as_dictionary().unwrap()
+        } else {
+            self
+        }
+    }
+
+    pub fn unwrap_tuple_index(&self, index: usize) -> Option<&Type> {
+        if self.is_tuple() {
+            self.as_tuple().unwrap().get(index )
+        } else {
+            None
         }
     }
 
@@ -696,148 +827,133 @@ impl Type {
         self.is_any_int_or_float() || self.is_decimal()
     }
 
-    pub fn is_any_model_field_reference(&self) -> bool {
-        self.is_model_scalar_fields() ||
-            self.is_model_scalar_fields_without_virtuals() ||
-            self.is_model_scalar_fields_and_cached_properties_without_virtuals() ||
-            self.is_model_relations() ||
-            self.is_model_direct_relations()
-    }
-
-    pub fn is_container(&self) -> bool {
-        match self {
-            Type::Enumerable(_) => true,
-            Type::Array(_) => true,
-            Type::Dictionary(_) => true,
-            Type::Tuple(_) => true,
-            Type::Range(_) => true,
-            Type::Union(_) => true,
-            _ => false,
-        }
-    }
-
     pub fn contains_generics(&self) -> bool {
         match self {
-            Type::Undetermined => false,
-            Type::Ignored => false,
-            Type::Any => false,
-            Type::Null => false,
-            Type::Bool => false,
-            Type::Int => false,
-            Type::Int64 => false,
-            Type::Float32 => false,
-            Type::Float => false,
-            Type::Decimal => false,
-            Type::String => false,
-            Type::ObjectId => false,
-            Type::Date => false,
-            Type::DateTime => false,
-            Type::File => false,
-            Type::Regex => false,
-            Type::Model => false,
-            Type::DataSet => false,
+            Type::GenericItem(_) => true,
+            Type::Union(types) => types.iter().any(|t| t.contains_generics()),
             Type::Enumerable(inner) => inner.contains_generics(),
+            Type::Optional(inner) => inner.contains_generics(),
+            Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::Array(inner) => inner.contains_generics(),
             Type::Dictionary(inner) => inner.contains_generics(),
             Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
             Type::Range(inner) => inner.contains_generics(),
-            Type::Union(types) => types.iter().any(|t| t.contains_generics()),
-            Type::EnumVariant(_, _) => false,
-            Type::InterfaceObject(_, types, _) => types.iter().any(|t| t.contains_generics()),
-            Type::ModelObject(_, _) => false,
-            Type::StructObject(_, _) => false,
-            Type::DataSetObject(_, _) => false,
-            Type::SynthesizedEnumVariant(s) => s.contains_generics(),
+            Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
+            Type::SynthesizedShapeReference(s) => s.contains_generics(),
+            Type::InterfaceReference(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::StructReference(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::StructObject(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::StructStaticFunctionReference(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::DataSetGroup(inner) => inner.contains_generics(),
             Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
-            Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
-            Type::FieldReference(_) => false,
-            Type::GenericItem(_) => true,
-            Type::Keyword(_) => false,
-            Type::Optional(inner) => inner.contains_generics(),
             Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
-            Type::SynthesizedShapeReference(_) => false,
-            Type::SynthesizedShape(_) => false,
-            Type::Namespace => false,
-            Type::Enum(_, _) => false,
-            Type::Struct(_, _) => false,
-            Type::Function => false,
-            Type::Middleware => false,
-            Type::DataSetGroup(_) => false,
-            Type::Interface => false,
-            Type::SynthesizedEnumDefinition(_) => false,
-        }
-    }
-
-    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
-        if let Some(name) = self.as_generic_item() {
-            if let Some(t) = map.get(name) {
-                (*t).clone()
-            } else {
-                self.clone()
-            }
-        } else {
-            match self {
-                Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
-                Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_generics(map))),
-                Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_generics(map)).collect()),
-                Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
-                Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_generics(map)).collect()),
-                Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect(), name.clone()),
-                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
-                Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
-                Type::SynthesizedEnumVariant(s) => Type::SynthesizedEnumVariant(s.replace_generics(map)),
-                Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map))),
-                _ => self.clone(),
-            }
-        }
-    }
-
-    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, &Type>) -> Self {
-        if let Some(name) = self.as_keyword() {
-            if let Some(t) = map.get(name) {
-                (*t).clone()
-            } else {
-                self.clone()
-            }
-        } else {
-            match self {
-                Type::Array(inner) => Type::Array(Box::new(inner.replace_keywords(map))),
-                Type::Dictionary(v) => Type::Dictionary(Box::new(v.replace_keywords(map))),
-                Type::Tuple(inner) => Type::Tuple(inner.iter().map(|t| t.replace_keywords(map)).collect()),
-                Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
-                Type::Union(inner) => Type::Union(inner.iter().map(|t| t.replace_keywords(map)).collect()),
-                Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect(), name.clone()),
-                Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))).flatten(),
-                Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
-                Type::SynthesizedEnumVariant(s) => Type::SynthesizedEnumVariant(s.replace_keywords(map)),
-                Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map))),
-                _ => self.clone(),
-            }
-        }
-    }
-
-    pub fn as_enum(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
-        match self {
-            Type::Enum(a, b) => Some((a, b)),
-            _ => None,
-        }
-    }
-
-    pub fn is_enum(&self) -> bool {
-        match self {
-            Type::Enum(_, _) => true,
             _ => false,
         }
     }
 
-    pub fn is_synthesized_enum_variant(&self) -> bool {
-        self.as_synthesized_enum_variant().is_some()
+    pub fn contains_keywords(&self) -> bool {
+        match self {
+            Type::GenericItem(_) => true,
+            Type::Union(types) => types.iter().any(|t| t.contains_keywords()),
+            Type::Enumerable(inner) => inner.contains_keywords(),
+            Type::Optional(inner) => inner.contains_keywords(),
+            Type::FieldType(a, b) => a.contains_keywords() || b.contains_keywords(),
+            Type::Array(inner) => inner.contains_keywords(),
+            Type::Dictionary(inner) => inner.contains_keywords(),
+            Type::Tuple(types) => types.iter().any(|t| t.contains_keywords()),
+            Type::Range(inner) => inner.contains_keywords(),
+            Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
+            Type::SynthesizedShapeReference(s) => s.contains_keywords(),
+            Type::InterfaceReference(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::StructReference(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::StructObject(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::StructStaticFunctionReference(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::DataSetGroup(inner) => inner.contains_keywords(),
+            Type::DataSetRecord(a, b) => a.contains_keywords() || b.contains_keywords(),
+            Type::Pipeline((a, b)) => a.contains_keywords() || b.contains_keywords(),
+            _ => false,
+        }
     }
 
-    pub fn as_synthesized_enum_variant(&self) -> Option<&SynthesizedEnum> {
+    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
         match self {
-            Type::SynthesizedEnumVariant(s) => Some(s),
-            _ => None,
+            Type::GenericItem(name) => if let Some(t) = map.get(name) {
+                t.clone()
+            } else {
+                self.clone()
+            },
+            Type::Union(types) => Type::Union(types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::Enumerable(inner) => Type::Enumerable(Box::new(inner.replace_generics(map))),
+            Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+            Type::FieldType(a, b) => Type::FieldType(
+                Box::new(a.replace_generics(map)),
+                Box::new(b.replace_generics(map)),
+            ),
+            Type::Array(inner) => Type::Array(Box::new(inner.replace_generics(map))),
+            Type::Dictionary(inner) => Type::Dictionary(Box::new(inner.replace_generics(map))),
+            Type::Tuple(types) => Type::Tuple(types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
+            Type::SynthesizedShape(shape) => Type::SynthesizedShape(shape.replace_generics(map)),
+            Type::SynthesizedShapeReference(s) => Type::SynthesizedShapeReference(s.replace_generics(map)),
+            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
+            Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(inner.replace_generics(map))),
+            Type::DataSetRecord(a, b) => Type::DataSetRecord(
+                Box::new(a.replace_generics(map)),
+                Box::new(b.replace_generics(map)),
+            ),
+            Type::Pipeline((a, b)) => Type::Pipeline((
+                Box::new(a.replace_generics(map)),
+                Box::new(b.replace_generics(map)),
+            )),
+            _ => self.clone(),
+        }
+    }
+
+    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
+        match self {
+            Type::Keyword(name) => if let Some(t) = map.get(name) {
+                t.clone()
+            } else {
+                self.clone()
+            },
+            Type::Union(types) => Type::Union(types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::Enumerable(inner) => Type::Enumerable(Box::new(inner.replace_keywords(map))),
+            Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))),
+            Type::FieldType(a, b) => Type::FieldType(
+                Box::new(a.replace_keywords(map)),
+                Box::new(b.replace_keywords(map)),
+            ),
+            Type::Array(inner) => Type::Array(Box::new(inner.replace_keywords(map))),
+            Type::Dictionary(inner) => Type::Dictionary(Box::new(inner.replace_keywords(map))),
+            Type::Tuple(types) => Type::Tuple(types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
+            Type::SynthesizedShape(shape) => Type::SynthesizedShape(shape.replace_keywords(map)),
+            Type::SynthesizedShapeReference(s) => Type::SynthesizedShapeReference(s.replace_keywords(map)),
+            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
+            Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(inner.replace_keywords(map))),
+            Type::DataSetRecord(a, b) => Type::DataSetRecord(
+                Box::new(a.replace_keywords(map)),
+                Box::new(b.replace_keywords(map)),
+            ),
+            Type::Pipeline((a, b)) => Type::Pipeline((
+                Box::new(a.replace_keywords(map)),
+                Box::new(b.replace_keywords(map)),
+            )),
+            _ => self.clone(),
         }
     }
 
@@ -880,64 +996,16 @@ impl Type {
             Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
             Type::SynthesizedShapeReference(r) => false,
-            Type::SynthesizedShape(s) => passed.is_shape() && s == passed.as_shape().unwrap(),
+            Type::SynthesizedShape(s) => passed.is_synthesized_shape() && s == passed.as_synthesized_shape().unwrap(),
             Type::Namespace => passed.is_namespace(),
             Type::Enum(p, _) => passed.is_enum() && passed.as_enum().unwrap().0 == p,
             Type::SynthesizedEnumVariant(s) => passed.is_synthesized_enum_variant() && s == passed.as_synthesized_enum_variant().unwrap(),
             Type::Struct(p, _) => passed.is_struct() && passed.as_struct().unwrap().0 == p,
-            Type::Function => false,
+            Type::FunctionReference => false,
             Type::Middleware => passed.is_middleware(),
             Type::DataSetGroup(_) => false,
             Type::Interface => passed.is_interface(),
-            Type::SynthesizedEnumDefinition(_) => false,
-        }
-    }
-
-    pub fn unwrap_optional(&self) -> &Type {
-        if self.is_optional() {
-            self.as_optional().unwrap()
-        } else {
-            self
-        }
-    }
-
-    pub fn unwrap_array(&self) -> &Type {
-        if self.is_array() {
-            self.as_array().unwrap()
-        } else {
-            self
-        }
-    }
-
-        pub fn unwrap_dictionary(&self) -> &Type {
-            if self.is_dictionary() {
-                self.as_dictionary().unwrap()
-            } else {
-                self
-            }
-        }
-
-    pub fn unwrap_tuple_index(&self, index: usize) -> Option<&Type> {
-        if self.is_tuple() {
-            self.as_tuple().unwrap().get(index )
-        } else {
-            None
-        }
-    }
-
-    pub fn is_cached_enum(&self) -> bool {
-        self.is_model_relations() ||
-            self.is_model_direct_relations() ||
-            self.is_model_scalar_fields_and_cached_properties_without_virtuals() ||
-            self.is_model_scalar_fields_without_virtuals() ||
-            self.is_model_scalar_fields()
-    }
-
-    pub fn unwrap_union_enum(&self) -> Option<&Type> {
-        if self.is_union() {
-            self.as_union().unwrap().iter().find(|t| t.is_enum_variant() || t.is_cached_enum())
-        } else {
-            None
+            Type::SynthesizedEnum(_) => false,
         }
     }
 
@@ -1076,11 +1144,11 @@ impl Display for Type {
             Type::Namespace => f.write_str("Namespace"),
             Type::Enum(_, name) => f.write_str(&name.join(".")),
             Type::Struct(_, name) => f.write_str(&name.join(".")),
-            Type::Function => f.write_str("Function"),
+            Type::FunctionReference => f.write_str("Function"),
             Type::Middleware => f.write_str("Middleware"),
             Type::DataSetGroup(d) => f.write_str(&format!("DataSetGroup<{}>", d)),
             Type::Interface => f.write_str("Interface"),
-            Type::SynthesizedEnumDefinition(_) => {}
+            Type::SynthesizedEnum(_) => {}
         }
     }
 }
