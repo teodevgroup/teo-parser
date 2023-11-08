@@ -28,6 +28,6 @@ pub struct SynthesizedEnumMember {
 impl Display for SynthesizedEnum {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.members.keys().map(|a| format!("\"{}\"", a)).join(" | "))
+        f.write_str(&self.members.keys().map(|a| format!(".{}", a)).join(" | "))
     }
 }

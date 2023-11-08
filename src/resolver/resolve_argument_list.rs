@@ -297,13 +297,15 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
     t.replace_field_type(|container: &Type, reference: &Type| {
         if let Some(field_name) = reference.field_name() {
             match container {
-                Type::ModelObject(path, _) => {
-                    let model = context.schema.find_top_by_path(path).unwrap().as_model().unwrap();
+                Type::ModelReference(reference) => {
+                    let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
                     let field = model.fields.iter().find(|f| f.identifier.name() == field_name).unwrap();
                     field.type_expr.resolved().clone()
                 },
-                Type::InterfaceObject(path, _, _) => {
-                    unreachable!()
+                Type::InterfaceReference(reference, types) => {
+                    let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
+                    let field = interface.fields.iter().find(|f| f.identifier.name() == field_name).unwrap();
+                    field.type_expr.resolved().clone()
                 },
                 _ => Type::Undetermined
             }

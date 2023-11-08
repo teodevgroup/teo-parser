@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
@@ -238,7 +238,7 @@ pub enum Type {
 
     /// Pipeline
     ///
-    Pipeline((Box<Type>, Box<Type>)),
+    Pipeline(Box<Type>, Box<Type>),
 }
 
 impl Type {
@@ -748,7 +748,7 @@ impl Type {
 
     pub fn as_pipeline(&self) -> Option<(&Type, &Type)> {
         match self {
-            Type::Pipeline((a, b)) => Some((a.as_ref(), b.as_ref())),
+            Type::Pipeline(a, b) => Some((a.as_ref(), b.as_ref())),
             _ => None,
         }
     }
@@ -848,7 +848,7 @@ impl Type {
             Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_generics()),
             Type::DataSetGroup(inner) => inner.contains_generics(),
             Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
-            Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
+            Type::Pipeline(a, b) => a.contains_generics() || b.contains_generics(),
             _ => false,
         }
     }
@@ -874,7 +874,7 @@ impl Type {
             Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_keywords()),
             Type::DataSetGroup(inner) => inner.contains_keywords(),
             Type::DataSetRecord(a, b) => a.contains_keywords() || b.contains_keywords(),
-            Type::Pipeline((a, b)) => a.contains_keywords() || b.contains_keywords(),
+            Type::Pipeline(a, b) => a.contains_keywords() || b.contains_keywords(),
             _ => false,
         }
     }
@@ -910,10 +910,10 @@ impl Type {
                 Box::new(a.replace_generics(map)),
                 Box::new(b.replace_generics(map)),
             ),
-            Type::Pipeline((a, b)) => Type::Pipeline((
+            Type::Pipeline(a, b) => Type::Pipeline(
                 Box::new(a.replace_generics(map)),
                 Box::new(b.replace_generics(map)),
-            )),
+            ),
             _ => self.clone(),
         }
     }
@@ -949,19 +949,28 @@ impl Type {
                 Box::new(a.replace_keywords(map)),
                 Box::new(b.replace_keywords(map)),
             ),
-            Type::Pipeline((a, b)) => Type::Pipeline((
+            Type::Pipeline(a, b) => Type::Pipeline(
                 Box::new(a.replace_keywords(map)),
                 Box::new(b.replace_keywords(map)),
-            )),
+            ),
             _ => self.clone(),
         }
     }
 
+    /// Test if `passed` satisfies `self`
+    ///
     pub fn test(&self, passed: &Type) -> bool {
         match self {
             Type::Undetermined => false,
             Type::Ignored => true,
             Type::Any => true,
+            Type::Union(types) => types.iter().any(|t| t.test(passed)),
+            Type::Enumerable(inner) => inner.test(passed) || Type::Array(inner.clone()).test(passed),
+            Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
+            Type::FieldType(a, b) => passed.is_field_type() && a.test(passed.as_field_type().unwrap().0) && b.test(passed.as_field_type().unwrap().1),
+            Type::FieldReference(name) => passed.is_field_reference() && passed.as_field_reference().unwrap() == name.as_str(),
+            Type::GenericItem(_) => true,
+            Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Null => passed.is_null(),
             Type::Bool => passed.is_bool(),
             Type::Int => passed.is_int(),
@@ -975,37 +984,37 @@ impl Type {
             Type::DateTime => passed.is_datetime(),
             Type::File => passed.is_file(),
             Type::Regex => passed.is_regex(),
-            Type::Model => passed.is_model(),
-            Type::DataSet => passed.is_data_set(),
-            Type::Enumerable(inner) => passed.is_enumerable() && inner.as_ref().test(passed.as_enumerable().unwrap()),
             Type::Array(inner) => passed.is_array() && inner.as_ref().test(passed.as_array().unwrap()),
             Type::Dictionary(inner) => passed.is_dictionary() && inner.as_ref().test(passed.as_dictionary().unwrap()),
             Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
             Type::Range(inner) => passed.is_range() && inner.as_ref().test(passed.as_range().unwrap()),
-            Type::Union(u) => u.iter().any(|t| t.test(passed)),
-            Type::EnumVariant(path, _) => passed.is_enum_variant() && passed.as_enum_variant().unwrap().0 == path,
-            Type::InterfaceObject(path, generics, _) => passed.is_interface_object() && path == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == generics.len() && generics.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
-            Type::ModelObject(path, _) => passed.is_model_object() && passed.as_model_object().unwrap().0 == path,
-            Type::DataSetObject(path, _) => passed.is_data_set_object() && passed.as_data_set_object().unwrap().0 == path,
-            Type::StructObject(path, _) => passed.is_struct_object() && passed.as_struct_object().unwrap().0 == path,
-            Type::DataSetRecord(a, b) => passed.is_data_set_record() && passed.as_data_set_record().unwrap().0.test(a) && passed.as_data_set_record().unwrap().1.test(b),
-            Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
-            Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
-            Type::GenericItem(identifier) => true,
-            Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
-            Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
-            Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
-            Type::SynthesizedShapeReference(r) => false,
-            Type::SynthesizedShape(s) => passed.is_synthesized_shape() && s == passed.as_synthesized_shape().unwrap(),
-            Type::Namespace => passed.is_namespace(),
-            Type::Enum(p, _) => passed.is_enum() && passed.as_enum().unwrap().0 == p,
-            Type::SynthesizedEnumVariant(s) => passed.is_synthesized_enum_variant() && s == passed.as_synthesized_enum_variant().unwrap(),
-            Type::Struct(p, _) => passed.is_struct() && passed.as_struct().unwrap().0 == p,
-            Type::FunctionReference => false,
-            Type::Middleware => passed.is_middleware(),
-            Type::DataSetGroup(_) => false,
-            Type::Interface => passed.is_interface(),
-            Type::SynthesizedEnum(_) => false,
+            Type::SynthesizedShape(_) => {}
+            Type::SynthesizedShapeReference(r) => passed.is_synthesized_shape_reference() && r.test(passed.as_synthesized_shape_reference().unwrap()),
+            Type::Enum => passed.is_enum() || passed.is_enum_reference(),
+            Type::EnumReference(r) => passed.is_enum_reference() && r == passed.as_enum_reference().unwrap(),
+            Type::EnumVariant(r) => passed.is_enum_variant() && r == passed.as_enum_variant().unwrap(),
+            Type::SynthesizedEnum(s) => passed.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<String>>() == passed.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<String>>(),
+            Type::SynthesizedEnumReference(r) => passed.is_synthesized_enum_reference() && r.test(passed.as_synthesized_enum_reference().unwrap()),
+            Type::SynthesizedEnumVariantReference(r) => passed.is_synthesized_enum_variant_reference() && r.test(passed.as_synthesized_enum_variant_reference().unwrap()),
+            Type::Model => passed.is_model() || passed.is_model_reference(),
+            Type::ModelReference(r) => passed.is_model_reference() && r == passed.as_model_reference().unwrap(),
+            Type::ModelObject(r) => passed.is_model_object() && r == passed.as_model_object().unwrap(),
+            Type::InterfaceReference(r, types) => passed.is_interface_reference() && r == passed.as_interface_reference().unwrap().0 && passed.as_interface_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_reference().unwrap().1.get(index).unwrap())),
+            Type::InterfaceObject(r, types) => passed.is_interface_object() && r == passed.as_interface_object().unwrap().0 && passed.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_interface_object().unwrap().1.get(index).unwrap())),
+            Type::StructReference(r, types) => passed.is_struct_reference() && r == passed.as_struct_reference().unwrap().0 && passed.as_struct_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_struct_reference().unwrap().1.get(index).unwrap())),
+            Type::StructObject(r, types) => passed.is_struct_object() && r == passed.as_struct_object().unwrap().0 && passed.as_struct_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_struct_object().unwrap().1.get(index).unwrap())),
+            Type::StructStaticFunctionReference(r, types) => passed.is_struct_static_function_reference() && r == passed.as_struct_static_function_reference().unwrap().0 && passed.as_struct_static_function_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_struct_static_function_reference().unwrap().1.get(index).unwrap())),
+            Type::StructInstanceFunctionReference(r, types) => passed.is_struct_instance_function_reference() && r == passed.as_struct_instance_function_reference().unwrap().0 && passed.as_struct_instance_function_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_struct_instance_function_reference().unwrap().1.get(index).unwrap())),
+            Type::FunctionReference(r) => passed.is_function_reference() && r == passed.as_function_reference().unwrap(),
+            Type::Middleware => passed.is_middleware() || passed.is_middleware_reference(),
+            Type::MiddlewareReference(r) => passed.is_middleware_reference() && r == passed.as_middleware_reference().unwrap(),
+            Type::DataSet => passed.is_data_set(),
+            Type::DataSetReference(r) => passed.is_data_set_reference() && r == passed.as_data_set_reference().unwrap(),
+            Type::DataSetGroup(inner) => passed.is_data_set_group() && inner.test(passed.as_data_set_group().unwrap()),
+            Type::DataSetRecord(a, b) => passed.is_data_set_record() && a.test(passed.as_data_set_record().unwrap().0) && b.test(passed.as_data_set_record().unwrap().1),
+            Type::Namespace => passed.is_namespace() || passed.is_namespace_reference(),
+            Type::NamespaceReference(r) => passed.is_namespace_reference() && r == passed.as_namespace_reference().unwrap(),
+            Type::Pipeline(a, b) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
         }
     }
 
@@ -1018,52 +1027,29 @@ impl Type {
         self.clone()
     }
 
-    pub fn satisfies(&self, constraint: &Type) -> bool {
-        if self.is_model_object() && constraint.is_model() {
-            return true
-        }
-        constraint.test(self)
-    }
-
     pub fn replace_field_type<F>(&self, f: F) -> Type where F: Fn(&Type, &Type) -> Type {
         let f_ref = |t: &Type, f: &dyn Fn(&Type, &Type) -> Type| { t.replace_field_type(f) };
         match self {
-            Type::Undetermined => self.clone(),
-            Type::Ignored => self.clone(),
-            Type::Any => self.clone(),
-            Type::Null => self.clone(),
-            Type::Bool => self.clone(),
-            Type::Int => self.clone(),
-            Type::Int64 => self.clone(),
-            Type::Float32 => self.clone(),
-            Type::Float => self.clone(),
-            Type::Decimal => self.clone(),
-            Type::String => self.clone(),
-            Type::ObjectId => self.clone(),
-            Type::Date => self.clone(),
-            Type::DateTime => self.clone(),
-            Type::File => self.clone(),
-            Type::Regex => self.clone(),
-            Type::Model => self.clone(),
-            Type::DataSet => self.clone(),
             Type::Enumerable(t) => Type::Enumerable(Box::new(f_ref(t, &f))),
             Type::Array(t) => Type::Array(Box::new(f_ref(t, &f))),
             Type::Dictionary(t) => Type::Dictionary(Box::new(f_ref(t, &f))),
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::Range(t) => Type::Range(Box::new(f_ref(t, &f))),
             Type::Union(types) => Type::Union(types.iter().map(|t| f_ref(t, &f)).collect()),
-            Type::EnumVariant(_, _) => self.clone(),
-            Type::InterfaceObject(_, _, _) => self.clone(),
-            Type::ModelObject(_, _) => self.clone(),
-            Type::StructObject(_, _) => self.clone(),
-            Type::DataSetObject(_, _) => self.clone(),
-            Type::DataSetRecord(_, _) => self.clone(),
             Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
-            Type::FieldReference(_) => self.clone(),
-            Type::GenericItem(_) => self.clone(),
-            Type::Keyword(_) => self.clone(),
             Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
-            Type::Pipeline((t1, t2)) => Type::Pipeline((Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f)))),
+            Type::Pipeline(t1, t2) => Type::Pipeline(Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f))),
+            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
+            Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(f_ref(inner, &f))),
+            Type::DataSetRecord(a, b) => Type::DataSetRecord(
+                Box::new(f_ref(a, &f)),
+                Box::new(f_ref(b, &f)),
+            ),
             _ => self.clone(),
         }
     }
@@ -1076,6 +1062,21 @@ impl Display for Type {
             Type::Undetermined => f.write_str("Undetermined"),
             Type::Ignored => f.write_str("Ignored"),
             Type::Any => f.write_str("Any"),
+            Type::Union(types) => f.write_str(&types.iter().map(|t| format!("{t}")).join(" | ")),
+            Type::Enumerable(inner) => f.write_str(&format!("Enumerable<{}>", inner)),
+            Type::Optional(inner) => if inner.is_union() {
+                f.write_str(&format!("({})?", inner))
+            } else {
+                f.write_str(&format!("{}?", inner))
+            },
+            Type::FieldType(a, b) => if a.is_union() {
+                f.write_str(&format!("({})[{}]", a, b))
+            } else {
+                f.write_str(&format!("{}[{}]", a, b))
+            },
+            Type::FieldReference(name) => f.write_str(&format!(".{}", name)),
+            Type::GenericItem(name) => f.write_str(name),
+            Type::Keyword(k) => Display::fmt(k, f),
             Type::Null => f.write_str("Null"),
             Type::Bool => f.write_str("Bool"),
             Type::Int => f.write_str("Int"),
@@ -1089,9 +1090,6 @@ impl Display for Type {
             Type::DateTime => f.write_str("DateTime"),
             Type::File => f.write_str("File"),
             Type::Regex => f.write_str("Regex"),
-            Type::Model => f.write_str("Model"),
-            Type::DataSet => f.write_str("DataSet"),
-            Type::Enumerable(inner) => f.write_str(&format!("Range<{}>", inner)),
             Type::Array(inner) => if inner.is_union() {
                 f.write_str(&format!("({})[]", inner))
             } else {
@@ -1117,38 +1115,57 @@ impl Display for Type {
                 f.write_str(")")
             },
             Type::Range(inner) => f.write_str(&format!("Range<{}>", inner)),
-            Type::Union(types) => f.write_str(&types.iter().map(|t| format!("{t}")).join(" | ")),
-            Type::EnumVariant(_, name) => f.write_str(&name.join(".")),
-            Type::InterfaceObject(_, _, name) => f.write_str(&name.join(".")),
-            Type::ModelObject(_, name) => f.write_str(&name.join(".")),
-            Type::StructObject(_, name) => f.write_str(&name.join(".")),
-            Type::DataSetObject(_, name) => f.write_str(&name.join(".")),
-            Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetRecord<{}, {}>", a, b)),
-            Type::FieldType(a, b) => if a.is_union() {
-                f.write_str(&format!("({})[{}]", a, b))
-            } else {
-                f.write_str(&format!("{}[{}]", a, b))
-            },
-            Type::FieldReference(name) => f.write_str(&format!(".{}", name)),
-            Type::GenericItem(name) => f.write_str(name),
-            Type::Keyword(k) => Display::fmt(k, f),
-            Type::Optional(inner) => if inner.is_union() {
-                f.write_str(&format!("({})?", inner))
-            } else {
-                f.write_str(&format!("{}?", inner))
-            },
-            Type::Pipeline((i, o)) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
-            Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
-            Type::SynthesizedEnumVariant(e) => Display::fmt(e, f),
             Type::SynthesizedShape(shape) => Display::fmt(shape, f),
-            Type::Namespace => f.write_str("Namespace"),
-            Type::Enum(_, name) => f.write_str(&name.join(".")),
-            Type::Struct(_, name) => f.write_str(&name.join(".")),
-            Type::FunctionReference => f.write_str("Function"),
+            Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
+            Type::Enum => f.write_str("Enum"),
+            Type::EnumReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
+            Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
+            Type::SynthesizedEnum(e) => Display::fmt(e, f),
+            Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}.Type", r)),
+            Type::SynthesizedEnumVariantReference(s) => Display::fmt(s, f),
+            Type::Model => f.write_str("Model"),
+            Type::ModelReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
+            Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
+            Type::InterfaceReference(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::InterfaceObject(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::StructReference(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::StructObject(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::StructStaticFunctionReference(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::StructInstanceFunctionReference(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            }
+            Type::FunctionReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
             Type::Middleware => f.write_str("Middleware"),
-            Type::DataSetGroup(d) => f.write_str(&format!("DataSetGroup<{}>", d)),
-            Type::Interface => f.write_str("Interface"),
-            Type::SynthesizedEnum(_) => {}
+            Type::MiddlewareReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            Type::DataSet => f.write_str("DataSet"),
+            Type::DataSetReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
+            Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),
+            Type::Namespace => f.write_str("Namespace"),
+            Type::NamespaceReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
         }
     }
 }
