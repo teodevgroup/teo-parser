@@ -3,21 +3,20 @@ use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::interface::InterfaceDeclaration;
+use crate::r#type::shape::Shape;
 use crate::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::shape::input::Input;
-use crate::shape::shape::Shape;
 
 pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     interface_declaration: &'a InterfaceDeclaration,
     generics: &Vec<Type>,
     context: &'a ResolverContext<'a>,
-) -> Input {
+) -> Type {
     let mut map = indexmap! {};
     let generics_map = calculate_generics_map(interface_declaration.generics_declaration.as_ref(), generics);
     for field in &interface_declaration.fields {
         let t = field.type_expr.resolved().replace_generics(&generics_map);
-        map.insert(field.name().to_owned(), Input::Type(t.clone()));
+        map.insert(field.name().to_owned(), t.clone());
         if let Some((path, gen, _)) = t.as_interface_object() {
             let declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
             if declaration.shape(gen).is_none() {
@@ -33,7 +32,7 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
             }
         }
     }
-    Input::Shape(Shape::new(map))
+    Type::Shape(Shape::new(map))
 }
 
 pub(super) fn calculate_generics_map<'a>(
