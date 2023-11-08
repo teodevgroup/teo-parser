@@ -45,3 +45,4 @@ pub mod type_info;
 pub mod info_provider;
 pub mod identifiable;
 pub mod use_middlewares;
+pub mod node;

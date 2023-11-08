@@ -3,11 +3,11 @@ use serde::Serialize;
 use crate::ast::comment::Comment;
 
 #[derive(Debug, Serialize, Clone)]
-pub struct SynthesizedEnum {
+pub struct SynthesizedEnumDefinition {
     pub members: IndexMap<String, SynthesizedEnumMember>
 }
 
-impl SynthesizedEnum {
+impl SynthesizedEnumDefinition {
 
     pub fn new(members: Vec<SynthesizedEnumMember>) -> Self {
         Self {

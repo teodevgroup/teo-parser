@@ -4,75 +4,209 @@ use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use educe::Educe;
 use serde::Serialize;
-use crate::r#type::shape_reference::ShapeReference;
+use crate::r#type::shape::Shape;
+use crate::r#type::synthesized_enum::SynthesizedEnum;
+use crate::r#type::synthesized_enum_definition::SynthesizedEnumDefinition;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
 #[educe(Hash, PartialEq)]
 pub enum Type {
+
+    // default type
+
+    /// Default type which is undetermined
+    ///
     Undetermined,
+
+    // special types
+
+    /// Ignored
+    ///
     Ignored,
+
+    /// Any
+    ///
     Any,
-    Null,
-    Bool,
-    Int,
-    Int64,
-    Float32,
-    Float,
-    Decimal,
-    String,
-    ObjectId,
-    Date,
-    DateTime,
-    File,
-    Regex,
-    Model,
-    DataSet,
-    Enumerable(Box<Type>),
-    Array(Box<Type>),
-    Dictionary(Box<Type>),
-    Tuple(Vec<Type>),
-    Range(Box<Type>),
+
+    /// Union
+    ///
     Union(Vec<Type>),
-    EnumVariant(Vec<usize>, Vec<String>),
-    InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
-    ModelObject(Vec<usize>, Vec<String>),
-    DataSetObject(Vec<usize>, Vec<String>),
-    StructObject(Vec<usize>, Vec<String>),
-    ModelScalarFields(
-        Box<Type>,
-        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
-        Option<String>
-    ),
-    ModelScalarFieldsWithoutVirtuals(
-        Box<Type>,
-        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
-        Option<String>
-    ),
-    ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(
-        Box<Type>,
-        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
-        Option<String>
-    ),
-    ModelRelations(
-        Box<Type>,
-        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
-        Option<String>
-    ),
-    ModelDirectRelations(
-        Box<Type>,
-        #[educe(Hash(ignore))] #[educe(PartialEq(ignore))]
-        Option<String>
-    ),
-    DataSetRecord(Box<Type>, Box<Type>),
-    FieldType(Box<Type>, Box<Type>),
-    FieldReference(String),
-    GenericItem(String),
-    Keyword(Keyword),
+
+    /// Enumerable
+    ///
+    Enumerable(Box<Type>),
+
+    /// Optional
+    ///
     Optional(Box<Type>),
+
+    /// Field Type
+    ///
+    FieldType(Box<Type>, Box<Type>),
+
+    /// Field Reference
+    ///
+    FieldReference(String),
+
+    /// Generic Item
+    ///
+    GenericItem(String),
+
+    /// Keyword
+    ///
+    Keyword(Keyword),
+
+    // Teon types
+
+    /// Null
+    ///
+    Null,
+
+    /// Bool
+    ///
+    Bool,
+
+    /// Int
+    ///
+    Int,
+
+    /// Int64
+    ///
+    Int64,
+
+    /// Float32
+    ///
+    Float32,
+
+    /// Float
+    ///
+    Float,
+
+    /// Decimal
+    ///
+    Decimal,
+
+    /// String
+    ///
+    String,
+
+    /// ObjectId is only available for MongoDB
+    ///
+    ObjectId,
+
+    /// Date
+    ///
+    Date,
+
+    /// DateTime
+    ///
+    DateTime,
+
+    /// File
+    ///
+    File,
+
+    /// Regex
+    ///
+    Regex,
+
+    /// Array
+    ///
+    Array(Box<Type>),
+
+    /// Dictionary
+    ///
+    Dictionary(Box<Type>),
+
+    /// Tuple
+    ///
+    Tuple(Vec<Type>),
+
+    /// Range
+    ///
+    Range(Box<Type>),
+
+    // schema types
+
+    /// Shape
+    ///
+    Shape(Shape),
+
+    /// Synthesized Shape
+    ///
+    SynthesizedShape(SynthesizedShape),
+
+    /// Namespace
+    ///
+    Namespace,
+
+    /// Model
+    ///
+    Model,
+
+    /// Model Object
+    ModelObject(Vec<usize>, Vec<String>),
+
+    /// Enum
+    ///
+    Enum(Vec<usize>, Vec<String>),
+
+    /// Enum Variant
+    ///
+    EnumVariant(Vec<usize>, Vec<String>),
+
+    /// Enum Variant
+    ///
+    SynthesizedEnumVariant(SynthesizedEnum),
+
+    /// Enum Definition
+    ///
+    SynthesizedEnumDefinition(SynthesizedEnumDefinition),
+
+    /// Struct
+    ///
+    Struct(Vec<usize>, Vec<String>),
+
+    /// Function
+    ///
+    Function,
+
+    /// Struct Object
+    ///
+    StructObject(Vec<usize>, Vec<String>),
+
+    /// Middleware
+    ///
+    Middleware,
+
+    /// Data Set
+    ///
+    DataSet,
+
+    /// Data Set Object
+    DataSetObject(Vec<usize>, Vec<String>),
+
+    /// Data Set Group
+    ///
+    DataSetGroup(Box<Type>),
+
+    /// Data Set Record
+    ///
+    DataSetRecord(Box<Type>, Box<Type>),
+
+    /// Interface
+    ///
+    Interface,
+
+    /// Interface Object
+    ///
+    InterfaceObject(Vec<usize>, Vec<Type>, Vec<String>),
+
+    /// Pipeline
+    ///
     Pipeline((Box<Type>, Box<Type>)),
-    // model caches
-    ShapeReference(ShapeReference),
 }
 
 impl Type {
@@ -101,6 +235,28 @@ impl Type {
         match self {
             Type::Undetermined => true,
             _ => false,
+        }
+    }
+
+    pub fn is_shape(&self) -> bool {
+        self.as_shape().is_some()
+    }
+
+    pub fn as_shape(&self) -> Option<&Shape> {
+        match self {
+            Type::Shape(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_shape(&self) -> bool {
+        self.as_synthesized_shape().is_some()
+    }
+
+    pub fn as_synthesized_shape(&self) -> Option<&SynthesizedShape> {
+        match self {
+            Type::SynthesizedShape(s) => Some(s),
+            _ => None,
         }
     }
 
@@ -216,12 +372,21 @@ impl Type {
         }
     }
 
+    pub fn is_namespace(&self) -> bool {
+        match self {
+            Type::Namespace => true,
+            _ => false,
+        }
+    }
+
     pub fn is_data_set(&self) -> bool {
         match self {
             Type::DataSet => true,
             _ => false,
         }
     }
+
+
 
     pub fn is_enumerable(&self) -> bool {
         self.as_enumerable().is_some()
@@ -300,6 +465,24 @@ impl Type {
         }
     }
 
+    pub fn is_struct(&self) -> bool {
+        self.as_struct().is_some()
+    }
+
+    pub fn as_struct(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+        match self {
+            Self::Struct(a, b) => Some((a, b)),
+            _ => None,
+        }
+    }
+
+    pub fn is_interface(&self) -> bool {
+        match self {
+            Self::Interface => true,
+            _ => false,
+        }
+    }
+
     pub fn is_interface_object(&self) -> bool {
         self.as_interface_object().is_some()
     }
@@ -318,6 +501,17 @@ impl Type {
     pub fn as_data_set_object(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
         match self {
             Self::DataSetObject(path, name) => Some((path, name)),
+            _ => None,
+        }
+    }
+
+    pub fn is_data_set_group(&self) -> bool {
+        self.as_data_set_object().is_some()
+    }
+
+    pub fn as_data_set_group(&self) -> Option<&Type> {
+        match self {
+            Self::DataSetGroup(a) => Some((a.as_ref())),
             _ => None,
         }
     }
@@ -372,7 +566,7 @@ impl Type {
 
     pub fn as_model_scalar_fields_and_cached_properties_without_virtuals(&self) -> Option<(&Type, Option<&String>)> {
         match self {
-            Self::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, name) => Some((path, name.as_ref())),
+            Self::ModelSerializableScalarFields(path, name) => Some((path, name.as_ref())),
             _ => None,
         }
     }
@@ -537,11 +731,6 @@ impl Type {
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
             Type::DataSetObject(_, _) => false,
-            Type::ModelScalarFields(_, _) => false,
-            Type::ModelScalarFieldsWithoutVirtuals(_, _) => false,
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => false,
-            Type::ModelRelations(_, _) => false,
-            Type::ModelDirectRelations(_, _) => false,
             Type::DataSetRecord(_, _) => false,
             Type::FieldType(_, _) => false,
             Type::FieldReference(_) => false,
@@ -549,7 +738,16 @@ impl Type {
             Type::Keyword(_) => false,
             Type::Optional(_) => true,
             Type::Pipeline(_) => false,
-            Type::ShapeReference(_) => false,
+            Type::SynthesizedShape(_) => false,
+            Type::Shape(_) => false,
+            Type::Namespace => false,
+            Type::Enum(_, _) => false,
+            Type::SynthesizedEnumVariant(_) => false,
+            Type::Struct(_, _) => false,
+            Type::Function => false,
+            Type::Middleware => false,
+            Type::DataSetGroup(_) => false,
+            Type::Interface => false,
         }
     }
 
@@ -584,11 +782,7 @@ impl Type {
             Type::ModelObject(_, _) => false,
             Type::StructObject(_, _) => false,
             Type::DataSetObject(_, _) => false,
-            Type::ModelScalarFields(inner, _) => inner.contains_generics(),
-            Type::ModelScalarFieldsWithoutVirtuals(inner, _) => inner.contains_generics(),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => inner.contains_generics(),
-            Type::ModelRelations(inner, _) => inner.contains_generics(),
-            Type::ModelDirectRelations(inner, _) => inner.contains_generics(),
+            Type::SynthesizedEnumVariant(s) => s.contains_generics(),
             Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::FieldReference(_) => false,
@@ -596,7 +790,15 @@ impl Type {
             Type::Keyword(_) => false,
             Type::Optional(inner) => inner.contains_generics(),
             Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
-            Type::ShapeReference(_) => false,
+            Type::SynthesizedShape(_) => false,
+            Type::Shape(_) => false,
+            Type::Namespace => false,
+            Type::Enum(_, _) => false,
+            Type::Struct(_, _) => false,
+            Type::Function => false,
+            Type::Middleware => false,
+            Type::DataSetGroup(_) => false,
+            Type::Interface => false,
         }
     }
 
@@ -617,11 +819,7 @@ impl Type {
                 Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_generics(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map)))),
-                Type::ModelScalarFields(inner, name) => Type::ModelScalarFields(Box::new(inner.replace_generics(map)), name.clone()),
-                Type::ModelScalarFieldsWithoutVirtuals(inner, name) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_generics(map)), name.clone()),
-                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_generics(map)), name.clone()),
-                Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_generics(map)), name.clone()),
-                Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_generics(map)), name.clone()),
+                Type::SynthesizedEnumVariant(s) => Type::SynthesizedEnumVariant(s.replace_generics(map)),
                 Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_generics(map)), Box::new(b.replace_generics(map))),
                 _ => self.clone(),
             }
@@ -645,14 +843,35 @@ impl Type {
                 Type::InterfaceObject(path, generics, name) => Type::InterfaceObject(path.clone(), generics.iter().map(|t| t.replace_keywords(map)).collect(), name.clone()),
                 Type::Optional(inner) => Type::Optional(Box::new(inner.replace_keywords(map))).flatten(),
                 Type::Pipeline((a, b)) => Type::Pipeline((Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map)))),
-                Type::ModelScalarFields(inner, name) => Type::ModelScalarFields(Box::new(inner.replace_keywords(map)), name.clone()),
-                Type::ModelScalarFieldsWithoutVirtuals(inner, name) => Type::ModelScalarFieldsWithoutVirtuals(Box::new(inner.replace_keywords(map)), name.clone()),
-                Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, name) => Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(inner.replace_keywords(map)), name.clone()),
-                Type::ModelRelations(inner, name) => Type::ModelRelations(Box::new(inner.replace_keywords(map)), name.clone()),
-                Type::ModelDirectRelations(inner, name) => Type::ModelDirectRelations(Box::new(inner.replace_keywords(map)), name.clone()),
+                Type::SynthesizedEnumVariant(s) => Type::SynthesizedEnumVariant(s.replace_keywords(map)),
                 Type::FieldType(a, b) => Type::FieldType(Box::new(a.replace_keywords(map)), Box::new(b.replace_keywords(map))),
                 _ => self.clone(),
             }
+        }
+    }
+
+    pub fn as_enum(&self) -> Option<(&Vec<usize>, &Vec<String>)> {
+        match self {
+            Type::Enum(a, b) => Some((a, b)),
+            _ => None,
+        }
+    }
+
+    pub fn is_enum(&self) -> bool {
+        match self {
+            Type::Enum(_, _) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_synthesized_enum_variant(&self) -> bool {
+        self.as_synthesized_enum_variant().is_some()
+    }
+
+    pub fn as_synthesized_enum_variant(&self) -> Option<&SynthesizedEnum> {
+        match self {
+            Type::SynthesizedEnumVariant(s) => Some(s),
+            _ => None,
         }
     }
 
@@ -687,11 +906,6 @@ impl Type {
             Type::ModelObject(path, _) => passed.is_model_object() && passed.as_model_object().unwrap().0 == path,
             Type::DataSetObject(path, _) => passed.is_data_set_object() && passed.as_data_set_object().unwrap().0 == path,
             Type::StructObject(path, _) => passed.is_struct_object() && passed.as_struct_object().unwrap().0 == path,
-            Type::ModelScalarFields(path, _) => passed.is_model_scalar_fields() && passed.as_model_scalar_fields().unwrap().0.test(path),
-            Type::ModelScalarFieldsWithoutVirtuals(path, _) => passed.is_model_scalar_fields_without_virtuals() && passed.as_model_scalar_fields_without_virtuals().unwrap().0.test(path),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(path, _) => passed.is_model_scalar_fields_and_cached_properties_without_virtuals() && passed.as_model_scalar_fields_and_cached_properties_without_virtuals().unwrap().0.test(path),
-            Type::ModelRelations(path, _) => passed.is_model_relations() && passed.as_model_relations().unwrap().0.test(path),
-            Type::ModelDirectRelations(path, _) => passed.is_model_direct_relations() && passed.as_model_direct_relations().unwrap().0.test(path),
             Type::DataSetRecord(a, b) => passed.is_data_set_record() && passed.as_data_set_record().unwrap().0.test(a) && passed.as_data_set_record().unwrap().1.test(b),
             Type::FieldType(path, field) => passed.is_field_type() && path.test(passed.as_field_type().unwrap().0) && field.test(passed.as_field_type().unwrap().1),
             Type::FieldReference(s) => passed.is_field_reference() && s == passed.as_field_reference().unwrap(),
@@ -699,7 +913,16 @@ impl Type {
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
-            Type::ShapeReference(r) => false,
+            Type::SynthesizedShape(r) => false,
+            Type::Shape(s) => passed.is_shape() && s == passed.as_shape().unwrap(),
+            Type::Namespace => passed.is_namespace(),
+            Type::Enum(p, _) => passed.is_enum() && passed.as_enum().unwrap().0 == p,
+            Type::SynthesizedEnumVariant(s) => passed.is_synthesized_enum_variant() && s == passed.as_synthesized_enum_variant().unwrap(),
+            Type::Struct(_, _) => {}
+            Type::Function => {}
+            Type::Middleware => passed.is_middleware(),
+            Type::DataSetGroup(_) => {}
+            Type::Interface => passed.is_interface(),
         }
     }
 
@@ -767,18 +990,6 @@ impl Type {
         constraint.test(self)
     }
 
-    pub fn field_name(&self) -> Option<&str> {
-        match self {
-            Type::FieldReference(n) => Some(n.as_str()),
-            Type::ModelScalarFields(_, name) => name.as_ref().map(|n| n.as_str()),
-            Type::ModelScalarFieldsWithoutVirtuals(_, name) => name.as_ref().map(|n| n.as_str()),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, name) => name.as_ref().map(|n| n.as_str()),
-            Type::ModelRelations(_, name) => name.as_ref().map(|n| n.as_str()),
-            Type::ModelDirectRelations(_, name) => name.as_ref().map(|n| n.as_str()),
-            _ => None,
-        }
-    }
-
     pub fn replace_field_type<F>(&self, f: F) -> Type where F: Fn(&Type, &Type) -> Type {
         let f_ref = |t: &Type, f: &dyn Fn(&Type, &Type) -> Type| { t.replace_field_type(f) };
         match self {
@@ -811,11 +1022,6 @@ impl Type {
             Type::ModelObject(_, _) => self.clone(),
             Type::StructObject(_, _) => self.clone(),
             Type::DataSetObject(_, _) => self.clone(),
-            Type::ModelScalarFields(_, _) => self.clone(),
-            Type::ModelScalarFieldsWithoutVirtuals(_, _) => self.clone(),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => self.clone(),
-            Type::ModelRelations(_, _) => self.clone(),
-            Type::ModelDirectRelations(_, _) => self.clone(),
             Type::DataSetRecord(_, _) => self.clone(),
             Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
             Type::FieldReference(_) => self.clone(),
@@ -823,7 +1029,16 @@ impl Type {
             Type::Keyword(_) => self.clone(),
             Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
             Type::Pipeline((t1, t2)) => Type::Pipeline((Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f)))),
-            Type::ShapeReference(_) => self.clone(),
+            Type::SynthesizedShape(_) => self.clone(),
+            Type::Shape(_) => self.clone(),
+            Type::Namespace => self.clone(),
+            Type::Enum(_, _) => self.clone(),
+            Type::SynthesizedEnumVariant(_) => self.clone(),
+            Type::Struct(_, _) => self.clone(),
+            Type::Function => self.clone(),
+            Type::Middleware => self.clone(),
+            Type::DataSetGroup(_) => self.clone(),
+            Type::Interface => self.clone(),
         }
     }
 }
@@ -882,11 +1097,6 @@ impl Display for Type {
             Type::ModelObject(_, name) => f.write_str(&name.join(".")),
             Type::StructObject(_, name) => f.write_str(&name.join(".")),
             Type::DataSetObject(_, name) => f.write_str(&name.join(".")),
-            Type::ModelScalarFields(inner, _) => f.write_str(&format!("ModelScalarFields<{}>", inner)),
-            Type::ModelScalarFieldsWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsWithoutVirtuals<{}>", inner)),
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(inner, _) => f.write_str(&format!("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<{}>", inner)),
-            Type::ModelRelations(inner, _) => f.write_str(&format!("ModelRelations<{}>", inner)),
-            Type::ModelDirectRelations(inner, _) => f.write_str(&format!("ModelDirectRelations<{}>", inner)),
             Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetRecord<{}, {}>", a, b)),
             Type::FieldType(a, b) => if a.is_union() {
                 f.write_str(&format!("({})[{}]", a, b))
@@ -902,7 +1112,16 @@ impl Display for Type {
                 f.write_str(&format!("{}?", inner))
             },
             Type::Pipeline((i, o)) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
-            Type::ShapeReference(r) => Display::fmt(r, f),
+            Type::SynthesizedShape(r) => Display::fmt(r, f),
+            Type::SynthesizedEnumVariant(e) => Display::fmt(e, f),
+            Type::Shape(shape) => Display::fmt(shape, f),
+            Type::Namespace => f.write_str("Namespace"),
+            Type::Enum(_, name) => f.write_str(&name.join(".")),
+            Type::Struct(_, name) => f.write_str(&name.join(".")),
+            Type::Function => f.write_str("Function"),
+            Type::Middleware => f.write_str("Middleware"),
+            Type::DataSetGroup(d) => f.write_str(&format!("DataSetGroup<{}>", d)),
+            Type::Interface => f.write_str("Interface"),
         }
     }
 }

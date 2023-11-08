@@ -8,7 +8,6 @@ use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_interface_shapes::{collect_inputs_from_interface_declaration_shape_cache, resolve_shape_cache_for_interface_declaration};
 use crate::resolver::resolve_type_expr::{resolve_type_expr};
 use crate::resolver::resolver_context::ResolverContext;
-use crate::shape::shape::Shape;
 
 pub(super) fn resolve_handler_group_types<'a>(
     handler_group: &'a HandlerGroupDeclaration,
@@ -126,8 +125,6 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::EnumVariant(_, _) => None,
         Type::Model => Some("invalid form handler input type: Model is not supported"),
         Type::InterfaceObject(path, items, _) => None,
-        Type::ModelScalarFields(_, _) => Some("invalid form handler input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid form handler input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("invalid form handler input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid form handler input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
@@ -137,7 +134,6 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid form handler input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid form handler input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid form handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid form handler input type: Pipeline is not supported"),
         _ => None,
     }
@@ -172,8 +168,6 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::EnumVariant(path, _) => None,
         Type::Model => Some("invalid form handler input type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_, _) => Some("invalid handler input type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid handler input type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("invalid handler input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid handler input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
@@ -183,7 +177,6 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid handler input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid handler input type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid handler input type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid handler input type: Pipeline is not supported"),
         _ => None,
     }
@@ -218,8 +211,6 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::EnumVariant(path, _) => None,
         Type::Model => Some("invalid form handler output type: Model is not supported"),
         Type::InterfaceObject(_, _, _) => None,
-        Type::ModelScalarFields(_, _) => Some("invalid handler output type: ModelScalarField is not supported"),
-        Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(_, _) => Some("invalid handler output type: ModelScalarFieldAndCachedProperty is not supported"),
         Type::FieldType(_, _) => Some("invalid handler output type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid handler output type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler output type: GenericsItem is not supported"),
@@ -229,7 +220,6 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid handler output type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid handler output type: StructObject is not supported"),
-        Type::ModelScalarFieldsWithoutVirtuals(_, _) => Some("invalid handler output type: ModelScalarFieldsWithoutVirtuals is not supported"),
         Type::Pipeline(_) => Some("invalid handler output type: Pipeline is not supported"),
         _ => None,
     }

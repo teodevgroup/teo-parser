@@ -279,12 +279,12 @@ fn resolve_type_item<'a>(
                     Some(Type::Undetermined)
                 }
             },
-            "ModelScalarFieldsAndCachedPropertiesWithoutVirtuals" => {
-                request_single_generics("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals", type_item, context);
+            "ModelSerializableScalarFields" => {
+                request_single_generics("ModelSerializableScalarFields", type_item, context);
                 if let Some(t) = type_item.generics.get(0) {
                     let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
                     if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
-                        Some(Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(model_object), None))
+                        Some(Type::ModelSerializableScalarFields(Box::new(model_object), None))
                     }else {
                         context.insert_diagnostics_error(t.span(), "model not found");
                         Some(Type::Undetermined)

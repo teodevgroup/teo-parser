@@ -32,7 +32,7 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
             Type::ModelScalarFieldsWithoutVirtuals(model, _) => {
                 schema.find_top_by_path(model.as_model_object().unwrap().0)
             }
-            Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(model, _) => {
+            Type::ModelSerializableScalarFields(model, _) => {
                 schema.find_top_by_path(model.as_model_object().unwrap().0)
             }
             _ => None

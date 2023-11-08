@@ -264,7 +264,7 @@ fn try_resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a 
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields_and_cached_properties_without_virtuals.contains(&e.identifier.name) {
                 Ok(ExpressionResolved {
-                    r#type: Type::ModelScalarFieldsAndCachedPropertiesWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
+                    r#type: Type::ModelSerializableScalarFields(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
                     value: Some(Value::EnumVariant(EnumVariant {
                         value: Box::new(Value::String(e.identifier.name().to_owned())),
                         display: format!(".{}", e.identifier.name()),

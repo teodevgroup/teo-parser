@@ -1,5 +1,4 @@
 pub mod r#type;
-pub mod shape;
 pub mod ast;
 pub mod parser;
 mod builtin;
@@ -9,6 +8,7 @@ pub mod utils;
 pub(crate) mod completion;
 pub(crate) mod definition;
 pub mod search;
+pub mod traits;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;

@@ -338,15 +338,15 @@ namespace std {
 
     /// @name Id
     /// Specify the model's primary index
-    declare unique model decorator id(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
+    declare unique model decorator id(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
 
     /// @name Index
     /// Add an index to the model
-    declare model decorator index(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
+    declare model decorator index(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
 
     /// @name Unique
     /// Add a unique constraint to the model
-    declare model decorator unique(fields?: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], map?: String?)
+    declare model decorator unique(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
 
     /// @name Migration
     /// Specify the migration operations for the model
@@ -582,7 +582,7 @@ namespace std {
     /// Define a model relation
     declare unique model relation decorator relation {
         /// Define a normal relation
-        variant(fields: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<Self>[], references: ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType> | ModelScalarFieldsAndCachedPropertiesWithoutVirtuals<ThisFieldType>[])
+        variant(fields: Enumerable<ModelSerializableScalarFields<Self>>, references: Enumerable<ModelSerializableScalarFields<ThisFieldType>>)
         /// Define a through relation
         variant(through: Model, local: ModelDirectRelations<Self>, foreign: ModelDirectRelations<ThisFieldType>)
     }
@@ -601,7 +601,7 @@ namespace std {
 
     /// @name Dependencies
     /// Define dependencies for a cached property
-    declare unique model property decorator deps(deps?: ModelScalarFieldsWithoutVirtuals<Self> | ModelScalarFieldsWithoutVirtuals<Self>[])
+    declare unique model property decorator deps(deps?: Enumerable<ModelSerializableScalarFields<Self>>)
 
     /// @name Index
     /// Define index for this cached property

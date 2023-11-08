@@ -10,7 +10,7 @@ use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
-use crate::shape::input::Input;
+use crate::r#type::Type;
 
 #[derive(Debug)]
 pub struct Model {
@@ -103,13 +103,13 @@ impl InfoProvider for Model {
 
 #[derive(Debug, Clone)]
 pub struct ModelShapeResolved {
-    pub map: IndexMap<(String, Option<String>), Input>,
+    pub map: IndexMap<(String, Option<String>), Type>,
 }
 
 #[derive(Serialize)]
 pub struct ModelShapeResolvedItemRef<'a> {
     key: &'a (String, Option<String>),
-    value: &'a Input,
+    value: &'a Type,
 }
 
 impl Serialize for ModelShapeResolved {
@@ -130,7 +130,7 @@ impl ModelShapeResolved {
         }
     }
 
-    pub fn get(&self, key: &str) -> Option<&Input> {
+    pub fn get(&self, key: &str) -> Option<&Type> {
         self.map.get(&(key.to_owned(), None))
     }
 }

@@ -152,7 +152,7 @@ fn builtin_types(filter: TypeExprFilter) -> Vec<CompletionItem> {
         result.push(builtin_type("Union"));
         result.push(builtin_type("ModelScalarFields"));
         result.push(builtin_type("ModelScalarFieldsWithoutVirtuals"));
-        result.push(builtin_type("ModelScalarFieldsAndCachedPropertiesWithoutVirtuals"));
+        result.push(builtin_type("ModelSerializableScalarFields"));
         result.push(builtin_type("ModelRelations"));
         result.push(builtin_type("ModelDirectRelations"));
         result.push(builtin_type("DataSetRecord"));

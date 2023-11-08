@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::collections::BTreeMap;
 use indexmap::{IndexMap, indexmap};
 use serde::{Serialize, Serializer};
 use crate::ast::availability::Availability;
@@ -12,7 +11,6 @@ use crate::ast::info_provider::InfoProvider;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
 use crate::r#type::Type;
-use crate::shape::input::Input;
 
 #[derive(Debug)]
 pub struct InterfaceDeclaration {
@@ -64,11 +62,11 @@ impl InterfaceDeclaration {
         (unsafe { &mut *self.shape_resolved.as_ptr() }).as_mut().unwrap()
     }
 
-    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Input> {
+    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
         self.shape_resolved().map.get(generics)
     }
 
-    pub fn set_shape(&self, generics: Vec<Type>, input: Input) {
+    pub fn set_shape(&self, generics: Vec<Type>, input: Type) {
         self.shape_resolved_mut().map.insert(generics, input);
     }
 }
@@ -110,13 +108,13 @@ impl InfoProvider for InterfaceDeclaration {
 
 #[derive(Debug, Clone)]
 pub struct InterfaceDeclarationShapeResolved {
-    pub map: IndexMap<Vec<Type>, Input>,
+    pub map: IndexMap<Vec<Type>, Type>,
 }
 
 #[derive(Serialize)]
 pub struct InterfaceDeclarationShapeResolvedItemRef<'a> {
     key: &'a Vec<Type>,
-    value: &'a Input,
+    value: &'a Type,
 }
 
 impl Serialize for InterfaceDeclarationShapeResolved {
