@@ -12,7 +12,7 @@ use crate::ast::model::{Model, ModelShapeResolved};
 use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
 use crate::r#type::r#static::{STATIC_UPDATE_INPUT_FOR_TYPE, STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
-use crate::r#type::shape::SynthesizedShape;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::r#type::Type;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;

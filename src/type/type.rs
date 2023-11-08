@@ -2,17 +2,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
-use educe::Educe;
 use serde::Serialize;
 use crate::r#type::reference::Reference;
-use crate::r#type::shape::SynthesizedShape;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 
-#[derive(Debug, Clone, Eq, Serialize)]
-#[derive(Educe)]
-#[educe(Hash, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
 
     // default type

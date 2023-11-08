@@ -1,6 +1,6 @@
 use indexmap::{IndexMap, indexmap};
 use once_cell::sync::Lazy;
-use crate::r#type::shape::SynthesizedShape;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::r#type::Type;
 

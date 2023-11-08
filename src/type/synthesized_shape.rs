@@ -1,10 +1,11 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use indexmap::IndexMap;
 use indexmap::map::{IntoIter, Iter, IterMut, Keys};
 use serde::Serialize;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedShape {
     generics: Vec<String>,
     fields: IndexMap<String, Type>,
@@ -53,11 +54,14 @@ impl SynthesizedShape {
     pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
         Self {
             generics: vec![],
-            fields: self.fields.iter().map(|(k, i)| (k.clone(), if let Some(t) = i.as_type() {
-                t.replace_generics(map)
-            } else {
-                i.clone()
-            })).collect()
+            fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_generics(map))).collect()
+        }
+    }
+
+    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
+        Self {
+            generics: self.generics.clone(),
+            fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_keywords(map))).collect()
         }
     }
 }

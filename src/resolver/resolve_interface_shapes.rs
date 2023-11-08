@@ -3,7 +3,7 @@ use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::r#type::shape::SynthesizedShape;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
 

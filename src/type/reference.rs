@@ -1,4 +1,6 @@
-#[derive(Clone, PartialEq, Eq, Debug)]
+use serde::Serialize;
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize)]
 pub struct Reference {
     path: Vec<usize>,
     string_path: Vec<String>,

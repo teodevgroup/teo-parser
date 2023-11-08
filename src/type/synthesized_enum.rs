@@ -4,7 +4,7 @@ use itertools::Itertools;
 use serde::Serialize;
 use crate::ast::comment::Comment;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedEnum {
     pub members: IndexMap<String, SynthesizedEnumMember>
 }
