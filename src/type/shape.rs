@@ -5,11 +5,11 @@ use serde::Serialize;
 use crate::r#type::Type;
 
 #[derive(Debug, Serialize, Clone)]
-pub struct Shape {
+pub struct SynthesizedShape {
     map: IndexMap<String, Type>,
 }
 
-impl Shape {
+impl SynthesizedShape {
 
     pub fn new(map: IndexMap<String, Type>) -> Self {
         Self { map }

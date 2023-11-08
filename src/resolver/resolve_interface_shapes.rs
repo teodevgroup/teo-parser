@@ -3,7 +3,7 @@ use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::r#type::shape::Shape;
+use crate::r#type::shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
 
@@ -32,7 +32,7 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
             }
         }
     }
-    Type::Shape(Shape::new(map))
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 pub(super) fn calculate_generics_map<'a>(
@@ -47,7 +47,7 @@ pub(super) fn calculate_generics_map<'a>(
     btreemap!{}
 }
 
-pub(super) fn collect_inputs_from_interface_declaration_shape_cache<'a>(interface: &'a InterfaceDeclaration, gens: &Vec<Type>, context: &'a ResolverContext<'a>) -> Vec<Shape> {
+pub(super) fn collect_inputs_from_interface_declaration_shape_cache<'a>(interface: &'a InterfaceDeclaration, gens: &Vec<Type>, context: &'a ResolverContext<'a>) -> Vec<SynthesizedShape> {
     let mut input = vec![interface.shape(gens).unwrap().as_shape().unwrap().clone()];
     let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), gens);
     for extend in interface.extends() {

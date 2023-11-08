@@ -4,10 +4,10 @@ use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use educe::Educe;
 use serde::Serialize;
-use crate::r#type::shape::Shape;
+use crate::r#type::shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_definition::SynthesizedEnumDefinition;
-use crate::r#type::synthesized_shape::SynthesizedShape;
+use crate::r#type::synthesized_shape::SynthesizedShapeReference;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
@@ -132,11 +132,11 @@ pub enum Type {
 
     /// Shape
     ///
-    Shape(Shape),
+    SynthesizedShape(SynthesizedShape),
 
     /// Synthesized Shape
     ///
-    SynthesizedShape(SynthesizedShape),
+    SynthesizedShapeReference(SynthesizedShapeReference),
 
     /// Namespace
     ///
@@ -157,11 +157,15 @@ pub enum Type {
     ///
     EnumVariant(Vec<usize>, Vec<String>),
 
-    /// Enum Variant
+    /// Synthesized Enum Reference
     ///
-    SynthesizedEnumVariant(SynthesizedEnum),
+    SynthesizedEnumReference(SynthesizedEnum),
 
-    /// Enum Definition
+    /// Synthesized Enum Variant Reference
+    ///
+    SynthesizedEnumVariantReference(SynthesizedEnum),
+
+    /// Synthesized Enum Definition
     ///
     SynthesizedEnumDefinition(SynthesizedEnumDefinition),
 
@@ -242,9 +246,9 @@ impl Type {
         self.as_shape().is_some()
     }
 
-    pub fn as_shape(&self) -> Option<&Shape> {
+    pub fn as_shape(&self) -> Option<&SynthesizedShape> {
         match self {
-            Type::Shape(s) => Some(s),
+            Type::SynthesizedShape(s) => Some(s),
             _ => None,
         }
     }
@@ -253,9 +257,9 @@ impl Type {
         self.as_synthesized_shape().is_some()
     }
 
-    pub fn as_synthesized_shape(&self) -> Option<&SynthesizedShape> {
+    pub fn as_synthesized_shape(&self) -> Option<&SynthesizedShapeReference> {
         match self {
-            Type::SynthesizedShape(s) => Some(s),
+            Type::SynthesizedShapeReference(s) => Some(s),
             _ => None,
         }
     }
@@ -702,52 +706,13 @@ impl Type {
 
     pub fn is_container(&self) -> bool {
         match self {
-            Type::Undetermined => false,
-            Type::Ignored => false,
-            Type::Any => false,
-            Type::Null => false,
-            Type::Bool => false,
-            Type::Int => false,
-            Type::Int64 => false,
-            Type::Float32 => false,
-            Type::Float => false,
-            Type::Decimal => false,
-            Type::String => false,
-            Type::ObjectId => false,
-            Type::Date => false,
-            Type::DateTime => false,
-            Type::File => false,
-            Type::Regex => false,
-            Type::Model => false,
-            Type::DataSet => false,
             Type::Enumerable(_) => true,
             Type::Array(_) => true,
             Type::Dictionary(_) => true,
             Type::Tuple(_) => true,
             Type::Range(_) => true,
             Type::Union(_) => true,
-            Type::EnumVariant(_, _) => false,
-            Type::InterfaceObject(_, _, _) => true,
-            Type::ModelObject(_, _) => false,
-            Type::StructObject(_, _) => false,
-            Type::DataSetObject(_, _) => false,
-            Type::DataSetRecord(_, _) => false,
-            Type::FieldType(_, _) => false,
-            Type::FieldReference(_) => false,
-            Type::GenericItem(_) => false,
-            Type::Keyword(_) => false,
-            Type::Optional(_) => true,
-            Type::Pipeline(_) => false,
-            Type::SynthesizedShape(_) => false,
-            Type::Shape(_) => false,
-            Type::Namespace => false,
-            Type::Enum(_, _) => false,
-            Type::SynthesizedEnumVariant(_) => false,
-            Type::Struct(_, _) => false,
-            Type::Function => false,
-            Type::Middleware => false,
-            Type::DataSetGroup(_) => false,
-            Type::Interface => false,
+            _ => false,
         }
     }
 
@@ -790,8 +755,8 @@ impl Type {
             Type::Keyword(_) => false,
             Type::Optional(inner) => inner.contains_generics(),
             Type::Pipeline((a, b)) => a.contains_generics() || b.contains_generics(),
+            Type::SynthesizedShapeReference(_) => false,
             Type::SynthesizedShape(_) => false,
-            Type::Shape(_) => false,
             Type::Namespace => false,
             Type::Enum(_, _) => false,
             Type::Struct(_, _) => false,
@@ -799,6 +764,7 @@ impl Type {
             Type::Middleware => false,
             Type::DataSetGroup(_) => false,
             Type::Interface => false,
+            Type::SynthesizedEnumDefinition(_) => false,
         }
     }
 
@@ -913,16 +879,17 @@ impl Type {
             Type::Keyword(k) => passed.is_keyword() && k == passed.as_keyword().unwrap(),
             Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::Pipeline((a, b)) => passed.is_pipeline() && a.test(passed.as_pipeline().unwrap().0) && b.test(passed.as_pipeline().unwrap().1),
-            Type::SynthesizedShape(r) => false,
-            Type::Shape(s) => passed.is_shape() && s == passed.as_shape().unwrap(),
+            Type::SynthesizedShapeReference(r) => false,
+            Type::SynthesizedShape(s) => passed.is_shape() && s == passed.as_shape().unwrap(),
             Type::Namespace => passed.is_namespace(),
             Type::Enum(p, _) => passed.is_enum() && passed.as_enum().unwrap().0 == p,
             Type::SynthesizedEnumVariant(s) => passed.is_synthesized_enum_variant() && s == passed.as_synthesized_enum_variant().unwrap(),
-            Type::Struct(_, _) => {}
-            Type::Function => {}
+            Type::Struct(p, _) => passed.is_struct() && passed.as_struct().unwrap().0 == p,
+            Type::Function => false,
             Type::Middleware => passed.is_middleware(),
-            Type::DataSetGroup(_) => {}
+            Type::DataSetGroup(_) => false,
             Type::Interface => passed.is_interface(),
+            Type::SynthesizedEnumDefinition(_) => false,
         }
     }
 
@@ -1029,16 +996,7 @@ impl Type {
             Type::Keyword(_) => self.clone(),
             Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
             Type::Pipeline((t1, t2)) => Type::Pipeline((Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f)))),
-            Type::SynthesizedShape(_) => self.clone(),
-            Type::Shape(_) => self.clone(),
-            Type::Namespace => self.clone(),
-            Type::Enum(_, _) => self.clone(),
-            Type::SynthesizedEnumVariant(_) => self.clone(),
-            Type::Struct(_, _) => self.clone(),
-            Type::Function => self.clone(),
-            Type::Middleware => self.clone(),
-            Type::DataSetGroup(_) => self.clone(),
-            Type::Interface => self.clone(),
+            _ => self.clone(),
         }
     }
 }
@@ -1112,9 +1070,9 @@ impl Display for Type {
                 f.write_str(&format!("{}?", inner))
             },
             Type::Pipeline((i, o)) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
-            Type::SynthesizedShape(r) => Display::fmt(r, f),
+            Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
             Type::SynthesizedEnumVariant(e) => Display::fmt(e, f),
-            Type::Shape(shape) => Display::fmt(shape, f),
+            Type::SynthesizedShape(shape) => Display::fmt(shape, f),
             Type::Namespace => f.write_str("Namespace"),
             Type::Enum(_, name) => f.write_str(&name.join(".")),
             Type::Struct(_, name) => f.write_str(&name.join(".")),
@@ -1122,6 +1080,7 @@ impl Display for Type {
             Type::Middleware => f.write_str("Middleware"),
             Type::DataSetGroup(d) => f.write_str(&format!("DataSetGroup<{}>", d)),
             Type::Interface => f.write_str("Interface"),
+            Type::SynthesizedEnumDefinition(_) => {}
         }
     }
 }
