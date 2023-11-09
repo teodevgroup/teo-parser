@@ -963,7 +963,7 @@ impl Type {
             Type::Any => true,
             Type::Union(types) => types.iter().any(|t| t.test(passed)),
             Type::Enumerable(inner) => inner.test(passed) || Type::Array(inner.clone()).test(passed),
-            Type::Optional(inner) => passed.is_null() || inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
+            Type::Optional(inner) => inner.test(passed) || (passed.is_optional() && inner.test(passed.as_optional().unwrap())),
             Type::FieldType(a, b) => passed.is_field_type() && a.test(passed.as_field_type().unwrap().0) && b.test(passed.as_field_type().unwrap().1),
             Type::FieldReference(name) => passed.is_field_reference() && passed.as_field_reference().unwrap() == name.as_str(),
             Type::GenericItem(_) => true,
@@ -985,7 +985,7 @@ impl Type {
             Type::Dictionary(inner) => passed.is_dictionary() && inner.as_ref().test(passed.as_dictionary().unwrap()),
             Type::Tuple(types) => passed.is_tuple() && passed.as_tuple().unwrap().len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(passed.as_tuple().unwrap().get(index).unwrap())),
             Type::Range(inner) => passed.is_range() && inner.as_ref().test(passed.as_range().unwrap()),
-            Type::SynthesizedShape(_) => {}
+            Type::SynthesizedShape(shape) => passed.is_synthesized_shape() && shape.test(passed.as_synthesized_shape().unwrap()),
             Type::SynthesizedShapeReference(r) => passed.is_synthesized_shape_reference() && r.test(passed.as_synthesized_shape_reference().unwrap()),
             Type::Enum => passed.is_enum() || passed.is_enum_reference(),
             Type::EnumReference(r) => passed.is_enum_reference() && r == passed.as_enum_reference().unwrap(),

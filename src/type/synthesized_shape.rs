@@ -1,6 +1,7 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use indexmap::IndexMap;
 use indexmap::map::{IntoIter, Iter, IterMut, Keys};
+use maplit::btreemap;
 use serde::Serialize;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
@@ -52,8 +53,11 @@ impl SynthesizedShape {
     }
 
     pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
+        let my_generics: BTreeSet<String> = self.generics.clone().into_iter().collect();
+        let map_generics: BTreeSet<String> = map.keys().cloned().collect();
+        let generics = my_generics.difference(&map_generics).cloned().collect();
         Self {
-            generics: vec![],
+            generics,
             fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_generics(map))).collect()
         }
     }
@@ -63,5 +67,33 @@ impl SynthesizedShape {
             generics: self.generics.clone(),
             fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_keywords(map))).collect()
         }
+    }
+
+    pub fn contains_generics(&self) -> bool {
+        !self.generics.is_empty()
+    }
+
+    pub fn contains_keywords(&self) -> bool {
+        self.fields.values().any(|v| v.contains_keywords())
+    }
+
+    pub fn test(&self, other: &SynthesizedShape) -> bool {
+        let self_keys: BTreeSet<String> = self.fields.keys().cloned().collect();
+        let other_keys: BTreeSet<String> = other.keys().cloned().collect();
+        if other_keys.difference(&self_keys).count() > 0 {
+            return false;
+        }
+        let mut map: BTreeMap<String, Type> = btreemap! {};
+        for other_key in &other_keys {
+            let self_type = self.fields.get(other_key).unwrap().replace_generics(&map);
+            let other_type = other.fields.get(other_key).unwrap();
+            if !self_type.test(other_type) {
+                return false
+            }
+            if self_type.is_generic_item() {
+                map.insert(self_type.as_generic_item().unwrap().to_string(), other_type.clone());
+            }
+        }
+        true
     }
 }

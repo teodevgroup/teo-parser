@@ -62,7 +62,7 @@ BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
 // #############
 // identifier
 // #############
-identifier = @{ ASCII_ALPHANUMERIC ~ ( "_" | ASCII_ALPHANUMERIC)* }
+identifier = @{ ("_" | ASCII_ALPHANUMERIC) ~ ( "_" | ASCII_ALPHANUMERIC)* }
 identifier_path = { identifier ~ ("." ~ identifier)* }
 
 // #############

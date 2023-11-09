@@ -377,8 +377,8 @@ namespace std {
     /// @name Action
     /// Specify disabled actions
     declare unique model decorator action {
-        variant(enable?: (Action | Action[]))
-        variant(disable: (Action | Action[]))
+        variant(enable?: (Enumerable<Action>))
+        variant(disable: (Enumerable<Action>))
     }
 
     /// @name Generate Client
@@ -392,6 +392,10 @@ namespace std {
     /// @name Show in Studio
     /// Specify whether show this model in Teo Studio
     declare unique model decorator showInStudio(show?: Bool)
+
+    /// @name Synthesize Shapes
+    /// Whether automatically synthesize shapes for this model
+    declare unique model decorator synthesizeShapes(synthesize?: Bool)
 
     /// @name Map
     /// Specify an underlying database column name for the model field
@@ -459,11 +463,11 @@ namespace std {
 
     /// @name Present With
     /// Specify when some other field are not null, this field is required
-    declare unique model field decorator presentWith(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[])
+    declare unique model field decorator presentWith(fields?: Enumerable<ModelScalarFields<Self>>)
 
     /// @name Present Without
     /// Specify when some other field are null, this field is required
-    declare unique model field decorator presentWithout(fields?: ModelScalarFields<Self> | ModelScalarFields<Self>[])
+    declare unique model field decorator presentWithout(fields?: Enumerable<ModelScalarFields<Self>>)
 
     /// @name Present If
     /// Specify when some condition passes, this field is required
@@ -568,7 +572,7 @@ namespace std {
     /// @name Migration
     /// Specify the migration operation for this field
     declare unique model field decorator migration(
-        renamed: (String | Array<String>)?, 
+        renamed: Enumerable<String>?, 
         version: String?, 
         default: ThisFieldType?,
         priority: Int?
@@ -1014,7 +1018,220 @@ namespace std {
 
     #if available(database)
 
-    @generateClient(false) @generateEntity(false) @showInStudio(false)
+    interface BoolFilter {
+        equals: Bool?
+        not: (Bool | BoolFilter)?
+    }
+
+    interface BoolNullableFilter {
+        equals: (Bool | Null)?
+        not: (Bool | Null | BoolNullableFilter)?
+    }
+
+    interface Filter<T> {
+        equals: T?
+        in: T[]?
+        notIn: T[]?
+        lt: T?
+        lte: T?
+        gt: T?
+        gte: T?
+        not: (T | Filter<T>)?
+    }
+
+    interface NullableFilter<T> {
+        equals: (T | Null)?
+        in: (T | Null)[]?
+        notIn: (T | Null)[]?
+        lt: T?
+        lte: T?
+        gt: T?
+        gte: T?
+        not: (T | Null | NullableFilter<T>)?
+    }
+
+    interface StringFilter {
+        equals: String?
+        in: String[]?
+        notIn: String[]?
+        lt: String?
+        lte: String?
+        gt: String?
+        gte: String?
+        contains: String?
+        startsWith: String?
+        endsWith: String?
+        matches: String?
+        not: (String | StringFilter)?
+    }
+
+    interface StringNullableFilter {
+        equals: (String | Null)?
+        in: (String | Null)[]?
+        notIn: (String | Null)[]?
+        lt: String?
+        lte: String?
+        gt: String?
+        gte: String?
+        contains: String?
+        startsWith: String?
+        endsWith: String?
+        matches: String?
+        not: (String | Null | StringNullableFilter)?
+    }
+
+    interface EnumFilter<T> {
+        equals: T?
+        in: T[]?
+        notIn: T[]?
+        not: (T | EnumFilter<T>)?
+    }
+
+    interface EnumNullableFilter<T> {
+        equals: (T | Null)?
+        in: (T | Null)[]?
+        notIn: (T | Null)[]?
+        not: (T | Null | EnumNullableFilter<T>)?
+    }
+
+    interface ArrayFilter<T> {
+        equals: T[]?
+        has: T?
+        hasSome: T[]?
+        hasEvery: T[]?
+        isEmpty: Bool?
+        length: Int?
+    }
+
+    interface ArrayNullableFilter<T> {
+        equals: (T[] | Null)?
+        has: T?
+        hasSome: T[]?
+        hasEvery: T[]?
+        isEmpty: Bool?
+        length: Int?
+    }
+
+    interface BoolWithAggregatesFilter extends BoolFilter {
+        _count: Int64?
+        _min: BoolFilter?
+        _max: BoolFilter?
+    }
+
+    interface BoolNullableWithAggregatesFilter extends BoolNullableFilter {
+        _count: Int64?
+        _min: BoolNullableFilter?
+        _max: BoolNullableFilter?
+    }
+
+    interface IntNumberWithAggregatesFilter<T> extends Filter<T> {
+        _count: Int64?
+        _min: Filter<T>?
+        _max: Filter<T>?
+        _avg: Filter<Float>?
+        _sum: Filter<Int64>?
+    }
+
+    interface IntNumberNullableWithAggregatesFilter<T> extends NullableFilter<T> {
+        _count: Int64?
+        _min: NullableFilter<T>?
+        _max: NullableFilter<T>?
+        _avg: NullableFilter<Float>?
+        _sum: NullableFilter<Int64>?
+    }
+
+    interface FloatNumberWithAggregatesFilter<T> extends Filter<T> {
+        _count: Int64?
+        _min: Filter<T>?
+        _max: Filter<T>?
+        _avg: Filter<Float>?
+        _sum: Filter<Float>?
+    }
+
+    interface FloatNumberNullableWithAggregatesFilter<T> extends NullableFilter<T> {
+        _count: Int64?
+        _min: NullableFilter<T>?
+        _max: NullableFilter<T>?
+        _avg: NullableFilter<Float>?
+        _sum: NullableFilter<Float>?
+    }
+
+    interface DecimalWithAggregatesFilter extends Filter<Decimal> {
+        _count: Int64?
+        _min: Filter<Decimal>?
+        _max: Filter<Decimal>?
+        _avg: Filter<Decimal>?
+        _sum: Filter<Decimal>?
+    }
+
+    interface DecimalNullableWithAggregatesFilter<T> extends NullableFilter<T> {
+        _count: Int64?
+        _min: NullableFilter<Decimal>?
+        _max: NullableFilter<Decimal>?
+        _avg: NullableFilter<Decimal>?
+        _sum: NullableFilter<Decimal>?
+    }
+
+    interface AggregatesFilter<T> extends Filter<T> {
+        _count: Int64?
+        _min: Filter<T>?
+        _max: Filter<T>?
+    }
+
+    interface NullableAggregatesFilter<T> extends NullableFilter<T> {
+        _count: Int64?
+        _min: NullableFilter<T>?
+        _max: NullableFilter<T>?
+    }
+
+    interface StringWithAggregatesFilter extends StringFilter {
+        _count: Int64?
+        _min: StringFilter?
+        _max: StringFilter?
+    }
+
+    interface StringNullableWithAggregatesFilter extends StringNullableFilter {
+        _count: Int64?
+        _min: StringNullableFilter?
+        _max: StringNullableFilter?
+    }
+
+    interface EnumWithAggregatesFilter<T> extends EnumFilter<T> {
+        _count: Int64?
+        _min: EnumFilter<T>?
+        _max: EnumFilter<T>?
+    }
+
+    interface EnumNullableWithAggregatesFilter extends EnumNullableFilter<T> {
+        _count: Int64?
+        _min: EnumNullableFilter<T>?
+        _max: EnumNullableFilter<T>?
+    }
+
+    interface ArrayWithAggregatesFilter<T> extends ArrayFilter<T> {
+        _count: Int64?
+        _min: ArrayFilter<T>?
+        _max: ArrayFilter<T>?
+    }
+
+    interface ArrayNullableWithAggregatesFilter<T> extends ArrayNullableFilter<T> {
+        _count: Int64?
+        _min: ArrayNullableFilter<T>?
+        _max: ArrayNullableFilter<T>?
+    }
+
+    interface NumberAtomicUpdateOperationInput<T> {
+        increment: T?
+        decrement: T?
+        multiply: T?
+        divide: T?
+    }
+
+    interface ArrayAtomicUpdateOperationInput<T> {
+        push: T?
+    }
+
+    @generateClient(false) @generateEntity(false) @showInStudio(false) @synthesizeShapes(false)
     model DataSetRecord {
 
         @id @default($cuid)
@@ -1029,7 +1246,7 @@ namespace std {
         record: String
     }
 
-    @generateClient(false) @generateEntity(false) @showInStudio(false)
+    @generateClient(false) @generateEntity(false) @showInStudio(false) @synthesizeShapes(false)
     model DataSetRelation {
 
         @id @default($cuid)

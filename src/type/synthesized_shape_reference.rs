@@ -1,69 +1,12 @@
-use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use educe::Educe;
 use serde::Serialize;
-use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
-use crate::r#type::Type;
 
 #[derive(Debug, Clone, Eq, Serialize)]
 #[derive(Educe)]
 #[educe(Hash, PartialEq)]
 pub enum SynthesizedShapeReference {
-    BoolFilter,
-    BoolNullableFilter,
-    IntFilter,
-    IntNullableFilter,
-    Int64Filter,
-    Int64NullableFilter,
-    Float32Filter,
-    Float32NullableFilter,
-    FloatFilter,
-    FloatNullableFilter,
-    DecimalFilter,
-    DecimalNullableFilter,
-    DateFilter,
-    DateNullableFilter,
-    DateTimeFilter,
-    DateTimeNullableFilter,
-    ObjectIdFilter,
-    ObjectIdNullableFilter,
-    StringFilter,
-    StringNullableFilter,
-    EnumFilter(Box<Type>),
-    EnumNullableFilter(Box<Type>),
-    ArrayFilter(Box<Type>),
-    ArrayNullableFilter(Box<Type>),
-    BoolWithAggregatesFilter,
-    BoolNullableWithAggregatesFilter,
-    IntWithAggregatesFilter,
-    IntNullableWithAggregatesFilter,
-    Int64WithAggregatesFilter,
-    Int64NullableWithAggregatesFilter,
-    Float32WithAggregatesFilter,
-    Float32NullableWithAggregatesFilter,
-    FloatWithAggregatesFilter,
-    FloatNullableWithAggregatesFilter,
-    DecimalWithAggregatesFilter,
-    DecimalNullableWithAggregatesFilter,
-    DateWithAggregatesFilter,
-    DateNullableWithAggregatesFilter,
-    DateTimeWithAggregatesFilter,
-    DateTimeNullableWithAggregatesFilter,
-    ObjectIdWithAggregatesFilter,
-    ObjectIdNullableWithAggregatesFilter,
-    StringWithAggregatesFilter,
-    StringNullableWithAggregatesFilter,
-    EnumWithAggregatesFilter(Box<Type>),
-    EnumNullableWithAggregatesFilter(Box<Type>),
-    ArrayWithAggregatesFilter(Box<Type>),
-    ArrayNullableWithAggregatesFilter(Box<Type>),
-    IntAtomicUpdateOperationInput,
-    Int64AtomicUpdateOperationInput,
-    Float32AtomicUpdateOperationInput,
-    FloatAtomicUpdateOperationInput,
-    DecimalAtomicUpdateOperationInput,
-    ArrayAtomicUpdateOperationInput(Box<Type>),
     Args(Reference),
     FindManyArgs(Reference),
     FindFirstArgs(Reference),
@@ -124,127 +67,10 @@ pub enum SynthesizedShapeReference {
     GroupByResult(Reference),
 }
 
-impl SynthesizedShapeReference {
-
-    pub fn contains_generics(&self) -> bool {
-        match self {
-            SynthesizedShapeReference::EnumFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::EnumNullableFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::ArrayFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::ArrayNullableFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::EnumWithAggregatesFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::EnumNullableWithAggregatesFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::ArrayWithAggregatesFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(t) => t.contains_generics(),
-            SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(t) => t.contains_generics(),
-            _ => false,
-        }
-    }
-
-    pub fn contains_keywords(&self) -> bool {
-        match self {
-            SynthesizedShapeReference::EnumFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::EnumNullableFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::ArrayFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::ArrayNullableFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::EnumWithAggregatesFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::EnumNullableWithAggregatesFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::ArrayWithAggregatesFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(t) => t.contains_keywords(),
-            SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(t) => t.contains_keywords(),
-            _ => false,
-        }
-    }
-
-    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
-        match self {
-            SynthesizedShapeReference::EnumFilter(t) => SynthesizedShapeReference::EnumFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::EnumNullableFilter(t) => SynthesizedShapeReference::EnumNullableFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::ArrayFilter(t) => SynthesizedShapeReference::ArrayFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::ArrayNullableFilter(t) => SynthesizedShapeReference::ArrayNullableFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::EnumWithAggregatesFilter(t) => SynthesizedShapeReference::EnumWithAggregatesFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::EnumNullableWithAggregatesFilter(t) => SynthesizedShapeReference::EnumNullableWithAggregatesFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::ArrayWithAggregatesFilter(t) => SynthesizedShapeReference::ArrayWithAggregatesFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(t) => SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(Box::new(t.replace_generics(map))),
-            SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(t) => SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.replace_generics(map))),
-            _ => self.clone(),
-        }
-    }
-
-    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
-        match self {
-            SynthesizedShapeReference::EnumFilter(t) => SynthesizedShapeReference::EnumFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::EnumNullableFilter(t) => SynthesizedShapeReference::EnumNullableFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::ArrayFilter(t) => SynthesizedShapeReference::ArrayFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::ArrayNullableFilter(t) => SynthesizedShapeReference::ArrayNullableFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::EnumWithAggregatesFilter(t) => SynthesizedShapeReference::EnumWithAggregatesFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::EnumNullableWithAggregatesFilter(t) => SynthesizedShapeReference::EnumNullableWithAggregatesFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::ArrayWithAggregatesFilter(t) => SynthesizedShapeReference::ArrayWithAggregatesFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(t) => SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(Box::new(t.replace_keywords(map))),
-            SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(t) => SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.replace_keywords(map))),
-            _ => self.clone(),
-        }
-    }
-}
-
 impl Display for SynthesizedShapeReference {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SynthesizedShapeReference::BoolFilter => f.write_str("BoolFilter"),
-            SynthesizedShapeReference::BoolNullableFilter => f.write_str("BoolNullableFilter"),
-            SynthesizedShapeReference::IntFilter => f.write_str("IntFilter"),
-            SynthesizedShapeReference::IntNullableFilter => f.write_str("IntNullableFilter"),
-            SynthesizedShapeReference::Int64Filter => f.write_str("Int64Filter"),
-            SynthesizedShapeReference::Int64NullableFilter => f.write_str("Int64NullableFilter"),
-            SynthesizedShapeReference::Float32Filter => f.write_str("Float32Filter"),
-            SynthesizedShapeReference::Float32NullableFilter => f.write_str("Float32NullableFilter"),
-            SynthesizedShapeReference::FloatFilter => f.write_str("FloatFilter"),
-            SynthesizedShapeReference::FloatNullableFilter => f.write_str("FloatNullableFilter"),
-            SynthesizedShapeReference::DecimalFilter => f.write_str("DecimalFilter"),
-            SynthesizedShapeReference::DecimalNullableFilter => f.write_str("DecimalNullableFilter"),
-            SynthesizedShapeReference::DateFilter => f.write_str("DateFilter"),
-            SynthesizedShapeReference::DateNullableFilter => f.write_str("DateNullableFilter"),
-            SynthesizedShapeReference::DateTimeFilter => f.write_str("DateTimeFilter"),
-            SynthesizedShapeReference::DateTimeNullableFilter => f.write_str("DateTimeNullableFilter"),
-            SynthesizedShapeReference::ObjectIdFilter => f.write_str("ObjectIdFilter"),
-            SynthesizedShapeReference::ObjectIdNullableFilter => f.write_str("ObjectIdNullableFilter"),
-            SynthesizedShapeReference::StringFilter => f.write_str("StringFilter"),
-            SynthesizedShapeReference::StringNullableFilter => f.write_str("StringNullableFilter"),
-            SynthesizedShapeReference::EnumFilter(t) => f.write_str(&format!("EnumFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::EnumNullableFilter(t) => f.write_str(&format!("EnumNullableFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::ArrayFilter(t) => f.write_str(&format!("ArrayFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::ArrayNullableFilter(t) => f.write_str(&format!("ArrayNullableFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::BoolWithAggregatesFilter => f.write_str("BoolWithAggregatesFilter"),
-            SynthesizedShapeReference::BoolNullableWithAggregatesFilter => f.write_str("BoolNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::IntWithAggregatesFilter => f.write_str("IntWithAggregatesFilter"),
-            SynthesizedShapeReference::IntNullableWithAggregatesFilter => f.write_str("IntNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::Int64WithAggregatesFilter => f.write_str("Int64WithAggregatesFilter"),
-            SynthesizedShapeReference::Int64NullableWithAggregatesFilter => f.write_str("Int64NullableWithAggregatesFilter"),
-            SynthesizedShapeReference::Float32WithAggregatesFilter => f.write_str("Float32WithAggregatesFilter"),
-            SynthesizedShapeReference::Float32NullableWithAggregatesFilter => f.write_str("Float32NullableWithAggregatesFilter"),
-            SynthesizedShapeReference::FloatWithAggregatesFilter => f.write_str("FloatWithAggregatesFilter"),
-            SynthesizedShapeReference::FloatNullableWithAggregatesFilter => f.write_str("FloatNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::DecimalWithAggregatesFilter => f.write_str("DecimalWithAggregatesFilter"),
-            SynthesizedShapeReference::DecimalNullableWithAggregatesFilter => f.write_str("DecimalNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::DateWithAggregatesFilter => f.write_str("DateWithAggregatesFilter"),
-            SynthesizedShapeReference::DateNullableWithAggregatesFilter => f.write_str("DateNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::DateTimeWithAggregatesFilter => f.write_str("DateTimeWithAggregatesFilter"),
-            SynthesizedShapeReference::DateTimeNullableWithAggregatesFilter => f.write_str("DateTimeNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::ObjectIdWithAggregatesFilter => f.write_str("ObjectIdWithAggregatesFilter"),
-            SynthesizedShapeReference::ObjectIdNullableWithAggregatesFilter => f.write_str("ObjectIdNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::StringWithAggregatesFilter => f.write_str("StringWithAggregatesFilter"),
-            SynthesizedShapeReference::StringNullableWithAggregatesFilter => f.write_str("StringNullableWithAggregatesFilter"),
-            SynthesizedShapeReference::EnumWithAggregatesFilter(t) => f.write_str(&format!("EnumWithAggregatesFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::EnumNullableWithAggregatesFilter(t) => f.write_str(&format!("EnumNullableWithAggregatesFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::ArrayWithAggregatesFilter(t) => f.write_str(&format!("ArrayWithAggregatesFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(t) => f.write_str(&format!("ArrayNullableWithAggregatesFilter<{}>", t.as_ref())),
-            SynthesizedShapeReference::IntAtomicUpdateOperationInput => f.write_str("IntAtomicUpdateOperationInput"),
-            SynthesizedShapeReference::Int64AtomicUpdateOperationInput => f.write_str("Int64AtomicUpdateOperationInput"),
-            SynthesizedShapeReference::Float32AtomicUpdateOperationInput => f.write_str("Float32AtomicUpdateOperationInput"),
-            SynthesizedShapeReference::FloatAtomicUpdateOperationInput => f.write_str("FloatAtomicUpdateOperationInput"),
-            SynthesizedShapeReference::DecimalAtomicUpdateOperationInput => f.write_str("DecimalAtomicUpdateOperationInput"),
-            SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(t) => f.write_str(&format!("ArrayAtomicUpdateOperationInput{}", t.as_ref())),
             SynthesizedShapeReference::Args(re) => f.write_str(&format!("Args<{}>", re.string_path().join("."))),
             SynthesizedShapeReference::FindManyArgs(re) => f.write_str(&format!("FindManyArgs<{}>", re.string_path().join("."))),
             SynthesizedShapeReference::FindFirstArgs(re) => f.write_str(&format!("FindFirstArgs<{}>", re.string_path().join("."))),
