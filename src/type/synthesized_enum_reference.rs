@@ -28,7 +28,7 @@ impl SynthesizedEnumReference {
         }
     }
 
-    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, &Type>) -> SynthesizedEnumReference {
+    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> SynthesizedEnumReference {
         match self {
             Self::ModelScalarFields(t) => Self::ModelScalarFields(Box::new(t.replace_keywords(map))),
             Self::ModelSerializableScalarFields(t) => Self::ModelSerializableScalarFields(Box::new(t.replace_keywords(map))),

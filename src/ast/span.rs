@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Hash)]
 pub struct Span {
     pub start: usize,
     pub end: usize,

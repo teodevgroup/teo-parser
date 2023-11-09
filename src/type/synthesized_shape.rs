@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::collections::btree_map::{IntoIter, Iter, IterMut, Keys};
 use std::fmt::{Display, Formatter};
 use indexmap::IndexMap;
-use indexmap::map::{IntoIter, Iter, IterMut, Keys};
 use itertools::Itertools;
 use maplit::btreemap;
 use serde::Serialize;
@@ -11,13 +11,18 @@ use crate::r#type::Type;
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedShape {
     generics: Vec<String>,
-    fields: IndexMap<String, Type>,
+    keys: Vec<String>,
+    fields: BTreeMap<String, Type>,
 }
 
 impl SynthesizedShape {
 
     pub fn new(map: IndexMap<String, Type>) -> Self {
-        Self { fields: map, generics: vec![] }
+        Self {
+            keys: map.keys().cloned().collect(),
+            fields: map.into_iter().collect(),
+            generics: vec![]
+        }
     }
 
     pub fn generics(&self) -> &Vec<String> {
@@ -60,6 +65,7 @@ impl SynthesizedShape {
         let generics = my_generics.difference(&map_generics).cloned().collect();
         Self {
             generics,
+            keys: self.keys.clone(),
             fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_generics(map))).collect()
         }
     }
@@ -67,6 +73,7 @@ impl SynthesizedShape {
     pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
         Self {
             generics: self.generics.clone(),
+            keys: self.keys.clone(),
             fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_keywords(map))).collect()
         }
     }

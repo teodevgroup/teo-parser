@@ -82,7 +82,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
     if has_errors {
         expected.clone()
     } else if let Some((input, output)) = expected.as_pipeline() {
-        Type::Pipeline((Box::new(input.clone()), Box::new(current_input_type)))
+        Type::Pipeline(Box::new(input.clone()), Box::new(current_input_type))
     } else {
         Type::Undetermined
     }
