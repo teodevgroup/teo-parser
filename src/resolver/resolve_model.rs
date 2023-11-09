@@ -4,6 +4,7 @@ use crate::ast::model::{Model, ModelResolved};
 use crate::ast::reference::ReferenceType;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators};
 use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
@@ -67,7 +68,7 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     resolve_model_shapes(model, context);
     // decorators
-    let model_type = Type::ModelObject(model.path.clone(), model.string_path.clone());
+    let model_type = Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone()));
     for decorator in &model.decorators {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => &model_type

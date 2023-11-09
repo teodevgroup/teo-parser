@@ -11,7 +11,6 @@ use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::{Model, ModelShapeResolved};
 use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
-use crate::r#type::r#static::{STATIC_UPDATE_INPUT_FOR_TYPE, STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
@@ -37,7 +36,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         shape_available_context.has_include = true;
     }
     // where input
-    if let Some(input) = resolve_model_where_input_shape(model, true, false) {
+    if let Some(input) = resolve_model_where_input_shape(model, true, false, context) {
         model_shape_resolved.map.insert(("WhereInput".to_owned(), None), input);
         shape_available_context.has_where = true;
     }
@@ -47,7 +46,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         shape_available_context.has_where_unique = true;
     }
     // scalar where with aggregates input
-    if let Some(input) = resolve_model_where_input_shape(model, false, true) {
+    if let Some(input) = resolve_model_where_input_shape(model, false, true, context) {
         model_shape_resolved.map.insert(("ScalarWhereWithAggregatesInput".to_owned(), None), input);
         shape_available_context.has_where_with_aggregates = true;
     }
@@ -255,18 +254,18 @@ fn resolve_model_include_shape(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(_) = field.resolved().class.as_model_relation() {
-            if let Some((related_model_path, related_model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
+            if let Some(related_reference) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
                 if relation_is_many(field) {
                     // many
                     map.insert(
                         field.name().to_owned(),
-                        Type::SynthesizedShapeReference(SynthesizedShapeReference::FindManyArgs(related_model_path.clone(), related_model_string_path.clone())).wrap_in_optional()
+                        Type::SynthesizedShapeReference(SynthesizedShapeReference::FindManyArgs(related_reference.clone())).wrap_in_optional()
                     );
                 } else {
                     // single
                     map.insert(
                         field.name().to_owned(),
-                        Type::SynthesizedShapeReference(SynthesizedShapeReference::Args(related_model_path.clone(), related_model_string_path.clone())).wrap_in_optional()
+                        Type::SynthesizedShapeReference(SynthesizedShapeReference::Args(related_reference.clone())).wrap_in_optional()
                     );
                 }
             }
@@ -279,17 +278,17 @@ fn resolve_model_include_shape(model: &Model) -> Option<Type> {
     }
 }
 
-fn resolve_model_where_input_shape(model: &Model, include_relations: bool, with_aggregates: bool) -> Option<Type> {
+fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, with_aggregates: bool, context: &'a ResolverContext<'a>) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_queryable(field) && !is_field_writeonly(field) {
                 if with_aggregates {
-                    if let Some(where_input_type) = field_where_with_aggregates_input_for_type(field.type_expr.resolved()) {
+                    if let Some(where_input_type) = resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context) {
                         map.insert(field.name().to_owned(), where_input_type.clone());
                     }
                 } else {
-                    if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
+                    if let Some(where_input_type) = resolve_static_where_input_for_type(field.type_expr.resolved(), context) {
                         map.insert(field.name().to_owned(), where_input_type.clone());
                     }
                 }
@@ -297,29 +296,29 @@ fn resolve_model_where_input_shape(model: &Model, include_relations: bool, with_
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_queryable(field) {
                 if with_aggregates {
-                    if let Some(where_input_type) = field_where_with_aggregates_input_for_type(field.type_expr.resolved()) {
+                    if let Some(where_input_type) = resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context) {
                         map.insert(field.name().to_owned(), where_input_type.clone());
                     }
                 } else {
-                    if let Some(where_input_type) = field_where_input_for_type(field.type_expr.resolved()) {
+                    if let Some(where_input_type) = resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context) {
                         map.insert(field.name().to_owned(), where_input_type.clone());
                     }
                 }
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             if include_relations {
-                if let Some((related_model_path, related_model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
+                if let Some(related_reference) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
                     if relation_is_many(field) {
                         // many
                         map.insert(
                             field.name().to_owned(),
-                            Type::SynthesizedShapeReference(SynthesizedShapeReference::ListRelationFilter(related_model_path.clone(), related_model_string_path.clone())).wrap_in_optional()
+                            Type::SynthesizedShapeReference(SynthesizedShapeReference::ListRelationFilter(related_reference.clone())).wrap_in_optional()
                         );
                     } else {
                         // single
                         map.insert(
                             field.name().to_owned(),
-                            Type::SynthesizedShapeReference(SynthesizedShapeReference::RelationFilter(related_model_path.clone(), related_model_string_path.clone())).wrap_in_optional()
+                            Type::SynthesizedShapeReference(SynthesizedShapeReference::RelationFilter(related_reference.clone())).wrap_in_optional()
                         );
                     }
                 }
@@ -331,13 +330,13 @@ fn resolve_model_where_input_shape(model: &Model, include_relations: bool, with_
     } else {
         // insert the three ops
         map.insert("AND".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))
         ).wrap_in_array().wrap_in_optional());
         map.insert("OR".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))
         ).wrap_in_array().wrap_in_optional());
         map.insert("NOT".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())
+            SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))
         ).wrap_in_optional());
         Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
     }
@@ -385,35 +384,30 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
 
 fn resolve_model_relation_filter(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("is".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
-    map.insert("isNot".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
+    map.insert("is".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("isNot".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_model_list_relation_filter(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("every".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
-    map.insert("some".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
-    map.insert("none".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
+    map.insert("every".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("some".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("none".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Type> {
-    let builtin_source = if let Some(s) = context.schema.builtin_sources().get(0) {
-        *s
-    } else {
-        context.source()
-    };
-    let sort = builtin_source.find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let sort = context.schema.std_source().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_sortable(field) && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), Type::EnumVariant(sort.path.clone(), sort.string_path.clone()));
+                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())));
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_sortable(field) {
-                map.insert(field.name().to_owned(), Type::EnumVariant(sort.path.clone(), sort.string_path.clone()));
+                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())));
             }
         }
     }
@@ -581,18 +575,18 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
             let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
             if relation_is_many(field) {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedManyInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedManyInputWithout(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedManyInput(that_model.0.clone(), that_model.1.clone())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedManyInput(that_model.clone())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 }
             } else {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedOneInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedOneInputWithout(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedOneInput(that_model.0.clone(), that_model.1.clone())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateNestedOneInput(that_model.clone())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 }
             }
@@ -610,13 +604,13 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
-                if let Some(input) = field_update_input_for_type(field.type_expr.resolved(), is_field_atomic(field)) {
+                if let Some(input) = resolve_static_update_input_for_type(field.type_expr.resolved(), is_field_atomic(field), context) {
                     map.insert(field.name().to_owned(), input);
                 }
             }
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_setter(field) {
-                if let Some(input) = field_update_input_for_type(field.type_expr.resolved(), false) {
+                if let Some(input) = resolve_static_update_input_for_type(field.type_expr.resolved(), false, context) {
                     map.insert(field.name().to_owned(), input);
                 }
             }
@@ -629,18 +623,18 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
             let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
             if relation_is_many(field) {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedManyInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedManyInputWithout(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedManyInput(that_model.0.clone(), that_model.1.clone())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedManyInput(that_model.clone())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 }
             } else {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedOneInputWithout(that_model.0.clone(), that_model.1.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedOneInputWithout(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedOneInput(that_model.0.clone(), that_model.1.clone())).wrap_in_optional();
+                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateNestedOneInput(that_model.clone())).wrap_in_optional();
                     map.insert(field.name().to_owned(), t);
                 }
             }
@@ -656,58 +650,58 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
 fn resolve_create_nested_one_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
     map.insert("connectOrCreate".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::ConnectOrCreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::ConnectOrCreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
-    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_create_nested_many_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
     map.insert("connectOrCreate".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::ConnectOrCreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::ConnectOrCreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
-    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable().wrap_in_optional());
+    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_update_nested_one_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
     map.insert("connectOrCreate".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::ConnectOrCreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::ConnectOrCreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
-    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
-    map.insert("set".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("set".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateWithWhereUniqueInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateWithWhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
     map.insert("upsert".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpsertWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpsertWithWhereUniqueInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpsertWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpsertWithWhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
     map.insert("disconnect".to_owned(), Type::Bool.wrap_in_optional());
     map.insert("delete".to_owned(), Type::Bool.wrap_in_optional());
@@ -717,82 +711,82 @@ fn resolve_update_nested_one_input_type(model: &Model, without: Option<&str>) ->
 fn resolve_update_nested_many_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
     map.insert("connectOrCreate".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::ConnectOrCreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::ConnectOrCreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::ConnectOrCreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::ConnectOrCreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
-    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable().wrap_in_optional());
+    map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateWithWhereUniqueInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateWithWhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
     map.insert("upsert".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpsertWithWhereUniqueInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpsertWithWhereUniqueInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpsertWithWhereUniqueInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpsertWithWhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
-    map.insert("disconnect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable().wrap_in_optional());
-    map.insert("delete".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable().wrap_in_optional());
+    map.insert("disconnect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
+    map.insert("delete".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     map.insert("updateMany".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateManyWithWhereInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateManyWithWhereInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateManyWithWhereInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateManyWithWhereInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
-    map.insert("deleteMany".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable().wrap_in_optional());
+    map.insert("deleteMany".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_connect_or_create_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_update_with_where_unique_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_upsert_with_where_unique_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     map.insert("create".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::CreateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::CreateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }));
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_update_many_with_where_input_type(model: &Model, without: Option<&str>) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::UpdateInputWithout(model.path.clone(), model.string_path.clone(), without.to_owned())
+        SynthesizedShapeReference::UpdateInputWithout(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())
+        SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))
     }));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
@@ -946,18 +940,18 @@ fn resolve_max_aggregate_result_type(model: &Model) -> Option<Type> {
 
 fn resolve_aggregate_result_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateResult(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateResult(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_sum_aggregate {
-        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateResult(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateResult(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_avg_aggregate {
-        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateResult(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateResult(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_min_aggregate {
-        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateResult(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateResult(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_max_aggregate {
-        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateResult(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateResult(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
@@ -982,41 +976,41 @@ fn resolve_group_by_result_type(model: &Model, availability: &ShapeAvailableCont
 fn resolve_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_find_unique_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_find_first_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_scalar_field_enum {
-        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     map.insert("take".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("skip".to_owned(), Type::Int64.wrap_in_optional());
@@ -1031,180 +1025,180 @@ fn resolve_find_many_args_type(model: &Model, availability: &ShapeAvailableConte
 
 fn resolve_create_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_update_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
-    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_upsert_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
-    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())));
-    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_copy_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
-    map.insert("copy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("copy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_delete_args_type(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_create_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(model.path.clone(), model.string_path.clone())).wrap_in_enumerable());
+    map.insert("create".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CreateInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable());
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_update_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
-    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("update".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_copy_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
-    map.insert("copy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("copy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::UpdateInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     if availability.has_select {
-        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_include {
-        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::Include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_delete_many_args_type(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())));
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))));
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_count_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_scalar_field_enum {
-        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("take".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("skip".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageSize".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageNumber".to_owned(), Type::Int64.wrap_in_optional());
-    map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_aggregate_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_scalar_field_enum {
-        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("take".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("skip".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageSize".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageNumber".to_owned(), Type::Int64.wrap_in_optional());
-    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_sum_aggregate {
-        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_avg_aggregate {
-        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_min_aggregate {
-        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_max_aggregate {
-        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
-    map.insert("by".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).wrap_in_optional());
-    map.insert("having".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarWhereWithAggregatesInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("by".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("having".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarWhereWithAggregatesInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(model.path.clone(), model.string_path.clone())).wrap_in_optional());
-    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("take".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("skip".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageSize".to_owned(), Type::Int64.wrap_in_optional());
     map.insert("pageNumber".to_owned(), Type::Int64.wrap_in_optional());
-    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+    map.insert("_count".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::CountAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_sum_aggregate {
-        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_sum".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::SumAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_avg_aggregate {
-        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_avg".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::AvgAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_min_aggregate {
-        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_min".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MinAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_max_aggregate {
-        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateInputType(model.path.clone(), model.string_path.clone())).wrap_in_optional());
+        map.insert("_max".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::MaxAggregateInputType(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
@@ -1271,70 +1265,6 @@ fn decorator_has_any_name(decorator: &Decorator, names: Vec<&str>) -> bool {
     }
     let name = *decorator_names.last().unwrap();
     names.contains(&name)
-}
-
-fn field_where_with_aggregates_input_for_type(t: &Type) -> Option<Type> {
-    if let Some((a, b)) = t.unwrap_optional().as_enum_variant() {
-        if t.is_optional() {
-            Some(Type::Union(vec![
-                Type::EnumVariant(a.clone(), b.clone()),
-                Type::Null,
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::EnumNullableWithAggregatesFilter(Box::new(t.unwrap_optional().clone()))),
-            ]).wrap_in_optional())
-        } else {
-            Some(Type::Union(vec![
-                Type::EnumVariant(a.clone(), b.clone()),
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::EnumWithAggregatesFilter(Box::new(t.clone()))),
-            ]).wrap_in_optional())
-        }
-    } else if let Some(inner) = t.unwrap_optional().as_array() {
-        if t.is_optional() {
-            Some(Type::Union(vec![
-                t.unwrap_optional().clone(),
-                Type::Null,
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayNullableWithAggregatesFilter(Box::new(inner.clone()))),
-            ]))
-        } else {
-            Some(Type::Union(vec![
-                t.clone(),
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayWithAggregatesFilter(Box::new(inner.clone()))),
-            ]))
-        }
-    } else {
-        STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE.get(t).cloned()
-    }
-}
-
-fn field_where_input_for_type<'a>(t: &Type) -> Option<Type> {
-    if let Some((a, b)) = t.unwrap_optional().as_enum_variant() {
-        if t.is_optional() {
-            Some(Type::Union(vec![
-                Type::EnumVariant(a.clone(), b.clone()),
-                Type::Null,
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::EnumNullableFilter(Box::new(t.unwrap_optional().clone()))),
-            ]).wrap_in_optional())
-        } else {
-            Some(Type::Union(vec![
-                Type::EnumVariant(a.clone(), b.clone()),
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::EnumFilter(Box::new(t.clone()))),
-            ]).wrap_in_optional())
-        }
-    } else if let Some(inner) = t.unwrap_optional().as_array() {
-        if t.is_optional() {
-            Some(Type::Union(vec![
-                t.unwrap_optional().clone(),
-                Type::Null,
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayNullableFilter(Box::new(inner.clone()))),
-            ]))
-        } else {
-            Some(Type::Union(vec![
-                t.clone(),
-                Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayFilter(Box::new(inner.clone()))),
-            ]))
-        }
-    } else {
-        STATIC_WHERE_INPUT_FOR_TYPE.get(t).cloned()
-    }
 }
 
 pub(super) fn is_field_input_omissible(field: &Field) -> bool {
@@ -1532,6 +1462,10 @@ pub fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverCo
         Type::Union(vec![Type::ObjectId, search_filter_type_in_std("Filter", vec![Type::ObjectId], context)]).wrap_in_optional()
     } else if t.is_string() {
         Type::Union(vec![Type::String, search_filter_type_in_std("StringFilter", vec![], context)]).wrap_in_optional()
+    } else if t.is_enum_variant() {
+        Type::Union(vec![t.clone(), search_filter_type_in_std("EnumFilter", vec![t.clone()], context)]).wrap_in_optional()
+    } else if let Some(inner) = t.as_array() {
+        Type::Union(vec![t.clone(), search_filter_type_in_std("ArrayFilter", vec![inner.clone()], context)]).wrap_in_optional()
     } else if let Some(t) = t.as_optional() {
         if t.is_bool() {
             Type::Union(vec![Type::Bool, Type::Null, search_filter_type_in_std("BoolNullableFilter", vec![], context)]).wrap_in_optional()
@@ -1553,6 +1487,10 @@ pub fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverCo
             Type::Union(vec![Type::ObjectId, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
         } else if t.is_string() {
             Type::Union(vec![Type::String, Type::Null, search_filter_type_in_std("StringNullableFilter", vec![], context)]).wrap_in_optional()
+        }  else if t.is_enum_variant() {
+            Type::Union(vec![t.clone(), Type::Null, search_filter_type_in_std("EnumNullableFilter", vec![t.clone()], context)]).wrap_in_optional()
+        } else if let Some(inner) = t.as_array() {
+            Type::Union(vec![t.clone(), Type::Null, search_filter_type_in_std("ArrayNullableFilter", vec![inner.clone()], context)]).wrap_in_optional()
         } else {
             t.clone()
         }
@@ -1582,6 +1520,10 @@ pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context
         Type::Union(vec![Type::ObjectId, search_filter_type_in_std("AggregatesFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
     } else if t.is_string() {
         Type::Union(vec![Type::String, search_filter_type_in_std("StringWithAggregatesFilter", vec![], context)]).wrap_in_optional()
+    } else if t.is_enum_variant() {
+        Type::Union(vec![t.clone(), search_filter_type_in_std("EnumWithAggregatesFilter", vec![t.clone()], context)]).wrap_in_optional()
+    } else if let Some(inner) = t.as_array() {
+        Type::Union(vec![t.clone(), search_filter_type_in_std("ArrayWithAggregatesFilter", vec![inner.clone()], context)]).wrap_in_optional()
     } else if let Some(t) = t.as_optional() {
         if t.is_bool() {
             Type::Union(vec![Type::Bool, Type::Null, search_filter_type_in_std("BoolNullableWithAggregatesFilter", vec![], context)]).wrap_in_optional()
@@ -1603,7 +1545,11 @@ pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context
             Type::Union(vec![Type::ObjectId, Type::Null, search_filter_type_in_std("NullableAggregatesFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
         } else if t.is_string() {
             Type::Union(vec![Type::String, Type::Null, search_filter_type_in_std("StringNullableWithAggregatesFilter", vec![], context)]).wrap_in_optional()
-        } else {
+        } else if t.is_enum_variant() {
+            Type::Union(vec![t.clone(), Type::Null, search_filter_type_in_std("EnumNullableWithAggregatesFilter", vec![t.clone()], context)]).wrap_in_optional()
+        } else if let Some(inner) = t.as_array() {
+            Type::Union(vec![t.clone(), Type::Null, search_filter_type_in_std("ArrayNullableWithAggregatesFilter", vec![inner.clone()], context)]).wrap_in_optional()
+        }  else {
             t.clone()
         }
     } else {
@@ -1611,7 +1557,10 @@ pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context
     }
 }
 
-pub fn resolve_static_update_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+pub fn resolve_static_update_input_for_type<'a>(t: &Type, atomic: bool, context: &'a ResolverContext<'a>) -> Type {
+    if !atomic {
+        return t.clone();
+    }
     if t.is_int() {
         Type::Union(vec![Type::Int, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Int], context)]).wrap_in_optional()
     } else if t.is_int64() {

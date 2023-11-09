@@ -4,7 +4,7 @@ use crate::ast::config::Config;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
-use crate::ast::source::{Source, SourceType};
+use crate::ast::source::Source;
 
 pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_path: &Vec<&str>) -> Availability {
     if namespace_path.len() == 0 {
