@@ -80,43 +80,70 @@ fn resolve_type_expr_kind<'a>(
             )
         }
         TypeExprKind::TypeGroup(g) => {
-            let resolved = resolve_type_expr_kind(
+            let mut resolved = resolve_type_expr_kind(
                 g.kind.as_ref(),
                 generics_declaration,
                 generics_constraint,
                 context,
                 availability,
             );
-            if !resolved.is_optional() && g.optional {
-                Type::Optional(Box::new(resolved))
-            } else {
-                resolved
+            if !resolved.is_optional() && g.item_optional {
+                resolved = Type::Optional(Box::new(resolved));
             }
+            if !g.arity.is_scalar() {
+                match g.arity {
+                    Arity::Array => resolved = Type::Array(Box::new(resolved)),
+                    Arity::Dictionary => resolved = Type::Dictionary(Box::new(resolved)),
+                    _ => ()
+                };
+                if g.collection_optional {
+                    resolved = Type::Optional(Box::new(resolved));
+                }
+            }
+            resolved
         }
         TypeExprKind::TypeTuple(t) => {
-            let resolved = Type::Tuple(t.kinds.iter().map(|k| resolve_type_expr_kind(
+            let mut resolved = Type::Tuple(t.kinds.iter().map(|k| resolve_type_expr_kind(
                 k,
                 generics_declaration,
                 generics_constraint,
                 context,
                 availability,
             )).collect());
-            if t.optional {
-                Type::Optional(Box::new(resolved))
-            } else {
-                resolved
+            if !resolved.is_optional() && t.item_optional {
+                resolved = Type::Optional(Box::new(resolved));
             }
+            if !t.arity.is_scalar() {
+                match t.arity {
+                    Arity::Array => resolved = Type::Array(Box::new(resolved)),
+                    Arity::Dictionary => resolved = Type::Dictionary(Box::new(resolved)),
+                    _ => ()
+                };
+                if t.collection_optional {
+                    resolved = Type::Optional(Box::new(resolved));
+                }
+            }
+            resolved
         }
         TypeExprKind::TypeSubscript(subscript) => {
-            let resolved = Type::FieldType(
+            let mut resolved = Type::FieldType(
                 Box::new(resolve_type_item(&subscript.type_item, generics_declaration, generics_constraint, context, availability)),
                 Box::new(resolve_type_expr_kind(&subscript.type_expr, generics_declaration, generics_constraint, context, availability)),
             );
-            if subscript.optional {
-                Type::Optional(Box::new(resolved))
-            } else {
-                resolved
+            if !resolved.is_optional() && subscript.item_optional {
+                resolved = Type::Optional(Box::new(resolved));
             }
+            if !subscript.arity.is_scalar() {
+                match subscript.arity {
+                    Arity::Array => resolved = Type::Array(Box::new(resolved)),
+                    Arity::Dictionary => resolved = Type::Dictionary(Box::new(resolved)),
+                    _ => ()
+                };
+                if subscript.collection_optional {
+                    resolved = Type::Optional(Box::new(resolved));
+                }
+            }
+            resolved
         }
         TypeExprKind::FieldReference(r) => {
             Type::FieldReference(r.identifier.name().to_string())
