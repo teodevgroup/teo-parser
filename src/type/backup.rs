@@ -1,8 +1,3 @@
-// static MAP_FILTERS: Lazy<HashSet<&str>> = Lazy::new(|| {
-//     hashset! {"equals", "has", "hasEvery", "hasSome", "isEmpty", "length", "hasKey"}
-// });
-
-
 // pub fn or_to_shape(&self) -> Shape {
 //     let mut result = Shape::new(indexmap! {});
 //     let mut times = 0;

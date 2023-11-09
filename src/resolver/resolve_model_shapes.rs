@@ -12,6 +12,7 @@ use crate::ast::model::{Model, ModelShapeResolved};
 use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
 use crate::r#type::r#static::{STATIC_UPDATE_INPUT_FOR_TYPE, STATIC_WHERE_INPUT_FOR_TYPE, STATIC_WHERE_WITH_AGGREGATES_INPUT_FOR_TYPE};
+use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::r#type::Type;
@@ -1304,47 +1305,6 @@ fn field_where_with_aggregates_input_for_type(t: &Type) -> Option<Type> {
     }
 }
 
-fn field_update_input_for_type<'a>(t: &Type, atomic: bool) -> Option<Type> {
-    if atomic {
-        if let Some(inner_type) = t.unwrap_optional().as_array() {
-            if t.is_optional() {
-                Some(Type::Union(vec![
-                    Type::Array(Box::new(inner_type.clone())),
-                    Type::Null,
-                    Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.unwrap_optional().clone()))),
-                ]).wrap_in_optional())
-            } else {
-                Some(Type::Union(vec![
-                    Type::Array(Box::new(inner_type.clone())),
-                    Type::SynthesizedShapeReference(SynthesizedShapeReference::ArrayAtomicUpdateOperationInput(Box::new(t.unwrap_optional().clone()))),
-                ]).wrap_in_optional())
-            }
-        } else {
-            if let Some(input) = STATIC_UPDATE_INPUT_FOR_TYPE.get(t) {
-                Some(input.clone())
-            } else {
-                if t.is_optional() {
-                    Some(Type::Union(vec![
-                        t.unwrap_optional().clone(),
-                        Type::Null,
-                    ]))
-                } else {
-                    Some(t.clone())
-                }
-            }
-        }
-    } else {
-        if t.is_optional() {
-            Some(Type::Union(vec![
-                t.unwrap_optional().clone(),
-                Type::Null,
-            ]))
-        } else {
-            Some(t.clone())
-        }
-    }
-}
-
 fn field_where_input_for_type<'a>(t: &Type) -> Option<Type> {
     if let Some((a, b)) = t.unwrap_optional().as_enum_variant() {
         if t.is_optional() {
@@ -1397,7 +1357,7 @@ pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a Res
     let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
     let argument_list = relation_decorator.argument_list.as_ref()?;
     let that_model_ref = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
-    let that_model = context.schema.find_top_by_path(that_model_ref.0)?.as_model()?;
+    let that_model = context.schema.find_top_by_path(that_model_ref.path())?.as_model()?;
 
     let fields = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields");
     let references = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references");
@@ -1539,5 +1499,148 @@ impl ShapeAvailableContext {
 
     fn has_group_by(&self) -> bool {
         self.has_scalar_field_enum
+    }
+}
+
+fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a ResolverContext<'a>) -> Type {
+    let interface = context.schema.std_source().find_top_by_string_path(
+        &vec!["std", name],
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_interface_declaration().unwrap();
+    Type::InterfaceObject(Reference::new(interface.path.clone(), interface.string_path.clone()), generics)
+}
+
+pub fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+    if t.is_bool() {
+        Type::Union(vec![Type::Bool, search_filter_type_in_std("BoolFilter", vec![], context)]).wrap_in_optional()
+    } else if t.is_int() {
+        Type::Union(vec![Type::Int, search_filter_type_in_std("Filter", vec![Type::Int], context)]).wrap_in_optional()
+    } else if t.is_int64() {
+        Type::Union(vec![Type::Int64, search_filter_type_in_std("Filter", vec![Type::Int64], context)]).wrap_in_optional()
+    } else if t.is_float32() {
+        Type::Union(vec![Type::Float32, search_filter_type_in_std("Filter", vec![Type::Float32], context)]).wrap_in_optional()
+    } else if t.is_float() {
+        Type::Union(vec![Type::Float, search_filter_type_in_std("Filter", vec![Type::Float], context)]).wrap_in_optional()
+    } else if t.is_decimal() {
+        Type::Union(vec![Type::Decimal, search_filter_type_in_std("Filter", vec![Type::Decimal], context)]).wrap_in_optional()
+    } else if t.is_date() {
+        Type::Union(vec![Type::Date, search_filter_type_in_std("Filter", vec![Type::Date], context)]).wrap_in_optional()
+    } else if t.is_datetime() {
+        Type::Union(vec![Type::DateTime, search_filter_type_in_std("Filter", vec![Type::DateTime], context)]).wrap_in_optional()
+    } else if t.is_object_id() {
+        Type::Union(vec![Type::ObjectId, search_filter_type_in_std("Filter", vec![Type::ObjectId], context)]).wrap_in_optional()
+    } else if t.is_string() {
+        Type::Union(vec![Type::String, search_filter_type_in_std("StringFilter", vec![], context)]).wrap_in_optional()
+    } else if let Some(t) = t.as_optional() {
+        if t.is_bool() {
+            Type::Union(vec![Type::Bool, Type::Null, search_filter_type_in_std("BoolNullableFilter", vec![], context)]).wrap_in_optional()
+        } else if t.is_int() {
+            Type::Union(vec![Type::Int, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Int], context)]).wrap_in_optional()
+        } else if t.is_int64() {
+            Type::Union(vec![Type::Int64, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Int64], context)]).wrap_in_optional()
+        } else if t.is_float32() {
+            Type::Union(vec![Type::Float32, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Float32], context)]).wrap_in_optional()
+        } else if t.is_float() {
+            Type::Union(vec![Type::Float, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Float], context)]).wrap_in_optional()
+        } else if t.is_decimal() {
+            Type::Union(vec![Type::Decimal, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Decimal], context)]).wrap_in_optional()
+        } else if t.is_date() {
+            Type::Union(vec![Type::Date, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::Date], context)]).wrap_in_optional()
+        } else if t.is_datetime() {
+            Type::Union(vec![Type::DateTime, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::DateTime], context)]).wrap_in_optional()
+        } else if t.is_object_id() {
+            Type::Union(vec![Type::ObjectId, Type::Null, search_filter_type_in_std("NullableFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
+        } else if t.is_string() {
+            Type::Union(vec![Type::String, Type::Null, search_filter_type_in_std("StringNullableFilter", vec![], context)]).wrap_in_optional()
+        } else {
+            t.clone()
+        }
+    } else {
+        t.clone()
+    }
+}
+
+pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+    if t.is_bool() {
+        Type::Union(vec![Type::Bool, search_filter_type_in_std("BoolWithAggregatesFilter", vec![], context)]).wrap_in_optional()
+    } else if t.is_int() {
+        Type::Union(vec![Type::Int, search_filter_type_in_std("IntNumberWithAggregatesFilterFilter", vec![Type::Int], context)]).wrap_in_optional()
+    } else if t.is_int64() {
+        Type::Union(vec![Type::Int64, search_filter_type_in_std("IntNumberWithAggregatesFilterFilter", vec![Type::Int64], context)]).wrap_in_optional()
+    } else if t.is_float32() {
+        Type::Union(vec![Type::Float32, search_filter_type_in_std("FloatNumberWithAggregatesFilterFilter", vec![Type::Float32], context)]).wrap_in_optional()
+    } else if t.is_float() {
+        Type::Union(vec![Type::Float, search_filter_type_in_std("FloatNumberWithAggregatesFilterFilter", vec![Type::Float], context)]).wrap_in_optional()
+    } else if t.is_decimal() {
+        Type::Union(vec![Type::Decimal, search_filter_type_in_std("DecimalWithAggregatesFilter", vec![Type::Decimal], context)]).wrap_in_optional()
+    } else if t.is_date() {
+        Type::Union(vec![Type::Date, search_filter_type_in_std("AggregatesFilter", vec![Type::Date], context)]).wrap_in_optional()
+    } else if t.is_datetime() {
+        Type::Union(vec![Type::DateTime, search_filter_type_in_std("AggregatesFilter", vec![Type::DateTime], context)]).wrap_in_optional()
+    } else if t.is_object_id() {
+        Type::Union(vec![Type::ObjectId, search_filter_type_in_std("AggregatesFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
+    } else if t.is_string() {
+        Type::Union(vec![Type::String, search_filter_type_in_std("StringWithAggregatesFilter", vec![], context)]).wrap_in_optional()
+    } else if let Some(t) = t.as_optional() {
+        if t.is_bool() {
+            Type::Union(vec![Type::Bool, Type::Null, search_filter_type_in_std("BoolNullableWithAggregatesFilter", vec![], context)]).wrap_in_optional()
+        } else if t.is_int() {
+            Type::Union(vec![Type::Int, Type::Null, search_filter_type_in_std("IntNumberNullableWithAggregatesFilter", vec![Type::Int], context)]).wrap_in_optional()
+        } else if t.is_int64() {
+            Type::Union(vec![Type::Int64, Type::Null, search_filter_type_in_std("IntNumberNullableWithAggregatesFilter", vec![Type::Int64], context)]).wrap_in_optional()
+        } else if t.is_float32() {
+            Type::Union(vec![Type::Float32, Type::Null, search_filter_type_in_std("FloatNumberNullableWithAggregatesFilter", vec![Type::Float32], context)]).wrap_in_optional()
+        } else if t.is_float() {
+            Type::Union(vec![Type::Float, Type::Null, search_filter_type_in_std("FloatNumberNullableWithAggregatesFilter", vec![Type::Float], context)]).wrap_in_optional()
+        } else if t.is_decimal() {
+            Type::Union(vec![Type::Decimal, Type::Null, search_filter_type_in_std("DecimalNullableWithAggregatesFilter", vec![Type::Decimal], context)]).wrap_in_optional()
+        } else if t.is_date() {
+            Type::Union(vec![Type::Date, Type::Null, search_filter_type_in_std("NullableAggregatesFilter", vec![Type::Date], context)]).wrap_in_optional()
+        } else if t.is_datetime() {
+            Type::Union(vec![Type::DateTime, Type::Null, search_filter_type_in_std("NullableAggregatesFilter", vec![Type::DateTime], context)]).wrap_in_optional()
+        } else if t.is_object_id() {
+            Type::Union(vec![Type::ObjectId, Type::Null, search_filter_type_in_std("NullableAggregatesFilter", vec![Type::ObjectId], context)]).wrap_in_optional()
+        } else if t.is_string() {
+            Type::Union(vec![Type::String, Type::Null, search_filter_type_in_std("StringNullableWithAggregatesFilter", vec![], context)]).wrap_in_optional()
+        } else {
+            t.clone()
+        }
+    } else {
+        t.clone()
+    }
+}
+
+pub fn resolve_static_update_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+    if t.is_int() {
+        Type::Union(vec![Type::Int, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Int], context)]).wrap_in_optional()
+    } else if t.is_int64() {
+        Type::Union(vec![Type::Int64, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Int64], context)]).wrap_in_optional()
+    } else if t.is_float32() {
+        Type::Union(vec![Type::Float32, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Float32], context)]).wrap_in_optional()
+    } else if t.is_float() {
+        Type::Union(vec![Type::Float, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Float], context)]).wrap_in_optional()
+    } else if t.is_decimal() {
+        Type::Union(vec![Type::Decimal, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Decimal], context)]).wrap_in_optional()
+    } else if let Some(inner) = t.as_array() {
+        Type::Union(vec![Type::Array(Box::new(inner.clone())), search_filter_type_in_std("ArrayAtomicUpdateOperationInput", vec![inner.clone()], context)]).wrap_in_optional()
+    } else if let Some(t) = t.as_optional() {
+        if t.is_int() {
+            Type::Union(vec![Type::Int, Type::Null, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Int], context)]).wrap_in_optional()
+        } else if t.is_int64() {
+            Type::Union(vec![Type::Int64, Type::Null, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Int64], context)]).wrap_in_optional()
+        } else if t.is_float32() {
+            Type::Union(vec![Type::Float32, Type::Null, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Float32], context)]).wrap_in_optional()
+        } else if t.is_float() {
+            Type::Union(vec![Type::Float, Type::Null, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Float], context)]).wrap_in_optional()
+        } else if t.is_decimal() {
+            Type::Union(vec![Type::Decimal, Type::Null, search_filter_type_in_std("NumberAtomicUpdateOperationInput", vec![Type::Decimal], context)]).wrap_in_optional()
+        } else if let Some(inner) = t.as_array() {
+            Type::Union(vec![Type::Array(Box::new(inner.clone())), Type::Null, search_filter_type_in_std("ArrayAtomicUpdateOperationInput", vec![inner.clone()], context)]).wrap_in_optional()
+        } else {
+            t.clone()
+        }
+    } else {
+        t.clone()
     }
 }

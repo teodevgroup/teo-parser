@@ -43,6 +43,14 @@ impl Schema {
         self.references.user_sources.iter().map(|id| self.source(*id).unwrap()).collect()
     }
 
+    pub fn std_source(&self) -> &Source {
+        if self.builtin_sources().is_empty() {
+            self.sources().first().unwrap()
+        } else {
+            self.builtin_sources().first().unwrap()
+        }
+    }
+
     pub fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
         for config_declaration in self.config_declarations() {
             if config_declaration.identifier.name() == name && config_declaration.define_availability.contains(availability) {
