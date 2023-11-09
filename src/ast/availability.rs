@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use serde::Serialize;
 
 static NO_DATABASE: u32 = 1;
 static MONGO: u32 = 1 << 1;
@@ -10,7 +11,7 @@ static SQL: u32 = MYSQL | POSTGRES | SQLITE;
 static ALL: u32 = SQL | MONGO;
 
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
 pub struct Availability(u32);
 
 impl Availability {

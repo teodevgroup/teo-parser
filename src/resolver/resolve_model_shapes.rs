@@ -1,5 +1,5 @@
 use array_tool::vec::Shift;
-use indexmap::indexmap;
+use indexmap::{indexmap, IndexMap};
 use maplit::btreemap;
 use crate::ast::arith::ArithExpr;
 use crate::ast::availability::Availability;
@@ -8,14 +8,15 @@ use crate::ast::expression::ExpressionKind;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
-use crate::ast::model::{Model, ModelShapeResolved};
+use crate::ast::model::{Model};
 use crate::ast::reference::ReferenceType;
 use crate::ast::unit::Unit;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
+use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
 use crate::r#type::Type;
-use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
+use crate::r#type::synthesized_shape_reference::{SynthesizedShapeReference, SynthesizedShapeReferenceKind};
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
@@ -23,211 +24,235 @@ use crate::search::search_identifier_path::search_identifier_path_in_source;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
-    let mut model_shape_resolved = ModelShapeResolved::new();
-    let mut shape_available_context = ShapeAvailableContext::new(); 
+    let mut enums = IndexMap::new();
+    let mut shapes = IndexMap::new();
+    let mut shape_available_context = ShapeAvailableContext::new();
+
+    // scalar field
+    if let Some(input) = resolve_model_scalar_fields(model) {
+        enums.insert(SynthesizedEnumReferenceKind::ModelScalarFields, input);
+    }
+
+    // serializable scalar field
+    if let Some(input) = resolve_model_serializable_scalar_fields(model) {
+        enums.insert(SynthesizedEnumReferenceKind::ModelSerializableScalarFields, input);
+        shape_available_context.has_serializable_scalar_fields = true;
+    }
+
+    // relations
+    if let Some(input) = resolve_model_relations(model) {
+        enums.insert(SynthesizedEnumReferenceKind::ModelRelations, input);
+    }
+
+    // direct relations
+    if let Some(input) = resolve_model_direct_relations(model) {
+        enums.insert(SynthesizedEnumReferenceKind::ModelDirectRelations, input);
+    }
+
+    // indirect relations
+    if let Some(input) = resolve_model_indirect_relations(model) {
+        enums.insert(SynthesizedEnumReferenceKind::ModelIndirectRelations, input);
+    }
+
     // select
     if let Some(input) = resolve_model_select_shape(model) {
-        model_shape_resolved.map.insert(("Select".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::Select, None), input);
         shape_available_context.has_select = true;
     }
     // include
     if let Some(input) = resolve_model_include_shape(model) {
-        model_shape_resolved.map.insert(("Include".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::Include, None), input);
         shape_available_context.has_include = true;
     }
     // where input
     if let Some(input) = resolve_model_where_input_shape(model, true, false, context) {
-        model_shape_resolved.map.insert(("WhereInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::WhereInput, None), input);
         shape_available_context.has_where = true;
     }
     // where unique input
     if let Some(input) = resolve_model_where_unique_input_shape(model) {
-        model_shape_resolved.map.insert(("WhereUniqueInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::WhereUniqueInput, None), input);
         shape_available_context.has_where_unique = true;
     }
     // scalar where with aggregates input
     if let Some(input) = resolve_model_where_input_shape(model, false, true, context) {
-        model_shape_resolved.map.insert(("ScalarWhereWithAggregatesInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::ScalarWhereWithAggregatesInput, None), input);
         shape_available_context.has_where_with_aggregates = true;
     }
     if shape_available_context.has_where {
         // relation filter
-        model_shape_resolved.map.insert(("RelationFilter".to_owned(), None), resolve_model_relation_filter(model));
+        shapes.insert((SynthesizedShapeReferenceKind::RelationFilter, None), resolve_model_relation_filter(model));
         // list relation filter
-        model_shape_resolved.map.insert(("ListRelationFilter".to_owned(), None), resolve_model_list_relation_filter(model));
+        shapes.insert((SynthesizedShapeReferenceKind::ListRelationFilter, None), resolve_model_list_relation_filter(model));
     }
     // order by input
     if let Some(input) = resolve_model_order_by_input_shape(model, context) {
-        model_shape_resolved.map.insert(("OrderByInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::OrderByInput, None), input);
         shape_available_context.has_order_by = true;
-    }
-    // scalar field enum
-    if let Some(input) = resolve_scalar_field_enum(model) {
-        model_shape_resolved.map.insert(("ScalarFieldEnum".to_owned(), None), input);
-        shape_available_context.has_scalar_field_enum = true;
     }
     // count aggregate input type
     if let Some(input) = resolve_count_aggregate_input_type(model) {
-        model_shape_resolved.map.insert(("CountAggregateInputType".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::CountAggregateInputType, None), input);
     }
     // sum aggregate input type
     if let Some(input) = resolve_sum_aggregate_input_type(model) {
-        model_shape_resolved.map.insert(("SumAggregateInputType".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::SumAggregateInputType, None), input);
         shape_available_context.has_sum_aggregate = true;
     }
     // avg aggregate input type
     if let Some(input) = resolve_avg_aggregate_input_type(model) {
-        model_shape_resolved.map.insert(("AvgAggregateInputType".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateInputType, None), input);
         shape_available_context.has_avg_aggregate = true;
     }
     // min aggregate input type
     if let Some(input) = resolve_min_aggregate_input_type(model) {
-        model_shape_resolved.map.insert(("MinAggregateInputType".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::MinAggregateInputType, None), input);
         shape_available_context.has_min_aggregate = true;
     }
     // max aggregate input type
     if let Some(input) = resolve_max_aggregate_input_type(model) {
-        model_shape_resolved.map.insert(("MaxAggregateInputType".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateInputType, None), input);
         shape_available_context.has_max_aggregate = true;
     }
     // create input
     if let Some(input) = resolve_create_input_type(model, None, context) {
-        model_shape_resolved.map.insert(("CreateInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::CreateInput, None), input);
     }
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.map.insert(("CreateInput".to_owned(), Some(field.name().to_owned())), input);
+                shapes.insert((SynthesizedShapeReferenceKind::CreateInput, Some(field.name().to_owned())), input);
             }
         }
     }
     // update input
     if let Some(input) = resolve_update_input_type(model, None, context) {
-        model_shape_resolved.map.insert(("UpdateInput".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, None), input);
     }
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
-                model_shape_resolved.map.insert(("UpdateInput".to_owned(), Some(field.name().to_owned())), input);
+                shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, Some(field.name().to_owned())), input);
             }
         }
     }
     // create nested one input
-    model_shape_resolved.map.insert(("CreateNestedOneInput".to_owned(), None), resolve_create_nested_one_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, None), resolve_create_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("CreateNestedOneInput".to_owned(), Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
         }
     }
     // create nested many input
-    model_shape_resolved.map.insert(("CreateNestedManyInput".to_owned(), None), resolve_create_nested_many_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, None), resolve_create_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("CreateNestedManyInput".to_owned(), Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
         }
     }
     // update nested one input
-    model_shape_resolved.map.insert(("UpdateNestedOneInput".to_owned(), None), resolve_update_nested_one_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, None), resolve_update_nested_one_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("UpdateNestedOneInput".to_owned(), Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
         }
     }
     // update nested many input
-    model_shape_resolved.map.insert(("UpdateNestedManyInput".to_owned(), None), resolve_update_nested_many_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, None), resolve_update_nested_many_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("UpdateNestedManyInput".to_owned(), Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
     // connect or create input
-    model_shape_resolved.map.insert(("ConnectOrCreateInput".to_owned(), None), resolve_connect_or_create_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, None), resolve_connect_or_create_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("ConnectOrCreateInput".to_owned(), Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
         }
     }
     // update with where unique input
-    model_shape_resolved.map.insert(("UpdateWithWhereUniqueInput".to_owned(), None), resolve_update_with_where_unique_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, None), resolve_update_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("UpdateWithWhereUniqueInput".to_owned(), Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // upsert with where unique input
-    model_shape_resolved.map.insert(("UpsertWithWhereUniqueInput".to_owned(), None), resolve_upsert_with_where_unique_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, None), resolve_upsert_with_where_unique_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("UpsertWithWhereUniqueInput".to_owned(), Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // update many with where input
-    model_shape_resolved.map.insert(("UpdateManyWithWhereInput".to_owned(), None), resolve_update_many_with_where_input_type(model, None));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, None), resolve_update_many_with_where_input_type(model, None));
     for field in &model.fields {
         if field.resolved().class.as_model_relation().is_some() {
-            model_shape_resolved.map.insert(("UpdateManyWithWhereInput".to_owned(), Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
     // result
-    model_shape_resolved.map.insert(("Result".to_owned(), None), resolve_result_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::Result, None), resolve_result_type(model));
     // count aggregate result
-    model_shape_resolved.map.insert(("CountAggregateResult".to_owned(), None), resolve_count_aggregate_result_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::CountAggregateResult, None), resolve_count_aggregate_result_type(model));
     // sum aggregate result
     if let Some(input) = resolve_sum_aggregate_result_type(model) {
-        model_shape_resolved.map.insert(("SumAggregateResult".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::SumAggregateResult, None), input);
     }
     // avg aggregate result
     if let Some(input) = resolve_avg_aggregate_result_type(model) {
-        model_shape_resolved.map.insert(("AvgAggregateResult".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateResult, None), input);
     }
     // min aggregate result
     if let Some(input) = resolve_min_aggregate_result_type(model) {
-        model_shape_resolved.map.insert(("MinAggregateResult".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::MinAggregateResult, None), input);
     }
     // max aggregate result
     if let Some(input) = resolve_max_aggregate_result_type(model) {
-        model_shape_resolved.map.insert(("MaxAggregateResult".to_owned(), None), input);
+        shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateResult, None), input);
     }
     // aggregate result
-    model_shape_resolved.map.insert(("AggregateResult".to_owned(), None), resolve_aggregate_result_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::AggregateResult, None), resolve_aggregate_result_type(model, &shape_available_context));
     // group by result
-    model_shape_resolved.map.insert(("GroupByResult".to_owned(), None), resolve_group_by_result_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::GroupByResult, None), resolve_group_by_result_type(model, &shape_available_context));
     // args
     if shape_available_context.has_args() {
-        model_shape_resolved.map.insert(("Args".to_owned(), None), resolve_args_type(model, &shape_available_context));
+        shapes.insert((SynthesizedShapeReferenceKind::Args, None), resolve_args_type(model, &shape_available_context));
     }
     // find many args
-    model_shape_resolved.map.insert(("FindManyArgs".to_owned(), None), resolve_find_many_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::FindManyArgs, None), resolve_find_many_args_type(model, &shape_available_context));
     // find first args
-    model_shape_resolved.map.insert(("FindFirstArgs".to_owned(), None), resolve_find_first_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::FindFirstArgs, None), resolve_find_first_args_type(model, &shape_available_context));
     // find unique args
-    model_shape_resolved.map.insert(("FindUniqueArgs".to_owned(), None), resolve_find_unique_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::FindUniqueArgs, None), resolve_find_unique_args_type(model, &shape_available_context));
     // create args
-    model_shape_resolved.map.insert(("CreateArgs".to_owned(), None), resolve_create_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::CreateArgs, None), resolve_create_args_type(model, &shape_available_context));
     // update args
-    model_shape_resolved.map.insert(("UpdateArgs".to_owned(), None), resolve_update_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateArgs, None), resolve_update_args_type(model, &shape_available_context));
     // upsert args
-    model_shape_resolved.map.insert(("UpsertArgs".to_owned(), None), resolve_upsert_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::UpsertArgs, None), resolve_upsert_args_type(model, &shape_available_context));
     // copy args
-    model_shape_resolved.map.insert(("CopyArgs".to_owned(), None), resolve_copy_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::CopyArgs, None), resolve_copy_args_type(model, &shape_available_context));
     // delete args
-    model_shape_resolved.map.insert(("DeleteArgs".to_owned(), None), resolve_delete_args_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::DeleteArgs, None), resolve_delete_args_type(model));
     // create many args
-    model_shape_resolved.map.insert(("CreateManyArgs".to_owned(), None), resolve_create_many_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::CreateManyArgs, None), resolve_create_many_args_type(model, &shape_available_context));
     // update many args
-    model_shape_resolved.map.insert(("UpdateManyArgs".to_owned(), None), resolve_update_many_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateManyArgs, None), resolve_update_many_args_type(model, &shape_available_context));
     // delete many args
-    model_shape_resolved.map.insert(("DeleteManyArgs".to_owned(), None), resolve_delete_many_args_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::DeleteManyArgs, None), resolve_delete_many_args_type(model));
     // copy many args
-    model_shape_resolved.map.insert(("CopyManyArgs".to_owned(), None), resolve_copy_many_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::CopyManyArgs, None), resolve_copy_many_args_type(model, &shape_available_context));
     // count args
-    model_shape_resolved.map.insert(("CountArgs".to_owned(), None), resolve_count_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::CountArgs, None), resolve_count_args_type(model, &shape_available_context));
     // aggregate args
-    model_shape_resolved.map.insert(("AggregateArgs".to_owned(), None), resolve_aggregate_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::AggregateArgs, None), resolve_aggregate_args_type(model, &shape_available_context));
     // group by args
-    model_shape_resolved.map.insert(("GroupByArgs".to_owned(), None), resolve_group_by_args_type(model, &shape_available_context));
+    shapes.insert((SynthesizedShapeReferenceKind::GroupByArgs, None), resolve_group_by_args_type(model, &shape_available_context));
 
-    model.shape_resolve(model_shape_resolved);
+    model.resolved_mut().enums = enums;
+    model.resolved_mut().shapes = shapes;
 }
 
 fn resolve_model_select_shape(model: &Model) -> Option<Type> {
@@ -418,11 +443,85 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
     }
 }
 
-fn resolve_scalar_field_enum(model: &Model) -> Option<Type> {
+fn resolve_model_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
+                members.push(SynthesizedEnumMember {
+                    name: field.name().to_owned(),
+                    comment: field.comment.clone(),
+                });
+            }
+        }
+    }
+    if !members.is_empty() {
+        Some(SynthesizedEnum::new(members))
+    } else {
+        None
+    }
+}
+
+fn resolve_model_relations(model: &Model) -> Option<SynthesizedEnum> {
+    let mut members = vec![];
+    for field in &model.fields {
+        if let Some(_) = field.resolved().class.as_model_relation() {
+            members.push(SynthesizedEnumMember {
+                name: field.name().to_owned(),
+                comment: field.comment.clone(),
+            });
+        }
+    }
+    if !members.is_empty() {
+        Some(SynthesizedEnum::new(members))
+    } else {
+        None
+    }
+}
+
+fn resolve_model_direct_relations(model: &Model) -> Option<SynthesizedEnum> {
+    let mut members = vec![];
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_relation() {
+            if settings.direct {
+                members.push(SynthesizedEnumMember {
+                    name: field.name().to_owned(),
+                    comment: field.comment.clone(),
+                });
+            }
+        }
+    }
+    if !members.is_empty() {
+        Some(SynthesizedEnum::new(members))
+    } else {
+        None
+    }
+}
+
+fn resolve_model_indirect_relations(model: &Model) -> Option<SynthesizedEnum> {
+    let mut members = vec![];
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_relation() {
+            if !settings.direct {
+                members.push(SynthesizedEnumMember {
+                    name: field.name().to_owned(),
+                    comment: field.comment.clone(),
+                });
+            }
+        }
+    }
+    if !members.is_empty() {
+        Some(SynthesizedEnum::new(members))
+    } else {
+        None
+    }
+}
+
+fn resolve_model_serializable_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
+    let mut members = vec![];
+    for field in &model.fields {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) && !is_field_virtual(field) {
                 members.push(SynthesizedEnumMember {
                     name: field.name().to_owned(),
                     comment: field.comment.clone(),
@@ -438,7 +537,7 @@ fn resolve_scalar_field_enum(model: &Model) -> Option<Type> {
         }
     }
     if !members.is_empty() {
-        Some(Type::SynthesizedEnum(SynthesizedEnum::new(members)))
+        Some(SynthesizedEnum::new(members))
     } else {
         None
     }
@@ -1009,7 +1108,7 @@ fn resolve_find_first_args_type(model: &Model, availability: &ShapeAvailableCont
         map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
-    if availability.has_scalar_field_enum {
+    if availability.has_serializable_scalar_fields {
         map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     map.insert("take".to_owned(), Type::Int64.wrap_in_optional());
@@ -1131,7 +1230,7 @@ fn resolve_count_args_type(model: &Model, availability: &ShapeAvailableContext) 
     if availability.has_order_by {
         map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    if availability.has_scalar_field_enum {
+    if availability.has_serializable_scalar_fields {
         map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
@@ -1149,7 +1248,7 @@ fn resolve_aggregate_args_type(model: &Model, availability: &ShapeAvailableConte
     if availability.has_order_by {
         map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::OrderByInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
-    if availability.has_scalar_field_enum {
+    if availability.has_serializable_scalar_fields {
         map.insert("distinct".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::ScalarFieldEnum(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::WhereUniqueInput(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
@@ -1213,6 +1312,10 @@ pub(super) fn has_property_setter(field: &Field) -> bool {
 
 pub(super) fn has_property_getter(field: &Field) -> bool {
     field_has_decorator_name(field, "getter")
+}
+
+pub(super) fn is_field_virtual(field: &Field) -> bool {
+    field_has_decorator_name(field, "virtual")
 }
 
 pub(super) fn is_field_writeonly(field: &Field) -> bool {
@@ -1398,7 +1501,7 @@ struct ShapeAvailableContext {
     has_where_unique: bool,
     has_where_with_aggregates: bool,
     has_order_by: bool,
-    has_scalar_field_enum: bool,
+    has_serializable_scalar_fields: bool,
     has_sum_aggregate: bool,
     has_avg_aggregate: bool,
     has_min_aggregate: bool,
@@ -1415,7 +1518,7 @@ impl ShapeAvailableContext {
             has_where_unique: false,
             has_where_with_aggregates: false,
             has_order_by: false,
-            has_scalar_field_enum: false,
+            has_serializable_scalar_fields: false,
             has_sum_aggregate: false,
             has_avg_aggregate: false,
             has_min_aggregate: false,
@@ -1428,7 +1531,7 @@ impl ShapeAvailableContext {
     }
 
     fn has_group_by(&self) -> bool {
-        self.has_scalar_field_enum
+        self.has_serializable_scalar_fields
     }
 }
 

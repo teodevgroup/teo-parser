@@ -78,7 +78,7 @@ impl UnitResolveResult {
     }
 }
 
-pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     if unit.expressions.len() == 1 {
         resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
     } else {

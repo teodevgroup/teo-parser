@@ -15,19 +15,20 @@ use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVar
 use crate::diagnostics::diagnostics::DiagnosticsError;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::resolver::resolve_argument_list::resolve_argument_list;
 use crate::resolver::resolve_identifier::resolve_identifier_into_type;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>) -> ExpressionResolved {
+pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExpressionResolved {
     let t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);
     expression.resolve(t.clone());
     t
 }
 
-fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),
         ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
@@ -49,7 +50,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
     }
 }
 
-fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     resolve_expression(&group.expression, context, expected, keywords_map)
 }
 
@@ -193,163 +194,62 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
             }
         }
         if r#enum.option {
-            Ok(ExpressionResolved {
+            ExpressionResolved {
                 r#type: Type::EnumVariant(enum_reference.clone()),
-                value: Some(Value::OptionVariant(Option {
+                value: Some(Value::OptionVariant(OptionVariant {
                     value: member.resolved().value.as_int().unwrap(),
                     display: format!(".{}", member.identifier.name()),
                 }))
-            })
+            }
         } else {
-            Ok(ExpressionResolved {
+            ExpressionResolved {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::EnumVariant(EnumVariant {
                     value: member.resolved().value.as_str().unwrap().to_string(),
                     args: None,
                 }))
-            })
+            }
         }
     } else if let Some(synthesized_enum) = expected.as_synthesized_enum() {
-        if synthesized_enum.keys.contains(&e.identifier.name) {
-            Ok(ExpressionResolved {
-                r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
-                value: Some(Value::EnumVariant(EnumVariant {
-                    value: e.identifier.name.to_string(),
-                    args: None,
-                }))
-            })
-        } else {
-            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier.name()));
-            Ok(ExpressionResolved {
-                r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
-                value: None
-            })
-        }
+        resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
     } else if let Some(reference) = expected.as_synthesized_enum_variant_reference() {
-        reference.
-    }
-    else if let Some((t, _)) = expected.as_model_scalar_fields() {
-        if let Some((model_object, model_name)) = t.as_model_object() {
-            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
-            if model.resolved().scalar_fields.contains(&e.identifier.name) {
-                Ok(ExpressionResolved {
-                    r#type: Type::ModelScalarFields(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: Box::new(Value::String(e.identifier.name().to_owned())),
-                        display: format!(".{}", e.identifier.name()),
-                        path: model_name.clone(),
-                        args: None,
-                    }))
-                })
-            } else {
-                Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
+        if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
+            resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
+        } else {
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier.name()));
+            ExpressionResolved {
+                r#type: Type::SynthesizedEnumReference(reference.clone()),
+                value: None
             }
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-        }
-    } else if let Some((t, _)) = expected.as_model_scalar_fields_without_virtuals() {
-        if let Some((model_object, model_name)) = t.as_model_object() {
-            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
-            if model.resolved().scalar_fields_without_virtuals.contains(&e.identifier.name) {
-                Ok(ExpressionResolved {
-                    r#type: Type::ModelScalarFieldsWithoutVirtuals(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: Box::new(Value::String(e.identifier.name().to_owned())),
-                        display: format!(".{}", e.identifier.name()),
-                        path: model_name.clone(),
-                        args: None,
-                    }))
-                })
-            } else {
-                Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-            }
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-        }
-    } else if let Some((t, _)) = expected.as_model_scalar_fields_and_cached_properties_without_virtuals() {
-        if let Some((model_object, model_name)) = t.as_model_object() {
-            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
-            if model.resolved().scalar_fields_and_cached_properties_without_virtuals.contains(&e.identifier.name) {
-                Ok(ExpressionResolved {
-                    r#type: Type::ModelSerializableScalarFields(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: Box::new(Value::String(e.identifier.name().to_owned())),
-                        display: format!(".{}", e.identifier.name()),
-                        path: model_name.clone(),
-                        args: None,
-                    }))
-                })
-            } else {
-                Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-            }
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-        }
-    } else if let Some((t, _)) = expected.as_model_relations() {
-        if let Some((model_object, model_name)) = t.as_model_object() {
-            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
-            if model.resolved().relations.contains(&e.identifier.name) {
-                Ok(ExpressionResolved {
-                    r#type: Type::ModelRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: Box::new(Value::String(e.identifier.name().to_owned())),
-                        display: format!(".{}", e.identifier.name()),
-                        path: model_name.clone(),
-                        args: None,
-                    }))
-                })
-            } else {
-                Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-            }
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-        }
-    } else if let Some((t, _)) = expected.as_model_direct_relations() {
-        if let Some((model_object, model_name)) = t.as_model_object() {
-            let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
-            if model.resolved().direct_relations.contains(&e.identifier.name) {
-                Ok(ExpressionResolved {
-                    r#type: Type::ModelDirectRelations(Box::new(Type::ModelObject(model_object.clone(), model_name.clone())), Some(e.identifier.name().to_owned())),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: Box::new(Value::String(e.identifier.name().to_owned())),
-                        display: format!(".{}", e.identifier.name()),
-                        path: model_name.clone(),
-                        args: None,
-                    }))
-                })
-            } else {
-                Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-            }
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
-        }
-    } else if let Some((data_set_object, model_object)) = expected.as_data_set_record() {
-        let (Some(data_set_object), Some(model_object)) = (data_set_object.as_data_set_object(), model_object.as_model_object()) else {
-            return Err(context.generate_diagnostics_error(e.span, format!("invalid data set record type")));
-        };
-        let dataset = context.schema.find_top_by_path(data_set_object.0).unwrap().as_data_set().unwrap();
-        let Some(group) = dataset.groups.iter().find(|g| &g.resolved().model_path == model_object.0) else {
-            return Err(context.generate_diagnostics_error(e.span, format!("dataset group is not found")));
-        };
-        if group.records.iter().find(|r| r.identifier.name() == e.identifier.name()).is_some() {
-            Ok(ExpressionResolved {
-                r#type: expected.clone(),
-                value: Some(Value::EnumVariant(EnumVariant {
-                    value: Box::new(Value::String(e.identifier.name().to_owned())),
-                    display: format!(".{}", e.identifier.name()),
-                    path: dataset.string_path.clone(),
-                    args: None,
-                }))
-            })
-        } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
         }
     } else {
-        Err(context.generate_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name())))
+        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name()));
+        ExpressionResolved {
+            r#type: expected.clone(),
+            value: None
+        }
     }
 }
 
-fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>) -> ExpressionResolved {
+    if synthesized_enum.keys.contains(&e.identifier.name) {
+        ExpressionResolved {
+            r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+            value: Some(Value::EnumVariant(EnumVariant {
+                value: e.identifier.name.to_string(),
+                args: None,
+            }))
+        }
+    } else {
+        context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier.name()));
+        ExpressionResolved {
+            r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+            value: None
+        }
+    }
+}
+
+fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     let types = expected.as_tuple();
     let mut retval_values = vec![];
     let mut retval_type = vec![];
@@ -370,7 +270,7 @@ fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'
     }
 }
 
-fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -412,7 +312,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     }
 }
 
-fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     let undetermined = Type::Undetermined;
     let r#type = if let Some(v) = expected.as_dictionary() {
         v
@@ -449,7 +349,7 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     }
 }
 
-fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, &Type>,) -> ExpressionResolved {
+fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     match arith_expr {
         ArithExpr::Expression(e) => resolve_expression(e.as_ref(), context, expected, keywords_map),
         ArithExpr::UnaryOp(unary) => {

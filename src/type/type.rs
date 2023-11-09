@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use serde::Serialize;
+use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
@@ -1051,6 +1052,14 @@ impl Type {
             Type::Namespace => other.is_namespace() || other.is_namespace_reference(),
             Type::NamespaceReference(r) => other.is_namespace_reference() && r == other.as_namespace_reference().unwrap(),
             Type::Pipeline(a, b) => other.is_pipeline() && a.test(other.as_pipeline().unwrap().0) && b.test(other.as_pipeline().unwrap().1),
+        }
+    }
+
+    pub fn constraint_test(&self, other: &Type) -> bool {
+        if self.is_model() && other.is_model_object() {
+            true
+        } else {
+            self.test(other)
         }
     }
 

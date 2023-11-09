@@ -27,3 +27,5 @@ serde_json = { version = "1.0", features = ["preserve_order"] }
 path-clean = "1.0.1"
 educe = "0.4.23"
 indexmap = { version = "2.1.0", features = ["serde"] }
+strum = "0.25"
+strum_macros = "0.25"

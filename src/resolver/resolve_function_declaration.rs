@@ -12,7 +12,7 @@ pub(super) fn resolve_function_declaration<'a>(
     function_declaration: &'a FunctionDeclaration,
     struct_generics_declaration: Option<&'a GenericsDeclaration>,
     struct_generics_constraint: Option<&'a GenericsConstraint>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
 ) {
     if let Some(generics_declaration) = &function_declaration.generics_declaration {

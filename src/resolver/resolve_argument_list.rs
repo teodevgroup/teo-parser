@@ -16,7 +16,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
     callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variants: Vec<CallableVariant<'a>>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     pipeline_type_context: Option<&'b TypeInfo>,
 ) -> Option<Type> {
@@ -62,7 +62,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     callable_span: Span,
     argument_list: Option<&'a ArgumentList>,
     callable_variant: &CallableVariant<'a>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     type_info: Option<&'b TypeInfo>,
 ) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>) {
@@ -124,7 +124,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         if !named_argument.value.resolved().r#type.is_undetermined() {
                             errors.push(context.generate_diagnostics_error(named_argument.value.span(), format!("expect {}, found {}", desired_type, named_argument.value.resolved().r#type())))
                         }
-                    } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
+                    } else if desired_type_original.is_generic_item() && desired_type.is_synthesized_enum_variant_reference() {
                         generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value.resolved().r#type.clone());
                     } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                         guess_extend_and_check(
@@ -173,7 +173,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             if !unnamed_argument.value.resolved().r#type().is_undetermined() {
                                 errors.push(context.generate_diagnostics_error(unnamed_argument.value.span(), format!("expect {}, found {}", desired_type, unnamed_argument.value.resolved().r#type())))
                             }
-                        } else if desired_type_original.is_generic_item() && desired_type.is_any_model_field_reference() {
+                        } else if desired_type_original.is_generic_item() && desired_type.is_synthesized_enum_variant_reference() {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value.resolved().r#type().clone());
                         } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                             guess_extend_and_check(
@@ -253,7 +253,7 @@ fn guess_generics_by_pipeline_input_and_passed_in<'a>(unresolved: &'a Type, expl
 fn validate_generics_map_with_constraint_info<'a>(
     span: Span,
     generics_map: &BTreeMap<String, Type>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) -> Vec<DiagnosticsError> {
@@ -264,7 +264,7 @@ fn validate_generics_map_with_constraint_info<'a>(
                 if item.identifier.name() == name {
                     let mut generics_map_without_name = generics_map.clone();
                     generics_map_without_name.remove(name);
-                    if !t.satisfies(&item.type_expr.resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)) {
+                    if !t.constraint_test(&item.type_expr.resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)) {
                         results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr.resolved())))
                     }
                 }
@@ -276,7 +276,7 @@ fn validate_generics_map_with_constraint_info<'a>(
 
 fn guess_generics_by_constraints<'a>(
     generics_map: &BTreeMap<String, Type>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
 ) -> BTreeMap<String, Type> {
     let mut retval = btreemap! {};
@@ -295,7 +295,7 @@ fn guess_generics_by_constraints<'a>(
 
 fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -> Type {
     t.replace_field_type(|container: &Type, reference: &Type| {
-        if let Some(field_name) = reference.field_name() {
+        if let Some(field_name) = reference.as_field_reference() {
             match container {
                 Type::ModelReference(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
@@ -321,7 +321,7 @@ fn guess_extend_and_check<'a>(
     unresolved: &Type,
     explicit: &Type,
     generics_map: &mut BTreeMap<String, Type>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     errors: &mut Vec<DiagnosticsError>,
     context: &'a ResolverContext<'a>,
 ) {
