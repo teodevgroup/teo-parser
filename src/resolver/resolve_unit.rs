@@ -18,65 +18,30 @@ use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
-#[derive(Debug)]
-pub(super) enum UnitResolveResult {
-    Reference(Vec<usize>),
-    Result(ExpressionResolved),
-}
-
-impl UnitResolveResult {
-
-    pub(super) fn is_reference(&self) -> bool {
-        self.as_reference().is_some()
-    }
-
-    pub(super) fn as_reference(&self) -> Option<&Vec<usize>> {
-        match self {
-            Self::Reference(r) => Some(r),
-            _ => None,
-        }
-    }
-
-    pub(super) fn is_result(&self) -> bool {
-        self.as_result().is_some()
-    }
-
-    pub(super) fn as_result(&self) -> Option<&ExpressionResolved> {
-        match self {
-            Self::Result(t) => Some(t),
-            _ => None,
-        }
-    }
-
-    pub(super) fn is_undetermined(&self) -> bool {
-        self.is_result() && self.as_result().unwrap().r#type().is_undetermined()
-    }
-
-    pub(super) fn into_resolved<'a>(self, context: &'a ResolverContext<'a>) -> ExpressionResolved {
-        match self {
-            Self::Result(t) => t,
-            Self::Reference(path) => {
-                let top = context.schema.find_top_by_path(&path).unwrap();
-                if top.is_model() {
-                    ExpressionResolved {
-                        r#type: Type::Model,
-                        value: Some(top.as_model().unwrap().string_path.clone().into()),
-                    }
-                } else if top.is_data_set() {
-                    ExpressionResolved {
-                        r#type: Type::DataSet,
-                        value: Some(top.as_data_set().unwrap().string_path.clone().into()),
-                    }
-                } else {
-                    ExpressionResolved {
-                        r#type: Type::Undetermined,
-                        value: None,
-                    }
-                }
-            }
-        }
-    }
-}
+// pub(super) fn into_resolved<'a>(self, context: &'a ResolverContext<'a>) -> ExpressionResolved {
+//     match self {
+//         Self::Result(t) => t,
+//         Self::Reference(path) => {
+//             let top = context.schema.find_top_by_path(&path).unwrap();
+//             if top.is_model() {
+//                 ExpressionResolved {
+//                     r#type: Type::Model,
+//                     value: Some(top.as_model().unwrap().string_path.clone().into()),
+//                 }
+//             } else if top.is_data_set() {
+//                 ExpressionResolved {
+//                     r#type: Type::DataSet,
+//                     value: Some(top.as_data_set().unwrap().string_path.clone().into()),
+//                 }
+//             } else {
+//                 ExpressionResolved {
+//                     r#type: Type::Undetermined,
+//                     value: None,
+//                 }
+//             }
+//         }
+//     }
+// }
 
 pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     if unit.expressions.len() == 1 {
