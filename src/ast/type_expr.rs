@@ -45,7 +45,9 @@ impl Display for TypeBinaryOp {
 pub struct TypeGroup {
     pub span: Span,
     pub kind: Box<TypeExprKind>,
-    pub optional: bool,
+    pub arity: Arity,
+    pub item_optional: bool,
+    pub collection_optional: bool,
 }
 
 impl Display for TypeGroup {
@@ -54,8 +56,18 @@ impl Display for TypeGroup {
         f.write_str("(")?;
         Display::fmt(&self.kind, f)?;
         f.write_str(")")?;
-        if self.optional {
+        if self.item_optional {
             f.write_str("?")?;
+        }
+        if !self.arity.is_scalar() {
+            match self.arity {
+                Arity::Array => f.write_str("[]")?,
+                Arity::Dictionary => f.write_str("{}")?,
+                _ => ()
+            };
+            if self.collection_optional {
+                f.write_str("?")?;
+            }
         }
         Ok(())
     }
@@ -65,12 +77,15 @@ impl Display for TypeGroup {
 pub struct TypeTuple {
     pub span: Span,
     pub kinds: Vec<TypeExprKind>,
-    pub optional: bool,
+    pub arity: Arity,
+    pub item_optional: bool,
+    pub collection_optional: bool,
 }
 
 impl Display for TypeTuple {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("(")?;
         let len = self.kinds.len();
         for (index, kind) in self.kinds.iter().enumerate() {
             Display::fmt(kind, f)?;
@@ -78,6 +93,20 @@ impl Display for TypeTuple {
                 f.write_str(", ")?;
             } else if index == 0 {
                 f.write_str(",")?;
+            }
+        }
+        f.write_str(")")?;
+        if self.item_optional {
+            f.write_str("?")?;
+        }
+        if !self.arity.is_scalar() {
+            match self.arity {
+                Arity::Array => f.write_str("[]")?,
+                Arity::Dictionary => f.write_str("{}")?,
+                _ => ()
+            };
+            if self.collection_optional {
+                f.write_str("?")?;
             }
         }
         Ok(())
@@ -89,7 +118,9 @@ pub struct TypeSubscript {
     pub span: Span,
     pub type_item: TypeItem,
     pub type_expr: Box<TypeExprKind>,
-    pub optional: bool,
+    pub arity: Arity,
+    pub item_optional: bool,
+    pub collection_optional: bool,
 }
 
 impl Display for TypeSubscript {
@@ -99,8 +130,18 @@ impl Display for TypeSubscript {
         f.write_str("[")?;
         Display::fmt(&self.type_expr, f)?;
         f.write_str("]")?;
-        if self.optional {
+        if self.item_optional {
             f.write_str("?")?;
+        }
+        if !self.arity.is_scalar() {
+            match self.arity {
+                Arity::Array => f.write_str("[]")?,
+                Arity::Dictionary => f.write_str("{}")?,
+                _ => ()
+            };
+            if self.collection_optional {
+                f.write_str("?")?;
+            }
         }
         Ok(())
     }

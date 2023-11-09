@@ -69,36 +69,48 @@ fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
 fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
     let span = parse_span(&pair);
     let mut kind = None;
-    let mut optional = false;
+    let mut item_optional = false;
+    let mut arity = Arity::Scalar;
+    let mut collection_optional = false;
+
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::type_expression => kind = Some(parse_type_expression(current, context).kind),
-            Rule::OPTIONAL => optional = true,
+            Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
+            Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     TypeGroup {
         span,
         kind: Box::new(kind.unwrap()),
-        optional,
+        item_optional,
+        arity,
+        collection_optional,
     }
 }
 
 fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
     let span = parse_span(&pair);
     let mut kinds = vec![];
-    let mut optional = false;
+    let mut item_optional = false;
+    let mut arity = Arity::Scalar;
+    let mut collection_optional = false;
+
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::type_expression => kinds.push(parse_type_expression(current, context).kind),
-            Rule::OPTIONAL => optional = true,
+            Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
+            Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     TypeTuple {
         span,
         kinds,
-        optional,
+        item_optional,
+        arity,
+        collection_optional,
     }
 }
 
@@ -117,12 +129,15 @@ fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubs
     let span = parse_span(&pair);
     let mut type_item = None;
     let mut type_expr = None;
-    let mut optional = false;
+    let mut item_optional = false;
+    let mut arity = Arity::Scalar;
+    let mut collection_optional = false;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::type_item => type_item = Some(parse_type_item(current, context)),
             Rule::type_expression => type_expr = Some(parse_type_expression(current, context).kind),
-            Rule::OPTIONAL => optional = true,
+            Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
+            Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -130,7 +145,9 @@ fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubs
         span,
         type_item: type_item.unwrap(),
         type_expr: Box::new(type_expr.unwrap()),
-        optional,
+        item_optional,
+        arity,
+        collection_optional,
     }
 }
 
