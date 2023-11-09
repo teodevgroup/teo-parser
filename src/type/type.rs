@@ -152,7 +152,6 @@ pub enum Type {
     ///
     SynthesizedEnum(SynthesizedEnum),
 
-
     /// Synthesized Enum Reference
     ///
     SynthesizedEnumReference(SynthesizedEnumReference),
@@ -786,6 +785,14 @@ impl Type {
         }
     }
 
+    pub fn unwrap_enumerable(&self) -> &Type {
+        if self.is_enumerable() {
+            self.as_enumerable().unwrap()
+        } else {
+            self
+        }
+    }
+
     pub fn unwrap_dictionary(&self) -> &Type {
         if self.is_dictionary() {
             self.as_dictionary().unwrap()
@@ -822,6 +829,42 @@ impl Type {
 
     pub fn is_any_number(&self) -> bool {
         self.is_any_int_or_float() || self.is_decimal()
+    }
+
+    pub fn expect_for_literal(&self) -> Type {
+        self.unwrap_optional().clone()
+    }
+
+    pub fn expect_for_enum_variant_literal(&self) -> Type {
+        let mut result = self;
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if result.is_enumerable() {
+            result = result.unwrap_enumerable();
+        }
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_variant_reference() {
+            return result.clone()
+        } else {
+            return Type::Undetermined
+        }
+    }
+
+    pub fn expect_for_array_literal(&self) -> Type {
+        let mut result = self;
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if result.is_array() {
+            return result.clone();
+        }
+        if result.is_enumerable() {
+            return Type::Array(Box::new(result.as_enumerable().unwrap().clone()));
+        }
+        return Type::Undetermined
     }
 
     pub fn contains_generics(&self) -> bool {

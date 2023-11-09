@@ -5,7 +5,6 @@ use serde::Serialize;
 pub enum Keyword {
     SelfIdentifier,
     ThisFieldType,
-    ThroughFieldType,
 }
 
 impl Keyword {
@@ -23,13 +22,6 @@ impl Keyword {
             _ => false,
         }
     }
-
-    pub(crate) fn is_through_field_type(&self) -> bool {
-        match self {
-            Keyword::ThroughFieldType => true,
-            _ => false,
-        }
-    }
 }
 
 impl Display for Keyword {
@@ -38,7 +30,6 @@ impl Display for Keyword {
         match self {
             Keyword::SelfIdentifier => f.write_str("Self"),
             Keyword::ThisFieldType => f.write_str("ThisFieldType"),
-            Keyword::ThroughFieldType => f.write_str("ThroughFieldType"),
         }
     }
 }

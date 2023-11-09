@@ -588,7 +588,7 @@ namespace std {
         /// Define a normal relation
         variant(fields: Enumerable<ModelSerializableScalarFields<Self>>, references: Enumerable<ModelSerializableScalarFields<ThisFieldType>>)
         /// Define a through relation
-        variant(through: Model, local: ModelDirectRelations<Self>, foreign: ModelDirectRelations<ThisFieldType>)
+        variant<T>(through: T, local: ModelDirectRelations<T>, foreign: ModelDirectRelations<T>) where T: Model
     }
 
     /// @name Getter

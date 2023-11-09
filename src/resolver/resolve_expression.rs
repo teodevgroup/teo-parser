@@ -6,6 +6,7 @@ use maplit::{btreemap, hashset};
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::range::Range;
 use teo_teon::Value;
+use teo_teon::types::option_variant::OptionVariant;
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind, ExpressionResolved};
@@ -30,15 +31,15 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),
         ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
-        ExpressionKind::NumericLiteral(n) => resolve_numeric_literal(n, context, expected),
-        ExpressionKind::StringLiteral(e) => resolve_string_literal(e, context, expected),
-        ExpressionKind::RegexLiteral(e) => resolve_regex_literal(e, context, expected),
-        ExpressionKind::BoolLiteral(b) => resolve_bool_literal(b, context, expected),
-        ExpressionKind::NullLiteral(n) => resolve_null_literal(n, context, expected),
-        ExpressionKind::EnumVariantLiteral(e) => resolve_enum_variant_literal(e, context, expected),
-        ExpressionKind::TupleLiteral(t) => resolve_tuple_literal(t, context, expected, keywords_map),
-        ExpressionKind::ArrayLiteral(a) => resolve_array_literal(a, context, expected, keywords_map),
-        ExpressionKind::DictionaryLiteral(d) => resolve_dictionary_literal(d, context, expected, keywords_map),
+        ExpressionKind::NumericLiteral(n) => resolve_numeric_literal(n, context, &expected.expect_for_literal()),
+        ExpressionKind::StringLiteral(e) => resolve_string_literal(e, context, &expected.expect_for_literal()),
+        ExpressionKind::RegexLiteral(e) => resolve_regex_literal(e, context, &expected.expect_for_literal()),
+        ExpressionKind::BoolLiteral(b) => resolve_bool_literal(b, context, &expected.expect_for_literal()),
+        ExpressionKind::NullLiteral(n) => resolve_null_literal(n, context, &expected.expect_for_literal()),
+        ExpressionKind::EnumVariantLiteral(e) => resolve_enum_variant_literal(e, context, &expected.expect_for_enum_variant_literal()),
+        ExpressionKind::TupleLiteral(t) => resolve_tuple_literal(t, context, &expected.expect_for_literal(), keywords_map),
+        ExpressionKind::ArrayLiteral(a) => resolve_array_literal(a, context, &expected.expect_for_array_literal(), keywords_map),
+        ExpressionKind::DictionaryLiteral(d) => resolve_dictionary_literal(d, context, &expected.expect_for_literal(), keywords_map),
         ExpressionKind::Identifier(i) => resolve_identifier_into_type(i, context),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
@@ -158,70 +159,76 @@ fn resolve_null_literal<'a>(n: &NullLiteral, context: &'a ResolverContext<'a>, e
 }
 
 pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> ExpressionResolved {
-    let expected_original = expected;
-    let mut expected = expected;
-    if expected.is_optional() {
-        expected = expected.unwrap_optional();
-    }
-    if let Some(types) = expected.as_union() {
-        for expected in types {
-            if let Ok(t) = try_resolve_enum_variant_literal(e, context, expected) {
-                return t
+    if let Some(enum_reference) = expected.as_enum_variant() {
+        let r#enum = context.schema.find_top_by_path(enum_reference.path()).unwrap().as_enum().unwrap();
+        let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) else {
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", enum_reference.string_path().join("."), e.identifier.name()));
+            return ExpressionResolved {
+                r#type: Type::EnumVariant(enum_reference.clone()),
+                value: None,
             }
-        }
-        context.insert_diagnostics_error(e.span, format!("expect {expected_original}, found .{}", e.identifier.name()));
-        ExpressionResolved::undetermined()
-    } else {
-        match try_resolve_enum_variant_literal(e, context, expected) {
-            Ok(t) => t,
-            Err(err) => {
-                context.insert_error(err);
-                ExpressionResolved::undetermined()
-            }
-        }
-    }
-}
-
-fn try_resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, mut expected: &Type) -> Result<ExpressionResolved, DiagnosticsError> {
-    if expected.is_optional() {
-        expected = expected.unwrap_optional();
-    }
-    if let Some((enum_path, enum_name)) = expected.as_enum_variant() {
-        let r#enum = context.schema.find_top_by_path(enum_path).unwrap().as_enum().unwrap();
-        if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) {
-            if let Some(argument_list_declaration) = &member.argument_list_declaration {
-                if let Some(argument_list) = &e.argument_list {
-                    resolve_argument_list(
-                        e.identifier.span,
-                        Some(argument_list),
-                        vec![CallableVariant {
-                            generics_declarations: vec![],
-                            argument_list_declaration: Some(argument_list_declaration),
-                            generics_constraints: vec![],
-                            pipeline_input: None,
-                            pipeline_output: None,
-                        }],
-                        &btreemap!{},
-                        context,
-                        None
-                    );
-                } else {
-                    return Err(context.generate_diagnostics_error(e.span, format!("expect argument list")));
+        };
+        if let Some(argument_list_declaration) = &member.argument_list_declaration {
+            if let Some(argument_list) = &e.argument_list {
+                resolve_argument_list(
+                    e.identifier.span,
+                    Some(argument_list),
+                    vec![CallableVariant {
+                        generics_declarations: vec![],
+                        argument_list_declaration: Some(argument_list_declaration),
+                        generics_constraints: vec![],
+                        pipeline_input: None,
+                        pipeline_output: None,
+                    }],
+                    &btreemap!{},
+                    context,
+                    None
+                );
+            } else {
+                context.insert_diagnostics_error(e.span, format!("expect argument list"));
+                return ExpressionResolved {
+                    r#type: Type::EnumVariant(enum_reference.clone()),
+                    value: None,
                 }
             }
+        }
+        if r#enum.option {
             Ok(ExpressionResolved {
-                r#type: Type::EnumVariant(enum_path.clone(), enum_name.clone()),
-                value: Some(Value::EnumVariant(EnumVariant {
-                    value: Box::new(member.resolved().value.clone()),
+                r#type: Type::EnumVariant(enum_reference.clone()),
+                value: Some(Value::OptionVariant(Option {
+                    value: member.resolved().value.as_int().unwrap(),
                     display: format!(".{}", member.identifier.name()),
-                    path: enum_name.clone(),
+                }))
+            })
+        } else {
+            Ok(ExpressionResolved {
+                r#type: Type::EnumVariant(enum_reference.clone()),
+                value: Some(Value::EnumVariant(EnumVariant {
+                    value: member.resolved().value.as_str().unwrap().to_string(),
+                    args: None,
+                }))
+            })
+        }
+    } else if let Some(synthesized_enum) = expected.as_synthesized_enum() {
+        if synthesized_enum.keys.contains(&e.identifier.name) {
+            Ok(ExpressionResolved {
+                r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+                value: Some(Value::EnumVariant(EnumVariant {
+                    value: e.identifier.name.to_string(),
                     args: None,
                 }))
             })
         } else {
-            Err(context.generate_diagnostics_error(e.span, format!("expect {}, found .{}", enum_name.join("."), e.identifier.name())))
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier.name()));
+            Ok(ExpressionResolved {
+                r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+                value: None
+            })
         }
-    } else if let Some((t, _)) = expected.as_model_scalar_fields() {
+    } else if let Some(reference) = expected.as_synthesized_enum_variant_reference() {
+        reference.
+    }
+    else if let Some((t, _)) = expected.as_model_scalar_fields() {
         if let Some((model_object, model_name)) = t.as_model_object() {
             let model = context.schema.find_top_by_path(model_object).unwrap().as_model().unwrap();
             if model.resolved().scalar_fields.contains(&e.identifier.name) {

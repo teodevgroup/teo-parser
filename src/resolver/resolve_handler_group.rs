@@ -42,14 +42,14 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     }
     resolve_type_expr(&handler_declaration.input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     resolve_type_expr(&handler_declaration.output_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
-    if let Some((path, generics, string_path)) = handler_declaration.input_type.resolved().as_interface_object() {
-        let interface_declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+    if let Some((reference, generics)) = handler_declaration.input_type.resolved().as_interface_object() {
+        let interface_declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
         if interface_declaration.shape(generics).is_none() {
             interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
         }
     }
-    if let Some((path, generics, string_path)) = handler_declaration.output_type.resolved().as_interface_object() {
-        let interface_declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+    if let Some((reference, generics)) = handler_declaration.output_type.resolved().as_interface_object() {
+        let interface_declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
         if interface_declaration.shape(generics).is_none() {
             interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
         }
@@ -74,23 +74,21 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
 fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
     match r#type {
         Type::Any => (),
-        Type::InterfaceObject(path, gen, _) => {
-            let interface = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+        Type::InterfaceObject(reference, gen) => {
+            let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
             let input = collect_inputs_from_interface_declaration_shape_cache(interface, gen, context);
             for shape in &input {
-                for (_, v) in shape.iter() {
-                    if let Some(t) = v.as_type() {
-                        if let Some(e) = t.as_enum_variant() {
-                            let enum_declaration = context.schema.find_top_by_path(e.0).unwrap().as_enum().unwrap();
-                            if enum_declaration.interface || enum_declaration.option {
-                                context.insert_diagnostics_error(span, "interface or option enum is disallowed");
-                                break
-                            }
-                        } else {
-                            if let Some(msg) = f(t) {
-                                context.insert_diagnostics_error(span, msg);
-                                break
-                            }
+                for (_, t) in shape.iter() {
+                    if let Some(e) = t.as_enum_variant() {
+                        let enum_declaration = context.schema.find_top_by_path(e.path()).unwrap().as_enum().unwrap();
+                        if enum_declaration.interface || enum_declaration.option {
+                            context.insert_diagnostics_error(span, "interface or option enum is disallowed");
+                            break
+                        }
+                    } else {
+                        if let Some(msg) = f(t) {
+                            context.insert_diagnostics_error(span, msg);
+                            break
                         }
                     }
                 }
@@ -122,19 +120,19 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Range(_) => Some("invalid form handler input type: Range is not supported"),
         Type::Union(_) => Some("invalid form handler input type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(_, _) => None,
+        Type::EnumVariant(_) => None,
         Type::Model => Some("invalid form handler input type: Model is not supported"),
-        Type::InterfaceObject(path, items, _) => None,
+        Type::InterfaceObject(_, items) => None,
         Type::FieldType(_, _) => Some("invalid form handler input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid form handler input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_form_input_type(inner.as_ref()),
         Type::Undetermined => Some("found unresolved type"),
-        Type::ModelObject(_, _) => Some("invalid form handler input type: Object is not supported"),
+        Type::ModelObject(_) => Some("invalid form handler input type: Object is not supported"),
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid form handler input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid form handler input type: StructObject is not supported"),
-        Type::Pipeline(_) => Some("invalid form handler input type: Pipeline is not supported"),
+        Type::Pipeline(_, _) => Some("invalid form handler input type: Pipeline is not supported"),
         _ => None,
     }
 }
@@ -165,19 +163,19 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Range(_) => Some("invalid handler input type: Range is not supported"),
         Type::Union(_) => Some("invalid handler input type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(path, _) => None,
+        Type::EnumVariant(_) => None,
         Type::Model => Some("invalid form handler input type: Model is not supported"),
-        Type::InterfaceObject(_, _, _) => None,
+        Type::InterfaceObject(_, _) => None,
         Type::FieldType(_, _) => Some("invalid handler input type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid handler input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_input_type(inner.as_ref()),
         Type::Undetermined => Some("found unresolved type"),
-        Type::ModelObject(_, _) => Some("invalid handler input type: Object is not supported"),
+        Type::ModelObject(_) => Some("invalid handler input type: Object is not supported"),
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid handler input type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid handler input type: StructObject is not supported"),
-        Type::Pipeline(_) => Some("invalid handler input type: Pipeline is not supported"),
+        Type::Pipeline(_, _) => Some("invalid handler input type: Pipeline is not supported"),
         _ => None,
     }
 }
@@ -208,19 +206,19 @@ fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Range(_) => Some("invalid handler output type: Range is not supported"),
         Type::Union(_) => Some("invalid handler output type: Union is not supported"),
         Type::Ignored => None,
-        Type::EnumVariant(path, _) => None,
+        Type::EnumVariant(_) => None,
         Type::Model => Some("invalid form handler output type: Model is not supported"),
-        Type::InterfaceObject(_, _, _) => None,
+        Type::InterfaceObject(_, _) => None,
         Type::FieldType(_, _) => Some("invalid handler output type: FieldType is not supported"),
         Type::FieldReference(_) => Some("invalid handler output type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler output type: GenericsItem is not supported"),
         Type::Optional(inner) => is_valid_json_output_type(inner.as_ref()),
         Type::Undetermined => Some("found unresolved type"),
-        Type::ModelObject(_, _) => Some("invalid handler output type: Object is not supported"),
+        Type::ModelObject(_) => Some("invalid handler output type: Object is not supported"),
         Type::Keyword(_) => Some("found keyword type"),
         Type::Regex => Some("invalid handler output type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid handler output type: StructObject is not supported"),
-        Type::Pipeline(_) => Some("invalid handler output type: Pipeline is not supported"),
+        Type::Pipeline(_, _) => Some("invalid handler output type: Pipeline is not supported"),
         _ => None,
     }
 }
