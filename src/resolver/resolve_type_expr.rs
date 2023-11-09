@@ -16,7 +16,7 @@ pub(super) fn resolve_type_expr<'a>(
     type_expr: &'a TypeExpr,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
-    keywords_map: &BTreeMap<Keyword, &Type>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {

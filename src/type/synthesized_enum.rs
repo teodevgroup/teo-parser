@@ -19,7 +19,7 @@ impl SynthesizedEnum {
 
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct SynthesizedEnumMember {
     pub name: String,
     pub comment: Option<Comment>,

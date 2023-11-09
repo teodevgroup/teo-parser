@@ -1,7 +1,7 @@
 use serde::Serialize;
 use crate::ast::span::Span;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct Comment {
     pub span: Span,
     pub name: Option<String>,

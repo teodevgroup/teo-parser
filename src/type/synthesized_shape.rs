@@ -1,6 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::{Display, Formatter};
 use indexmap::IndexMap;
 use indexmap::map::{IntoIter, Iter, IterMut, Keys};
+use itertools::Itertools;
 use maplit::btreemap;
 use serde::Serialize;
 use crate::r#type::keyword::Keyword;
@@ -95,5 +97,19 @@ impl SynthesizedShape {
             }
         }
         true
+    }
+}
+
+impl Display for SynthesizedShape {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if !self.generics.is_empty() {
+            f.write_str("<")?;
+            f.write_str(&self.generics.join(", "))?;
+            f.write_str(">")?;
+        }
+        f.write_str("{")?;
+        f.write_str(&self.fields.iter().map(|(k, t)| format!("{}: {}", k, t)).join(", "))?;
+        f.write_str("}")
     }
 }
