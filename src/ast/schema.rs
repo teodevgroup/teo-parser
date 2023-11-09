@@ -39,6 +39,10 @@ impl Schema {
         self.references.builtin_sources.iter().map(|id| self.source(*id).unwrap()).collect()
     }
 
+    pub fn user_sources(&self) -> Vec<&Source> {
+        self.references.user_sources.iter().map(|id| self.source(*id).unwrap()).collect()
+    }
+
     pub fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
         for config_declaration in self.config_declarations() {
             if config_declaration.identifier.name() == name && config_declaration.define_availability.contains(availability) {
@@ -141,6 +145,7 @@ impl Schema {
 #[derive(Debug)]
 pub struct SchemaReferences {
     pub builtin_sources: Vec<usize>,
+    pub user_sources: Vec<usize>,
     pub main_source: Option<usize>,
     pub configs: Vec<Vec<usize>>,
     pub server: Option<Vec<usize>>,
@@ -168,6 +173,7 @@ impl SchemaReferences {
     pub fn new() -> Self {
         Self {
             builtin_sources: vec![],
+            user_sources: vec![],
             main_source: None,
             connectors: vec![],
             configs: vec![],

@@ -150,10 +150,12 @@ pub(super) fn parse_source(
     }
     if builtin {
         context.schema_references.builtin_sources.push(id);
+    } else {
+        context.schema_references.user_sources.push(id);
     }
     Source::new(
         id,
-        if builtin || path.as_str().ends_with("builtin/std.teo") { SourceType::Builtin } else { SourceType::Normal },
+        builtin || path.as_str().ends_with("builtin/std.teo"),
         path,
         tops,
         references

@@ -7,16 +7,10 @@ use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::top::Top;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum SourceType {
-    Builtin,
-    Normal,
-}
-
 #[derive(Debug)]
 pub struct Source {
     pub id: usize,
-    pub r#type: SourceType,
+    pub builtin: bool,
     pub file_path: String,
     pub tops: BTreeMap<usize, Top>,
     pub references: SourceReferences,
@@ -24,10 +18,10 @@ pub struct Source {
 
 impl Source {
 
-    pub fn new(id: usize, r#type: SourceType, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
+    pub fn new(id: usize, builtin: bool, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
         Self {
             id,
-            r#type,
+            builtin,
             file_path,
             tops,
             references,
