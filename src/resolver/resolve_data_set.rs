@@ -1,5 +1,6 @@
 use maplit::btreemap;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetGroupResolved, DataSetResolved};
+use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_identifier::resolve_identifier_path_with_filter;
@@ -83,11 +84,11 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                             context.insert_diagnostics_error(value_span, format!("expect {}, found {}", field.type_expr.resolved(), value_resolved.r#type()));
                         }
                     } else if let Some(relation_settings) = field.resolved().class.as_model_relation() {
-                        if let Some((model_path, model_string_path)) = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
-                            let reference_model = context.schema.find_top_by_path(model_path).unwrap().as_model().unwrap();
+                        if let Some(model_reference) = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
+                            let reference_model = context.schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
                             let expect = Type::DataSetRecord(
-                                Box::new(Type::DataSetObject(data_set.path.clone(), data_set.string_path.clone())),
-                                Box::new(Type::ModelObject(reference_model.path.clone(), reference_model.string_path.clone()))
+                                Box::new(Type::DataSetReference(Reference::new(data_set.path.clone(), data_set.string_path.clone()))),
+                                Box::new(Type::ModelObject(Reference::new(reference_model.path.clone(), reference_model.string_path.clone())))
                             );
                             if field.type_expr.resolved().unwrap_optional().is_array() {
                                 // to many relation

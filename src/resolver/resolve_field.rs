@@ -4,6 +4,7 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::model::Model;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
@@ -74,15 +75,15 @@ pub(super) fn resolve_field_decorators<'a>(
     field: &'a Field,
     context: &'a ResolverContext<'a>,
 ) {
-    let model_type = Type::ModelObject(model.path.clone(), model.string_path.clone());
+    let model_type = Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone()));
 
     for decorator in &field.decorators {
         resolve_decorator(decorator, context, &btreemap!{
-            Keyword::SelfIdentifier => &model_type,
+            Keyword::SelfIdentifier => model_type.clone(),
             Keyword::ThisFieldType => if field.resolved().class.is_model_relation() {
-                field.type_expr.resolved().unwrap_optional().unwrap_array()
+                field.type_expr.resolved().unwrap_optional().unwrap_array().clone()
             } else {
-                field.type_expr.resolved()
+                field.type_expr.resolved().clone()
             },
         }, field.resolved().class.reference_type());
     }
