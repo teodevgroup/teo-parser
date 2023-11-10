@@ -4,7 +4,6 @@ use crate::ast::literals::NullLiteral;
 use crate::ast::unit::Unit;
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_arith_expr::parse_arith_expr;
-use crate::parser::parse_call::parse_call;
 use crate::parser::parse_group::parse_group;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_literals::{parse_array_literal, parse_bool_literal, parse_dictionary_literal, parse_enum_variant_literal, parse_null_literal, parse_numeric_literal, parse_regex_literal, parse_string_literal, parse_tuple_literal};

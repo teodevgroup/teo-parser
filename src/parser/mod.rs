@@ -21,7 +21,6 @@ mod parse_pipeline;
 mod parse_expression;
 mod parse_argument;
 mod parse_subscript;
-mod parse_call;
 mod parse_group;
 mod parse_arith_expr;
 mod parse_type_expression;
