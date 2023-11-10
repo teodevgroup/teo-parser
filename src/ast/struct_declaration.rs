@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+use maplit::btreemap;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::function_declaration::FunctionDeclaration;
@@ -5,6 +7,10 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::r#type::keyword::Keyword;
+use crate::r#type::reference::Reference;
+use crate::r#type::Type;
+use crate::r#type::Type::StructObject;
 
 #[derive(Debug)]
 pub struct StructDeclaration {
@@ -31,6 +37,16 @@ impl StructDeclaration {
 
     pub fn static_function(&self, name: &str) -> Option<&FunctionDeclaration> {
         self.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == name)
+    }
+
+    pub fn keywords_map(&self) -> BTreeMap<Keyword, Type> {
+        btreemap! {
+            Keyword::SelfIdentifier => StructObject(Reference::new(self.path.clone(), self.string_path.clone()), if let Some(generics_declaration) = self.generics_declaration.as_ref() {
+                generics_declaration.identifiers.iter().map(|i| Type::GenericItem(i.name.clone())).collect()
+            } else {
+                vec![]
+            })
+        }
     }
 }
 

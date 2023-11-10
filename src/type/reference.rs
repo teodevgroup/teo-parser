@@ -23,4 +23,8 @@ impl Reference {
     pub fn string_path(&self) -> &Vec<String> {
         &self.string_path
     }
+
+    pub fn str_path_without_last(&self, n: usize) -> Vec<&str> {
+        self.string_path.iter().map(AsRef::as_ref).rev().skip(n).rev().collect()
+    }
 }

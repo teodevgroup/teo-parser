@@ -82,19 +82,13 @@ fn resolve_current_item_for_unit<'a>(
             Type::ConfigReference(reference) => resolve_config_reference_for_unit(reference, expression, context),
             Type::ModelReference(reference) => resolve_model_reference_for_unit(reference, expression, context),
             Type::InterfaceReference(reference, types) => resolve_interface_reference_for_unit(reference, types, expression, context),
-            Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, types, expression, context),
-            Type::StructReference(_, _) => {}
-            Type::StructObject(_, _) => {}
-            Type::StructStaticFunctionReference(_, _) => {}
-            Type::StructInstanceFunctionReference(_, _) => {}
-            Type::FunctionReference(_) => {}
-            Type::Middleware => {}
-            Type::MiddlewareReference(_) => {}
-            Type::DataSet => {}
-            Type::DataSetReference(_) => {}
-            Type::DataSetGroup(_) => {}
-            Type::DataSetRecord(_, _) => {}
-            Type::Namespace => {}
+            Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
+            Type::StructReference(reference, types) => resolve_struct_reference_for_unit(last_span.unwrap(), reference, types, expression, context),
+            Type::StructObject(reference, types) => resolve_struct_object_for_unit(reference, types, expression, context),
+            Type::StructStaticFunctionReference(reference, types) => resolve_struct_static_function_reference_for_unit(last_span.unwrap(), reference, types, expression, context),
+            Type::StructInstanceFunctionReference(reference, types) => resolve_struct_instance_function_reference_for_unit(last_span.unwrap(),reference, types, expression, context),
+            Type::FunctionReference(_) => todo!(),
+            Type::MiddlewareReference(reference) => resolve_middleware_reference_for_unit(last_span.unwrap(), reference, expression, context),
             Type::NamespaceReference(_) => {}
             _ => TypeAndValue::undetermined(),
         }
@@ -379,6 +373,7 @@ fn resolve_interface_reference_for_unit<'a>(
 
 fn resolve_interface_object_for_unit<'a>(
     reference: &Reference,
+    current: &TypeAndValue,
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
@@ -391,12 +386,161 @@ fn resolve_interface_object_for_unit<'a>(
     match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
-                TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
+                let map = calculate_generics_map(interface.generics_declaration.as_ref(), types);
+                TypeAndValue::new(
+                    item.type_expr.resolved().replace_generics(&map),
+                    current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
+                )
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
                 TypeAndValue::undetermined()
             }
         },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_struct_reference_for_unit<'a>(
+    last_span: Span,
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let struct_declaration = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_struct_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(function) = struct_declaration.static_function(identifier.name()) {
+                TypeAndValue::type_only(Type::StructStaticFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "struct static function not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        ExpressionKind::ArgumentList(argument_list) => {
+            if let Some(new_function) = struct_declaration.static_function("new") {
+                resolve_argument_list(
+                    last_span,
+                    Some(argument_list),
+                    new_function.callable_variants(struct_declaration),
+                    &struct_declaration.keywords_map(),
+                    context,
+                    None
+                );
+                TypeAndValue::type_only(Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), types.clone()))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "struct initializer not found");
+                TypeAndValue::undetermined()
+            }
+        }
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_struct_object_for_unit<'a>(
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let struct_declaration = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_struct_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(function) = struct_declaration.instance_function(identifier.name()) {
+                TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "struct instance function not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_struct_static_function_reference_for_unit<'a>(
+    last_span: Span,
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let struct_declaration = context.source().find_top_by_string_path(
+        &reference.str_path_without_last(1),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_struct_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::ArgumentList(argument_list) => {
+            if let Some(function) = struct_declaration.static_function(reference.str_path().last().unwrap()) {
+                resolve_argument_list(
+                    last_span,
+                    Some(argument_list),
+                    function.callable_variants(struct_declaration),
+                    &struct_declaration.keywords_map(),
+                    context,
+                    None
+                );
+                let map = calculate_generics_map(struct_declaration.generics_declaration.as_ref(), types);
+                TypeAndValue::type_only(function.return_type.resolved().replace_generics(&map))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "struct static function not found");
+                TypeAndValue::undetermined()
+            }
+        }
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_struct_instance_function_reference_for_unit<'a>(
+    last_span: Span,
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let struct_declaration = context.source().find_top_by_string_path(
+        &reference.str_path_without_last(1),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_struct_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::ArgumentList(argument_list) => {
+            if let Some(function) = struct_declaration.instance_function(reference.str_path().last().unwrap()) {
+                resolve_argument_list(
+                    last_span,
+                    Some(argument_list),
+                    function.callable_variants(struct_declaration),
+                    &struct_declaration.keywords_map(),
+                    context,
+                    None
+                );
+                let map = calculate_generics_map(struct_declaration.generics_declaration.as_ref(), types);
+                TypeAndValue::type_only(function.return_type.resolved().replace_generics(&map))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "struct instance function not found");
+                TypeAndValue::undetermined()
+            }
+        }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
