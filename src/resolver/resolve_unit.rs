@@ -547,3 +547,33 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
         }
     }
 }
+
+fn resolve_middleware_reference_for_unit(
+    last_span: Span,
+    reference: &Reference,
+    expression: &Expression,
+    context: &ResolverContext,
+) -> TypeAndValue {
+    let middleware_declaration = context.source().find_top_by_string_path(
+        &reference.str_path_without_last(1),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_middleware_declaration().unwrap();
+    expression.resolve(match &expression.kind {
+        ExpressionKind::ArgumentList(argument_list) => {
+            resolve_argument_list(
+                last_span,
+                Some(argument_list),
+                middleware_declaration.callable_variants(),
+                &btreemap! {},
+                context,
+                None
+            );
+            TypeAndValue::type_only(Type::Middleware)
+        }
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    })
+}
