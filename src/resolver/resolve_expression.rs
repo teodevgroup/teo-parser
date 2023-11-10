@@ -17,7 +17,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::resolver::resolve_argument_list::resolve_argument_list;
-use crate::resolver::resolve_identifier::resolve_identifier_with_value;
+use crate::resolver::resolve_identifier::resolve_identifier_with_diagnostic_message;
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
@@ -41,7 +41,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
         ExpressionKind::TupleLiteral(t) => resolve_tuple_literal(t, context, &expected.expect_for_literal(), keywords_map),
         ExpressionKind::ArrayLiteral(a) => resolve_array_literal(a, context, &expected.expect_for_array_literal(), keywords_map),
         ExpressionKind::DictionaryLiteral(d) => resolve_dictionary_literal(d, context, &expected.expect_for_literal(), keywords_map),
-        ExpressionKind::Identifier(i) => resolve_identifier_with_value(i, context),
+        ExpressionKind::Identifier(i) => resolve_identifier_with_diagnostic_message(i, context),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected, keywords_map),

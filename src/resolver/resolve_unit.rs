@@ -18,31 +18,6 @@ use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
-// pub(super) fn into_resolved<'a>(self, context: &'a ResolverContext<'a>) -> ExpressionResolved {
-//     match self {
-//         Self::Result(t) => t,
-//         Self::Reference(path) => {
-//             let top = context.schema.find_top_by_path(&path).unwrap();
-//             if top.is_model() {
-//                 ExpressionResolved {
-//                     r#type: Type::Model,
-//                     value: Some(top.as_model().unwrap().string_path.clone().into()),
-//                 }
-//             } else if top.is_data_set() {
-//                 ExpressionResolved {
-//                     r#type: Type::DataSet,
-//                     value: Some(top.as_data_set().unwrap().string_path.clone().into()),
-//                 }
-//             } else {
-//                 ExpressionResolved {
-//                     r#type: Type::Undetermined,
-//                     value: None,
-//                 }
-//             }
-//         }
-//     }
-// }
-
 pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
     if unit.expressions.len() == 1 {
         return resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map);

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use crate::ast::availability::Availability;
+use crate::ast::expression::TypeAndValue;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
@@ -13,7 +14,7 @@ pub fn search_identifier_path_names_with_filter(
     namespace_str_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Top) -> bool>,
     availability: Availability,
-) -> Option<Type> {
+) -> Option<TypeAndValue> {
     let mut used_sources = vec![];
     let reference = search_identifier_path_names_in_source(
         identifier_path_names,
@@ -50,7 +51,7 @@ fn search_identifier_path_names_in_source(
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
     availability: Availability,
-) -> Option<Type> {
+) -> Option<TypeAndValue> {
     if used_sources.contains(&source.id) {
         return None;
     }
@@ -59,12 +60,12 @@ fn search_identifier_path_names_in_source(
     loop {
         if ns_str_path_mut.is_empty() {
             if let Some(top) = source.find_top_by_string_path(identifier_path_names, filter, availability) {
-                return Some(top_to_reference_type(top));
+                return Some(top_to_reference_type_and_value(top));
             }
         } else {
             if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
                 if let Some(top) = ns.find_top_by_string_path(identifier_path_names, filter, availability) {
-                    return Some(top_to_reference_type(top));
+                    return Some(top_to_reference_type_and_value(top));
                 }
             }
         }
@@ -87,29 +88,34 @@ fn search_identifier_path_names_in_source(
     None
 }
 
-fn top_to_reference_type(top: &Top) -> Type {
-    match top {
-        Top::Import(_) => Type::Undetermined,
-        Top::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
-        Top::ConfigDeclaration(_) => Type::Undetermined,
-        Top::Constant(c) => c.resolved().expression_resolved.r#type.clone(),
-        Top::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
-        Top::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
-        Top::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
-        Top::Middleware(m) => Type::MiddlewareReference(Reference::new(m.path.clone(), m.string_path.clone())),
-        Top::HandlerGroup(_) => Type::Undetermined,
-        Top::Interface(i) => if i.generics_declaration.is_none() {
-            Type::InterfaceReference(Reference::new(i.path.clone(), i.string_path.clone()), vec![])
-        } else {
-            Type::Undetermined
+fn top_to_reference_type_and_value(top: &Top) -> TypeAndValue {
+    TypeAndValue {
+        r#type: match top {
+            Top::Import(_) => Type::Undetermined,
+            Top::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
+            Top::ConfigDeclaration(_) => Type::Undetermined,
+            Top::Constant(c) => return c.resolved().expression_resolved.clone(),
+            Top::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
+            Top::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
+            Top::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
+            Top::Middleware(m) => Type::MiddlewareReference(Reference::new(m.path.clone(), m.string_path.clone())),
+            Top::HandlerGroup(_) => Type::Undetermined,
+            Top::Interface(i) => if i.generics_declaration.is_none() {
+                Type::InterfaceReference(Reference::new(i.path.clone(), i.string_path.clone()), vec![])
+            } else {
+                Type::Undetermined
+            },
+            Top::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
+            Top::DecoratorDeclaration(_) => Type::Undetermined,
+            Top::PipelineItemDeclaration(_) => Type::Undetermined,
+            Top::StructDeclaration(s) => if s.generics_declaration.is_none() {
+                Type::StructReference(Reference::new(s.path.clone(), s.string_path.clone()), vec![])
+            } else {
+                Type::Undetermined
+            }
+            Top::UseMiddlewareBlock(_) => Type::Undetermined,
         },
-        Top::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
-        Top::DecoratorDeclaration(_) => Type::Undetermined,
-        Top::PipelineItemDeclaration(_) => Type::Undetermined,
-        Top::StructDeclaration(s) => if s.generics_declaration.is_none() {
-            Type::StructReference(Reference::new(s.path.clone(), s.string_path.clone()), vec![])
-        } else {
-            Type::Undetermined
-        }
-        Top::UseMiddlewareBlock(_) => Type::Undetermined,
+        value: None,
     }
+}
+
