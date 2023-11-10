@@ -1,52 +1,47 @@
 use std::sync::Arc;
 use teo_teon::Value;
 use crate::ast::availability::Availability;
-use crate::ast::expression::ExpressionResolved;
+use crate::ast::expression::TypeAndValue;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference::ReferenceType;
-use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::r#type::r#type::Type;
-use crate::r#type::reference::Reference;
-use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
-pub(super) fn resolve_identifier_into_type<'a>(
+pub(super) fn resolve_identifier_with_value<'a>(
     identifier: &Identifier,
     context: &'a ResolverContext<'a>,
-) -> ExpressionResolved {
+) -> TypeAndValue {
     if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
         // maybe add error here
         track_path_upwards_into_type(reference.path(), context)
     } else {
         context.insert_diagnostics_error(identifier.span, "undefined identifier");
-        ExpressionResolved::undetermined()
+        TypeAndValue::undetermined()
     }
 }
 
-fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverContext<'a>) -> ExpressionResolved {
+fn track_path_upwards_into_type<'a>(path: &Vec<usize>, context: &'a ResolverContext<'a>) -> TypeAndValue {
     let top = context.schema.find_top_by_path(path).unwrap();
     match top {
-        Top::Config(c) => ExpressionResolved::undetermined(),
+        Top::Config(c) => TypeAndValue::undetermined(),
         Top::Constant(c) => {
-            if !c.is_resolved() {
-                resolve_constant(c, context);
-            }
             c.resolved().expression_resolved.clone()
         }
-        Top::Enum(e) => ExpressionResolved::undetermined(),
-        Top::Model(m) => ExpressionResolved {
+        Top::Enum(e) => TypeAndValue::undetermined(),
+        Top::Model(m) => TypeAndValue {
             r#type: Type::Model,
             value: Some(Value::from(m.string_path.clone())),
         },
-        Top::DataSet(d) => ExpressionResolved {
+        Top::DataSet(d) => TypeAndValue {
             r#type: Type::DataSet,
             value: Some(Value::from(d.string_path.clone()))
         },
-        Top::Interface(i) => ExpressionResolved::undetermined(),
-        Top::Namespace(n) => ExpressionResolved::undetermined(),
+        Top::Interface(i) => TypeAndValue::undetermined(),
+        Top::Namespace(n) => TypeAndValue::undetermined(),
         _ => unreachable!(),
     }
 }
@@ -56,7 +51,7 @@ pub(super) fn resolve_identifier(
     context: &ResolverContext,
     reference_type: ReferenceType,
     availability: Availability,
-) -> Option<Reference> {
+) -> Option<Type> {
     resolve_identifier_path(
         &IdentifierPath::from_identifier(identifier.clone()),
         context,
@@ -70,7 +65,7 @@ pub(super) fn resolve_identifier_with_filter(
     context: &ResolverContext,
     filter: &Arc<dyn Fn(&Top) -> bool>,
     availability: Availability,
-) -> Option<Reference> {
+) -> Option<Type> {
     resolve_identifier_path_with_filter(
         &IdentifierPath::from_identifier(identifier.clone()),
         context,
@@ -84,7 +79,7 @@ pub(super) fn resolve_identifier_path(
     context: &ResolverContext,
     reference_type: ReferenceType,
     availability: Availability,
-) -> Option<Reference> {
+) -> Option<Type> {
     resolve_identifier_path_with_filter(
         identifier_path,
         context,
@@ -98,77 +93,13 @@ pub(super) fn resolve_identifier_path_with_filter(
     context: &ResolverContext,
     filter: &Arc<dyn Fn(&Top) -> bool>,
     availability: Availability,
-) -> Option<Reference> {
-    let mut used_sources = vec![];
-    let ns_str_path = context.current_namespace().map_or(vec![], |n| n.str_path());
-    let reference = resolve_identifier_path_in_source(
-        identifier_path,
-        context,
-        filter,
+) -> Option<Type> {
+    search_identifier_path_names_with_filter(
+        &identifier_path.names(),
+        context.schema,
         context.source(),
-        &mut used_sources,
-        &ns_str_path,
+        &context.current_namespace().map_or(vec![], |n| n.str_path()),
+        filter,
         availability,
-    );
-    if reference.is_none() {
-        for builtin_source in context.schema.builtin_sources() {
-            if let Some(reference) = resolve_identifier_path_in_source(
-                &identifier_path,
-                context,
-                filter,
-                builtin_source,
-                &mut used_sources,
-                &vec!["std"],
-                availability,
-            ) {
-                return Some(reference);
-            }
-        }
-    }
-    reference
-}
-
-fn resolve_identifier_path_in_source(
-    identifier_path: &IdentifierPath,
-    context: &ResolverContext,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
-    source: &Source,
-    used_sources: &mut Vec<usize>,
-    ns_str_path: &Vec<&str>,
-    availability: Availability,
-) -> Option<Reference> {
-    if used_sources.contains(&source.id) {
-        return None;
-    }
-    used_sources.push(source.id);
-    let mut ns_str_path_mut = ns_str_path.clone();
-    loop {
-        if ns_str_path_mut.is_empty() {
-            if let Some(top) = source.find_top_by_string_path(&identifier_path.names(), filter, availability) {
-                return Some(Reference::new(top.path().clone(), top.string_path().unwrap().clone()));
-            }
-        } else {
-            if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
-                if let Some(top) = ns.find_top_by_string_path(&identifier_path.names(), filter, availability) {
-                    return Some(Reference::new(top.path().clone(), top.string_path().unwrap().clone()));
-                }
-            }
-        }
-        if ns_str_path_mut.len() > 0 {
-            ns_str_path_mut.pop();
-        } else {
-            break
-        }
-    }
-    for import in source.imports() {
-        // find with imports
-        if let Some(from_source) = context.schema.sources().iter().find(|source| {
-            import.file_path.as_str() == source.file_path.as_str()
-        }).map(|s| *s) {
-            if let Some(found) = resolve_identifier_path_in_source(identifier_path, context, filter, from_source, used_sources, &ns_str_path, availability) {
-                return Some(found)
-            }
-        }
-    }
-    None
+    )
 }

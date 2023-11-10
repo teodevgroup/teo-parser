@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
-use crate::ast::expression::ExpressionResolved;
+use crate::ast::expression::TypeAndValue;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::{Pipeline, PipelineResolved};
 use crate::ast::span::Span;
@@ -14,7 +14,7 @@ use crate::resolver::resolve_identifier::resolve_identifier_with_filter;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
-pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExpressionResolved {
+pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> TypeAndValue {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -30,7 +30,7 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
     } else {
         &undetermined
     };
-    ExpressionResolved {
+    TypeAndValue {
         r#type: resolve_pipeline_unit(pipeline.span, pipeline.unit.as_ref(), context, r#type, keywords_map),
         value: None,
     }

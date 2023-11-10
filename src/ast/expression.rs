@@ -290,7 +290,7 @@ impl Display for ExpressionKind {
 #[derive(Debug)]
 pub struct Expression {
     pub kind: ExpressionKind,
-    pub resolved: RefCell<Option<ExpressionResolved>>,
+    pub resolved: RefCell<Option<TypeAndValue>>,
 }
 
 impl Expression {
@@ -303,11 +303,11 @@ impl Expression {
         self.kind.span()
     }
 
-    pub fn resolve(&self, resolved: ExpressionResolved) {
+    pub fn resolve(&self, resolved: TypeAndValue) {
         *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
     }
 
-    pub fn resolved(&self) -> &ExpressionResolved {
+    pub fn resolved(&self) -> &TypeAndValue {
         (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
     }
 
@@ -331,12 +331,12 @@ impl Display for Expression {
 }
 
 #[derive(Debug, Clone)]
-pub struct ExpressionResolved {
+pub struct TypeAndValue {
     pub r#type: Type,
     pub value: Option<Value>,
 }
 
-impl ExpressionResolved {
+impl TypeAndValue {
 
     pub fn r#type(&self) -> &Type {
         &self.r#type
@@ -347,14 +347,14 @@ impl ExpressionResolved {
     }
 
     pub fn undetermined() -> Self {
-        ExpressionResolved {
+        TypeAndValue {
             r#type: Type::Undetermined,
             value: None,
         }
     }
 
     pub fn type_only(t: Type) -> Self {
-        ExpressionResolved {
+        TypeAndValue {
             r#type: t,
             value: None
         }

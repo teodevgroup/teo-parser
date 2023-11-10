@@ -1,7 +1,7 @@
 use maplit::btreemap;
 use teo_teon::Value;
 use crate::ast::availability::Availability;
-use crate::ast::expression::{ExpressionKind, ExpressionResolved};
+use crate::ast::expression::{ExpressionKind, TypeAndValue};
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::ArrayLiteral;
 use crate::ast::middleware::MiddlewareDeclaration;
@@ -29,23 +29,23 @@ fn resolve_use_middlewares_array_literal<'a>(array_literal: &'a ArrayLiteral, co
     }
 }
 
-fn resolve_middleware_identifier<'a>(identifier: &'a Identifier, context: &'a ResolverContext<'a>) -> ExpressionResolved {
+fn resolve_middleware_identifier<'a>(identifier: &'a Identifier, context: &'a ResolverContext<'a>) -> TypeAndValue {
     if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Middleware, Availability::default()) {
         let declaration = context.schema.find_top_by_path(&reference).unwrap().as_middleware_declaration().unwrap();
-        ExpressionResolved {
+        TypeAndValue {
             r#type: Type::Undetermined,
             value: Some(declaration.string_path.clone().into()),
         }
     } else {
         context.insert_diagnostics_error(identifier.span, "middleware not found");
-        ExpressionResolved {
+        TypeAndValue {
             r#type: Type::Undetermined,
             value: Some(Value::Null),
         }
     }
 }
 
-fn resolve_middleware_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>) -> ExpressionResolved {
+fn resolve_middleware_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>) -> TypeAndValue {
     let mut current_space: Option<&Namespace> = None;
     let mut current_middleware: Option<&MiddlewareDeclaration> = None;
     let mut middleware_found = false;
@@ -136,7 +136,7 @@ fn resolve_middleware_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>)
             }
         }
     }
-    ExpressionResolved {
+    TypeAndValue {
         r#type: Type::Undetermined,
         value: if current_middleware.is_some() { Some(current_middleware.unwrap().string_path.clone().into()) } else { Some(Value::Null) },
     }

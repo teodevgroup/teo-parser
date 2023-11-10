@@ -161,6 +161,8 @@ pub enum Type {
     ///
     SynthesizedEnumVariantReference(SynthesizedEnumReference),
 
+    ConfigReference(Reference),
+
     /// Model
     ///
     Model,
@@ -215,7 +217,7 @@ pub enum Type {
     DataSet,
 
     /// Data Set Object
-    DataSetReference(Reference),
+    DataSetReference(Vec<String>),
 
     /// Data Set Group
     ///
@@ -557,6 +559,17 @@ impl Type {
         }
     }
 
+    pub fn is_config_reference(&self) -> bool {
+        self.as_config_reference().is_some()
+    }
+
+    pub fn as_config_reference(&self) -> Option<&Reference> {
+        match self {
+            Type::ConfigReference(r) => Some(r),
+            _ => None,
+        }
+    }
+
     pub fn is_model(&self) -> bool {
         match self {
             Type::Model => true,
@@ -692,7 +705,7 @@ impl Type {
         self.as_data_set_reference().is_some()
     }
 
-    pub fn as_data_set_reference(&self) -> Option<&Reference> {
+    pub fn as_data_set_reference(&self) -> Option<&Vec<String>> {
         match self {
             Type::DataSetReference(r) => Some(r),
             _ => None,
@@ -1033,6 +1046,7 @@ impl Type {
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
             Type::SynthesizedEnumVariantReference(r) => other.is_synthesized_enum_variant_reference() && r == other.as_synthesized_enum_variant_reference().unwrap(),
+            Type::ConfigReference(r) => other.is_config_reference() && other.as_config_reference().unwrap() == r,
             Type::Model => other.is_model() || other.is_model_reference(),
             Type::ModelReference(r) => other.is_model_reference() && r == other.as_model_reference().unwrap(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
@@ -1168,6 +1182,7 @@ impl Display for Type {
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}.Type", r)),
             Type::SynthesizedEnumVariantReference(s) => Display::fmt(s, f),
+            Type::ConfigReference(_) => f.write_str(&format!("Config")),
             Type::Model => f.write_str("Model"),
             Type::ModelReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
