@@ -29,11 +29,11 @@ namespace std {
         declare static function new(from?: String): Self
     }
 
-    declare struct Float {
+    declare struct Float32 {
         declare static function new(from?: String): Self
     }
 
-    declare struct Float32 {
+    declare struct Float {
         declare static function new(from?: String): Self
     }
 
@@ -59,6 +59,10 @@ namespace std {
         declare static function new(from?: String): Self
     }
 
+    declare struct File { }
+
+    declare struct Regex { }
+
     declare struct Array<T> {
         declare static function new(): Self
         declare function subscript(index?: Int): T?
@@ -68,6 +72,8 @@ namespace std {
         declare static function new(): Self
         declare function subscript(key?: String): T?
     }
+
+    declare struct Range<T> { }
 
     /// @name Action
     /// Represents the predefined actions
@@ -86,7 +92,7 @@ namespace std {
         count = 1 << 11
         aggregate = 1 << 12
         groupBy = 1 << 13
-        programCode = 1 << 14
+        codeName = 1 << 14
         upsert = .create | .update
         connectOrCreate = .connect | .create
         joinCreate = .join | .create
@@ -94,10 +100,10 @@ namespace std {
         findFirst = .find | .first
         entry = 1 << 15
         nested = 1 << 16
-        internalPosition = 1 << 17
+        codePosition = 1 << 17
         single = 1 << 18
         many = 1 << 19
-        internalAmount = 1 << 20
+        codeAmount = 1 << 20
     }
 
     /// @name Sort Order

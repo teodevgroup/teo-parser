@@ -1,4 +1,6 @@
+use std::str::FromStr;
 use crate::ast::expression::Expression;
+use crate::ast::int_subscript::IntSubscript;
 use crate::ast::subscript::Subscript;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
@@ -15,4 +17,14 @@ pub(super) fn parse_subscript(pair: Pair<'_>, context: &mut ParserContext) -> Su
         }
     }
     Subscript { span, expression: Box::new(Expression::new(expression.unwrap())) }
+}
+
+pub(super) fn parse_int_subscript(pair: Pair<'_>, context: &mut ParserContext) -> IntSubscript {
+    let span = parse_span(&pair);
+    let index = if let Ok(index) = usize::from_str(pair.as_str()) {
+        index
+    } else {
+        0
+    };
+    IntSubscript { span, index }
 }

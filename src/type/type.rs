@@ -1112,6 +1112,24 @@ impl Type {
             _ => self.clone(),
         }
     }
+
+    pub fn generic_types(&self) -> Vec<Type> {
+        match self {
+            Type::Optional(inner) => vec![inner.as_ref().clone()],
+            Type::Array(inner) => vec![inner.as_ref().clone()],
+            Type::Dictionary(inner) => vec![inner.as_ref().clone()],
+            Type::Tuple(types) => types.clone(),
+            Type::Range(inner) => vec![inner.as_ref().clone()],
+            Type::InterfaceReference(_, types) => types.clone(),
+            Type::InterfaceObject(_, types) => types.clone(),
+            Type::StructReference(_, types) => types.clone(),
+            Type::StructObject(_, types) => types.clone(),
+            Type::StructStaticFunctionReference(_, types) => types.clone(),
+            Type::StructInstanceFunctionReference(_, types) => types.clone(),
+            Type::Pipeline(input, output) => vec![input.as_ref().clone(), output.as_ref().clone()],
+            _ => vec![]
+        }
+    }
 }
 
 impl Display for Type {

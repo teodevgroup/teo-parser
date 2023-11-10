@@ -24,6 +24,14 @@ impl StructDeclaration {
     pub fn namespace_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
+
+    pub fn instance_function(&self, name: &str) -> Option<&FunctionDeclaration> {
+        self.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == name)
+    }
+
+    pub fn static_function(&self, name: &str) -> Option<&FunctionDeclaration> {
+        self.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == name)
+    }
 }
 
 impl Identifiable for StructDeclaration {

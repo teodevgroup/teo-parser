@@ -216,8 +216,10 @@ unit = {
     array_literal |
     dictionary_literal |
     identifier
-    ~ (subscript | argument_list | "." ~  identifier)*
+    ~ (subscript | argument_list | "." ~ identifier | int_subscript)*
 }
+
+int_subscript = @{ ASCII_DIGIT+ }
 
 identifier_unit = {
     identifier

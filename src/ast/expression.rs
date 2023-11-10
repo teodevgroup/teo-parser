@@ -6,6 +6,7 @@ use crate::ast::arith::ArithExpr;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
+use crate::ast::int_subscript::IntSubscript;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
@@ -75,6 +76,7 @@ pub enum ExpressionKind {
     Identifier(Identifier),
     ArgumentList(ArgumentList),
     Subscript(Subscript),
+    IntSubscript(IntSubscript),
     Unit(Unit),
     Pipeline(Pipeline),
 }
@@ -97,6 +99,7 @@ impl ExpressionKind {
             ExpressionKind::Identifier(e) => e.span,
             ExpressionKind::ArgumentList(e) => e.span,
             ExpressionKind::Subscript(e) => e.span,
+            ExpressionKind::IntSubscript(i) => i.span,
             ExpressionKind::Unit(e) => e.span,
             ExpressionKind::Pipeline(e) => e.span,
         }
@@ -280,6 +283,7 @@ impl Display for ExpressionKind {
             ExpressionKind::Identifier(i) => Display::fmt(i, f),
             ExpressionKind::ArgumentList(a) => Display::fmt(a, f),
             ExpressionKind::Subscript(s) => Display::fmt(s, f),
+            ExpressionKind::IntSubscript(i) => Display::fmt(i, f),
             ExpressionKind::Unit(u) => Display::fmt(u, f),
             ExpressionKind::Pipeline(p) => Display::fmt(p, f),
             ExpressionKind::ArithExpr(a) => Display::fmt(a, f),
@@ -303,8 +307,9 @@ impl Expression {
         self.kind.span()
     }
 
-    pub fn resolve(&self, resolved: TypeAndValue) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
+    pub fn resolve(&self, resolved: TypeAndValue) -> TypeAndValue {
+        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved.clone());
+        resolved
     }
 
     pub fn resolved(&self) -> &TypeAndValue {
@@ -338,6 +343,10 @@ pub struct TypeAndValue {
 
 impl TypeAndValue {
 
+    pub fn new(r#type: Type, value: Option<Value>) -> Self {
+        Self { r#type, value }
+    }
+
     pub fn r#type(&self) -> &Type {
         &self.r#type
     }
@@ -346,10 +355,28 @@ impl TypeAndValue {
         self.value.as_ref()
     }
 
+    pub fn is_undetermined(&self) -> bool {
+        self.r#type().is_undetermined()
+    }
+
     pub fn undetermined() -> Self {
         TypeAndValue {
             r#type: Type::Undetermined,
             value: None,
+        }
+    }
+
+    pub fn with_type(&self, new_type: Type) -> Self {
+        TypeAndValue {
+            r#type: new_type,
+            value: self.value.clone()
+        }
+    }
+
+    pub fn with_value(&self, new_value: Option<Value>) -> Self {
+        TypeAndValue {
+            r#type: self.r#type.clone(),
+            value: new_value,
         }
     }
 

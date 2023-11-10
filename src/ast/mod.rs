@@ -31,6 +31,7 @@ pub mod top;
 pub mod field;
 pub mod pipeline;
 pub mod subscript;
+pub mod int_subscript;
 pub mod unit;
 pub mod generics;
 pub mod decorator_declaration;
