@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
 use teo_teon::types::enum_variant::EnumVariant;
+use teo_teon::types::option_variant::OptionVariant;
 use teo_teon::Value;
 use crate::ast::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
@@ -76,12 +77,12 @@ fn resolve_current_item_for_unit<'a>(
             Type::Dictionary(inner) => resolve_builtin_struct_instance_for_unit("Dictionary", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
             Type::Tuple(types) => resolve_tuple_for_unit(types, current, expression, context),
             Type::Range(inner) => resolve_builtin_struct_instance_for_unit("Range", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
-            Type::EnumReference(_) => {}
-            Type::EnumVariant(_) => {}
-            Type::ConfigReference(_) => {}
-            Type::ModelReference(_) => {}
-            Type::InterfaceReference(_, _) => {}
-            Type::InterfaceObject(_, _) => {}
+            Type::EnumReference(reference) => resolve_enum_reference_for_unit(reference, expression, context),
+            Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
+            Type::ConfigReference(reference) => resolve_config_reference_for_unit(reference, expression, context),
+            Type::ModelReference(reference) => resolve_model_reference_for_unit(reference, expression, context),
+            Type::InterfaceReference(reference, types) => resolve_interface_reference_for_unit(reference, types, expression, context),
+            Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, types, expression, context),
             Type::StructReference(_, _) => {}
             Type::StructObject(_, _) => {}
             Type::StructStaticFunctionReference(_, _) => {}
@@ -95,7 +96,6 @@ fn resolve_current_item_for_unit<'a>(
             Type::DataSetRecord(_, _) => {}
             Type::Namespace => {}
             Type::NamespaceReference(_) => {}
-            Type::Pipeline(_, _) => {}
             _ => TypeAndValue::undetermined(),
         }
     } else {
@@ -177,7 +177,10 @@ fn resolve_struct_instance_for_unit<'a>(
             let return_type = subscript_function.return_type.resolved().replace_generics(&map);
             TypeAndValue::type_only(return_type)
         },
-        _ => TypeAndValue::undetermined(),
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        },
     })
 }
 
@@ -202,206 +205,201 @@ fn resolve_tuple_for_unit<'a>(
                 TypeAndValue::new(t, v)
             }
         },
-        _ => TypeAndValue::undetermined(),
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        },
     })
 }
 
-// match current {
-//
-// UnitResolveResult::Reference(path) => {
-// match context.schema.find_top_by_path(path).unwrap() {
-// Top::StructDeclaration(struct_declaration) => {
-// let struct_object = Type::StructObject(struct_declaration.path.clone(), struct_declaration.string_path.clone());
-// match &expression.kind {
-// ExpressionKind::ArgumentList(argument_list) => {
-// if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
-// resolve_argument_list(last_span, Some(argument_list), new.callable_variants(struct_declaration), &btreemap!{
-// Keyword::SelfIdentifier => &struct_object,
-// },  context, None);
-// UnitResolveResult::Result(TypeAndValue::type_only(new.return_type.resolved().clone()))
-// } else {
-// context.insert_diagnostics_error(last_span, "Constructor is not found");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// }
-// ExpressionKind::Call(call) => {
-// if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
-// resolve_argument_list(last_span, Some(&call.argument_list), new.callable_variants(struct_declaration),  &btreemap!{
-// Keyword::SelfIdentifier => &struct_object,
-// }, context, None);
-// UnitResolveResult::Result(TypeAndValue::type_only(new.return_type.resolved().clone()))
-// } else {
-// context.insert_diagnostics_error(last_span, "static struct function is not found");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Struct cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Identifier(i) => {
-// context.insert_diagnostics_error(i.span, "Struct fields are not accessible");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// },
-// Top::Config(config) => {
-// match &expression.kind {
-// ExpressionKind::Identifier(identifier) => {
-// if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
-// return UnitResolveResult::Result(item.expression.resolved().clone());
-// } else {
-// context.insert_diagnostics_error(expression.span(), "Undefined field");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// },
-// ExpressionKind::ArgumentList(a) => {
-// context.insert_diagnostics_error(a.span, "Config cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Call(c) => {
-// context.insert_diagnostics_error(c.span, "Config cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Config cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// }
-// Top::Constant(constant) => {
-// if !constant.is_resolved() {
-// resolve_constant(constant, context);
-// }
-// UnitResolveResult::Result(constant.resolved().expression_resolved.clone())
-// }
-// Top::Enum(r#enum) => {
-// match &expression.kind {
-// ExpressionKind::Identifier(i) => {
-// if let Some(member_declaration) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
-// if member_declaration.argument_list_declaration.is_some() {
-// context.insert_diagnostics_error(i.span, "expect argument list");
-// }
-// } else {
-// context.insert_diagnostics_error(i.span, "enum member not found");
-// }
-// return UnitResolveResult::Result(TypeAndValue {
-// r#type: Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()),
-// value: Some(Value::EnumVariant(EnumVariant {
-// value: Box::new(Value::String(i.name().to_owned())),
-// display: format!(".{}", i.name()),
-// path: r#enum.string_path.clone(),
-// args: None,
-// })),
-// });
-// }
-// ExpressionKind::Call(c) => {
-// if let Some(member_declaration) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
-// if member_declaration.argument_list_declaration.is_none() {
-// context.insert_diagnostics_error(c.argument_list.span, "unexpected argument list");
-// } else {
-// resolve_argument_list(
-// c.identifier.span,
-// Some(&c.argument_list),
-// vec![CallableVariant {
-// generics_declarations: vec![],
-// argument_list_declaration: Some(member_declaration.argument_list_declaration.as_ref().unwrap()),
-// generics_constraints: vec![],
-// pipeline_input: None,
-// pipeline_output: None,
-// }],
-// &btreemap! {},
-// context,
-// None,
-// );
-// }
-// } else {
-// context.insert_diagnostics_error(c.identifier.span, "enum member not found");
-// }
-// return UnitResolveResult::Result(TypeAndValue {
-// r#type: Type::EnumVariant(r#enum.path.clone(), r#enum.string_path.clone()),
-// value: Some(Value::EnumVariant(EnumVariant {
-// value: Box::new(Value::String(c.identifier.name().to_owned())),
-// display: format!(".{}", c.identifier.name()),
-// path: r#enum.string_path.clone(),
-// args: None,
-// })),
-// });
-// }
-// ExpressionKind::ArgumentList(a) => {
-// context.insert_diagnostics_error(a.span, "Enum cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Enum cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// }
-// Top::Model(_) => {
-// match &expression.kind {
-// ExpressionKind::Identifier(_) => todo!("return model field enum here"),
-// ExpressionKind::ArgumentList(a) => {
-// context.insert_diagnostics_error(a.span, "Model cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Call(c) => {
-// context.insert_diagnostics_error(c.span, "Model cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Model cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// }
-// Top::Interface(_) => {
-// match &expression.kind {
-// ExpressionKind::Identifier(_) => todo!("return interface field enum here"),
-// ExpressionKind::ArgumentList(a) => {
-// context.insert_diagnostics_error(a.span, "Interface cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Call(c) => {
-// context.insert_diagnostics_error(c.span, "Interface cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Interface cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// }
-// Top::Namespace(namespace) => {
-// match &expression.kind {
-// ExpressionKind::Identifier(identifier) => {
-// if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), context.current_availability()) {
-// return UnitResolveResult::Reference(top.path().clone())
-// } else {
-// context.insert_diagnostics_error(identifier.span, "Invalid reference");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// },
-// ExpressionKind::Call(c) => {
-// todo!("resolve and call")
-// }
-// ExpressionKind::ArgumentList(a) => {
-// context.insert_diagnostics_error(a.span, "Namespace cannot be called");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// ExpressionKind::Subscript(s) => {
-// context.insert_diagnostics_error(s.span, "Namespace cannot be subscript");
-// return UnitResolveResult::Result(TypeAndValue::undetermined())
-// }
-// _ => unreachable!()
-// }
-// }
-// _ => unreachable!()
-// }
-// }
-// }
+fn resolve_enum_reference_for_unit<'a>(
+    reference: &Reference,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let enum_declaration = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_enum().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(m) = enum_declaration.members.iter().find(|m| m.identifier.name() == identifier.name()) {
+                TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
+                    Value::OptionVariant(OptionVariant {
+                        value: m.resolved().value.as_int().unwrap(),
+                        display: format!(".{}", identifier.name()),
+                    })
+                } else {
+                    Value::EnumVariant(EnumVariant {
+                        value: identifier.name().to_owned(),
+                        args: None,
+                    })
+                }))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "enum member not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        },
+    }
+}
+
+fn resolve_enum_variant_for_unit<'a>(
+    last_span: Span,
+    current: &TypeAndValue,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let Some(value) = current.value().map(|v| v.as_enum_variant()).flatten() else {
+        context.insert_diagnostics_error(expression.span(), "invalid expression");
+        return TypeAndValue::undetermined();
+    };
+    if value.args.is_some() {
+        context.insert_diagnostics_error(expression.span(), "invalid expression");
+        return TypeAndValue::undetermined();
+    }
+    let enum_declaration = context.source().find_top_by_string_path(
+        &current.r#type.as_enum_variant().unwrap().str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_enum().unwrap();
+    let member_declaration = enum_declaration.members.iter().find(|m| m.identifier.name() == value.value.as_str()).unwrap();
+    if let Some(_) = member_declaration.argument_list_declaration.as_ref() {
+        match &expression.kind {
+            ExpressionKind::ArgumentList(argument_list) => {
+                resolve_argument_list(
+                    last_span,
+                    Some(argument_list),
+                    member_declaration.callable_variants(),
+                    &btreemap! {},
+                    context,
+                    None
+                );
+                let args = argument_list.arguments().iter().map(|argument| {
+                    Some((argument.resolved_name()?.to_string(), argument.value.resolved().value.clone()?))
+                }).collect::<Option<BTreeMap<String, Value>>>();
+                TypeAndValue::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
+                    value: value.value.clone(),
+                    args: Some(args),
+                })))
+            },
+            _ => {
+                context.insert_diagnostics_error(expression.span(), "invalid expression");
+                return TypeAndValue::undetermined();
+            }
+        }
+    } else {
+        context.insert_diagnostics_error(expression.span(), "invalid expression");
+        return TypeAndValue::undetermined();
+    }
+}
+
+fn resolve_config_reference_for_unit<'a>(
+    reference: &Reference,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let config = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_config().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(item) = config.items.iter().find(|item| item.identifier.name() == identifier.name()) {
+                item.expression.resolved().clone()
+            } else {
+                context.insert_diagnostics_error(expression.span(), "config item not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_model_reference_for_unit<'a>(
+    reference: &Reference,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let model = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_model().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(item) = model.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+                TypeAndValue::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "model field not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_interface_reference_for_unit<'a>(
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let interface = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_interface_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+                TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "interface field not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}
+
+fn resolve_interface_object_for_unit<'a>(
+    reference: &Reference,
+    types: &Vec<Type>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> TypeAndValue {
+    let interface = context.source().find_top_by_string_path(
+        &reference.str_path(),
+        &top_filter_for_reference_type(ReferenceType::Default),
+        context.current_availability()
+    ).unwrap().as_interface_declaration().unwrap();
+    match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+                TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
+            } else {
+                context.insert_diagnostics_error(expression.span(), "interface field not found");
+                TypeAndValue::undetermined()
+            }
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            TypeAndValue::undetermined()
+        }
+    }
+}

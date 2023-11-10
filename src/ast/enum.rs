@@ -3,6 +3,7 @@ use teo_teon::value::Value;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
 use crate::ast::arith::ArithExpr;
 use crate::ast::availability::Availability;
+use crate::ast::callable_variant::CallableVariant;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::identifiable::Identifiable;
@@ -112,6 +113,16 @@ impl EnumMember {
 
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
+    }
+
+    pub fn callable_variants(&self) -> Vec<CallableVariant> {
+        self.argument_list_declaration.iter().map(|a| CallableVariant {
+            generics_declarations: vec![],
+            argument_list_declaration: Some(a),
+            generics_constraints: vec![],
+            pipeline_input: None,
+            pipeline_output: None,
+        }).collect()
     }
 
     pub fn resolve(&self, resolved: EnumMemberResolved) {

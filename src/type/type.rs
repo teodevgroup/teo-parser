@@ -171,12 +171,20 @@ pub enum Type {
     ///
     ModelReference(Reference),
 
+    /// Model Field Reference
+    ///
+    ModelFieldReference(Reference),
+
     /// Model Object
     ModelObject(Reference),
 
     /// Interface
     ///
     InterfaceReference(Reference, Vec<Type>),
+
+    /// Interface Field Reference
+    ///
+    InterfaceFieldReference(Reference, Vec<Type>),
 
     /// Interface Object
     ///
@@ -588,6 +596,17 @@ impl Type {
         }
     }
 
+    pub fn is_model_field_reference(&self) -> bool {
+        self.as_model_field_reference().is_some()
+    }
+
+    pub fn as_model_field_reference(&self) -> Option<&Reference> {
+        match self {
+            Type::ModelFieldReference(r) => Some(r),
+            _ => None,
+        }
+    }
+
     pub fn is_model_object(&self) -> bool {
         self.as_model_object().is_some()
     }
@@ -606,6 +625,17 @@ impl Type {
     pub fn as_interface_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
         match self {
             Type::InterfaceReference(r, g) => Some((r, g)),
+            _ => None,
+        }
+    }
+
+    pub fn is_interface_field_reference(&self) -> bool {
+        self.as_interface_field_reference().is_some()
+    }
+
+    pub fn as_interface_field_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+        match self {
+            Type::InterfaceFieldReference(r, g) => Some((r, g)),
             _ => None,
         }
     }
@@ -1049,8 +1079,10 @@ impl Type {
             Type::ConfigReference(r) => other.is_config_reference() && other.as_config_reference().unwrap() == r,
             Type::Model => other.is_model() || other.is_model_reference(),
             Type::ModelReference(r) => other.is_model_reference() && r == other.as_model_reference().unwrap(),
+            Type::ModelFieldReference(r) => other.is_model_field_reference() && r == other.as_model_field_reference().unwrap(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
             Type::InterfaceReference(r, types) => other.is_interface_reference() && r == other.as_interface_reference().unwrap().0 && other.as_interface_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_reference().unwrap().1.get(index).unwrap())),
+            Type::InterfaceFieldReference(r, types) => other.is_interface_field_reference() && r == other.as_interface_field_reference().unwrap().0 && other.as_interface_field_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_field_reference().unwrap().1.get(index).unwrap())),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
             Type::StructReference(r, types) => other.is_struct_reference() && r == other.as_struct_reference().unwrap().0 && other.as_struct_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_reference().unwrap().1.get(index).unwrap())),
             Type::StructObject(r, types) => other.is_struct_object() && r == other.as_struct_object().unwrap().0 && other.as_struct_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_object().unwrap().1.get(index).unwrap())),
@@ -1203,12 +1235,18 @@ impl Display for Type {
             Type::ConfigReference(_) => f.write_str(&format!("Config")),
             Type::Model => f.write_str("Model"),
             Type::ModelReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
+            Type::ModelFieldReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
             Type::InterfaceReference(r, t) => if t.is_empty() {
                 f.write_str(&format!("{}.Type", &r.string_path().join(".")))
             } else {
                 f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            }
+            },
+            Type::InterfaceFieldReference(r, t) => if t.is_empty() {
+                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
+            } else {
+                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
+            },
             Type::InterfaceObject(r, t) => if t.is_empty() {
                 f.write_str(&format!("{}", &r.string_path().join(".")))
             } else {
