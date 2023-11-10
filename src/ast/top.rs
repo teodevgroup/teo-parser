@@ -139,9 +139,29 @@ impl Top {
         }
     }
 
+    pub fn string_path(&self) -> Option<&Vec<String>> {
+        match self {
+            Top::Import(_) => None,
+            Top::Constant(c) => Some(&c.string_path),
+            Top::Enum(e) => Some(&e.string_path),
+            Top::Model(m) => Some(&m.string_path),
+            Top::Config(c) => Some(&c.string_path),
+            Top::ConfigDeclaration(c) => Some(&c.string_path),
+            Top::DataSet(d) => Some(&d.string_path),
+            Top::Middleware(m) => Some(&m.string_path),
+            Top::HandlerGroup(h) => Some(&h.string_path),
+            Top::Interface(i) => Some(&i.string_path),
+            Top::Namespace(n) => Some(&n.string_path),
+            Top::DecoratorDeclaration(d) => Some(&d.string_path),
+            Top::PipelineItemDeclaration(p) => Some(&p.string_path),
+            Top::StructDeclaration(s) => Some(&s.string_path),
+            Top::UseMiddlewareBlock(_) => None,
+        }
+    }
+
     pub fn str_path(&self) -> Option<Vec<&str>> {
         match self {
-            Top::Import(i) => None,
+            Top::Import(_) => None,
             Top::Constant(c) => Some(c.str_path()),
             Top::Enum(e) => Some(e.str_path()),
             Top::Model(m) => Some(m.str_path()),
@@ -155,7 +175,7 @@ impl Top {
             Top::DecoratorDeclaration(d) => Some(d.str_path()),
             Top::PipelineItemDeclaration(p) => Some(p.str_path()),
             Top::StructDeclaration(s) => Some(s.str_path()),
-            Top::UseMiddlewareBlock(u) => None,
+            Top::UseMiddlewareBlock(_) => None,
         }
     }
 

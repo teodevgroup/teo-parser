@@ -3,7 +3,6 @@ use std::fmt::{Display, Formatter};
 use teo_teon::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith::ArithExpr;
-use crate::ast::call::Call;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
@@ -76,7 +75,6 @@ pub enum ExpressionKind {
     Identifier(Identifier),
     ArgumentList(ArgumentList),
     Subscript(Subscript),
-    Call(Call),
     Unit(Unit),
     Pipeline(Pipeline),
 }
@@ -99,7 +97,6 @@ impl ExpressionKind {
             ExpressionKind::Identifier(e) => e.span,
             ExpressionKind::ArgumentList(e) => e.span,
             ExpressionKind::Subscript(e) => e.span,
-            ExpressionKind::Call(c) => c.span,
             ExpressionKind::Unit(e) => e.span,
             ExpressionKind::Pipeline(e) => e.span,
         }
@@ -232,13 +229,6 @@ impl ExpressionKind {
         }
     }
 
-    pub fn as_call(&self) -> Option<&Call> {
-        match self {
-            ExpressionKind::Call(c) => Some(c),
-            _ => None,
-        }
-    }
-
     pub fn as_pipeline(&self) -> Option<&Pipeline> {
         match self {
             ExpressionKind::Pipeline(p) => Some(p),
@@ -290,7 +280,6 @@ impl Display for ExpressionKind {
             ExpressionKind::Identifier(i) => Display::fmt(i, f),
             ExpressionKind::ArgumentList(a) => Display::fmt(a, f),
             ExpressionKind::Subscript(s) => Display::fmt(s, f),
-            ExpressionKind::Call(c) => Display::fmt(c, f),
             ExpressionKind::Unit(u) => Display::fmt(u, f),
             ExpressionKind::Pipeline(p) => Display::fmt(p, f),
             ExpressionKind::ArithExpr(a) => Display::fmt(a, f),

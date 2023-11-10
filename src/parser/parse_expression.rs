@@ -43,7 +43,6 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
             Rule::dictionary_literal => expressions.push(Expression { kind: ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context)), resolved: RefCell::new(None) }),
             Rule::identifier => expressions.push(Expression { kind: ExpressionKind::Identifier(parse_identifier(&current)), resolved: RefCell::new(None) }),
             Rule::subscript => expressions.push(Expression { kind: ExpressionKind::Subscript(parse_subscript(current, context)), resolved: RefCell::new(None) }),
-            Rule::call => expressions.push(Expression { kind: ExpressionKind::Call(parse_call(current, context)), resolved: RefCell::new(None) }),
             Rule::argument_list => expressions.push(Expression { kind: ExpressionKind::ArgumentList(parse_argument_list(current, context)), resolved: RefCell::new(None) }),
             _ => context.insert_unparsed(parse_span(&current)),
         }

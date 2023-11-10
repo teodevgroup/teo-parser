@@ -45,38 +45,37 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_unit<'a>(unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExpressionResolved {
     if unit.expressions.len() == 1 {
-        resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map)
-    } else {
-        let first_expression = unit.expressions.get(0).unwrap();
-        let expected = Type::Undetermined;
-        let mut current = if let Some(identifier) = first_expression.kind.as_identifier() {
-            if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
-                let top = context.schema.find_top_by_path(&reference).unwrap();
-                if let Some(constant) = top.as_constant() {
-                    if !constant.is_resolved() {
-                        resolve_constant(constant, context);
-                    }
-                    UnitResolveResult::Result(constant.resolved().expression_resolved.clone())
-                } else {
-                    UnitResolveResult::Reference(reference)
-                }
-            } else {
-                context.insert_diagnostics_error(identifier.span, "reference is not found");
-                UnitResolveResult::Result(ExpressionResolved::undetermined())
-            }
-        } else {
-            UnitResolveResult::Result(resolve_expression(first_expression, context, &expected, keywords_map))
-        };
-        if current.is_undetermined() {
-            return current.as_result().unwrap().clone();
-        } else {
-            for (index, item) in unit.expressions.iter().enumerate() {
-                if index == 0 { continue }
-                current = resolve_current_item_for_unit(unit.expressions.get(index - 1).unwrap().span(), &current, item, context);
-            }
-        }
-        current.into_resolved(context)
+        return resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map);
     }
+    let first_expression = unit.expressions.get(0).unwrap();
+    let expected = Type::Undetermined;
+    let mut current = if let Some(identifier) = first_expression.kind.as_identifier() {
+        if let Some(reference) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
+            let top = context.schema.find_top_by_path(&reference).unwrap();
+            if let Some(constant) = top.as_constant() {
+                if !constant.is_resolved() {
+                    resolve_constant(constant, context);
+                }
+                UnitResolveResult::Result(constant.resolved().expression_resolved.clone())
+            } else {
+                UnitResolveResult::Reference(reference)
+            }
+        } else {
+            context.insert_diagnostics_error(identifier.span, "reference is not found");
+            UnitResolveResult::Result(ExpressionResolved::undetermined())
+        }
+    } else {
+        UnitResolveResult::Result(resolve_expression(first_expression, context, &expected, keywords_map))
+    };
+    if current.is_undetermined() {
+        return current.as_result().unwrap().clone();
+    } else {
+        for (index, item) in unit.expressions.iter().enumerate() {
+            if index == 0 { continue }
+            current = resolve_current_item_for_unit(unit.expressions.get(index - 1).unwrap().span(), &current, item, context);
+        }
+    }
+    current.into_resolved(context)
 }
 
 fn resolve_current_item_for_unit<'a>(last_span: Span, current: &UnitResolveResult, item: &'a Expression, context: &'a ResolverContext<'a>) -> UnitResolveResult {

@@ -216,10 +216,8 @@ unit = {
     array_literal |
     dictionary_literal |
     identifier
-    ~ (subscript | argument_list | "." ~  (call | identifier))*
+    ~ (subscript | argument_list | "." ~  identifier)*
 }
-
-call = { identifier ~ argument_list }
 
 identifier_unit = {
     identifier
@@ -249,7 +247,7 @@ empty_argument = { identifier ~ ":" }
 named_argument = { identifier ~ ":" ~ expression }
 
 // #############
-// function call, decorator and pipeline
+// decorator and pipeline
 // #############
 decorator = { "@" ~ identifier_path ~ argument_list? }
 empty_decorator = { "@" }

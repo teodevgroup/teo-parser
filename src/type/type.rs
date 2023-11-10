@@ -231,7 +231,7 @@ pub enum Type {
 
     /// Namespace Reference
     ///
-    NamespaceReference(Reference),
+    NamespaceReference(Vec<String>),
 
     /// Pipeline
     ///
@@ -732,7 +732,7 @@ impl Type {
         self.as_namespace_reference().is_some()
     }
 
-    pub fn as_namespace_reference(&self) -> Option<&Reference> {
+    pub fn as_namespace_reference(&self) -> Option<&Vec<String>> {
         match self {
             Type::NamespaceReference(r) => Some(r),
             _ => None,
@@ -848,9 +848,9 @@ impl Type {
             result = result.unwrap_optional();
         }
         if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_variant_reference() {
-            return result.clone()
+            result.clone()
         } else {
-            return Type::Undetermined
+            Type::Undetermined
         }
     }
 
