@@ -33,7 +33,6 @@ pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Sourc
         ExpressionKind::Identifier(identifier) => find_completion_in_identifier(schema, source, identifier, line_col, namespace_path),
         ExpressionKind::ArgumentList(_) => vec![],
         ExpressionKind::Subscript(_) => vec![],
-        ExpressionKind::Call(_) => vec![],
         ExpressionKind::Unit(unit) => find_completion_in_unit(schema, source, unit, line_col, namespace_path, availability),
         ExpressionKind::Pipeline(pipeline) => find_completion_in_pipeline(schema, source, pipeline, line_col, namespace_path, availability),
     }

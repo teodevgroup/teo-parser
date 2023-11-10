@@ -91,7 +91,6 @@ pub(super) fn jump_to_definition_in_expression<'a>(
         ),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
-        ExpressionKind::Call(_) => unreachable!(),
         ExpressionKind::Unit(unit) => jump_to_definition_in_unit(
             schema,
             source,
