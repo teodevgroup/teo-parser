@@ -168,7 +168,8 @@ fn resolve_type_item<'a>(
     };
     if base.is_none() {
         if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default, availability) {
-            let top = context.schema.find_top_by_path(&reference).unwrap();
+            base = Some(reference.r#type().clone());
+            let top = context.schema.find_top_by_path(&reference.r#type()).unwrap();
             base = match top {
                 Top::Model(m) => Some(Type::ModelObject(Reference::new(m.path.clone(), m.string_path.clone()))),
                 Top::Enum(e) => Some(Type::EnumVariant(Reference::new(e.path.clone(), e.string_path.clone()))),
