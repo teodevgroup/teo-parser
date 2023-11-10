@@ -246,6 +246,14 @@ pub enum Type {
     /// Pipeline
     ///
     Pipeline(Box<Type>, Box<Type>),
+
+    /// Decorator Reference
+    ///
+    DecoratorReference(Reference),
+
+    /// Pipeline Item Reference
+    ///
+    PipelineItemReference(Reference),
 }
 
 impl Type {
@@ -793,6 +801,28 @@ impl Type {
         }
     }
 
+    pub fn is_decorator_reference(&self) -> bool {
+        self.as_decorator_reference().is_some()
+    }
+
+    pub fn as_decorator_reference(&self) -> Option<&Reference> {
+        match self {
+            Type::DecoratorReference(r) => Some(r),
+            _ => None,
+        }
+    }
+
+    pub fn is_pipeline_item_reference(&self) -> bool {
+        self.as_pipeline_item_reference().is_some()
+    }
+
+    pub fn as_pipeline_item_reference(&self) -> Option<&Reference> {
+        match self {
+            Type::PipelineItemReference(r) => Some(r),
+            _ => None,
+        }
+    }
+
     pub fn wrap_in_array(&self) -> Type {
         Type::Array(Box::new(self.clone()))
     }
@@ -1098,6 +1128,8 @@ impl Type {
             Type::Namespace => other.is_namespace() || other.is_namespace_reference(),
             Type::NamespaceReference(r) => other.is_namespace_reference() && r == other.as_namespace_reference().unwrap(),
             Type::Pipeline(a, b) => other.is_pipeline() && a.test(other.as_pipeline().unwrap().0) && b.test(other.as_pipeline().unwrap().1),
+            Type::DecoratorReference(r) => other.is_decorator_reference() && other.as_decorator_reference().unwrap() == r,
+            Type::PipelineItemReference(r) => other.is_pipeline_item_reference() && other.as_pipeline_item_reference().unwrap() == r,
         }
     }
 
@@ -1276,12 +1308,14 @@ impl Display for Type {
             Type::Middleware => f.write_str("Middleware"),
             Type::MiddlewareReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
             Type::DataSet => f.write_str("DataSet"),
-            Type::DataSetReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            Type::DataSetReference(r) => f.write_str(&format!("{}.Type", &r.join("."))),
             Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
             Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),
             Type::Namespace => f.write_str("Namespace"),
-            Type::NamespaceReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            Type::NamespaceReference(r) => f.write_str(&format!("{}.Type", &r.join("."))),
             Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
+            Type::DecoratorReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
+            Type::PipelineItemReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
         }
     }
 }

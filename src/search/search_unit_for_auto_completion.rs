@@ -8,7 +8,7 @@ use crate::ast::subscript::Subscript;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::search::search_identifier_path::search_identifier_path_in_source;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 use crate::search::search_unit_for_definition::UnitSearchResult;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -35,7 +35,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //             if expression.span().contains_line_col(line_col) {
     //                 return handle_identifier(&vec![], None);
     //             }
-    //             if let Some(path) = search_identifier_path_in_source(
+    //             if let Some(path) = search_identifier_path_names_with_filter(
     //                 schema,
     //                 source,
     //                 namespace_path,

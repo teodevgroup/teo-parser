@@ -9,7 +9,7 @@ use crate::ast::subscript::Subscript;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::search::search_identifier_path::search_identifier_path_in_source;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 #[derive(Debug)]
@@ -64,7 +64,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
         if index == 0 {
             let mut identifier_span = None;
             current = Some(if let Some(identifier) = expression.kind.as_identifier() {
-                if let Some(path) = search_identifier_path_in_source(
+                if let Some(path) = search_identifier_path_names_with_filter(
                     schema,
                     source,
                     namespace_path,

@@ -5,7 +5,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::definition::definition::Definition;
-use crate::search::search_identifier_path::search_identifier_path_in_source;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_identifier<'a>(
@@ -16,7 +16,7 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
     _line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    if let Some(reference) = search_identifier_path_in_source(
+    if let Some(reference) = search_identifier_path_names_with_filter(
         schema,
         source,
         namespace_path,

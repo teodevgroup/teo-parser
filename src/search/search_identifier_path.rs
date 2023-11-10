@@ -106,8 +106,8 @@ fn top_to_reference_type_and_value(top: &Top) -> TypeAndValue {
                 Type::Undetermined
             },
             Top::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
-            Top::DecoratorDeclaration(_) => Type::Undetermined,
-            Top::PipelineItemDeclaration(_) => Type::Undetermined,
+            Top::DecoratorDeclaration(d) => Type::DecoratorReference(Reference::new(d.path.clone(), d.string_path.clone())),
+            Top::PipelineItemDeclaration(p) => Type::PipelineItemReference(Reference::new(p.path.clone(), p.string_path.clone())),
             Top::StructDeclaration(s) => if s.generics_declaration.is_none() {
                 Type::StructReference(Reference::new(s.path.clone(), s.string_path.clone()), vec![])
             } else {

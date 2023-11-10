@@ -6,7 +6,7 @@ use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
-use crate::search::search_identifier_path::search_identifier_path_in_source;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 
 pub(super) fn jump_to_definition_in_decorator<'a>(
     schema: &'a Schema,
@@ -30,7 +30,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     }
     if let Some(selector_span) = selector_span {
         // find in decorator path body
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter, availability);
+        let reference = search_identifier_path_names_with_filter(schema, source, namespace_path, &user_typed_spaces, filter, availability);
         match reference {
             Some(path) => {
                 let top = schema.find_top_by_path(&path).unwrap();
@@ -48,7 +48,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
             None => vec![],
         }
     } else {
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, filter, availability);
+        let reference = search_identifier_path_names_with_filter(schema, source, namespace_path, &user_typed_spaces, filter, availability);
         // found in argument lists
         if let Some(argument_list) = &decorator.argument_list {
             if let Some(reference) = reference {

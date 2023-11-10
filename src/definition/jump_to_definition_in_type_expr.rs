@@ -5,7 +5,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::type_expr::{TypeExprKind, TypeItem};
 use crate::definition::definition::Definition;
-use crate::search::search_identifier_path::search_identifier_path_in_source;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_type_expr_kind(
@@ -162,7 +162,7 @@ fn jump_to_definition_in_type_item(
                 user_typed_spaces.push(identifier.name());
             }
         }
-        let reference = search_identifier_path_in_source(schema, source, namespace_path, &user_typed_spaces, &top_filter_for_reference_type(ReferenceType::Default), availability);
+        let reference = search_identifier_path_names_with_filter(schema, source, namespace_path, &user_typed_spaces, &top_filter_for_reference_type(ReferenceType::Default), availability);
         if let Some(reference) = reference {
             let top = schema.find_top_by_path(&reference).unwrap();
             return vec![Definition {
