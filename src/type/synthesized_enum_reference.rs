@@ -6,6 +6,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
 use strum_macros::{Display, EnumString, AsRefStr};
 use crate::ast::schema::Schema;
+use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 
 
@@ -27,6 +28,41 @@ pub struct SynthesizedEnumReference {
 }
 
 impl SynthesizedEnumReference {
+
+    pub fn model_scalar_fields(reference: Reference) -> Self {
+        Self {
+            kind: SynthesizedEnumReferenceKind::ModelScalarFields,
+            owner: Box::new(Type::ModelReference(reference)),
+        }
+    }
+
+    pub fn model_serializable_scalar_fields(reference: Reference) -> Self {
+        Self {
+            kind: SynthesizedEnumReferenceKind::ModelSerializableScalarFields,
+            owner: Box::new(Type::ModelReference(reference)),
+        }
+    }
+
+    pub fn model_relations(reference: Reference) -> Self {
+        Self {
+            kind: SynthesizedEnumReferenceKind::ModelRelations,
+            owner: Box::new(Type::ModelReference(reference)),
+        }
+    }
+
+    pub fn model_direct_relations(reference: Reference) -> Self {
+        Self {
+            kind: SynthesizedEnumReferenceKind::ModelDirectRelations,
+            owner: Box::new(Type::ModelReference(reference)),
+        }
+    }
+
+    pub fn model_indirect_relations(reference: Reference) -> Self {
+        Self {
+            kind: SynthesizedEnumReferenceKind::ModelIndirectRelations,
+            owner: Box::new(Type::ModelReference(reference)),
+        }
+    }
 
     pub fn contains_generics(&self) -> bool {
         self.owner.contains_generics()

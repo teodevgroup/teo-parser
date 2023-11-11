@@ -502,6 +502,13 @@ impl Type {
         }
     }
 
+    pub fn into_synthesized_shape(self) -> Option<SynthesizedShape> {
+        match self {
+            Type::SynthesizedShape(s) => Some(s),
+            _ => None,
+        }
+    }
+
     pub fn is_synthesized_shape_reference(&self) -> bool {
         self.as_synthesized_shape_reference().is_some()
     }
