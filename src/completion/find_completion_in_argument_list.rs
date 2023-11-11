@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 use maplit::btreeset;
 use crate::ast::argument::Argument;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;

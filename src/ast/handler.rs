@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use serde::Serialize;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr};

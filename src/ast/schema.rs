@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::data_set::DataSet;

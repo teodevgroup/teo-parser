@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::literals::ArrayLiteral;
 use crate::ast::span::Span;
 use crate::traits::has_availability::HasAvailability;

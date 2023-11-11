@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 
 pub trait HasAvailability {
 

@@ -1,5 +1,5 @@
 use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::generics::GenericsDeclaration;

@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use maplit::btreemap;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};

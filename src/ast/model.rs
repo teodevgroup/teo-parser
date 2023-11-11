@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use indexmap::IndexMap;
 use serde::{Serialize, Serializer};
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;

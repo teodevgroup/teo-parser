@@ -3,7 +3,7 @@ use maplit::btreemap;
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::option_variant::OptionVariant;
 use teo_teon::Value;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind, TypeAndValue};
 use crate::ast::reference_space::ReferenceSpace;

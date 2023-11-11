@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;

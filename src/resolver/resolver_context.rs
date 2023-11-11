@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 use maplit::btreeset;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::data_set::DataSetRecord;
 use crate::ast::field::Field;
 use crate::ast::namespace::Namespace;

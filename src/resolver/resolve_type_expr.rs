@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use crate::ast::arity::Arity;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp};
 use crate::ast::reference_space::ReferenceSpace;

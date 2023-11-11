@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};

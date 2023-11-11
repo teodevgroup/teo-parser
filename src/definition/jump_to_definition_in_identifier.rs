@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::expression::{Expression, TypeAndValue};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;

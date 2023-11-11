@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use maplit::btreemap;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};

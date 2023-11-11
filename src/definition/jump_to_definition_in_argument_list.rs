@@ -1,6 +1,6 @@
 use crate::ast::argument::Argument;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;

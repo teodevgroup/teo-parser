@@ -1,5 +1,5 @@
 use maplit::btreemap;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::top::Top;
 use crate::parser::parse_availability_end::parse_availability_end;

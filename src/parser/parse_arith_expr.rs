@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::arith::{ArithExpr, BinaryOp, Op, UnaryOp, UnaryPostfixOp};
+use crate::ast::arith_expr::{ArithExpr, BinaryOperation, Operator, UnaryOperation, UnaryPostfixOperation};
 use crate::ast::expression::Expression;
 use crate::parser::parse_expression::parse_expression_kind;
 use crate::parser::parse_span::parse_span;
@@ -16,42 +16,42 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         },
     }).map_prefix(|op, rhs| {
         let op = match op.as_rule() {
-            Rule::BI_NEG => Op::BitNeg,
-            Rule::NEG => Op::Neg,
-            Rule::NOT => Op::Not,
+            Rule::BI_NEG => Operator::BitNeg,
+            Rule::NEG => Operator::Neg,
+            Rule::NOT => Operator::Not,
             _ => panic!("unreachable 4"),
         };
-        ArithExpr::UnaryOp(UnaryOp {
+        ArithExpr::UnaryOperation(UnaryOperation {
             span,
             op,
             rhs: Box::new(rhs),
         })
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
-            Rule::ADD => Op::Add,
-            Rule::SUB => Op::Sub,
-            Rule::MUL => Op::Mul,
-            Rule::DIV => Op::Div,
-            Rule::MOD => Op::Mod,
-            Rule::BI_AND => Op::BitAnd,
-            Rule::BI_XOR => Op::BitXor,
-            Rule::BI_OR => Op::BitOr,
-            Rule::NULLISH_COALESCING => Op::NullishCoalescing,
-            Rule::BI_LS => Op::BitLS,
-            Rule::BI_RS => Op::BitRS,
-            Rule::AND => Op::And,
-            Rule::OR => Op::Or,
-            Rule::GT => Op::Gt,
-            Rule::GTE => Op::Gte,
-            Rule::LT => Op::Lt,
-            Rule::LTE => Op::Lte,
-            Rule::EQ => Op::Eq,
-            Rule::NEQ => Op::Neq,
-            Rule::RANGE_CLOSE => Op::RangeClose,
-            Rule::RANGE_OPEN => Op::RangeOpen,
+            Rule::ADD => Operator::Add,
+            Rule::SUB => Operator::Sub,
+            Rule::MUL => Operator::Mul,
+            Rule::DIV => Operator::Div,
+            Rule::MOD => Operator::Mod,
+            Rule::BI_AND => Operator::BitAnd,
+            Rule::BI_XOR => Operator::BitXor,
+            Rule::BI_OR => Operator::BitOr,
+            Rule::NULLISH_COALESCING => Operator::NullishCoalescing,
+            Rule::BI_LS => Operator::BitLS,
+            Rule::BI_RS => Operator::BitRS,
+            Rule::AND => Operator::And,
+            Rule::OR => Operator::Or,
+            Rule::GT => Operator::Gt,
+            Rule::GTE => Operator::Gte,
+            Rule::LT => Operator::Lt,
+            Rule::LTE => Operator::Lte,
+            Rule::EQ => Operator::Eq,
+            Rule::NEQ => Operator::Neq,
+            Rule::RANGE_CLOSE => Operator::RangeClose,
+            Rule::RANGE_OPEN => Operator::RangeOpen,
             _ => panic!("unreachable 5"),
         };
-        ArithExpr::BinaryOp(BinaryOp {
+        ArithExpr::BinaryOperation(BinaryOperation {
             span,
             lhs: Box::new(lhs),
             op,
@@ -59,10 +59,10 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         })
     }).map_postfix(|lhs, op| {
         let op = match op.as_rule() {
-            Rule::FORCE_UNWRAP => Op::ForceUnwrap,
+            Rule::FORCE_UNWRAP => Operator::ForceUnwrap,
             _ => panic!("unreachable 6"),
         };
-        ArithExpr::UnaryPostfixOp(UnaryPostfixOp {
+        ArithExpr::UnaryPostfixOperation(UnaryPostfixOperation {
             span,
             lhs: Box::new(lhs),
             op,

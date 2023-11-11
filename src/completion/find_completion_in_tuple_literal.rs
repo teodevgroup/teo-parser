@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::literals::TupleLiteral;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;

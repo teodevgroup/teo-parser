@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};

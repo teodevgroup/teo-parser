@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use maplit::btreeset;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;

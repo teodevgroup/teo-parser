@@ -1,5 +1,5 @@
-use crate::ast::arith::ArithExpr;
-use crate::ast::availability::Availability;
+use crate::ast::arith_expr::ArithExpr;
+use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::namespace::Namespace;

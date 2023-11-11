@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::constant::Constant;
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;

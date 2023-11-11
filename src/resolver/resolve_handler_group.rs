@@ -1,5 +1,5 @@
 use maplit::btreemap;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;

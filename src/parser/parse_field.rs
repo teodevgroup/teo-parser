@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::field::Field;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;

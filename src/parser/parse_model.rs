@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::Model;
 use crate::parser::parse_availability_end::parse_availability_end;

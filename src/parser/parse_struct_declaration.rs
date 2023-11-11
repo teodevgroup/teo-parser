@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_function_declaration::parse_function_declaration;

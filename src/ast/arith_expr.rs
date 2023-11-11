@@ -3,7 +3,7 @@ use crate::ast::expression::Expression;
 use crate::ast::span::Span;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Op {
+pub enum Operator {
     Neg,
     Add,
     Sub,
@@ -31,66 +31,66 @@ pub enum Op {
     ForceUnwrap,
 }
 
-impl Display for Op {
+impl Display for Operator {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Op::Neg => f.write_str("-"),
-            Op::Add => f.write_str("+"),
-            Op::Sub => f.write_str("-"),
-            Op::Mul => f.write_str("*"),
-            Op::Div => f.write_str("/"),
-            Op::Mod => f.write_str("%"),
-            Op::BitAnd => f.write_str("&"),
-            Op::BitXor => f.write_str("^"),
-            Op::BitOr => f.write_str("|"),
-            Op::BitNeg => f.write_str("~"),
-            Op::NullishCoalescing => f.write_str("??"),
-            Op::Not => f.write_str("!"),
-            Op::And => f.write_str("&&"),
-            Op::Or => f.write_str("||"),
-            Op::BitLS => f.write_str("<<"),
-            Op::BitRS => f.write_str(">>"),
-            Op::Gt => f.write_str(">"),
-            Op::Gte => f.write_str(">="),
-            Op::Lt => f.write_str("<"),
-            Op::Lte => f.write_str("<="),
-            Op::Eq => f.write_str("=="),
-            Op::Neq => f.write_str("!="),
-            Op::RangeOpen => f.write_str(".."),
-            Op::RangeClose => f.write_str("..."),
-            Op::ForceUnwrap => f.write_str("!"),
+            Operator::Neg => f.write_str("-"),
+            Operator::Add => f.write_str("+"),
+            Operator::Sub => f.write_str("-"),
+            Operator::Mul => f.write_str("*"),
+            Operator::Div => f.write_str("/"),
+            Operator::Mod => f.write_str("%"),
+            Operator::BitAnd => f.write_str("&"),
+            Operator::BitXor => f.write_str("^"),
+            Operator::BitOr => f.write_str("|"),
+            Operator::BitNeg => f.write_str("~"),
+            Operator::NullishCoalescing => f.write_str("??"),
+            Operator::Not => f.write_str("!"),
+            Operator::And => f.write_str("&&"),
+            Operator::Or => f.write_str("||"),
+            Operator::BitLS => f.write_str("<<"),
+            Operator::BitRS => f.write_str(">>"),
+            Operator::Gt => f.write_str(">"),
+            Operator::Gte => f.write_str(">="),
+            Operator::Lt => f.write_str("<"),
+            Operator::Lte => f.write_str("<="),
+            Operator::Eq => f.write_str("=="),
+            Operator::Neq => f.write_str("!="),
+            Operator::RangeOpen => f.write_str(".."),
+            Operator::RangeClose => f.write_str("..."),
+            Operator::ForceUnwrap => f.write_str("!"),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct UnaryOp {
+pub struct UnaryOperation {
     pub span: Span,
-    pub op: Op,
+    pub op: Operator,
     pub rhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
-pub struct UnaryPostfixOp {
+pub struct UnaryPostfixOperation {
     pub span: Span,
-    pub op: Op,
+    pub op: Operator,
     pub lhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
-pub struct BinaryOp {
+pub struct BinaryOperation {
     pub span: Span,
     pub lhs: Box<ArithExpr>,
-    pub op: Op,
+    pub op: Operator,
     pub rhs: Box<ArithExpr>,
 }
 
 #[derive(Debug)]
 pub enum ArithExpr {
     Expression(Box<Expression>),
-    UnaryOp(UnaryOp),
-    BinaryOp(BinaryOp),
-    UnaryPostfixOp(UnaryPostfixOp),
+    UnaryOperation(UnaryOperation),
+    BinaryOperation(BinaryOperation),
+    UnaryPostfixOperation(UnaryPostfixOperation),
 }
 
 impl ArithExpr {
@@ -98,9 +98,9 @@ impl ArithExpr {
     pub fn span(&self) -> Span {
         match self {
             ArithExpr::Expression(e) => e.span(),
-            ArithExpr::UnaryOp(u) => u.span,
-            ArithExpr::BinaryOp(b) => b.span,
-            ArithExpr::UnaryPostfixOp(u) => u.span,
+            ArithExpr::UnaryOperation(u) => u.span,
+            ArithExpr::BinaryOperation(b) => b.span,
+            ArithExpr::UnaryPostfixOperation(u) => u.span,
         }
     }
 
@@ -123,15 +123,15 @@ impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ArithExpr::Expression(e) => Display::fmt(&e, f),
-            ArithExpr::UnaryOp(u) => {
+            ArithExpr::UnaryOperation(u) => {
                 Display::fmt(&u.op, f)?;
                 Display::fmt(&u.rhs, f)
             },
-            ArithExpr::UnaryPostfixOp(u) => {
+            ArithExpr::UnaryPostfixOperation(u) => {
                 Display::fmt(&u.lhs, f)?;
                 Display::fmt(&u.op, f)
             }
-            ArithExpr::BinaryOp(b) => {
+            ArithExpr::BinaryOperation(b) => {
                 Display::fmt(&b.lhs, f)?;
                 f.write_str(" ")?;
                 Display::fmt(&b.op, f)?;

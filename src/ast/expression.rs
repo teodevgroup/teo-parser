@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use teo_teon::Value;
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::arith::ArithExpr;
+use crate::ast::arith_expr::ArithExpr;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;

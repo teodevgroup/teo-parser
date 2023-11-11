@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;

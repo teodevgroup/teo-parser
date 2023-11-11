@@ -7,7 +7,7 @@ use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::range::Range;
 use teo_teon::Value;
 use teo_teon::types::option_variant::OptionVariant;
-use crate::ast::arith::{ArithExpr, Op};
+use crate::ast::arith_expr::{ArithExpr, Operator};
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind, TypeAndValue};
 use crate::ast::group::Group;
@@ -353,11 +353,11 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
 fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
     match arith_expr {
         ArithExpr::Expression(e) => resolve_expression(e.as_ref(), context, expected, keywords_map),
-        ArithExpr::UnaryOp(unary) => {
+        ArithExpr::UnaryOperation(unary) => {
             let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected, keywords_map);
             if !v.r#type().is_undetermined() {
                 match unary.op {
-                    Op::Neg => {
+                    Operator::Neg => {
                         match v.r#type() {
                             Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => TypeAndValue {
                                 r#type: v.r#type.clone(),
@@ -372,11 +372,11 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             }
                         }
                     }
-                    Op::Not => TypeAndValue {
+                    Operator::Not => TypeAndValue {
                         r#type: Type::Bool,
                         value: if let Some(v) = v.value { Some(v.normal_not()) } else { None }
                     },
-                    Op::BitNeg => match v.r#type() {
+                    Operator::BitNeg => match v.r#type() {
                         Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => TypeAndValue {
                             r#type: v.r#type.clone(),
                             value: if let Some(v) = v.value { Some(v.not().unwrap()) } else { None }
@@ -395,19 +395,19 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                 v
             }
         }
-        ArithExpr::UnaryPostfixOp(unary) => {
+        ArithExpr::UnaryPostfixOperation(unary) => {
             let v = resolve_arith_expr(unary.lhs.as_ref(), context, expected, keywords_map);
             TypeAndValue {
                 r#type: v.r#type.unwrap_optional().clone(),
                 value: v.value
             }
         }
-        ArithExpr::BinaryOp(binary) => {
+        ArithExpr::BinaryOperation(binary) => {
             let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected, keywords_map);
             let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected, keywords_map);
             let new_type = if !lhs.r#type().is_undetermined() && !rhs.r#type().is_undetermined() {
                 match binary.op {
-                    Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Mod => {
+                    Operator::Add | Operator::Sub | Operator::Mul | Operator::Div | Operator::Mod => {
                         if lhs.r#type().is_int64() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
                         } else if lhs.r#type().is_int() && rhs.r#type().is_int_32_or_64() {
@@ -416,7 +416,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             lhs.r#type().clone()
                         } else if lhs.r#type().is_float32() && rhs.r#type().is_any_int_or_float() {
                             lhs.r#type().clone()
-                        } else if binary.op == Op::Add && lhs.r#type().is_string() && rhs.r#type().is_string() {
+                        } else if binary.op == Operator::Add && lhs.r#type().is_string() && rhs.r#type().is_string() {
                             lhs.r#type().clone()
                         } else if lhs.r#type().is_decimal() && rhs.r#type().is_decimal() {
                             lhs.r#type().clone()
@@ -425,14 +425,14 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             Type::Undetermined
                         }
                     }
-                    Op::And | Op::Or => if lhs.r#type().test(rhs.r#type()) {
+                    Operator::And | Operator::Or => if lhs.r#type().test(rhs.r#type()) {
                         lhs.r#type.clone()
                     } else if rhs.r#type().test(lhs.r#type()) {
                         rhs.r#type.clone()
                     } else {
                         Type::Union(vec![lhs.r#type().clone(), rhs.r#type.clone()])
                     }
-                    Op::BitAnd | Op::BitXor | Op::BitOr | Op::BitLS | Op::BitRS => {
+                    Operator::BitAnd | Operator::BitXor | Operator::BitOr | Operator::BitLS | Operator::BitRS => {
                         if lhs.r#type().is_int64() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
                         } else if lhs.r#type().is_int() && rhs.r#type().is_int_32_or_64() {
@@ -442,15 +442,15 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             Type::Undetermined
                         }
                     }
-                    Op::NullishCoalescing => if lhs.r#type().is_optional() { rhs.r#type().clone() } else { lhs.r#type().clone() },
-                    Op::Gt | Op::Gte | Op::Lt | Op::Lte | Op::Eq | Op::Neq => Type::Bool,
-                    Op::RangeOpen => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
+                    Operator::NullishCoalescing => if lhs.r#type().is_optional() { rhs.r#type().clone() } else { lhs.r#type().clone() },
+                    Operator::Gt | Operator::Gte | Operator::Lt | Operator::Lte | Operator::Eq | Operator::Neq => Type::Bool,
+                    Operator::RangeOpen => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
                         result
                     } else {
                         context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
                         Type::Undetermined
                     }
-                    Op::RangeClose => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
+                    Operator::RangeClose => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
                         result
                     } else {
                         context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
@@ -467,31 +467,31 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                 None
             } else {
                 Some(match binary.op {
-                    Op::Add => lhs.value.as_ref().unwrap().add(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::Sub => lhs.value.as_ref().unwrap().sub(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::Mul => lhs.value.as_ref().unwrap().mul(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::Div => lhs.value.as_ref().unwrap().div(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::Mod => lhs.value.as_ref().unwrap().rem(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::And => lhs.value.as_ref().unwrap().and(rhs.value.as_ref().unwrap()).clone(),
-                    Op::Or => lhs.value.as_ref().unwrap().or(rhs.value.as_ref().unwrap()).clone(),
-                    Op::BitAnd => lhs.value.as_ref().unwrap().bitand(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::BitXor => lhs.value.as_ref().unwrap().bitxor(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::BitOr => lhs.value.as_ref().unwrap().bitor(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::BitLS => lhs.value.as_ref().unwrap().shl(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::BitRS => lhs.value.as_ref().unwrap().shr(rhs.value.as_ref().unwrap()).unwrap(),
-                    Op::NullishCoalescing => if lhs.value.as_ref().unwrap().is_null() {
+                    Operator::Add => lhs.value.as_ref().unwrap().add(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::Sub => lhs.value.as_ref().unwrap().sub(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::Mul => lhs.value.as_ref().unwrap().mul(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::Div => lhs.value.as_ref().unwrap().div(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::Mod => lhs.value.as_ref().unwrap().rem(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::And => lhs.value.as_ref().unwrap().and(rhs.value.as_ref().unwrap()).clone(),
+                    Operator::Or => lhs.value.as_ref().unwrap().or(rhs.value.as_ref().unwrap()).clone(),
+                    Operator::BitAnd => lhs.value.as_ref().unwrap().bitand(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::BitXor => lhs.value.as_ref().unwrap().bitxor(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::BitOr => lhs.value.as_ref().unwrap().bitor(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::BitLS => lhs.value.as_ref().unwrap().shl(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::BitRS => lhs.value.as_ref().unwrap().shr(rhs.value.as_ref().unwrap()).unwrap(),
+                    Operator::NullishCoalescing => if lhs.value.as_ref().unwrap().is_null() {
                         rhs.value.as_ref().unwrap().clone()
                     } else {
                         rhs.value.as_ref().unwrap().clone()
                     },
-                    Op::Gt => Value::Bool(lhs.value.as_ref().unwrap().gt(rhs.value.as_ref().unwrap())),
-                    Op::Gte => Value::Bool(lhs.value.as_ref().unwrap() >= rhs.value.as_ref().unwrap()),
-                    Op::Lt => Value::Bool(lhs.value.as_ref().unwrap().lt(rhs.value.as_ref().unwrap())),
-                    Op::Lte => Value::Bool(lhs.value.as_ref().unwrap() <= rhs.value.as_ref().unwrap()),
-                    Op::Eq => Value::Bool(lhs.value.as_ref().unwrap().eq(rhs.value.as_ref().unwrap())),
-                    Op::Neq => Value::Bool(!lhs.value.as_ref().unwrap().eq(rhs.value.as_ref().unwrap())),
-                    Op::RangeOpen => build_range_value(lhs.value.as_ref().unwrap(), rhs.value.as_ref().unwrap(), false),
-                    Op::RangeClose => build_range_value(lhs.value.as_ref().unwrap(), rhs.value.as_ref().unwrap(), true),
+                    Operator::Gt => Value::Bool(lhs.value.as_ref().unwrap().gt(rhs.value.as_ref().unwrap())),
+                    Operator::Gte => Value::Bool(lhs.value.as_ref().unwrap() >= rhs.value.as_ref().unwrap()),
+                    Operator::Lt => Value::Bool(lhs.value.as_ref().unwrap().lt(rhs.value.as_ref().unwrap())),
+                    Operator::Lte => Value::Bool(lhs.value.as_ref().unwrap() <= rhs.value.as_ref().unwrap()),
+                    Operator::Eq => Value::Bool(lhs.value.as_ref().unwrap().eq(rhs.value.as_ref().unwrap())),
+                    Operator::Neq => Value::Bool(!lhs.value.as_ref().unwrap().eq(rhs.value.as_ref().unwrap())),
+                    Operator::RangeOpen => build_range_value(lhs.value.as_ref().unwrap(), rhs.value.as_ref().unwrap(), false),
+                    Operator::RangeClose => build_range_value(lhs.value.as_ref().unwrap(), rhs.value.as_ref().unwrap(), true),
                     _ => unreachable!()
                 })
             };

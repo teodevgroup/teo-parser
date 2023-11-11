@@ -1,5 +1,5 @@
 use crate::ast::argument_list::ArgumentList;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::expression::ExpressionKind;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;

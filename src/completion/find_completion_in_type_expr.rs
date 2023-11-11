@@ -1,4 +1,4 @@
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::schema::Schema;

@@ -9,6 +9,7 @@ pub(crate) mod completion;
 pub(crate) mod definition;
 pub mod search;
 pub mod traits;
+pub mod availability;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;

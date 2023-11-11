@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;

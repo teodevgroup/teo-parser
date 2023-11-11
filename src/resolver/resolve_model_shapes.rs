@@ -1,8 +1,8 @@
 use array_tool::vec::Shift;
 use indexmap::{indexmap, IndexMap};
 use maplit::btreemap;
-use crate::ast::arith::ArithExpr;
-use crate::ast::availability::Availability;
+use crate::ast::arith_expr::ArithExpr;
+use crate::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::expression::ExpressionKind;
 use crate::ast::field::Field;

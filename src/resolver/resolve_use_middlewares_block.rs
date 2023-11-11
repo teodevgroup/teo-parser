@@ -1,6 +1,6 @@
 use maplit::btreemap;
 use teo_teon::Value;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::expression::{ExpressionKind, TypeAndValue};
 use crate::ast::identifier::Identifier;
 use crate::ast::literals::ArrayLiteral;

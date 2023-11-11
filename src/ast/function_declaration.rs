@@ -1,5 +1,5 @@
 use crate::ast::argument_declaration::ArgumentListDeclaration;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};

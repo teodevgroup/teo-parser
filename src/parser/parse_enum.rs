@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
-use crate::ast::availability::Availability;
+use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
