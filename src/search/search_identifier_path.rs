@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::availability::Availability;
-use crate::ast::expression::TypeAndValue;
+use crate::value::TypeAndValue;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;

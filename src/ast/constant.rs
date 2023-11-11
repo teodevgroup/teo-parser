@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use crate::availability::Availability;
-use crate::ast::expression::{Expression, TypeAndValue};
+use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
@@ -10,6 +10,7 @@ use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
+use crate::value::TypeAndValue;
 
 #[derive(Debug, Clone)]
 pub struct ConstantResolved {

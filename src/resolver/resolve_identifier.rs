@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use teo_teon::Value;
 use crate::availability::Availability;
-use crate::ast::expression::TypeAndValue;
+use crate::value::TypeAndValue;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference_space::ReferenceSpace;

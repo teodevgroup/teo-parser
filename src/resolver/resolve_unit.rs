@@ -3,25 +3,21 @@ use maplit::btreemap;
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::option_variant::OptionVariant;
 use teo_teon::Value;
-use crate::availability::Availability;
-use crate::ast::callable_variant::CallableVariant;
-use crate::ast::expression::{Expression, ExpressionKind, TypeAndValue};
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
-use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
 use crate::resolver::resolve_argument_list::{resolve_argument_list};
-use crate::resolver::resolve_constant::resolve_constant;
 use crate::resolver::resolve_expression::resolve_expression;
-use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier_path_with_filter};
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
+use crate::value::TypeAndValue;
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
