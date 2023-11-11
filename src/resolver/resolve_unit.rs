@@ -34,7 +34,7 @@ pub(super) fn resolve_unit<'a>(
     let mut current: Option<TypeAndValue> = None;
     for (index, expression) in unit.expressions.iter().enumerate() {
         current = Some(resolve_current_item_for_unit(
-            if index == 0 { None } else { unit.expressions.get(index - 1).unwrap().span() },
+            if index == 0 { None } else { Some(unit.expressions.get(index - 1).unwrap().span()) },
             current.as_ref(),
             expression,
             context,
@@ -143,17 +143,17 @@ fn resolve_struct_instance_for_unit<'a>(
         ExpressionKind::Identifier(identifier) => {
             let Some(instance_function) = struct_definition.instance_function(identifier.name()) else {
                 context.insert_diagnostics_error(expression.span(), "undefined instance function");
-                TypeAndValue::undetermined()
+                return expression.resolve(TypeAndValue::undetermined());
             };
-            TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(instance_function.path.clone(), instance_function.string_path.clone()), gens.iter().cloned().collect()))
+            TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(instance_function.path.clone(), instance_function.string_path.clone()), gens.iter().map(Clone::clone).map(Clone::clone).collect()))
         },
         ExpressionKind::Subscript(subscript) => {
             let Some(subscript_function) = struct_definition.instance_function("subscript") else {
                 context.insert_diagnostics_error(expression.span(), format!("{} is not subscriptable", current.r#type()));
-                TypeAndValue::undetermined()
+                return expression.resolve(TypeAndValue::undetermined());
             };
             let Some(argument_list_declaration) = subscript_function.argument_list_declaration.as_ref() else {
-                TypeAndValue::undetermined()
+                return expression.resolve(TypeAndValue::undetermined());
             };
             if argument_list_declaration.argument_declarations.len() != 1 {
                 return expression.resolve(TypeAndValue::undetermined());
@@ -163,7 +163,7 @@ fn resolve_struct_instance_for_unit<'a>(
             let expected_type = argument_declaration.type_expr.resolved().replace_generics(&map);
             resolve_expression(subscript.expression.as_ref(), context, &Type::Undetermined, &btreemap! {});
             if expected_type.is_generic_item() {
-                map.insert(expected_type.as_generic_item().unwrap().into_string(), subscript.expression.resolved().r#type.clone());
+                map.insert(expected_type.as_generic_item().unwrap().to_string(), subscript.expression.resolved().r#type.clone());
             } else {
                 if !expected_type.test(subscript.expression.resolved().r#type()) {
                     context.insert_diagnostics_error(subscript.expression.span(), format!("expect {}, found {}", expected_type, subscript.expression.resolved().r#type()));
@@ -586,7 +586,7 @@ fn resolve_namespace_reference_for_unit(
 ) -> TypeAndValue {
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            let mut names = string_path.iter().map(AsRef::as_ref).collect();
+            let mut names: Vec<&str> = string_path.iter().map(AsRef::as_ref).collect();
             names.push(identifier.name());
             if let Some(result) = search_identifier_path_names_with_filter(
                 &names,

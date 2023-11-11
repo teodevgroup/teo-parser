@@ -167,16 +167,14 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        if let Some(reference) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default, availability) {
-            base = Some(reference.r#type().clone());
-            let top = context.schema.find_top_by_path(&reference.r#type()).unwrap();
-            base = match top {
-                Top::Model(m) => Some(Type::ModelObject(Reference::new(m.path.clone(), m.string_path.clone()))),
-                Top::Enum(e) => Some(Type::EnumVariant(Reference::new(e.path.clone(), e.string_path.clone()))),
-                Top::Interface(i) => Some(Type::InterfaceObject(Reference::new(i.path.clone(), i.string_path.clone()), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
-                Top::StructDeclaration(s) => Some(Type::StructObject(Reference::new(s.path.clone(), s.string_path.clone()), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
+        if let Some(resolved) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default, availability) {
+            base = match resolved.r#type() {
+                Type::ModelReference(r) => Some(Type::ModelObject(r.clone())),
+                Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
+                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
+                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
                 _ => None,
-            }
+            };
         }
         if base.is_none() {
             context.insert_diagnostics_error(type_item.identifier_path.span, "unknown type");
