@@ -1,11 +1,11 @@
 use crate::ast::availability::Availability;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::r#type::r#type::Type;
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
     schema: &'a Schema,

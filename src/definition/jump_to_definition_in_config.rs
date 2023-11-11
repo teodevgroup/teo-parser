@@ -1,12 +1,12 @@
 use crate::ast::config::Config;
-use crate::ast::identifiable::Identifiable;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 use crate::search::search_availability::search_availability;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = config.string_path.iter().map(|s| s.as_str()).collect();

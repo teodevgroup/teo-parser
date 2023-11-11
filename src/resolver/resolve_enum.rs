@@ -5,19 +5,15 @@ use maplit::btreemap;
 use teo_teon::value::Value;
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expression::{Expression, ExpressionKind};
-use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved, EnumResolved};
+use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a>) {
-    if r#enum.is_resolved() {
-        return
-    }
-    r#enum.resolve(EnumResolved {
-        actual_availability: context.current_availability()
-    });
+    *r#enum.actual_availability.borrow_mut() = context.current_availability();
     if context.has_examined_default_path(&r#enum.string_path, r#enum.define_availability) {
         context.insert_duplicated_identifier(r#enum.identifier.span);
     }
@@ -41,6 +37,7 @@ pub(super) fn resolve_enum_member<'a>(
     index: usize,
     map: &Mutex<BTreeMap<&'a str, i32>>,
 ) {
+    *member.actual_availability.borrow_mut() = context.current_availability();
     // decorators
     for decorator in &member.decorators {
         resolve_decorator(decorator, context, &btreemap!{}, ReferenceSpace::EnumMemberDecorator)
@@ -50,7 +47,7 @@ pub(super) fn resolve_enum_member<'a>(
         if option {
             match member_expression {
                 EnumMemberExpression::StringLiteral(s) => {
-                    member.resolve(EnumMemberResolved { value: Value::Int(1 << index), actual_availability: context.current_availability() });
+                    member.resolve(EnumMemberResolved { value: Value::Int(1 << index) });
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Option value expression should be numeric or defined member expression"
@@ -58,20 +55,20 @@ pub(super) fn resolve_enum_member<'a>(
                 },
                 EnumMemberExpression::NumericLiteral(n) => {
                     let value = n.value.as_int().unwrap();
-                    member.resolve(EnumMemberResolved { value: Value::Int(value), actual_availability: context.current_availability() });
+                    member.resolve(EnumMemberResolved { value: Value::Int(value) });
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 },
                 EnumMemberExpression::ArithExpr(expr) => {
                     let value = resolve_enum_member_expr(expr, context, map);
-                    member.resolve(EnumMemberResolved { value: Value::Int(value), actual_availability: context.current_availability() });
+                    member.resolve(EnumMemberResolved { value: Value::Int(value) });
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 }
             }
         } else {
             match member_expression.as_string_literal() {
-                Some(s) => member.resolve(EnumMemberResolved { value: Value::String(s.value.clone()), actual_availability: context.current_availability() }),
+                Some(s) => member.resolve(EnumMemberResolved { value: Value::String(s.value.clone()) }),
                 None => {
-                    member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()), actual_availability: context.current_availability() });
+                    member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()) });
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Enum value expression should be string literal"
@@ -81,9 +78,9 @@ pub(super) fn resolve_enum_member<'a>(
         }
     } else {
         if option {
-            member.resolve(EnumMemberResolved { value: Value::Int(1 << index), actual_availability: context.current_availability() });
+            member.resolve(EnumMemberResolved { value: Value::Int(1 << index) });
         } else {
-            member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()), actual_availability: context.current_availability() });
+            member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()) });
         }
     }
     // argument list

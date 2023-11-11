@@ -20,6 +20,7 @@ use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_unit<'a>(

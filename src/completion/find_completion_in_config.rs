@@ -1,11 +1,11 @@
 use crate::ast::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::completion_item_from_top::completion_item_from_field;
+use crate::traits::has_availability::HasAvailability;
 
 pub(super) fn find_completion_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<CompletionItem> {
     let mut used: Vec<&str> = vec![];

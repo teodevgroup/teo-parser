@@ -6,6 +6,7 @@ use crate::ast::interface::InterfaceDeclaration;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     interface_declaration: &'a InterfaceDeclaration,

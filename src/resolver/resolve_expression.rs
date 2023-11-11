@@ -21,6 +21,7 @@ use crate::resolver::resolve_identifier::resolve_identifier_with_diagnostic_mess
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> TypeAndValue {
     let t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);

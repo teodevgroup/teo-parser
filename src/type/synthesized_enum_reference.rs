@@ -8,6 +8,7 @@ use strum_macros::{Display, EnumString, AsRefStr};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
+use crate::traits::resolved::Resolve;
 
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Display, EnumString, AsRefStr)]

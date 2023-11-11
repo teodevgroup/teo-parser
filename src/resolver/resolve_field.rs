@@ -8,6 +8,7 @@ use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::resolved::Resolve;
 
 pub(super) enum FieldParentType {
     Model,
@@ -21,11 +22,11 @@ pub(super) fn resolve_field_class<'a>(
     generics_constraint: Option<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) {
+    *field.actual_availability.borrow_mut() = context.current_availability();
     match parent_type {
         FieldParentType::Interface => {
             field.resolve(FieldResolved {
                 class: FieldClass::InterfaceField,
-                actual_availability: context.current_availability()
             });
         }
         FieldParentType::Model => {
@@ -48,7 +49,6 @@ pub(super) fn resolve_field_class<'a>(
             };
             field.resolve(FieldResolved {
                 class: field_class,
-                actual_availability: context.current_availability()
             });
         }
     }

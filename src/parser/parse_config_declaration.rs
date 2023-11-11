@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::field::Field;
@@ -44,5 +46,6 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
         identifier: identifier.unwrap(),
         fields,
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
     }
 }

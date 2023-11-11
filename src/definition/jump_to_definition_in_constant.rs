@@ -5,6 +5,7 @@ use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 use crate::search::search_availability::search_availability;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn jump_to_definition_in_constant<'a>(
     schema: &'a Schema,

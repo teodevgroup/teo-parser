@@ -19,6 +19,7 @@ pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &mut ParserCo
     UseMiddlewaresBlock {
         span,
         path,
+        string_path: context.next_string_path("useMiddlewares"),
         namespace_string_path,
         array_literal: array_literal.unwrap()
     }

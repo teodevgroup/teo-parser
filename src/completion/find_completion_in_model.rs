@@ -1,4 +1,3 @@
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::Model;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
@@ -8,6 +7,7 @@ use crate::completion::find_completion_in_decorator::{find_completion_in_decorat
 use crate::completion::find_completion_in_field::find_completion_in_field;
 use crate::completion::find_completion_in_handler_group::find_completion_in_handler_declaration;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
+use crate::traits::has_availability::HasAvailability;
 use crate::utils::top_filter::top_filter_for_any_model_field_decorators;
 
 pub(super) fn find_completion_in_model(schema: &Schema, source: &Source, model: &Model, line_col: (usize, usize)) -> Vec<CompletionItem> {

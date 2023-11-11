@@ -1,10 +1,10 @@
 use std::sync::Arc;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::r#enum::Enum;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 use crate::completion::find_completion_in_type_expr::TypeExprFilter;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 pub fn top_filter_for_reference_type(reference_type: ReferenceSpace) -> Arc<dyn Fn(&Top) -> bool> {
     match reference_type {

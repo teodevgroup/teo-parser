@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::field::Field;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
@@ -33,6 +34,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         path: context.next_path(),
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         comment,
         decorators,
         empty_decorators_spans,

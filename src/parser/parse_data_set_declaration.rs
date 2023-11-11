@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
@@ -38,10 +39,10 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
         string_path: string_path.unwrap(),
         identifier: identifier.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         auto_seed,
         notrack,
         groups,
-        resolved: RefCell::new(None),
     }
 }
 
@@ -72,6 +73,7 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
         string_path: string_path.unwrap(),
         identifier_path: identifier_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         records,
         resolved: RefCell::new(None),
     }
@@ -98,6 +100,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> D
         path,
         string_path: string_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         identifier: identifier.unwrap(),
         dictionary: dictionary.unwrap(),
         resolved: RefCell::new(None),

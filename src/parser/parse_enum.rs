@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
@@ -45,13 +46,13 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
         path,
         string_path: string_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         comment,
         decorators,
         interface,
         option,
         identifier: identifier.unwrap(),
         members,
-        resolved: RefCell::new(None),
     }
 }
 
@@ -89,6 +90,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
         path,
         string_path: string_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         comment,
         decorators,
         identifier: identifier.unwrap(),

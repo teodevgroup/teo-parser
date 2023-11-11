@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::ast::type_expr::TypeExpr;
 use crate::parser::parse_comment::parse_comment;
@@ -38,6 +39,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut Pars
         identifier: identifier.unwrap(),
         handler_declarations,
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
     }
 }
 
@@ -84,5 +86,7 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserCont
         input_type: input_type.unwrap(),
         output_type: output_type.unwrap(),
         input_format,
+        define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
     }
 }

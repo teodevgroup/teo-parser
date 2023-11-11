@@ -25,14 +25,6 @@ pub struct Config {
 
 impl Config {
 
-    pub fn name(&self) -> &str {
-        if let Some(identifier) = &self.identifier {
-            identifier.name()
-        } else {
-            self.keyword.name()
-        }
-    }
-
     pub fn name_span(&self) -> Span {
         if let Some(identifier) = &self.identifier {
             identifier.span
@@ -43,10 +35,6 @@ impl Config {
 
     pub fn get_item(&self, name: impl AsRef<str>) -> Option<&Expression> {
         self.items.iter().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| &item.expression)
-    }
-
-    pub fn is_available(&self) -> bool {
-        self.define_availability.contains(self.resolved().actual_availability)
     }
 }
 
@@ -61,6 +49,14 @@ impl NamedIdentifiable for Config {
 
     fn string_path(&self) -> &Vec<String> {
         &self.string_path
+    }
+
+    fn name(&self) -> &str {
+        if let Some(identifier) = &self.identifier {
+            identifier.name()
+        } else {
+            self.keyword.name()
+        }
     }
 }
 

@@ -1,5 +1,4 @@
 use crate::ast::availability::Availability;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -9,6 +8,7 @@ use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
 use crate::search::search_unit_for_definition::search_unit_for_definition;
+use crate::traits::identifiable::Identifiable;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_unit<'a>(

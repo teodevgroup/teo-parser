@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_function_declaration::parse_function_declaration;
@@ -37,6 +39,7 @@ pub(super) fn parse_struct_declaration(pair: Pair<'_>, context: &mut ParserConte
         path,
         string_path: string_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         comment,
         identifier: identifier.unwrap(),
         generics_declaration,

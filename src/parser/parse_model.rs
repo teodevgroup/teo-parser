@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::Model;
 use crate::parser::parse_availability_end::parse_availability_end;
@@ -58,6 +59,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         path,
         string_path: string_path.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         comment,
         decorators,
         empty_decorator_spans,

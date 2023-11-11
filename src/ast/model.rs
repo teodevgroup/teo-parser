@@ -38,7 +38,6 @@ pub struct Model {
 
 #[derive(Debug, Serialize)]
 pub struct ModelResolved {
-    pub actual_availability: Availability,
     pub enums: IndexMap<SynthesizedEnumReferenceKind, SynthesizedEnum>,
     pub shapes: IndexMap<(SynthesizedShapeReferenceKind, Option<String>), Type>,
 }

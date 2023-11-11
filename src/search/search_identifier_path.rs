@@ -6,6 +6,7 @@ use crate::ast::source::Source;
 use crate::ast::top::Top;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
+use crate::traits::resolved::Resolve;
 
 pub fn search_identifier_path_names_with_filter_to_type_and_value(
     identifier_path_names: &Vec<&str>,

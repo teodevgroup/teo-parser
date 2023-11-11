@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use crate::ast::availability::Availability;
 use crate::ast::constant::Constant;
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;
@@ -31,6 +32,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserConte
         string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
         identifier: identifier.unwrap(),
         define_availability: context.current_availability_flag(),
+        actual_availability: RefCell::new(Availability::none()),
         type_expr,
         expression: expression.unwrap(),
         resolved: RefCell::new(None),

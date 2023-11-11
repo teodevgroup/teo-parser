@@ -15,6 +15,7 @@ use crate::ast::r#enum::Enum;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
+use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::output::readable_namespace_path;
 
 pub(super) fn completion_item_from_top(top: &Top) -> CompletionItem {
