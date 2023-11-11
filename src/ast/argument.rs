@@ -79,7 +79,7 @@ impl NodeTrait for Argument {
         self.span
     }
 
-    fn children(&self) -> &Vec<Node> {
-        &self.children
+    fn children(&self) -> Option<&Vec<Node>> {
+        Some(&self.children)
     }
 }

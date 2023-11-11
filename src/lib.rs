@@ -11,6 +11,8 @@ pub mod search;
 pub mod traits;
 pub mod availability;
 pub mod value;
+#[macro_use]
+pub mod macros;
 
 use std::collections::HashMap;
 use crate::ast::schema::Schema;

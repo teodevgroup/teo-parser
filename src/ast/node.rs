@@ -853,7 +853,7 @@ impl NodeTrait for Node {
         self.as_dyn_node_trait().span()
     }
 
-    fn children(&self) -> &Vec<Node> {
+    fn children(&self) -> Option<&Vec<Node>> {
         self.as_dyn_node_trait().children()
     }
 }

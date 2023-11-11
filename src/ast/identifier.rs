@@ -1,11 +1,6 @@
-use std::fmt::{Display, Formatter};
-use super::span::Span;
+use crate::{declare_node, impl_node_defaults};
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Identifier {
-    pub name: String,
-    pub span: Span,
-}
+declare_node!(Identifier, name: String);
 
 impl Identifier {
 
@@ -14,8 +9,4 @@ impl Identifier {
     }
 }
 
-impl Display for Identifier {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.name)
-    }
-}
+impl_node_defaults!(Identifier, name);

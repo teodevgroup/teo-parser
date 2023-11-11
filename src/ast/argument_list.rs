@@ -1,26 +1,24 @@
 use std::fmt::{Display, Formatter};
 use crate::ast::argument::Argument;
+use crate::ast::node::Node;
 use crate::ast::span::Span;
+use crate::{declare_container_node};
 
-#[derive(Debug)]
-pub struct ArgumentList {
-    pub span: Span,
-    pub arguments: Vec<Argument>,
+declare_container_node!(ArgumentList);
+
+impl ArgumentList {
+
+    fn arguments(&self) -> Vec<&Argument> {
+        self.children.iter().filter_map(|c| c.as_argument()).collect()
+    }
 }
 
 impl Default for ArgumentList {
 
     fn default() -> Self {
-        Self { arguments: Vec::default(), span: Span::default() }
+
+        Self { children: Vec::default(), path: Vec::default(), span: Span::default() }
     }
-}
-
-impl ArgumentList {
-
-    pub fn arguments(&self) -> &Vec<Argument> {
-        &self.arguments
-    }
-
 }
 
 impl Display for ArgumentList {
@@ -35,5 +33,23 @@ impl Display for ArgumentList {
             }
         }
         f.write_str(")")
+    }
+}
+
+impl crate::traits::identifiable::Identifiable for ArgumentList {
+
+    fn path(&self) -> &Vec<usize> {
+        &self.path
+    }
+}
+
+impl crate::traits::node_trait::NodeTrait for ArgumentList {
+
+    fn span(&self) -> Span {
+        self.span
+    }
+
+    fn children(&self) -> Option<&Vec<Node>> {
+        Some(&self.children)
     }
 }

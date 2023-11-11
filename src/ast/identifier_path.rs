@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use super::span::Span;
 use super::identifier::Identifier;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub struct IdentifierPath {
     pub span: Span,
     pub identifiers: Vec<Identifier>,

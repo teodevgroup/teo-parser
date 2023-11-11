@@ -7,13 +7,13 @@ pub trait NodeTrait: Identifiable + Display {
 
     fn span(&self) -> Span;
 
-    fn children(&self) -> &Vec<Node>;
+    fn children(&self) -> Option<&Vec<Node>>;
 
     fn has_children(&self) -> bool {
-        self.children().is_empty()
+        self.children().map_or(false, |c| c.is_empty())
     }
 
     fn child(&self, id: usize) -> Option<&Node> {
-        self.children().iter().find(|c| c.id() == id)
+        self.children().map(|c| c.iter().find(|c| c.id() == id)).flatten()
     }
 }
