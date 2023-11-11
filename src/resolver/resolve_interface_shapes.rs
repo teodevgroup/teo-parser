@@ -17,16 +17,16 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     for field in &interface_declaration.fields {
         let t = field.type_expr.resolved().replace_generics(&generics_map);
         map.insert(field.name().to_owned(), t.clone());
-        if let Some((path, gen, _)) = t.as_interface_object() {
-            let declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+        if let Some((reference, gen)) = t.as_interface_object() {
+            let declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
             if declaration.shape(gen).is_none() {
                 declaration.set_shape(gen.clone(), resolve_shape_cache_for_interface_declaration(declaration, gen, context));
             }
         }
     }
     for extend in interface_declaration.extends() {
-        if let Some((path, gen, _)) = extend.resolved().replace_generics(&generics_map).as_interface_object() {
-            let declaration = context.schema.find_top_by_path(path).unwrap().as_interface_declaration().unwrap();
+        if let Some((reference, gen)) = extend.resolved().replace_generics(&generics_map).as_interface_object() {
+            let declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
             if declaration.shape(gen).is_none() {
                 declaration.set_shape(gen.clone(), resolve_shape_cache_for_interface_declaration(declaration, gen, context));
             }
@@ -51,8 +51,8 @@ pub(super) fn collect_inputs_from_interface_declaration_shape_cache<'a>(interfac
     let mut input = vec![interface.shape(gens).unwrap().as_synthesized_shape().unwrap().clone()];
     let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), gens);
     for extend in interface.extends() {
-        if let Some((p, gen, _)) = extend.resolved().replace_generics(&generics_map).as_interface_object() {
-            let declaration = context.schema.find_top_by_path(p).unwrap().as_interface_declaration().unwrap();
+        if let Some((reference, gen)) = extend.resolved().replace_generics(&generics_map).as_interface_object() {
+            let declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
             input.extend(collect_inputs_from_interface_declaration_shape_cache(declaration, gen, context));
         }
     }

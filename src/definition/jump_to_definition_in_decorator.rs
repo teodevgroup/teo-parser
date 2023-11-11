@@ -30,7 +30,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     }
     if let Some(selector_span) = selector_span {
         // find in decorator path body
-        let reference = search_identifier_path_names_with_filter(schema, source, namespace_path, &user_typed_spaces, filter, availability);
+        let reference = search_identifier_path_names_with_filter(&user_typed_spaces, schema, source, namespace_path, filter, availability);
         match reference {
             Some(path) => {
                 let top = schema.find_top_by_path(&path).unwrap();
