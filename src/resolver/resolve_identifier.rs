@@ -8,7 +8,7 @@ use crate::ast::reference::ReferenceType;
 use crate::ast::top::Top;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
@@ -71,7 +71,7 @@ pub(super) fn resolve_identifier_path_with_filter(
     filter: &Arc<dyn Fn(&Top) -> bool>,
     availability: Availability,
 ) -> Option<TypeAndValue> {
-    search_identifier_path_names_with_filter(
+    search_identifier_path_names_with_filter_to_type_and_value(
         &identifier_path.names(),
         context.schema,
         context.source(),

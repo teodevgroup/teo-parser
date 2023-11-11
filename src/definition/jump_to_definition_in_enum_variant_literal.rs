@@ -17,8 +17,8 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
 ) -> Vec<Definition> {
     if enum_variant_literal.identifier.span.contains_line_col(line_col) {
         let top = match expect {
-            Type::EnumVariant(enum_path, _) => {
-                schema.find_top_by_path(enum_path)
+            Type::EnumVariant(reference) => {
+                schema.find_top_by_path(reference.path())
             }
             Type::ModelRelations(model, _) => {
                 schema.find_top_by_path(model.as_model_object().unwrap().0)

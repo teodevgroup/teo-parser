@@ -20,7 +20,7 @@ use crate::r#type::synthesized_shape_reference::{SynthesizedShapeReference, Synt
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
@@ -1474,7 +1474,7 @@ fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a 
     let resolved = resolve_unit(unit, context, &Type::Undetermined, &btreemap! {});
     if let Some(value) = &resolved.value {
         let path: Vec<&str> = value.as_array()?.iter().map(|i| i.as_str()).collect::<Option<Vec<_>>>()?;
-        return search_identifier_path_names_with_filter(&path, context.schema, context.source(), &if context.current_namespace().is_some() {
+        return search_identifier_path_names_with_filter_to_type_and_value(&path, context.schema, context.source(), &if context.current_namespace().is_some() {
             context.current_namespace().unwrap().str_path()
         } else {
             vec![]

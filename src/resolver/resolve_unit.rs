@@ -19,7 +19,7 @@ use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_identifier::{resolve_identifier, resolve_identifier_path_with_filter};
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_unit<'a>(
@@ -588,7 +588,7 @@ fn resolve_namespace_reference_for_unit(
         ExpressionKind::Identifier(identifier) => {
             let mut names: Vec<&str> = string_path.iter().map(AsRef::as_ref).collect();
             names.push(identifier.name());
-            if let Some(result) = search_identifier_path_names_with_filter(
+            if let Some(result) = search_identifier_path_names_with_filter_to_type_and_value(
                 &names,
                 context.schema,
                 context.source(),

@@ -7,7 +7,7 @@ use crate::ast::top::Top;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 
-pub fn search_identifier_path_names_with_filter(
+pub fn search_identifier_path_names_with_filter_to_type_and_value(
     identifier_path_names: &Vec<&str>,
     schema: &Schema,
     source: &Source,
@@ -15,8 +15,44 @@ pub fn search_identifier_path_names_with_filter(
     filter: &Arc<dyn Fn(&Top) -> bool>,
     availability: Availability,
 ) -> Option<TypeAndValue> {
+    search_identifier_path_names_with_filter_to_top(
+        identifier_path_names,
+        schema,
+        source,
+        namespace_str_path,
+        filter,
+        availability
+    ).map(|t| top_to_reference_type_and_value(t))
+}
+
+pub fn search_identifier_path_names_with_filter_to_path(
+    identifier_path_names: &Vec<&str>,
+    schema: &Schema,
+    source: &Source,
+    namespace_str_path: &Vec<&str>,
+    filter: &Arc<dyn Fn(&Top) -> bool>,
+    availability: Availability,
+) -> Option<Vec<usize>> {
+    search_identifier_path_names_with_filter_to_top(
+        identifier_path_names,
+        schema,
+        source,
+        namespace_str_path,
+        filter,
+        availability
+    ).map(|t| t.path().clone())
+}
+
+pub fn search_identifier_path_names_with_filter_to_top<'a>(
+    identifier_path_names: &Vec<&str>,
+    schema: &'a Schema,
+    source: &'a Source,
+    namespace_str_path: &Vec<&str>,
+    filter: &Arc<dyn Fn(&Top) -> bool>,
+    availability: Availability,
+) -> Option<&'a Top> {
     let mut used_sources = vec![];
-    let reference = search_identifier_path_names_in_source(
+    let reference = search_identifier_path_names_in_source_to_top(
         identifier_path_names,
         schema,
         filter,
@@ -27,7 +63,7 @@ pub fn search_identifier_path_names_with_filter(
     );
     if reference.is_none() {
         for builtin_source in schema.builtin_sources() {
-            if let Some(reference) = search_identifier_path_names_in_source(
+            if let Some(reference) = search_identifier_path_names_in_source_to_top(
                 &identifier_path_names,
                 schema,
                 filter,
@@ -43,15 +79,15 @@ pub fn search_identifier_path_names_with_filter(
     reference
 }
 
-fn search_identifier_path_names_in_source(
+fn search_identifier_path_names_in_source_to_top<'a>(
     identifier_path_names: &Vec<&str>,
-    schema: &Schema,
+    schema: &'a Schema,
     filter: &Arc<dyn Fn(&Top) -> bool>,
     source: &Source,
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<&'a Top> {
     if used_sources.contains(&source.id) {
         return None;
     }
@@ -60,12 +96,12 @@ fn search_identifier_path_names_in_source(
     loop {
         if ns_str_path_mut.is_empty() {
             if let Some(top) = source.find_top_by_string_path(identifier_path_names, filter, availability) {
-                return Some(top_to_reference_type_and_value(top));
+                return Some(top);
             }
         } else {
             if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
                 if let Some(top) = ns.find_top_by_string_path(identifier_path_names, filter, availability) {
-                    return Some(top_to_reference_type_and_value(top));
+                    return Some(top);
                 }
             }
         }
@@ -80,7 +116,7 @@ fn search_identifier_path_names_in_source(
         if let Some(from_source) = schema.sources().iter().find(|source| {
             import.file_path.as_str() == source.file_path.as_str()
         }).map(|s| *s) {
-            if let Some(found) = search_identifier_path_names_in_source(identifier_path_names, schema, filter, from_source, used_sources, &ns_str_path, availability) {
+            if let Some(found) = search_identifier_path_names_in_source_to_top(identifier_path_names, schema, filter, from_source, used_sources, &ns_str_path, availability) {
                 return Some(found)
             }
         }
