@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
@@ -8,28 +7,28 @@ use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 
 #[derive(Debug, Clone, Copy)]
-pub enum TypeOp {
+pub enum TypeOperator {
     BitOr,
 }
 
-impl Display for TypeOp {
+impl Display for TypeOperator {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            TypeOp::BitOr => f.write_str("|"),
+            TypeOperator::BitOr => f.write_str("|"),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct TypeBinaryOp {
+pub struct TypeBinaryOperation {
     pub span: Span,
     pub lhs: Box<TypeExprKind>,
-    pub op: TypeOp,
+    pub op: TypeOperator,
     pub rhs: Box<TypeExprKind>,
 }
 
-impl Display for TypeBinaryOp {
+impl Display for TypeBinaryOperation {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.lhs, f)?;
@@ -150,12 +149,12 @@ impl Display for TypeSubscript {
 #[derive(Debug)]
 pub enum TypeExprKind {
     Expr(Box<TypeExprKind>),
-    BinaryOp(TypeBinaryOp),
+    BinaryOp(TypeBinaryOperation),
     TypeItem(TypeItem),
     TypeGroup(TypeGroup),
     TypeTuple(TypeTuple),
     TypeSubscript(TypeSubscript),
-    FieldReference(EnumVariantLiteral),
+    FieldName(EnumVariantLiteral),
 }
 
 impl TypeExprKind {
@@ -168,7 +167,7 @@ impl TypeExprKind {
             TypeExprKind::TypeGroup(g) => g.span,
             TypeExprKind::TypeTuple(t) => t.span,
             TypeExprKind::TypeSubscript(s) => s.span,
-            TypeExprKind::FieldReference(e) => e.span,
+            TypeExprKind::FieldName(e) => e.span,
         }
     }
 
@@ -178,7 +177,7 @@ impl TypeExprKind {
 
     pub fn as_field_reference(&self) -> Option<&EnumVariantLiteral> {
         match self {
-            Self::FieldReference(e) => Some(e),
+            Self::FieldName(e) => Some(e),
             _ => None,
         }
     }
@@ -194,7 +193,7 @@ impl Display for TypeExprKind {
             TypeExprKind::TypeGroup(g) => Display::fmt(g, f)?,
             TypeExprKind::TypeTuple(t) => Display::fmt(t, f)?,
             TypeExprKind::TypeSubscript(s) => Display::fmt(s, f)?,
-            TypeExprKind::FieldReference(e) => Display::fmt(e, f)?,
+            TypeExprKind::FieldName(e) => Display::fmt(e, f)?,
         }
         Ok(())
     }

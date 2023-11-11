@@ -102,7 +102,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
         } else {
             vec![]
         }
-        TypeExprKind::FieldReference(_) => vec![],
+        TypeExprKind::FieldName(_) => vec![],
         TypeExprKind::TypeItem(type_item) => jump_to_definition_in_type_item(
             schema,
             source,

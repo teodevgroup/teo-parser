@@ -3,7 +3,7 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::type_expr::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeItem, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeItem, TypeSubscript, TypeTuple};
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::utils::top_filter::top_filter_for_type_expr_filter;
@@ -51,11 +51,11 @@ fn find_completion_in_type_expr_kind(schema: &Schema, source: &Source, kind: &Ty
         TypeExprKind::TypeGroup(group) => find_completion_in_type_expr_kind(schema, source, group.kind.as_ref(), line_col, namespace_path, generics, filter, availability),
         TypeExprKind::TypeTuple(tuple) => find_completion_in_type_tuple(schema, source, tuple, line_col, namespace_path, generics, filter, availability),
         TypeExprKind::TypeSubscript(subscript) => find_completion_in_type_subscript(schema, source, subscript, line_col, namespace_path, generics, filter, availability),
-        TypeExprKind::FieldReference(_) => vec![],
+        TypeExprKind::FieldName(_) => vec![],
     }
 }
 
-fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, binary_op: &TypeBinaryOp, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
+fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, binary_op: &TypeBinaryOperation, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     if binary_op.lhs.as_ref().span().contains_line_col(line_col) {
         find_completion_in_type_expr_kind(schema, source, binary_op.lhs.as_ref(), line_col, namespace_path, generics, filter, availability)
     } else if binary_op.rhs.as_ref().span().contains_line_col(line_col) {

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use crate::ast::arity::Arity;
 use crate::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
-use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp};
+use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOperator};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
@@ -51,7 +51,7 @@ fn resolve_type_expr_kind<'a>(
         }
         TypeExprKind::BinaryOp(binary_op) => {
             match binary_op.op {
-                TypeOp::BitOr => {
+                TypeOperator::BitOr => {
                     let lhs = resolve_type_expr_kind(
                         binary_op.lhs.as_ref(),
                         generics_declaration,
@@ -146,7 +146,7 @@ fn resolve_type_expr_kind<'a>(
             }
             resolved
         }
-        TypeExprKind::FieldReference(r) => {
+        TypeExprKind::FieldName(r) => {
             Type::FieldName(r.identifier.name().to_string())
         }
     }

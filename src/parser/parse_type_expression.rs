@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::type_expr::{TypeBinaryOp, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOp, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
@@ -16,17 +16,17 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
         Rule::type_group => TypeExprKind::TypeGroup(parse_type_group(primary, context)),
         Rule::type_tuple => TypeExprKind::TypeTuple(parse_type_tuple(primary, context)),
         Rule::type_subscript => TypeExprKind::TypeSubscript(parse_type_subscript(primary, context)),
-        Rule::type_reference => TypeExprKind::FieldReference(parse_type_reference(primary, context)),
+        Rule::type_reference => TypeExprKind::FieldName(parse_type_reference(primary, context)),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             panic!("unreachable 6")
         },
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
-            Rule::BI_OR => TypeOp::BitOr,
+            Rule::BI_OR => TypeOperator::BitOr,
             _ => panic!("unreachable 7"),
         };
-        TypeExprKind::BinaryOp(TypeBinaryOp {
+        TypeExprKind::BinaryOp(TypeBinaryOperation {
             span,
             lhs: Box::new(lhs),
             op,

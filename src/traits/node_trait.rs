@@ -1,8 +1,9 @@
+use std::fmt::Display;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::traits::identifiable::Identifiable;
 
-pub trait NodeTrait: Identifiable {
+pub trait NodeTrait: Identifiable + Display {
 
     fn span(&self) -> Span;
 

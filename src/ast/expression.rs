@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use teo_teon::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::ArithExpr;
 use crate::ast::group::Group;
@@ -11,7 +10,6 @@ use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVar
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
-use crate::r#type::r#type::Type;
 use crate::value::TypeAndValue;
 
 #[derive(Debug)]
