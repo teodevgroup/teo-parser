@@ -5,8 +5,6 @@ use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
-use crate::ast::identifiable::Identifiable;
-use crate::ast::identifier::Identifier;
 use crate::ast::import::Import;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::MiddlewareDeclaration;
@@ -17,6 +15,8 @@ use crate::ast::r#enum::Enum;
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 #[derive(Debug)]
 pub enum Top {

@@ -1,8 +1,12 @@
 use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 #[derive(Debug)]
 pub struct MiddlewareDeclaration {
@@ -14,10 +18,6 @@ pub struct MiddlewareDeclaration {
 }
 
 impl MiddlewareDeclaration {
-
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
 
     pub fn callable_variants(&self) -> Vec<CallableVariant> {
         vec![CallableVariant {
@@ -31,20 +31,29 @@ impl MiddlewareDeclaration {
 }
 
 impl Identifiable for MiddlewareDeclaration {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(|s| s.as_str()).collect()
+impl NamedIdentifiable for MiddlewareDeclaration {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for MiddlewareDeclaration {
+    fn define_availability(&self) -> Availability {
+        Availability::default()
+    }
+
+    fn actual_availability(&self) -> Availability {
+        Availability::default()
+    }
+}
+
+impl InfoProvider for MiddlewareDeclaration {
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }

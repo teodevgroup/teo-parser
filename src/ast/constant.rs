@@ -2,11 +2,14 @@ use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use crate::ast::availability::Availability;
 use crate::ast::expression::{Expression, TypeAndValue};
-use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
-use crate::r#type::r#type::Type;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Clone)]
 pub struct ConstantResolved {
@@ -19,37 +22,11 @@ pub struct Constant {
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
     pub identifier: Identifier,
-    pub define_availability: Availability,
     pub type_expr: Option<TypeExpr>,
     pub expression: Expression,
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
     pub resolved: RefCell<Option<ConstantResolved>>,
-}
-
-impl Constant {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
-    pub fn resolve(&self, resolved: ConstantResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &ConstantResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
 }
 
 impl Display for Constant {
@@ -63,20 +40,35 @@ impl Display for Constant {
 }
 
 impl Identifiable for Constant {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(|s| s.as_str()).collect()
+impl NamedIdentifiable for Constant {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for Constant {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
+    }
+}
+
+impl InfoProvider for Constant {
+    fn namespace_skip(&self) -> usize {
+        1
+    }
+}
+
+impl Resolve<ConstantResolved> for Constant {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<ConstantResolved>> {
+        &self.resolved
     }
 }

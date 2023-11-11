@@ -1,12 +1,15 @@
+use std::cell::RefCell;
 use serde::Serialize;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
-use super::info_provider::InfoProvider;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 #[derive(Debug)]
 pub struct HandlerGroupDeclaration {
@@ -17,31 +20,34 @@ pub struct HandlerGroupDeclaration {
     pub identifier: Identifier,
     pub handler_declarations: Vec<HandlerDeclaration>,
     pub define_availability: Availability,
-}
-
-impl HandlerGroupDeclaration {
-
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
+    pub actual_availability: RefCell<Availability>,
 }
 
 impl Identifiable for HandlerGroupDeclaration {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for HandlerGroupDeclaration {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for HandlerGroupDeclaration {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
+    }
+}
+
+impl InfoProvider for HandlerGroupDeclaration {
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }
 
@@ -57,6 +63,8 @@ pub struct HandlerDeclaration {
     pub input_type: TypeExpr,
     pub output_type: TypeExpr,
     pub input_format: HandlerInputFormat,
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
 }
 
 impl HandlerDeclaration {
@@ -65,13 +73,6 @@ impl HandlerDeclaration {
         self.string_path.last().map(AsRef::as_ref).unwrap()
     }
 
-    pub fn handler_group_id(&self) -> usize {
-        *self.path.get(self.path.len() - 2).unwrap()
-    }
-
-    pub fn handler_group_name(&self) -> &str {
-        self.string_path.get(self.path.len() - 2).unwrap()
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -98,31 +99,29 @@ impl HandlerInputFormat {
 }
 
 impl Identifiable for HandlerDeclaration {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for HandlerDeclaration {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for HandlerDeclaration {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for HandlerDeclaration {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
-    }
-
-    fn availability(&self) -> Availability {
-        Availability::default()
+    fn namespace_skip(&self) -> usize {
+        2
     }
 }

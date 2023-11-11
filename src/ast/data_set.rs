@@ -1,17 +1,15 @@
 use std::cell::RefCell;
 use teo_teon::value::Value;
 use crate::ast::availability::Availability;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::literals::DictionaryLiteral;
 use crate::ast::span::Span;
-
-#[derive(Debug)]
-pub struct DataSetResolved {
-    pub actual_availability: Availability,
-}
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug)]
 pub struct DataSet {
@@ -23,62 +21,34 @@ pub struct DataSet {
     pub auto_seed: bool,
     pub notrack: bool,
     pub groups: Vec<DataSetGroup>,
-    pub resolved: RefCell<Option<DataSetResolved>>,
-}
-
-impl DataSet {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
-    pub fn resolve(&self, resolved: DataSetResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &DataSetResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
+    pub actual_availability: RefCell<Availability>,
 }
 
 impl Identifiable for DataSet {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for DataSet {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for DataSet {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for DataSet {
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }
 
@@ -86,7 +56,6 @@ impl InfoProvider for DataSet {
 pub struct DataSetGroupResolved {
     pub model_path: Vec<usize>,
     pub model_string_path: Vec<String>,
-    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
@@ -95,60 +64,49 @@ pub struct DataSetGroup {
     pub string_path: Vec<String>,
     pub identifier_path: IdentifierPath,
     pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
     pub span: Span,
     pub records: Vec<DataSetRecord>,
     pub resolved: RefCell<Option<DataSetGroupResolved>>,
 }
 
-impl DataSetGroup {
-
-    pub fn resolve(&self, resolved: DataSetGroupResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &DataSetGroupResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-}
-
 impl Identifiable for DataSetGroup {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for DataSetGroup {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for DataSetGroup {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for DataSetGroup {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    fn namespace_skip(&self) -> usize {
+        2
     }
+}
 
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+impl Resolve<DataSetGroupResolved> for DataSetGroup {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<DataSetGroupResolved>> {
+        &self.resolved
     }
 }
 
 #[derive(Debug)]
 pub struct DataSetRecordResolved {
     pub value: Value,
-    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
@@ -157,60 +115,42 @@ pub struct DataSetRecord {
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
     pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
     pub identifier: Identifier,
     pub dictionary: DictionaryLiteral,
     pub resolved: RefCell<Option<DataSetRecordResolved>>,
 }
 
-impl DataSetRecord {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn resolve(&self, resolved: DataSetRecordResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &DataSetRecordResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-}
-
 impl Identifiable for DataSetRecord {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for DataSetRecord {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for DataSetRecord {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for DataSetRecord {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    fn namespace_skip(&self) -> usize {
+        3
     }
+}
 
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+impl Resolve<DataSetRecordResolved> for DataSetRecord {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<DataSetRecordResolved>> {
+        &self.resolved
     }
 }
