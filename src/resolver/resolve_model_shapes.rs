@@ -1057,7 +1057,7 @@ fn resolve_group_by_result_type(model: &Model, availability: &ShapeAvailableCont
             }
         }
     }
-    map.extend(resolve_aggregate_result_type(model, availability).into_synthesized_shape().into_iter());
+    map.extend(resolve_aggregate_result_type(model, availability).into_synthesized_shape().unwrap().into_iter());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
