@@ -9,7 +9,7 @@ use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::{Model};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::unit::Unit;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
@@ -416,7 +416,7 @@ fn resolve_model_list_relation_filter(model: &Model) -> Type {
 }
 
 fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Type> {
-    let sort = context.schema.std_source().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceType::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let sort = context.schema.std_source().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -1467,7 +1467,7 @@ fn unwrap_model_path_in_arith_expr<'a>(arith_expr: &'a ArithExpr, model: &'a Mod
 }
 
 fn unwrap_model_path_in_identifier<'a>(identifier: &'a Identifier, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
-    resolve_identifier(identifier, context, ReferenceType::Default, model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten()
+    resolve_identifier(identifier, context, ReferenceSpace::Default, model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten()
 }
 
 fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
@@ -1478,7 +1478,7 @@ fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a 
             context.current_namespace().unwrap().str_path()
         } else {
             vec![]
-        }, &top_filter_for_reference_type(ReferenceType::Default), model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten();
+        }, &top_filter_for_reference_type(ReferenceSpace::Default), model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten();
     }
     None
 }
@@ -1527,7 +1527,7 @@ impl ShapeAvailableContext {
 fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a ResolverContext<'a>) -> Type {
     let interface = context.schema.std_source().find_top_by_string_path(
         &vec!["std", name],
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_interface_declaration().unwrap();
     Type::InterfaceObject(Reference::new(interface.path.clone(), interface.string_path.clone()), generics)

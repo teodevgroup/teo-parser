@@ -1,5 +1,5 @@
 use crate::ast::model::Model;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
@@ -20,7 +20,7 @@ pub(super) fn jump_to_definition_in_model(schema: &Schema, source: &Source, mode
     }
     for decorator in &model.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(ReferenceType::ModelDecorator), availability);
+            return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(ReferenceSpace::ModelDecorator), availability);
         }
     }
     for decorator in &model.unattached_field_decorators {

@@ -4,7 +4,7 @@ use crate::ast::availability::Availability;
 use crate::ast::expression::TypeAndValue;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::top::Top;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
@@ -15,7 +15,7 @@ pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
     identifier: &Identifier,
     context: &'a ResolverContext<'a>,
 ) -> TypeAndValue {
-    if let Some(result) = resolve_identifier(identifier, context, ReferenceType::Default, context.current_availability()) {
+    if let Some(result) = resolve_identifier(identifier, context, ReferenceSpace::Default, context.current_availability()) {
         result
     } else {
         context.insert_diagnostics_error(identifier.span, "undefined identifier");
@@ -26,7 +26,7 @@ pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
 pub(super) fn resolve_identifier(
     identifier: &Identifier,
     context: &ResolverContext,
-    reference_type: ReferenceType,
+    reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Option<TypeAndValue> {
     resolve_identifier_path(
@@ -54,7 +54,7 @@ pub(super) fn resolve_identifier_with_filter(
 pub(super) fn resolve_identifier_path(
     identifier_path: &IdentifierPath,
     context: &ResolverContext,
-    reference_type: ReferenceType,
+    reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Option<TypeAndValue> {
     resolve_identifier_path_with_filter(

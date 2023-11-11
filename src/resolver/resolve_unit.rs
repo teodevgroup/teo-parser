@@ -6,7 +6,7 @@ use teo_teon::Value;
 use crate::ast::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind, TypeAndValue};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
@@ -129,7 +129,7 @@ fn resolve_struct_instance_for_unit<'a>(
 ) -> TypeAndValue {
     let Some(struct_definition) = context.source().find_top_by_string_path(
         struct_path,
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).map(|top| top.as_struct_declaration()).flatten() else {
         context.insert_diagnostics_error(if let Some(last_span) = last_span {
@@ -214,10 +214,10 @@ fn resolve_enum_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let enum_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(m) = enum_declaration.members.iter().find(|m| m.identifier.name() == identifier.name()) {
                 TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
@@ -240,7 +240,7 @@ fn resolve_enum_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         },
-    }
+    })
 }
 
 fn resolve_enum_variant_for_unit<'a>(
@@ -251,15 +251,15 @@ fn resolve_enum_variant_for_unit<'a>(
 ) -> TypeAndValue {
     let Some(value) = current.value().map(|v| v.as_enum_variant()).flatten() else {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return TypeAndValue::undetermined();
+        return expression.resolve(TypeAndValue::undetermined());
     };
     if value.args.is_some() {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return TypeAndValue::undetermined();
+        return expression.resolve(TypeAndValue::undetermined());
     }
     let enum_declaration = context.source().find_top_by_string_path(
         &current.r#type.as_enum_variant().unwrap().str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
     let member_declaration = enum_declaration.members.iter().find(|m| m.identifier.name() == value.value.as_str()).unwrap();
@@ -277,19 +277,19 @@ fn resolve_enum_variant_for_unit<'a>(
                 let args = argument_list.arguments().iter().map(|argument| {
                     Some((argument.resolved_name()?.to_string(), argument.value.resolved().value.clone()?))
                 }).collect::<Option<BTreeMap<String, Value>>>();
-                TypeAndValue::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
+                expression.resolve(TypeAndValue::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
                     value: value.value.clone(),
                     args: Some(args),
-                })))
+                }))))
             },
             _ => {
                 context.insert_diagnostics_error(expression.span(), "invalid expression");
-                return TypeAndValue::undetermined();
+                return expression.resolve(TypeAndValue::undetermined());
             }
         }
     } else {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return TypeAndValue::undetermined();
+        return expression.resolve(TypeAndValue::undetermined());
     }
 }
 
@@ -300,10 +300,10 @@ fn resolve_config_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let config = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_config().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = config.items.iter().find(|item| item.identifier.name() == identifier.name()) {
                 item.expression.resolved().clone()
@@ -316,7 +316,7 @@ fn resolve_config_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_model_reference_for_unit<'a>(
@@ -326,10 +326,10 @@ fn resolve_model_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let model = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_model().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = model.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
                 TypeAndValue::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
@@ -342,7 +342,7 @@ fn resolve_model_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_interface_reference_for_unit<'a>(
@@ -353,10 +353,10 @@ fn resolve_interface_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let interface = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_interface_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
                 TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
@@ -369,7 +369,7 @@ fn resolve_interface_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_interface_object_for_unit<'a>(
@@ -381,10 +381,10 @@ fn resolve_interface_object_for_unit<'a>(
 ) -> TypeAndValue {
     let interface = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_interface_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
                 let map = calculate_generics_map(interface.generics_declaration.as_ref(), types);
@@ -401,7 +401,7 @@ fn resolve_interface_object_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_struct_reference_for_unit<'a>(
@@ -413,10 +413,10 @@ fn resolve_struct_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.static_function(identifier.name()) {
                 TypeAndValue::type_only(Type::StructStaticFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
@@ -445,7 +445,7 @@ fn resolve_struct_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_struct_object_for_unit<'a>(
@@ -456,10 +456,10 @@ fn resolve_struct_object_for_unit<'a>(
 ) -> TypeAndValue {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.instance_function(identifier.name()) {
                 TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
@@ -472,7 +472,7 @@ fn resolve_struct_object_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_struct_static_function_reference_for_unit<'a>(
@@ -484,10 +484,10 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::ArgumentList(argument_list) => {
             if let Some(function) = struct_declaration.static_function(reference.str_path().last().unwrap()) {
                 resolve_argument_list(
@@ -509,7 +509,7 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_struct_instance_function_reference_for_unit<'a>(
@@ -521,10 +521,10 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
-    match &expression.kind {
+    expression.resolve(match &expression.kind {
         ExpressionKind::ArgumentList(argument_list) => {
             if let Some(function) = struct_declaration.instance_function(reference.str_path().last().unwrap()) {
                 resolve_argument_list(
@@ -546,7 +546,7 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    }
+    })
 }
 
 fn resolve_middleware_reference_for_unit<'a>(
@@ -557,10 +557,10 @@ fn resolve_middleware_reference_for_unit<'a>(
 ) -> TypeAndValue {
     let middleware_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_middleware_declaration().unwrap();
-    expression.resolve(match &expression.kind {
+    expression.resolve(expression.resolve(match &expression.kind {
         ExpressionKind::ArgumentList(argument_list) => {
             resolve_argument_list(
                 last_span,
@@ -576,7 +576,7 @@ fn resolve_middleware_reference_for_unit<'a>(
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             TypeAndValue::undetermined()
         }
-    })
+    }))
 }
 
 fn resolve_namespace_reference_for_unit(
@@ -593,7 +593,7 @@ fn resolve_namespace_reference_for_unit(
                 context.schema,
                 context.source(),
                 &context.current_namespace().map_or(vec![], |n| n.str_path()),
-                &top_filter_for_reference_type(ReferenceType::Default),
+                &top_filter_for_reference_type(ReferenceSpace::Default),
                 context.current_availability(),
             ) {
                 result

@@ -3,22 +3,24 @@ use crate::ast::availability::Availability;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::span::Span;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 #[derive(Debug)]
 pub struct Config {
     pub span: Span,
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub define_availability: Availability,
     pub keyword: ConfigKeyword,
     pub identifier: Option<Identifier>,
     pub items: Vec<ConfigItem>,
     pub unattached_identifiers: Vec<Identifier>,
-    pub resolved: RefCell<Option<ConfigResolved>>,
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
 }
 
 impl Config {
@@ -46,51 +48,36 @@ impl Config {
     pub fn is_available(&self) -> bool {
         self.define_availability.contains(self.resolved().actual_availability)
     }
-
-    pub fn resolve(&self, resolved: ConfigResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &ConfigResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-}
-
-#[derive(Debug)]
-pub struct ConfigResolved {
-    pub actual_availability: Availability
 }
 
 impl Identifiable for Config {
 
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for Config {
+
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for Config {
+
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        self.actual_availability.borrow().clone()
     }
 }
 
 impl InfoProvider for Config {
 
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
-
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }

@@ -1,6 +1,6 @@
 use crate::ast::availability::Availability;
 use crate::ast::identifiable::Identifiable;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
@@ -146,7 +146,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     }
                     Top::Namespace(namespace) => if let Some(identifier) = identifier_name {
-                        let top = namespace.find_top_by_name(identifier, &top_filter_for_reference_type(ReferenceType::Default), availability).unwrap();
+                        let top = namespace.find_top_by_name(identifier, &top_filter_for_reference_type(ReferenceSpace::Default), availability).unwrap();
                         vec![Definition {
                             path: schema.source(top.source_id()).unwrap().file_path.clone(),
                             selection_span: span,

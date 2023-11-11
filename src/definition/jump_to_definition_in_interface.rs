@@ -1,6 +1,6 @@
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::model::Model;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;

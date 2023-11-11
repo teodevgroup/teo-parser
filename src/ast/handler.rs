@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use serde::Serialize;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;

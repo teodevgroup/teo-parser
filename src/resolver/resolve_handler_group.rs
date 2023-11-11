@@ -1,7 +1,7 @@
 use maplit::btreemap;
 use crate::ast::availability::Availability;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
@@ -67,7 +67,7 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
 ) {
     for decorator in &handler_declaration.decorators {
         resolve_decorator(decorator, context, &btreemap!{
-        }, ReferenceType::HandlerDecorator);
+        }, ReferenceSpace::HandlerDecorator);
     }
 }
 

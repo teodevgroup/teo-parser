@@ -1,6 +1,6 @@
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration};
 use crate::ast::info_provider::InfoProvider;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
@@ -25,12 +25,12 @@ pub(super) fn find_completion_in_handler_declaration(schema: &Schema, source: &S
     }
     for decorator in &handler_declaration.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator(schema, source, decorator, &handler_declaration.namespace_str_path(), line_col, ReferenceType::HandlerDecorator, handler_declaration.availability());
+            return find_completion_in_decorator(schema, source, decorator, &handler_declaration.namespace_str_path(), line_col, ReferenceSpace::HandlerDecorator, handler_declaration.availability());
         }
     }
     for empty_decorator_span in &handler_declaration.empty_decorators_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_completion_in_empty_decorator(schema, source, &handler_declaration.namespace_str_path(), ReferenceType::HandlerDecorator, handler_declaration.availability());
+            return find_completion_in_empty_decorator(schema, source, &handler_declaration.namespace_str_path(), ReferenceSpace::HandlerDecorator, handler_declaration.availability());
         }
     }
     vec![]

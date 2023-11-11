@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::ast::availability::Availability;
 use crate::ast::decorator::Decorator;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
@@ -17,7 +17,7 @@ pub(super) fn find_completion_in_decorator<'a>(
     decorator: &'a Decorator,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    reference_type: ReferenceType,
+    reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Vec<CompletionItem> {
     find_completion_in_decorator_with_filter(schema, source, decorator, namespace_path, line_col, &top_filter_for_reference_type(reference_type), availability)
@@ -57,7 +57,7 @@ pub(super) fn find_completion_in_empty_decorator<'a>(
     schema: &'a Schema,
     source: &'a Source,
     namespace_path: &Vec<&'a str>,
-    reference_type: ReferenceType,
+    reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Vec<CompletionItem> {
     find_top_completion_with_filter(schema, source, namespace_path, &vec![], &top_filter_for_reference_type(reference_type), availability)

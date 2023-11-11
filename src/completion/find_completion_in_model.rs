@@ -1,6 +1,6 @@
 use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::Model;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
@@ -20,12 +20,12 @@ pub(super) fn find_completion_in_model(schema: &Schema, source: &Source, model: 
     namespace_path.pop();
     for decorator in &model.decorators {
         if decorator.span.contains_line_col(line_col) {
-            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, ReferenceType::ModelDecorator, model.availability());
+            return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, ReferenceSpace::ModelDecorator, model.availability());
         }
     }
     for empty_decorator_span in &model.empty_decorator_spans {
         if empty_decorator_span.contains_line_col(line_col) {
-            return find_completion_in_empty_decorator(schema, source, &namespace_path, ReferenceType::ModelDecorator, model.availability());
+            return find_completion_in_empty_decorator(schema, source, &namespace_path, ReferenceSpace::ModelDecorator, model.availability());
         }
     }
     for empty_decorator_span in &model.empty_field_decorator_spans {

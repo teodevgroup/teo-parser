@@ -1,5 +1,5 @@
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_comment::parse_comment;
@@ -95,67 +95,67 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserConte
     }
 }
 
-fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, handler: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &mut ParserContext) -> ReferenceType {
+fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, handler: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &mut ParserContext) -> ReferenceSpace {
     if model {
         if field {
-            ReferenceType::ModelFieldDecorator
+            ReferenceSpace::ModelFieldDecorator
         } else if relation {
-            ReferenceType::ModelRelationDecorator
+            ReferenceSpace::ModelRelationDecorator
         } else if property {
-            ReferenceType::ModelPropertyDecorator
+            ReferenceSpace::ModelPropertyDecorator
         } else if member {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else {
-            ReferenceType::ModelDecorator
+            ReferenceSpace::ModelDecorator
         }
     } else if r#enum {
         if field {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if relation {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if property {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if member {
-            ReferenceType::EnumMemberDecorator
+            ReferenceSpace::EnumMemberDecorator
         } else {
-            ReferenceType::EnumDecorator
+            ReferenceSpace::EnumDecorator
         }
     } else if interface {
         if field {
-            ReferenceType::InterfaceFieldDecorator
+            ReferenceSpace::InterfaceFieldDecorator
         } else if relation {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if property {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if member {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else {
-            ReferenceType::InterfaceDecorator
+            ReferenceSpace::InterfaceDecorator
         }
     } else if handler {
         if field {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if relation {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if property {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else if member {
             context.insert_invalid_decorator_declaration(span.clone());
-            ReferenceType::Default
+            ReferenceSpace::Default
         } else {
-            ReferenceType::HandlerDecorator
+            ReferenceSpace::HandlerDecorator
         }
     } else {
-        ReferenceType::Default
+        ReferenceSpace::Default
     }
 }

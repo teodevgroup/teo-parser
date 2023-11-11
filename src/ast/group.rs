@@ -3,6 +3,7 @@ use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::span::Span;
 
 /// A group represents something like this (1 + 2) * 5
+///
 #[derive(Debug)]
 pub struct Group {
     pub expression: Box<Expression>,

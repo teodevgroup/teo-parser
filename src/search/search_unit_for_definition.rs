@@ -1,7 +1,7 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::availability::Availability;
 use crate::ast::expression::ExpressionKind;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
@@ -69,7 +69,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                     schema,
                     source,
                     namespace_path,
-                    &top_filter_for_reference_type(ReferenceType::Default),
+                    &top_filter_for_reference_type(ReferenceSpace::Default),
                     availability,
                 ) {
                     identifier_span = Some(identifier.span);
@@ -243,7 +243,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                             Top::Namespace(namespace) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
+                                        if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceSpace::Default), availability) {
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, top.path(), None);
                                             } else {

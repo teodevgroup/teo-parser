@@ -1,6 +1,6 @@
 use crate::ast::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::type_expr::{TypeExprKind, TypeItem};
@@ -162,7 +162,7 @@ fn jump_to_definition_in_type_item(
                 user_typed_spaces.push(identifier.name());
             }
         }
-        let reference = search_identifier_path_names_with_filter_to_path(&user_typed_spaces, schema, source, namespace_path, &top_filter_for_reference_type(ReferenceType::Default), availability);
+        let reference = search_identifier_path_names_with_filter_to_path(&user_typed_spaces, schema, source, namespace_path, &top_filter_for_reference_type(ReferenceSpace::Default), availability);
         if let Some(reference) = reference {
             let top = schema.find_top_by_path(&reference).unwrap();
             return vec![Definition {

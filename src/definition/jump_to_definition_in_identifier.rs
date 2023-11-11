@@ -1,6 +1,6 @@
 use crate::ast::availability::Availability;
 use crate::ast::identifier::Identifier;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::top::Top;
@@ -21,7 +21,7 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
         schema,
         source,
         namespace_path,
-        &top_filter_for_reference_type(ReferenceType::Default),
+        &top_filter_for_reference_type(ReferenceSpace::Default),
         availability,
     ) {
         match schema.find_top_by_path(&reference).unwrap() {

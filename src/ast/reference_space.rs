@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum ReferenceType {
+pub enum ReferenceSpace {
     EnumDecorator,
     EnumMemberDecorator,
     ModelDecorator,

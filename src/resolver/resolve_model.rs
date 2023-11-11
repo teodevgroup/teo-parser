@@ -1,7 +1,7 @@
 use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::model::{Model, ModelResolved};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
@@ -41,7 +41,7 @@ pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a Resolv
     for decorator in &model.decorators {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => model_type.clone()
-        }, ReferenceType::ModelDecorator);
+        }, ReferenceSpace::ModelDecorator);
     }
     // fields
     for field in &model.fields {

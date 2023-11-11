@@ -6,7 +6,7 @@ use teo_teon::value::Value;
 use crate::ast::arith::{ArithExpr, Op};
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved, EnumResolved};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolver_context::ResolverContext;
@@ -24,7 +24,7 @@ pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a
     context.clear_examined_fields();
     // decorators
     for decorator in &r#enum.decorators {
-        resolve_decorator(decorator, context, &btreemap!{}, ReferenceType::EnumDecorator);
+        resolve_decorator(decorator, context, &btreemap!{}, ReferenceSpace::EnumDecorator);
     }
     // members
     let option_member_map = Mutex::new(btreemap!{});
@@ -43,7 +43,7 @@ pub(super) fn resolve_enum_member<'a>(
 ) {
     // decorators
     for decorator in &member.decorators {
-        resolve_decorator(decorator, context, &btreemap!{}, ReferenceType::EnumMemberDecorator)
+        resolve_decorator(decorator, context, &btreemap!{}, ReferenceSpace::EnumMemberDecorator)
     }
     // expression
     if let Some(member_expression) = &member.expression {

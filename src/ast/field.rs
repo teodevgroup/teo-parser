@@ -6,7 +6,7 @@ use crate::ast::identifiable::Identifiable;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::info_provider::InfoProvider;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 
 #[derive(Debug, Copy, Clone)]
@@ -88,13 +88,13 @@ impl FieldClass {
         self.is_model_property()
     }
 
-    pub fn reference_type(&self) -> ReferenceType {
+    pub fn reference_type(&self) -> ReferenceSpace {
         match self {
-            FieldClass::ModelPrimitiveField(_) => ReferenceType::ModelFieldDecorator,
-            FieldClass::ModelRelation(_) => ReferenceType::ModelRelationDecorator,
-            FieldClass::ModelProperty(_) => ReferenceType::ModelPropertyDecorator,
-            FieldClass::InterfaceField => ReferenceType::InterfaceFieldDecorator,
-            FieldClass::ConfigDeclarationField => ReferenceType::Default,
+            FieldClass::ModelPrimitiveField(_) => ReferenceSpace::ModelFieldDecorator,
+            FieldClass::ModelRelation(_) => ReferenceSpace::ModelRelationDecorator,
+            FieldClass::ModelProperty(_) => ReferenceSpace::ModelPropertyDecorator,
+            FieldClass::InterfaceField => ReferenceSpace::InterfaceFieldDecorator,
+            FieldClass::ConfigDeclarationField => ReferenceSpace::Default,
         }
     }
 }

@@ -1,31 +1,31 @@
 use std::sync::Arc;
 use crate::ast::identifiable::Identifiable;
 use crate::ast::r#enum::Enum;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
 use crate::completion::find_completion_in_type_expr::TypeExprFilter;
 
-pub fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn Fn(&Top) -> bool> {
+pub fn top_filter_for_reference_type(reference_type: ReferenceSpace) -> Arc<dyn Fn(&Top) -> bool> {
     match reference_type {
-        ReferenceType::EnumDecorator |
-        ReferenceType::EnumMemberDecorator |
-        ReferenceType::ModelDecorator |
-        ReferenceType::ModelFieldDecorator |
-        ReferenceType::ModelRelationDecorator |
-        ReferenceType::ModelPropertyDecorator |
-        ReferenceType::InterfaceDecorator |
-        ReferenceType::InterfaceFieldDecorator |
-        ReferenceType::HandlerDecorator => Arc::new(move |top: &Top| {
+        ReferenceSpace::EnumDecorator |
+        ReferenceSpace::EnumMemberDecorator |
+        ReferenceSpace::ModelDecorator |
+        ReferenceSpace::ModelFieldDecorator |
+        ReferenceSpace::ModelRelationDecorator |
+        ReferenceSpace::ModelPropertyDecorator |
+        ReferenceSpace::InterfaceDecorator |
+        ReferenceSpace::InterfaceFieldDecorator |
+        ReferenceSpace::HandlerDecorator => Arc::new(move |top: &Top| {
             top.as_decorator_declaration().map_or(false, |d| d.decorator_class == reference_type)
         }),
-        ReferenceType::PipelineItem => Arc::new(|top: &Top| {
+        ReferenceSpace::PipelineItem => Arc::new(|top: &Top| {
             top.as_pipeline_item_declaration().is_some()
         }),
-        ReferenceType::Middleware => Arc::new(|top: &Top| {
+        ReferenceSpace::Middleware => Arc::new(|top: &Top| {
             top.as_middleware_declaration().is_some()
         }),
-        ReferenceType::Default => Arc::new(|top: &Top| {
+        ReferenceSpace::Default => Arc::new(|top: &Top| {
             top.is_enum() || top.is_model() || top.is_interface_declaration() || top.is_struct_declaration() || top.is_config() || top.is_constant() || top.is_namespace()
         }),
     }
@@ -34,9 +34,9 @@ pub fn top_filter_for_reference_type(reference_type: ReferenceType) -> Arc<dyn F
 pub fn top_filter_for_any_model_field_decorators() -> Arc<dyn Fn(&Top) -> bool> {
     Arc::new(|top: &Top| {
         top.as_decorator_declaration().map_or(false, |d| match d.decorator_class {
-            ReferenceType::ModelFieldDecorator => true,
-            ReferenceType::ModelRelationDecorator => true,
-            ReferenceType::ModelPropertyDecorator => true,
+            ReferenceSpace::ModelFieldDecorator => true,
+            ReferenceSpace::ModelRelationDecorator => true,
+            ReferenceSpace::ModelPropertyDecorator => true,
             _ => false,
         })
     })

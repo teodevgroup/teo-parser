@@ -6,85 +6,61 @@ use crate::ast::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::identifier::Identifier;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::literals::{NumericLiteral, StringLiteral};
 use crate::ast::span::Span;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug)]
 pub struct Enum {
     pub span: Span,
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
     pub interface: bool,
     pub option: bool,
     pub identifier: Identifier,
     pub members: Vec<EnumMember>,
-    pub resolved: RefCell<Option<EnumResolved>>,
-}
-
-impl Enum {
-
-    pub fn is_available(&self) -> bool {
-        self.define_availability.contains(self.resolved().actual_availability)
-    }
-
-    pub fn resolve(&self, resolved: EnumResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &EnumResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
 }
 
 impl Identifiable for Enum {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for Enum {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for Enum {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for Enum {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
+    fn namespace_skip(&self) -> usize {
+        1
     }
-
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
-    }
-}
-
-#[derive(Debug)]
-pub struct EnumResolved {
-    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
 pub struct EnumMemberResolved {
     pub value: Value,
-    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
@@ -92,28 +68,17 @@ pub struct EnumMember {
     pub span: Span,
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
     pub identifier: Identifier,
     pub expression: Option<EnumMemberExpression>,
     pub argument_list_declaration: Option<ArgumentListDeclaration>,
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
     pub resolved: RefCell<Option<EnumMemberResolved>>,
 }
 
 impl EnumMember {
-
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn is_available(&self) -> bool {
-        self.define_availability.contains(self.resolved().actual_availability)
-    }
 
     pub fn callable_variants(&self) -> Vec<CallableVariant> {
         self.argument_list_declaration.iter().map(|a| CallableVariant {
@@ -124,47 +89,40 @@ impl EnumMember {
             pipeline_output: None,
         }).collect()
     }
-
-    pub fn resolve(&self, resolved: EnumMemberResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &EnumMemberResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
 }
 
 impl Identifiable for EnumMember {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for EnumMember {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for EnumMember {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for EnumMember {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
+    fn namespace_skip(&self) -> usize {
+        2
     }
+}
 
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+impl Resolve<EnumMemberResolved> for EnumMember {
+
+    fn resolved_ref_cell(&self) -> &RefCell<Option<EnumMemberResolved>> {
+        &self.resolved
     }
 }
 

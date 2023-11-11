@@ -4,7 +4,7 @@ use crate::ast::callable_variant::CallableVariant;
 use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ pub struct DecoratorDeclaration {
     pub comment: Option<Comment>,
     pub exclusive: bool,
     pub unique: bool,
-    pub decorator_class: ReferenceType,
+    pub decorator_class: ReferenceSpace,
     pub identifier: Identifier,
     pub generics_declaration: Option<GenericsDeclaration>,
     pub argument_list_declaration: Option<ArgumentListDeclaration>,

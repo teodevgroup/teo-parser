@@ -6,7 +6,7 @@ use crate::ast::identifier::Identifier;
 use crate::ast::literals::ArrayLiteral;
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::namespace::Namespace;
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
 use crate::r#type::Type;

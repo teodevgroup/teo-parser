@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use crate::ast::decorator::{Decorator, DecoratorResolved};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::{resolve_argument_list};
@@ -11,7 +11,7 @@ pub(super) fn resolve_decorator<'a>(
     decorator: &'a Decorator,
     context: &'a ResolverContext<'a>,
     keywords_map: &BTreeMap<Keyword, Type>,
-    reference_type: ReferenceType,
+    reference_type: ReferenceSpace,
 ) {
     if let Some(reference) = resolve_identifier_path(&decorator.identifier_path, context, reference_type, context.current_availability()) {
         decorator.resolve(DecoratorResolved { path: reference.r#type().as_decorator_reference().unwrap().path().clone() });

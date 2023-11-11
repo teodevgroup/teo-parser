@@ -3,7 +3,7 @@ use crate::ast::arity::Arity;
 use crate::ast::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOp};
-use crate::ast::reference::ReferenceType;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::r#type::keyword::Keyword;
@@ -167,7 +167,7 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        if let Some(resolved) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceType::Default, availability) {
+        if let Some(resolved) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceSpace::Default, availability) {
             base = match resolved.r#type() {
                 Type::ModelReference(r) => Some(Type::ModelObject(r.clone())),
                 Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
