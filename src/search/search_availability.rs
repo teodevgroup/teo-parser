@@ -19,7 +19,7 @@ pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_pa
 }
 
 pub(crate) fn find_source_availability(schema: &Schema, source: &Source) -> Availability {
-    if source.r#type == SourceType::Builtin {
+    if source.builtin {
         return Availability::default(); // just pretend to be all
     }
     let connector = find_source_connector(schema, source);
@@ -83,7 +83,7 @@ pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Avai
 }
 
 pub(crate) fn find_namespace_availability(namespace: &Namespace, schema: &Schema, source: &Source) -> Availability {
-    if source.r#type == SourceType::Builtin {
+    if source.builtin {
         return Availability::default(); // just pretend to be all
     }
     let connector = find_namespace_connector(namespace, schema, source);

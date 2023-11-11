@@ -1533,7 +1533,7 @@ fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a R
     Type::InterfaceObject(Reference::new(interface.path.clone(), interface.string_path.clone()), generics)
 }
 
-pub fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+pub(crate) fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
     if t.is_bool() {
         Type::Union(vec![Type::Bool, search_filter_type_in_std("BoolFilter", vec![], context)]).wrap_in_optional()
     } else if t.is_int() {
@@ -1591,7 +1591,7 @@ pub fn resolve_static_where_input_for_type<'a>(t: &Type, context: &'a ResolverCo
     }
 }
 
-pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
+pub(crate) fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context: &'a ResolverContext<'a>) -> Type {
     if t.is_bool() {
         Type::Union(vec![Type::Bool, search_filter_type_in_std("BoolWithAggregatesFilter", vec![], context)]).wrap_in_optional()
     } else if t.is_int() {
@@ -1649,7 +1649,7 @@ pub fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, context
     }
 }
 
-pub fn resolve_static_update_input_for_type<'a>(t: &Type, atomic: bool, context: &'a ResolverContext<'a>) -> Type {
+pub(crate) fn resolve_static_update_input_for_type<'a>(t: &Type, atomic: bool, context: &'a ResolverContext<'a>) -> Type {
     if !atomic {
         return t.clone();
     }

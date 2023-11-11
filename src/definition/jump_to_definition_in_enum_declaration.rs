@@ -6,6 +6,7 @@ use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_definition_in_argument_list_declaration;
 use crate::definition::jump_to_definition_in_arith_expr::jump_to_definition_in_arith_expr;
 use crate::r#type::r#type::Type;
+use crate::r#type::reference::Reference;
 
 pub(super) fn jump_to_definition_in_enum_declaration(schema: &Schema, source: &Source, enum_declaration: &Enum, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = enum_declaration.string_path.iter().map(|s| s.as_str()).collect();
@@ -56,7 +57,7 @@ pub(super) fn jump_to_definition_in_enum_member_declaration(
                     arith_expr,
                     namespace_path,
                     line_col,
-                    &Type::EnumVariant(enum_declaration.path.clone(), enum_declaration.string_path.clone()),
+                    &Type::EnumVariant(Reference::new(enum_declaration.path.clone(), enum_declaration.string_path.clone())),
                     availability,
                 );
             } else {

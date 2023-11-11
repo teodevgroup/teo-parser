@@ -83,7 +83,7 @@ fn search_identifier_path_names_in_source_to_top<'a>(
     identifier_path_names: &Vec<&str>,
     schema: &'a Schema,
     filter: &Arc<dyn Fn(&Top) -> bool>,
-    source: &Source,
+    source: &'a Source,
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
     availability: Availability,

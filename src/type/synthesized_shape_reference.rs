@@ -83,7 +83,7 @@ pub struct SynthesizedShapeReference {
 
 impl SynthesizedShapeReference {
 
-    pub fn fetch_synthesized_definition(&self, schema: &Schema) -> Option<&Type> {
+    pub fn fetch_synthesized_definition<'a>(&self, schema: &'a Schema) -> Option<&'a Type> {
         let model = schema.find_top_by_path(self.owner.as_model_object().unwrap().path()).unwrap().as_model().unwrap();
         model.resolved().shapes.get(&(self.kind, self.without.clone()))
     }

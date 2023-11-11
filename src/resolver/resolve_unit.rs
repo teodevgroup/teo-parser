@@ -40,8 +40,8 @@ pub(super) fn resolve_unit<'a>(
             context,
             keywords_map
         ));
-        if current.unwrap().is_undetermined() {
-            return current.unwrap();
+        if current.as_ref().unwrap().is_undetermined() {
+            return current.as_ref().unwrap().clone();
         }
     }
     current.unwrap_or(TypeAndValue::undetermined())
@@ -549,11 +549,11 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
     }
 }
 
-fn resolve_middleware_reference_for_unit(
+fn resolve_middleware_reference_for_unit<'a>(
     last_span: Span,
     reference: &Reference,
-    expression: &Expression,
-    context: &ResolverContext,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
 ) -> TypeAndValue {
     let middleware_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),

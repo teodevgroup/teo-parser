@@ -50,7 +50,7 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
                 source,
                 argument_list,
                 namespace_path,
-                path.clone(),
+                Some(path.clone()),
                 line_col,
                 availability
             )

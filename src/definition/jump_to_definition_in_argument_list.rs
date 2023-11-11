@@ -12,7 +12,7 @@ pub(super) fn jump_to_definition_in_argument_list<'a>(
     source: &'a Source,
     argument_list: &'a ArgumentList,
     namespace_path: &Vec<&'a str>,
-    callable_reference: Vec<usize>,
+    callable_reference: Option<Vec<usize>>,
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
@@ -37,7 +37,7 @@ pub(super) fn jump_to_definition_in_argument<'a>(
     source: &'a Source,
     argument: &'a Argument,
     namespace_path: &Vec<&'a str>,
-    callable_reference: Vec<usize>,
+    callable_reference: Option<Vec<usize>>,
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
@@ -72,7 +72,7 @@ pub(super) fn jump_to_definition_in_argument_name<'a>(
     source: &'a Source,
     name: &'a Identifier,
     namespace_path: &Vec<&'a str>,
-    callable_reference: Vec<usize>,
+    callable_reference: Option<Vec<usize>>,
     line_col: (usize, usize),
 ) -> Vec<Definition> {
     vec![]

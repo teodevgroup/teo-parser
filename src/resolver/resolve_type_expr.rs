@@ -199,7 +199,7 @@ fn resolve_type_item<'a>(
 
 fn type_item_builtin_match<'a>(
     name: &str,
-    type_item: &TypeItem,
+    type_item: &'a TypeItem,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>,

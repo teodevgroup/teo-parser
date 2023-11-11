@@ -44,6 +44,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
         ExpressionKind::Identifier(i) => resolve_identifier_with_diagnostic_message(i, context),
         ExpressionKind::ArgumentList(_) => unreachable!(),
         ExpressionKind::Subscript(_) => unreachable!(),
+        ExpressionKind::IntSubscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected, keywords_map),
         ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected, keywords_map),
     }

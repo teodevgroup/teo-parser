@@ -57,7 +57,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
                     source,
                     argument_list,
                     namespace_path,
-                    reference.clone(),
+                    Some(reference.clone()),
                     line_col,
                     availability,
                 )

@@ -82,7 +82,7 @@ impl SynthesizedEnumReference {
         }
     }
 
-    pub fn fetch_synthesized_definition(&self, schema: &Schema) -> Option<&SynthesizedEnum> {
+    pub fn fetch_synthesized_definition<'a>(&self, schema: &'a Schema) -> Option<&'a SynthesizedEnum> {
         let model = schema.find_top_by_path(self.owner.as_model_object().unwrap().path()).unwrap().as_model().unwrap();
         model.resolved().enums.get(&self.kind)
     }

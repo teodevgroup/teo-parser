@@ -41,11 +41,6 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             expect,
             availability,
         ),
-        ExpressionKind::NumericLiteral(_) => vec![],
-        ExpressionKind::StringLiteral(_) => vec![],
-        ExpressionKind::RegexLiteral(_) => vec![],
-        ExpressionKind::BoolLiteral(_) => vec![],
-        ExpressionKind::NullLiteral(_) => vec![],
         ExpressionKind::EnumVariantLiteral(enum_variant_literal) => jump_to_definition_in_enum_variant_literal(
             schema,
             source,
@@ -53,6 +48,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             expect,
+            availability
         ),
         ExpressionKind::TupleLiteral(tuple_literal) => jump_to_definition_in_tuple_literal(
             schema,
@@ -107,6 +103,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
             namespace_path,
             line_col,
             availability,
-        )
+        ),
+        _ => vec![],
     }
 }

@@ -9,7 +9,7 @@ use crate::ast::subscript::Subscript;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 #[derive(Debug)]
@@ -64,11 +64,11 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
         if index == 0 {
             let mut identifier_span = None;
             current = Some(if let Some(identifier) = expression.kind.as_identifier() {
-                if let Some(path) = search_identifier_path_names_with_filter_to_type_and_value(
+                if let Some(path) = search_identifier_path_names_with_filter_to_path(
+                    &vec![identifier.name()],
                     schema,
                     source,
                     namespace_path,
-                    &vec![identifier.name()],
                     &top_filter_for_reference_type(ReferenceType::Default),
                     availability,
                 ) {
@@ -99,30 +99,13 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
             if current.as_ref().is_some() {
                 match current.as_ref().unwrap() {
                     UnitSearchResult::Type(current_type) => {
-                        if let Some((path, _)) = current_type.as_struct_object() {
+                        if let Some((reference, _)) = current_type.as_struct_object() {
                             match &expression.kind {
                                 ExpressionKind::Identifier(_) => {
                                     return default
                                 }
-                                ExpressionKind::Call(call) => {
-                                    let struct_declaration = schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
-                                    if let Some(function_declaration) = struct_declaration.function_declarations.iter().find(|f| {
-                                        f.r#static == false && f.identifier.name() == call.identifier.name()
-                                    }) {
-                                        if call.identifier.span.contains_line_col(line_col) {
-                                            return handle_identifier(call.identifier.span, &struct_declaration.path, Some(call.identifier.name()));
-                                        } else if call.argument_list.span.contains_line_col(line_col) {
-                                            return handle_argument_list(&call.argument_list, &struct_declaration.path, Some(call.identifier.name()));
-                                        } else {
-                                            // going next
-                                            current = Some(UnitSearchResult::Type(function_declaration.return_type.resolved().clone()));
-                                        }
-                                    } else {
-                                        return default;
-                                    }
-                                }
                                 ExpressionKind::Subscript(subscript) => {
-                                    let struct_declaration = schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
+                                    let struct_declaration = schema.find_top_by_path(reference.path()).unwrap().as_struct_declaration().unwrap();
                                     if subscript.span.contains_line_col(line_col) {
                                         if subscript.expression.span().contains_line_col(line_col) {
                                             return handle_subscript(&subscript);
@@ -160,19 +143,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     }
-                                    ExpressionKind::Call(call) => {
-                                        if let Some(function) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
-                                            if call.span.contains_line_col(line_col) {
-                                                return handle_identifier(call.identifier.span, struct_declaration.path.as_ref(), Some(function.identifier.name()));
-                                            } else if call.argument_list.span.contains_line_col(line_col) {
-                                                return handle_argument_list(&call.argument_list, struct_declaration.path.as_ref(), Some(function.identifier.name()));
-                                            } else {
-                                                return default;
-                                            }
-                                        } else {
-                                            return default;
-                                        }
-                                    }
                                     ExpressionKind::Subscript(s) => {
                                         return default;
                                     }
@@ -198,9 +168,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::ArgumentList(a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Call(c) => {
-                                        return default;
-                                    }
                                     ExpressionKind::Subscript(s) => {
                                         return default;
                                     }
@@ -213,23 +180,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                         if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
                                             if i.span.contains_line_col(line_col) {
                                                 return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier.name()));
-                                            } else {
-                                                return default;
-                                            }
-                                        } else {
-                                            return default;
-                                        }
-                                    }
-                                    ExpressionKind::Call(c) => {
-                                        if c.span.contains_line_col(line_col) {
-                                            if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
-                                                if c.identifier.span.contains_line_col(line_col) {
-                                                    return handle_identifier(c.identifier.span, r#enum.path.as_ref(), Some(member.identifier.name()));
-                                                } else if c.argument_list.span.contains_line_col(line_col) {
-                                                    return handle_argument_list(&c.argument_list, r#enum.path.as_ref(), Some(member.identifier.name()));
-                                                } else {
-                                                    return default;
-                                                }
                                             } else {
                                                 return default;
                                             }
@@ -262,9 +212,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::ArgumentList(a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Call(c) => {
-                                        return default;
-                                    }
                                     ExpressionKind::Subscript(s) => {
                                         return default;
                                     }
@@ -287,9 +234,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     ExpressionKind::ArgumentList(a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Call(c) => {
-                                        return default;
-                                    }
                                     ExpressionKind::Subscript(s) => {
                                         return default;
                                     }
@@ -309,34 +253,6 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     },
-                                    ExpressionKind::Call(c) => {
-                                        if let Some(top) = namespace.find_top_by_name(c.identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
-                                            match top {
-                                                Top::StructDeclaration(struct_declaration) => {
-                                                    if let Some(new) = struct_declaration.function_declarations.iter().find(|f| {
-                                                        f.identifier.name() == "new"
-                                                    }) {
-                                                        if c.span.contains_line_col(line_col) {
-                                                            if c.identifier.span.contains_line_col(line_col) {
-                                                                return handle_identifier(c.identifier.span, struct_declaration.path.as_ref(), Some("new"));
-                                                            } else if c.argument_list.span.contains_line_col(line_col) {
-                                                                return handle_argument_list(&c.argument_list, struct_declaration.path.as_ref(), Some("new"));
-                                                            } else {
-                                                                return default;
-                                                            }
-                                                        } else {
-                                                            current = Some(UnitSearchResult::Type(new.return_type.resolved().clone()));
-                                                        }
-                                                    } else {
-                                                        return default;
-                                                    }
-                                                },
-                                                _ => return default,
-                                            }
-                                        } else {
-                                            return default;
-                                        }
-                                    }
                                     ExpressionKind::ArgumentList(a) => {
                                         return default;
                                     }

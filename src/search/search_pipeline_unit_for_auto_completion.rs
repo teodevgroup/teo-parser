@@ -4,7 +4,7 @@ use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::unit::Unit;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub fn search_pipeline_unit_for_auto_completion<HAL, HI, OUTPUT>(
@@ -28,7 +28,7 @@ pub fn search_pipeline_unit_for_auto_completion<HAL, HI, OUTPUT>(
                 return handle_identifier(&user_typed_prefix);
             } else {
                 user_typed_prefix.push(identifier.name());
-                if let Some(reference) = search_identifier_path_names_with_filter_to_type_and_value(schema, source, namespace_path, &user_typed_prefix, &top_filter_for_pipeline(), availability) {
+                if let Some(reference) = search_identifier_path_names_with_filter_to_path(&user_typed_prefix, schema, source, namespace_path, &top_filter_for_pipeline(), availability) {
                     if schema.find_top_by_path(&reference).unwrap().is_pipeline_item_declaration() {
                         user_typed_prefix = vec![];
                     }
@@ -38,7 +38,7 @@ pub fn search_pipeline_unit_for_auto_completion<HAL, HI, OUTPUT>(
             }
         } else if let Some(argument_list) = expression.kind.as_argument_list() {
             if argument_list.span.contains_line_col(line_col) {
-                return handle_argument_list(argument_list, search_identifier_path_names_with_filter_to_type_and_value(schema, source, namespace_path, &user_typed_prefix, &top_filter_for_pipeline(), availability).map(|r| schema.find_top_by_path(&r).unwrap().as_pipeline_item_declaration()).flatten());
+                return handle_argument_list(argument_list, search_identifier_path_names_with_filter_to_path(&user_typed_prefix, schema, source, namespace_path, &top_filter_for_pipeline(), availability).map(|r| schema.find_top_by_path(&r).unwrap().as_pipeline_item_declaration()).flatten());
             } else {
                 user_typed_prefix = vec![];
             }

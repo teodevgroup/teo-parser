@@ -7,7 +7,7 @@ use crate::ast::source::Source;
 use crate::ast::span::Span;
 use crate::ast::top::Top;
 use crate::ast::unit::Unit;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub fn search_pipeline_unit_for_definition<HAL, HI, OUTPUT>(
@@ -30,11 +30,11 @@ pub fn search_pipeline_unit_for_definition<HAL, HI, OUTPUT>(
         if let Some(identifier) = expression.kind.as_identifier() {
             if let Some(this_top) = if current_namespace.is_some() {
                 current_namespace.unwrap().find_top_by_name(identifier.name(), &top_filter_for_pipeline(), availability)
-            } else if let Some(path) = search_identifier_path_names_with_filter_to_type_and_value(
+            } else if let Some(path) = search_identifier_path_names_with_filter_to_path(
+                &vec![identifier.name()],
                 schema,
                 source,
                 namespace_path,
-                &vec![identifier.name()],
                 &top_filter_for_pipeline(),
                 availability,
             ) {
