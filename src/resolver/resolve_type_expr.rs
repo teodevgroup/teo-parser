@@ -147,7 +147,7 @@ fn resolve_type_expr_kind<'a>(
             resolved
         }
         TypeExprKind::FieldReference(r) => {
-            Type::FieldReference(r.identifier.name().to_string())
+            Type::FieldName(r.identifier.name().to_string())
         }
     }
 }

@@ -48,7 +48,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
             None => vec![],
         }
     } else {
-        let reference = search_identifier_path_names_with_filter(schema, source, namespace_path, &user_typed_spaces, filter, availability);
+        let reference = search_identifier_path_names_with_filter(&user_typed_spaces, schema, source, namespace_path, filter, availability);
         // found in argument lists
         if let Some(argument_list) = &decorator.argument_list {
             if let Some(reference) = reference {

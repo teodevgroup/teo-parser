@@ -47,7 +47,7 @@ pub enum Type {
 
     /// Field Reference
     ///
-    FieldReference(String),
+    FieldName(String),
 
     /// Generic Item
     ///
@@ -323,13 +323,13 @@ impl Type {
         }
     }
 
-    pub fn is_field_reference(&self) -> bool {
-        self.as_field_reference().is_some()
+    pub fn is_field_name(&self) -> bool {
+        self.as_field_name().is_some()
     }
 
-    pub fn as_field_reference(&self) -> Option<&str> {
+    pub fn as_field_name(&self) -> Option<&str> {
         match self {
-            Self::FieldReference(name) => Some(name.as_str()),
+            Self::FieldName(name) => Some(name.as_str()),
             _ => None,
         }
     }
@@ -1085,7 +1085,7 @@ impl Type {
             Type::Enumerable(inner) => inner.test(other) || Type::Array(inner.clone()).test(other),
             Type::Optional(inner) => inner.test(other) || (other.is_optional() && inner.test(other.as_optional().unwrap())),
             Type::FieldType(a, b) => other.is_field_type() && a.test(other.as_field_type().unwrap().0) && b.test(other.as_field_type().unwrap().1),
-            Type::FieldReference(name) => other.is_field_reference() && other.as_field_reference().unwrap() == name.as_str(),
+            Type::FieldName(name) => other.is_field_name() && other.as_field_name().unwrap() == name.as_str(),
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
             Type::Null => other.is_null(),
@@ -1222,7 +1222,7 @@ impl Display for Type {
             } else {
                 f.write_str(&format!("{}[{}]", a, b))
             },
-            Type::FieldReference(name) => f.write_str(&format!(".{}", name)),
+            Type::FieldName(name) => f.write_str(&format!(".{}", name)),
             Type::GenericItem(name) => f.write_str(name),
             Type::Keyword(k) => Display::fmt(k, f),
             Type::Null => f.write_str("Null"),

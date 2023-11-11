@@ -386,4 +386,25 @@ impl TypeAndValue {
             value: None
         }
     }
+
+    pub fn as_path(&self) -> Option<&Vec<usize>> {
+        match self.r#type() {
+            Type::EnumReference(r) => Some(r.path()),
+            Type::ConfigReference(r) => Some(r.path()),
+            Type::ModelReference(r) => Some(r.path()),
+            Type::ModelFieldReference(r) => Some(r.path()),
+            Type::InterfaceReference(r, _) => Some(r.path()),
+            Type::InterfaceFieldReference(r, _) => Some(r.path()),
+            Type::StructReference(r, _) => Some(r.path()),
+            Type::StructStaticFunctionReference(r, _) => Some(r.path()),
+            Type::StructInstanceFunctionReference(r, _) => Some(r.path()),
+            Type::FunctionReference(r) => Some(r.path()),
+            Type::MiddlewareReference(r) => Some(r.path()),
+            Type::DataSetReference(r) => Some(r.path()),
+            Type::NamespaceReference(r) => Some(r.path()),
+            Type::DecoratorReference(r) => Some(r.path()),
+            Type::PipelineItemReference(r) => Some(r.path()),
+            _ => None,
+        }
+    }
 }

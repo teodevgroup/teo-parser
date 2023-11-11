@@ -295,7 +295,7 @@ fn guess_generics_by_constraints<'a>(
 
 fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -> Type {
     t.replace_field_type(|container: &Type, reference: &Type| {
-        if let Some(field_name) = reference.as_field_reference() {
+        if let Some(field_name) = reference.as_field_name() {
             match container {
                 Type::ModelReference(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();

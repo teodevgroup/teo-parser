@@ -17,13 +17,13 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
     availability: Availability,
 ) -> Vec<Definition> {
     if let Some(reference) = search_identifier_path_names_with_filter(
+        &vec![identifier.name()],
         schema,
         source,
         namespace_path,
-        &vec![identifier.name()],
         &top_filter_for_reference_type(ReferenceType::Default),
         availability,
-    ) {
+    ).map(|s| s.as_path()).flatten() {
         match schema.find_top_by_path(&reference).unwrap() {
             Top::Constant(c) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
