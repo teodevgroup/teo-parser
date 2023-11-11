@@ -2,12 +2,15 @@ use std::cell::RefCell;
 use crate::ast::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::decorator::Decorator;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
+use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Copy, Clone)]
 pub enum FieldHint {
@@ -102,7 +105,6 @@ impl FieldClass {
 #[derive(Debug)]
 pub struct FieldResolved {
     pub class: FieldClass,
-    pub actual_availability: Availability,
 }
 
 #[derive(Debug)]
@@ -110,64 +112,47 @@ pub struct Field {
     pub span: Span,
     pub path: Vec<usize>,
     pub string_path: Vec<String>,
-    pub define_availability: Availability,
     pub comment: Option<Comment>,
     pub decorators: Vec<Decorator>,
     pub empty_decorators_spans: Vec<Span>,
     pub identifier: Identifier,
     pub type_expr: TypeExpr,
+    pub define_availability: Availability,
+    pub actual_availability: RefCell<Availability>,
     pub resolved: RefCell<Option<FieldResolved>>,
 }
 
-impl Field {
-
-    pub fn name(&self) -> &str {
-        self.identifier.name.as_str()
-    }
-
-    pub fn resolve(&self, resolved: FieldResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &FieldResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-
-    pub fn is_available(&self) -> bool {
-        self.define_availability.contains(self.resolved().actual_availability)
-    }
-}
-
 impl Identifiable for Field {
-
-    fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
     fn path(&self) -> &Vec<usize> {
         &self.path
     }
+}
 
-    fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
+impl NamedIdentifiable for Field {
+    fn string_path(&self) -> &Vec<String> {
+        &self.string_path
+    }
+}
+
+impl HasAvailability for Field {
+    fn define_availability(&self) -> Availability {
+        self.define_availability
+    }
+
+    fn actual_availability(&self) -> Availability {
+        *self.actual_availability.borrow()
     }
 }
 
 impl InfoProvider for Field {
-
-    fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
-    }
-
-    fn availability(&self) -> Availability {
-        self.define_availability.bi_and(self.resolved().actual_availability)
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }
+
+impl Resolve<FieldResolved> for Field {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<FieldResolved>> {
+        &self.resolved
+    }
+}
+

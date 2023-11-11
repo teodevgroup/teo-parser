@@ -1,6 +1,5 @@
 use maplit::btreemap;
 use pest::Parser;
-use crate::ast::identifiable::Identifiable;
 use crate::ast::source::{Source, SourceReferences};
 use crate::ast::top::Top;
 use crate::parser::parse_availability_end::parse_availability_end;
@@ -23,6 +22,7 @@ use crate::parser::parse_struct_declaration::parse_struct_declaration;
 use crate::parser::parse_use_middlewares_block::parse_use_middlewares_block;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
+use crate::traits::identifiable::Identifiable;
 use super::pest_parser::Rule;
 
 pub(super) fn parse_source(

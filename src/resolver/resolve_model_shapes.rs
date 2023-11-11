@@ -7,7 +7,6 @@ use crate::ast::decorator::Decorator;
 use crate::ast::expression::ExpressionKind;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
-use crate::ast::info_provider::InfoProvider;
 use crate::ast::model::{Model};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::unit::Unit;
@@ -21,6 +20,9 @@ use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::traits::has_availability::HasAvailability;
+use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
