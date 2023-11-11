@@ -6,9 +6,11 @@ pub trait NodeTrait: Identifiable {
 
     fn span(&self) -> Span;
 
-    fn has_children(&self) -> bool;
+    fn has_children(&self) -> bool {
+        self.children().is_empty()
+    }
 
-    fn child(&self, id: usize) -> Option<Node>;
+    fn child(&self, id: usize) -> Option<&Node>;
 
-    fn children(&self) -> Vec<Node>;
+    fn children(&self) -> &Vec<Node>;
 }

@@ -14,53 +14,6 @@ use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
 
 #[derive(Debug)]
-pub struct Negation {
-    pub expression: Box<Expression>,
-    pub span: Span,
-}
-
-impl Display for Negation {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("-")?;
-        Display::fmt(self.expression.as_ref(), f)?;
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub struct BitwiseNegation {
-    pub expression: Box<Expression>,
-    pub span: Span,
-}
-
-impl Display for BitwiseNegation {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("~")?;
-        Display::fmt(self.expression.as_ref(), f)?;
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub struct NullishCoalescing {
-    pub expressions: Vec<Expression>,
-    pub span: Span,
-}
-
-impl Display for NullishCoalescing {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let len = self.expressions.len();
-        for (index, expression) in self.expressions.iter().enumerate() {
-            Display::fmt(expression, f)?;
-            if index != len - 1 {
-                f.write_str(" ?? ")?;
-            }
-        }
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
 pub enum ExpressionKind {
     Group(Group),
     ArithExpr(ArithExpr),
