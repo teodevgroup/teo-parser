@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use crate::ast::argument::Argument;
 use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
 use crate::ast::argument_list::ArgumentList;
@@ -31,11 +32,14 @@ use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::{Enum, EnumMember};
+use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::subscript::Subscript;
 use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGroup, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
 
 #[derive(Debug)]
 pub enum Node {
@@ -761,5 +765,95 @@ impl Node {
             Node::UseMiddlewareBlock(c) => Some(c),
            _ => None,
         }
+    }
+
+    pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
+        match self {
+            Node::Argument(n) => n,
+            Node::ArgumentList(n) => n,
+            Node::ArgumentListDeclaration(n) => n,
+            Node::ArgumentDeclaration(n) => n,
+            Node::ArithExpr(n) => n,
+            Node::UnaryOperation(n) => n,
+            Node::UnaryPostfixOperation(n) => n,
+            Node::BinaryOperation(n) => n,
+            Node::AvailabilityFlag(n) => n,
+            Node::AvailabilityFlagEnd(n) => n,
+            Node::CodeComment(n) => n,
+            Node::Comment(n) => n,
+            Node::Config(n) => n,
+            Node::ConfigItem(n) => n,
+            Node::ConfigDeclaration(n) => n,
+            Node::Constant(n) => n,
+            Node::DataSet(n) => n,
+            Node::DataSetGroup(n) => n,
+            Node::DataSetRecord(n) => n,
+            Node::Decorator(n) => n,
+            Node::DecoratorDeclaration(n) => n,
+            Node::Enum(n) => n,
+            Node::EnumMember(n) => n,
+            Node::Expression(n) => n,
+            Node::Group(n) => n,
+            Node::NumericLiteral(n) => n,
+            Node::StringLiteral(n) => n,
+            Node::RegexLiteral(n) => n,
+            Node::BoolLiteral(n) => n,
+            Node::NullLiteral(n) => n,
+            Node::EnumVariantLiteral(n) => n,
+            Node::TupleLiteral(n) => n,
+            Node::ArrayLiteral(n) => n,
+            Node::DictionaryLiteral(n) => n,
+            Node::Identifier(n) => n,
+            Node::Subscript(n) => n,
+            Node::IntSubscript(n) => n,
+            Node::Unit(n) => n,
+            Node::Pipeline(n) => n,
+            Node::Field(n) => n,
+            Node::FunctionDeclaration(n) => n,
+            Node::GenericsDeclaration(n) => n,
+            Node::GenericsConstraint(n) => n,
+            Node::GenericsConstraintItem(n) => n,
+            Node::HandlerGroupDeclaration(n) => n,
+            Node::HandlerDeclaration(n) => n,
+            Node::IdentifierPath(n) => n,
+            Node::Import(n) => n,
+            Node::InterfaceDeclaration(n) => n,
+            Node::MiddlewareDeclaration(n) => n,
+            Node::Model(n) => n,
+            Node::Namespace(n) => n,
+            Node::PipelineItemDeclaration(n) => n,
+            Node::StructDeclaration(n) => n,
+            Node::TypeExpr(n) => n,
+            Node::TypeBinaryOperation(n) => n,
+            Node::TypeGroup(n) => n,
+            Node::TypeTuple(n) => n,
+            Node::TypeSubscript(n) => n,
+            Node::UseMiddlewareBlock(n) => n,
+        }
+    }
+}
+
+impl Display for Node {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self.as_dyn_node_trait(), f)
+    }
+}
+
+impl Identifiable for Node {
+
+    fn path(&self) -> &Vec<usize> {
+        self.as_dyn_node_trait().path()
+    }
+}
+
+impl NodeTrait for Node {
+
+    fn span(&self) -> Span {
+        self.as_dyn_node_trait().span()
+    }
+
+    fn children(&self) -> &Vec<Node> {
+        self.as_dyn_node_trait().children()
     }
 }
