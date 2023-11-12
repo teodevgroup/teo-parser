@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
+use crate::ast::expression::Expression;
 use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
@@ -100,16 +101,14 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
     }
 }
 
-fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> EnumMemberExpression {
+fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> Expression {
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::arith_expr => return EnumMemberExpression::ArithExpr(parse_arith_expr(current, context)),
-            Rule::string_literal => return EnumMemberExpression::StringLiteral(parse_string_literal(&current)),
-            Rule::numeric_literal => return EnumMemberExpression::NumericLiteral(parse_numeric_literal(&current, context)),
-            Rule::availability_start => parse_availability_flag(current, context),
-            Rule::availability_end => parse_availability_end(current, context),
-            _ => panic!("unreachable 1"),
+            Rule::arith_expr => return Expression::ArithExpr(parse_arith_expr(current, context)),
+            Rule::string_literal => return Expression::StringLiteral(parse_string_literal(&current)),
+            Rule::numeric_literal => return Expression::NumericLiteral(parse_numeric_literal(&current, context)),
+            _ => context.insert_error(parse_span(&pair), "invalid enum member expression"),
         }
     }
-    panic!("unreachable 2")
+    unreachable!()
 }
