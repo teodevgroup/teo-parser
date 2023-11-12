@@ -6,43 +6,27 @@ use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 
-#[derive(Debug)]
-pub struct HandlerGroupDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub identifier: Identifier,
-    pub handler_declarations: Vec<HandlerDeclaration>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+declare_container_node!(HandlerGroupDeclaration, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) handler_declarations: Vec<usize>,
+);
 
-impl Identifiable for HandlerGroupDeclaration {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+impl_container_node_defaults!(HandlerGroupDeclaration, named, availability);
 
-impl NamedIdentifiable for HandlerGroupDeclaration {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
+node_children_iter!(HandlerGroupDeclaration, HandlerDeclaration, HandlerDeclarationsIter, handler_declarations);
 
-impl HasAvailability for HandlerGroupDeclaration {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
+impl HandlerGroupDeclaration {
 
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_child_fn!(identifier, Identifier);
+
+    node_children_iter_fn!(handler_declarations, HandlerDeclarationsIter);
 }
 
 impl InfoProvider for HandlerGroupDeclaration {
@@ -51,28 +35,29 @@ impl InfoProvider for HandlerGroupDeclaration {
     }
 }
 
-#[derive(Debug)]
-pub struct HandlerDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub decorators: Vec<Decorator>,
-    pub empty_decorators_spans: Vec<Span>,
-    pub identifier: Identifier,
-    pub input_type: TypeExpr,
-    pub output_type: TypeExpr,
+declare_container_node!(HandlerDeclaration, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorators_spans: Vec<Span>,
+    pub(crate) identifier: usize,
+    pub(crate) input_type: usize,
+    pub(crate) output_type: usize,
     pub input_format: HandlerInputFormat,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+);
+
+impl_container_node_defaults!(HandlerDeclaration, named, availability);
 
 impl HandlerDeclaration {
 
-    pub fn name(&self) -> &str {
-        self.string_path.last().map(AsRef::as_ref).unwrap()
-    }
+    node_optional_child_fn!(comment, Comment);
 
+    node_children_iter!(HandlerDeclaration, Decorator, DecoratorsIter, decorators);
+
+    node_child_fn!(identifier, Identifier);
+
+    node_child_fn!(input_type, TypeExpr);
+
+    node_child_fn!(output_type, TypeExpr);
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -95,28 +80,6 @@ impl HandlerInputFormat {
             HandlerInputFormat::Form => true,
             _ => false,
         }
-    }
-}
-
-impl Identifiable for HandlerDeclaration {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for HandlerDeclaration {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for HandlerDeclaration {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
     }
 }
 

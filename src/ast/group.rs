@@ -1,13 +1,16 @@
 use std::fmt::{Display, Formatter};
 use crate::ast::expression::{Expression, ExpressionKind};
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
 
 /// A group represents something like this (1 + 2) * 5
 ///
-#[derive(Debug)]
-pub struct Group {
-    pub expression: Box<Expression>,
-    pub span: Span,
+declare_container_node!(Group, pub(crate) expression: usize);
+
+impl_container_node_defaults!(Group);
+
+impl Group {
+
+    node_child_fn!(expression, Expression);
 }
 
 impl Display for Group {
