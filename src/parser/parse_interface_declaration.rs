@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::availability::Availability;
 use crate::ast::field::Field;
-use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationShapeResolved};
+use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
 use crate::ast::type_expr::TypeExpr;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
@@ -55,6 +55,6 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
         generics_constraint,
         extends,
         fields,
-        shape_resolved: RefCell::new(Some(InterfaceDeclarationShapeResolved::new())),
+        resolved: RefCell::new(Some(InterfaceDeclarationResolved::new())),
     }
 }

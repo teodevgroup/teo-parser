@@ -1,11 +1,9 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::span::Span;
+use crate::{declare_node, impl_node_defaults};
 
-#[derive(Debug)]
-pub struct IntSubscript {
-    pub span: Span,
-    pub index: usize,
-}
+declare_node!(IntSubscript, pub index: usize);
+
+impl_node_defaults!(IntSubscript);
 
 impl Display for IntSubscript {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

@@ -3,7 +3,7 @@ use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::expression::Expression;
 use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
-use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression};
+use crate::ast::r#enum::{Enum, EnumMember};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_availability_end::parse_availability_end;
@@ -64,7 +64,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier: Option<Identifier> = None;
-    let mut expression: Option<EnumMemberExpression> = None;
+    let mut expression: Option<Expression> = None;
     let mut argument_list_declaration: Option<ArgumentListDeclaration> = None;
     for current in pair.into_inner() {
         match current.as_rule() {

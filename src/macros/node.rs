@@ -7,7 +7,7 @@ macro_rules! declare_node {
             path: Vec<usize>,
         }
     };
-    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty)* $(,)?) => {
+    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -331,6 +331,23 @@ macro_rules! node_children_iter_fn {
             }
         }
     }
+}
+
+#[macro_export]
+macro_rules! node_children_pair_iter {
+    ($struct_name:ident, $child_struct_name:ident, $iter_name:ident, $field_name:ident) => {
+        pub struct $iter_name<'a> {
+            index: usize,
+            owner: &'a $struct_name,
+        }
+        impl<'a> Iterator for $iter_name<'a> {
+            type Item = (&'a $child_struct_name, &'a $child_struct_name);
+            fn next(&mut self) -> Option<Self::Item> {
+                self.index += 1;
+                self.owner.$field_name.get(self.index - 1).map(|(k, v)| (self.owner.children.get(k).unwrap().try_into().unwrap(), self.owner.children.get(v).unwrap().try_into().unwrap()))
+            }
+        }
+    };
 }
 
 #[macro_export]

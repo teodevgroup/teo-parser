@@ -8,71 +8,43 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
-#[derive(Debug)]
-pub struct InterfaceDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub identifier: Identifier,
-    pub generics_declaration: Option<GenericsDeclaration>,
-    pub generics_constraint: Option<GenericsConstraint>,
-    pub extends: Vec<TypeExpr>,
-    pub fields: Vec<Field>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub shape_resolved: RefCell<Option<InterfaceDeclarationShapeResolved>>,
-}
+declare_container_node!(InterfaceDeclaration, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) generics_declaration: Option<usize>,
+    pub(crate) generics_constraint: Option<usize>,
+    pub(crate) extends: Vec<usize>,
+    pub(crate) fields: Vec<usize>,
+    pub(crate) resolved: RefCell<Option<InterfaceDeclarationResolved>>,
+);
+
+impl_container_node_defaults!(InterfaceDeclaration, named, availability);
+
+node_children_iter!(InterfaceDeclaration, TypeExpr, ExtendsIter, extends);
+
+node_children_iter!(InterfaceDeclaration, Field, FieldsIter, fields);
 
 impl InterfaceDeclaration {
 
-    pub fn extends(&self) -> &Vec<TypeExpr> {
-        &self.extends
-    }
+    node_optional_child_fn!(comment, Comment);
 
-    pub fn shape_resolved(&self) -> &InterfaceDeclarationShapeResolved {
-        (unsafe { &*self.shape_resolved.as_ptr() }).as_ref().unwrap()
-    }
+    node_child_fn!(identifier, Identifier);
 
-    fn shape_resolved_mut(&self) -> &mut InterfaceDeclarationShapeResolved {
-        (unsafe { &mut *self.shape_resolved.as_ptr() }).as_mut().unwrap()
-    }
+    node_optional_child_fn!(generics_declaration, GenericsDeclaration);
 
-    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
-        self.shape_resolved().map.get(generics)
-    }
+    node_optional_child_fn!(generics_constraint, GenericsConstraint);
 
-    pub fn set_shape(&self, generics: Vec<Type>, input: Type) {
-        self.shape_resolved_mut().map.insert(generics, input);
-    }
-}
+    node_children_iter_fn!(extends, ExtendsIter);
 
-impl Identifiable for InterfaceDeclaration {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for InterfaceDeclaration {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for InterfaceDeclaration {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_children_iter_fn!(fields, FieldsIter);
 }
 
 impl InfoProvider for InterfaceDeclaration {
@@ -81,8 +53,14 @@ impl InfoProvider for InterfaceDeclaration {
     }
 }
 
+impl Resolve<InterfaceDeclarationResolved> for InterfaceDeclaration {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<InterfaceDeclarationResolved>> {
+        &self.resolved
+    }
+}
+
 #[derive(Debug, Clone)]
-pub struct InterfaceDeclarationShapeResolved {
+pub struct InterfaceDeclarationResolved {
     pub map: IndexMap<Vec<Type>, Type>,
 }
 
@@ -92,7 +70,7 @@ pub struct InterfaceDeclarationShapeResolvedItemRef<'a> {
     value: &'a Type,
 }
 
-impl Serialize for InterfaceDeclarationShapeResolved {
+impl Serialize for InterfaceDeclarationResolved {
 
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         serializer.collect_seq(self.map.iter().map(|(key, value)| InterfaceDeclarationShapeResolvedItemRef {
@@ -102,7 +80,7 @@ impl Serialize for InterfaceDeclarationShapeResolved {
     }
 }
 
-impl InterfaceDeclarationShapeResolved {
+impl InterfaceDeclarationResolved {
 
     pub fn new() -> Self {
         Self {

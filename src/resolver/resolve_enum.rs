@@ -5,7 +5,7 @@ use maplit::btreemap;
 use teo_teon::value::Value;
 use crate::ast::arith_expr::{ArithExpr, Operator};
 use crate::ast::expression::{Expression, ExpressionKind};
-use crate::ast::r#enum::{Enum, EnumMember, EnumMemberExpression, EnumMemberResolved};
+use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_decorator::resolve_decorator;

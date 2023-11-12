@@ -5,82 +5,40 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults_with_display, node_child_fn, node_children_iter, node_children_iter_fn, node_children_pair_iter, node_optional_child_fn};
 
-#[derive(Debug)]
-pub struct NumericLiteral {
-    pub value: Value,
-    pub span: Span,
-}
+declare_node!(NumericLiteral, pub(crate) value: Value, pub(crate) display: String);
 
-impl Display for NumericLiteral {
+impl_node_defaults_with_display!(NumericLiteral, display);
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.value, f)
-    }
-}
+declare_node!(StringLiteral, pub(crate) value: String, pub(crate) display: String);
 
+impl_node_defaults_with_display!(StringLiteral, display);
 
-#[derive(Debug)]
-pub struct StringLiteral {
-    pub value: String,
-    pub span: Span,
-}
+declare_node!(RegexLiteral, pub(crate) value: Regex, pub(crate) display: String);
 
-impl Display for StringLiteral {
+impl_node_defaults_with_display!(RegexLiteral, display);
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.value)
-    }
-}
+declare_node!(BoolLiteral, pub(crate) value: bool);
 
-#[derive(Debug)]
-pub struct RegexLiteral {
-    pub value: Regex,
-    pub span: Span,
-}
+impl_node_defaults_with_display!(BoolLiteral, value);
 
-impl Display for RegexLiteral {
+declare_node!(NullLiteral);
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("/")?;
-        f.write_str(self.value.as_str())?;
-        f.write_str("/")
-    }
-}
+impl_node_defaults_with_display!(NullLiteral, "null");
 
-#[derive(Debug)]
-pub struct BoolLiteral {
-    pub value: bool,
-    pub span: Span,
-}
+declare_container_node!(EnumVariantLiteral,
+    pub(crate) identifier: usize,
+    pub(crate) argument_list: Option<usize>,
+);
 
-impl Display for BoolLiteral {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.value, f)
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct NullLiteral {
-    pub span: Span,
-}
-
-impl Display for NullLiteral {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("null")
-    }
-}
-
-#[derive(Debug)]
-pub struct EnumVariantLiteral {
-    pub span: Span,
-    pub identifier: Identifier,
-    pub argument_list: Option<ArgumentList>,
-}
+impl_container_node_defaults!(EnumVariantLiteral);
 
 impl EnumVariantLiteral {
+
+    node_child_fn!(identifier, Identifier);
+
+    node_optional_child_fn!(argument_list, ArgumentList);
 
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
         Some(vec![self.identifier.name()])
@@ -103,10 +61,15 @@ impl Display for EnumVariantLiteral {
     }
 }
 
-#[derive(Debug)]
-pub struct TupleLiteral {
-    pub expressions: Vec<Expression>,
-    pub span: Span,
+declare_container_node!(TupleLiteral, pub(crate) expressions: Vec<usize>);
+
+impl_container_node_defaults!(TupleLiteral);
+
+node_children_iter!(TupleLiteral, Expression, TupleLiteralExpressionsIter, expressions);
+
+impl TupleLiteral {
+
+    node_children_iter_fn!(expressions, TupleLiteralExpressionsIter);
 }
 
 impl Display for TupleLiteral {
@@ -126,13 +89,15 @@ impl Display for TupleLiteral {
     }
 }
 
-#[derive(Debug)]
-pub struct ArrayLiteral {
-    pub expressions: Vec<Expression>,
-    pub span: Span,
-}
+declare_container_node!(ArrayLiteral, pub(crate) expressions: Vec<usize>);
+
+impl_container_node_defaults!(ArrayLiteral);
+
+node_children_iter!(ArrayLiteral, Expression, ArrayLiteralExpressionsIter, expressions);
 
 impl ArrayLiteral {
+
+    node_children_iter_fn!(expressions, ArrayLiteralExpressionsIter);
 
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
         let mut result = vec![];
@@ -167,17 +132,22 @@ impl Display for ArrayLiteral {
     }
 }
 
-#[derive(Debug)]
-pub struct DictionaryLiteral {
-    pub expressions: Vec<(Expression, Expression)>,
-    pub span: Span,
+declare_container_node!(DictionaryLiteral, expressions: Vec<(usize, usize)>);
+
+impl_container_node_defaults!(DictionaryLiteral);
+
+node_children_pair_iter!(DictionaryLiteral, Expression, DictionaryLiteralExpressionsIter, expressions);
+
+impl DictionaryLiteral {
+
+    node_children_iter_fn!(DictionaryLiteral, expressions);
 }
 
 impl Display for DictionaryLiteral {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("{")?;
         let len = self.expressions.len();
-        for (index, (key, expression)) in self.expressions.iter().enumerate() {
+        for (index, (key, expression)) in self.expressions().enumerate() {
             Display::fmt(key, f)?;
             f.write_str(": ")?;
             Display::fmt(expression, f)?;

@@ -47,11 +47,13 @@ declare_container_node!(HandlerDeclaration, named, availability,
 
 impl_container_node_defaults!(HandlerDeclaration, named, availability);
 
+node_children_iter!(HandlerDeclaration, Decorator, DecoratorsIter, decorators);
+
 impl HandlerDeclaration {
 
     node_optional_child_fn!(comment, Comment);
 
-    node_children_iter!(HandlerDeclaration, Decorator, DecoratorsIter, decorators);
+    node_children_iter_fn!(decorators, DecoratorsIter);
 
     node_child_fn!(identifier, Identifier);
 
