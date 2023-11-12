@@ -3,57 +3,31 @@ use crate::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 
-#[derive(Debug)]
-pub struct ConfigDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub identifier: Identifier,
-    pub fields: Vec<Field>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+declare_container_node!(ConfigDeclaration, named, availability,
+    pub comment: Option<usize>,
+    pub identifier: usize,
+    pub fields: Vec<usize>,
+);
+
+impl_container_node_defaults!(ConfigDeclaration, named, availability);
+
+node_children_iter!(ConfigDeclaration, Field, FieldsIter, fields);
 
 impl ConfigDeclaration {
-    
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
+
+    node_optional_child_fn!(comment, Comment);
+
+    node_child_fn!(identifier, Identifier);
+
+    node_children_iter_fn!(fields, FieldsIter);
 
     pub fn get_field(&self, name: &str) -> Option<&Field> {
-        self.fields.iter().find(|f| f.identifier.name() == name)
-    }
-}
-
-impl Identifiable for ConfigDeclaration {
-
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for ConfigDeclaration {
-
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for ConfigDeclaration {
-
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        self.actual_availability.borrow().clone()
+        self.fields().find(|f| f.identifier.name() == name)
     }
 }
 

@@ -16,9 +16,9 @@ impl_container_node_defaults_with_display!(Argument);
 
 impl Argument {
 
-    node_optional_child_fn!(name, Identifier, as_identifier);
+    node_optional_child_fn!(name, Identifier);
 
-    node_child_fn!(value, Expression, as_expression);
+    node_child_fn!(value, Expression);
 
     pub fn get_type(&self) -> &Type {
         &self.value().resolved().r#type

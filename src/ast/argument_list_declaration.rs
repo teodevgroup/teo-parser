@@ -9,8 +9,7 @@ node_children_iter!(
     ArgumentListDeclaration,
     ArgumentDeclaration,
     ArgumentDeclarationsIter,
-    argument_declarations,
-    as_argument_declaration
+    argument_declarations
 );
 
 impl ArgumentListDeclaration {

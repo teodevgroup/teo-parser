@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use crate::availability::Availability;
-use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
-use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn, node_optional_child_fn, node_child_fn};
+use crate::ast::config_item::ConfigItem;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
@@ -18,13 +18,15 @@ declare_container_node!(Config, named, availability,
     pub unattached_identifiers: Vec<Identifier>
 );
 
-node_children_iter!(Config, ConfigItem, ItemsIter, items, as_config_item);
+node_children_iter!(Config, ConfigItem, ItemsIter, items);
 
 impl_container_node_defaults!(Config, availability);
 
 impl Config {
 
-    node_optional_child_fn!(identifier, Identifier, as_identifier);
+    node_child_fn!(keyword, ConfigKeyword);
+
+    node_optional_child_fn!(identifier, Identifier);
 
     node_children_iter_fn!(items, ItemsIter);
 

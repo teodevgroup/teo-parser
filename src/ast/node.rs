@@ -12,6 +12,7 @@ use crate::ast::comment::Comment;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::config_item::ConfigItem;
+use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
@@ -59,6 +60,7 @@ pub enum Node {
     CodeComment(CodeComment),
     Comment(Comment),
     Config(Config),
+    ConfigKeyword(ConfigKeyword),
     ConfigItem(ConfigItem),
     ConfigDeclaration(ConfigDeclaration),
     Constant(Constant),
@@ -250,6 +252,17 @@ impl Node {
     pub fn as_config(&self) -> Option<&Config> {
         match self {
             Node::Config(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_config_keyword(&self) -> bool {
+        self.as_config_keyword().is_some()
+    }
+
+    pub fn as_config_keyword(&self) -> Option<&ConfigKeyword> {
+        match self {
+            Node::ConfigKeyword(c) => Some(c),
             _ => None,
         }
     }
@@ -797,6 +810,7 @@ impl Node {
             Node::CodeComment(n) => n,
             Node::Comment(n) => n,
             Node::Config(n) => n,
+            Node::ConfigKeyword(n) => n,
             Node::ConfigItem(n) => n,
             Node::ConfigDeclaration(n) => n,
             Node::Constant(n) => n,

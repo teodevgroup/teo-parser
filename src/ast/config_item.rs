@@ -2,46 +2,22 @@ use std::cell::RefCell;
 use crate::availability::Availability;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 
-#[derive(Debug)]
-pub struct ConfigItem {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub identifier: Identifier,
-    pub expression: Expression,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+declare_container_node!(ConfigItem, named, availability,
+    pub identifier: usize,
+    pub expression: usize,
+);
 
-impl Identifiable for ConfigItem {
+impl_container_node_defaults!(ConfigItem, named, availability);
 
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+impl ConfigItem {
 
-impl NamedIdentifiable for ConfigItem {
+    node_child_fn!(identifier, Identifier);
 
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for ConfigItem {
-
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_child_fn!(expression, Expression);
 }
 
 impl InfoProvider for ConfigItem {

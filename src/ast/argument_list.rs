@@ -7,13 +7,7 @@ use crate::{declare_container_node, node_children_iter, node_children_iter_fn};
 
 declare_container_node!(ArgumentList, arguments: Vec<usize>);
 
-node_children_iter!(
-    ArgumentList,
-    Argument,
-    ArgumentsIter,
-    arguments,
-    as_argument
-);
+node_children_iter!(ArgumentList, Argument, ArgumentsIter, arguments);
 
 impl ArgumentList {
 

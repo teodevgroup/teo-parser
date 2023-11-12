@@ -72,7 +72,7 @@ declare_container_node!(UnaryOperation, op: Operator, rhs: usize);
 
 impl UnaryOperation {
 
-    node_child_fn!(rhs, ArithExpr, as_arith_expr);
+    node_child_fn!(rhs, ArithExpr);
 }
 
 impl Display for UnaryOperation {
@@ -87,7 +87,7 @@ declare_container_node!(UnaryPostfixOperation, op: Operator, lhs: usize);
 
 impl UnaryPostfixOperation {
 
-    node_child_fn!(lhs, ArithExpr, as_arith_expr);
+    node_child_fn!(lhs, ArithExpr);
 }
 
 impl Display for UnaryPostfixOperation {
@@ -102,8 +102,8 @@ declare_container_node!(BinaryOperation, lhs: usize, op: Operator, rhs: usize);
 
 impl BinaryOperation {
 
-    node_child_fn!(lhs, ArithExpr, as_arith_expr);
-    node_child_fn!(rhs, ArithExpr, as_arith_expr);
+    node_child_fn!(lhs, ArithExpr);
+    node_child_fn!(rhs, ArithExpr);
 }
 
 impl Display for BinaryOperation {
@@ -171,20 +171,9 @@ impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ArithExpr::Expression(e) => Display::fmt(&e, f),
-            ArithExpr::UnaryOperation(u) => {
-
-            },
-            ArithExpr::UnaryPostfixOperation(u) => {
-
-            }
-            ArithExpr::BinaryOperation(b) => {
-                Display::fmt(&b.lhs, f)?;
-                f.write_str(" ")?;
-                Display::fmt(&b.op, f)?;
-                f.write_str(" ")?;
-                Display::fmt(&b.rhs, f)?;
-                Ok(())
-            },
+            ArithExpr::UnaryOperation(u) => Display::fmt(&u, f),
+            ArithExpr::UnaryPostfixOperation(u) => Display::fmt(&u, f),
+            ArithExpr::BinaryOperation(b) => Display::fmt(&b, f),
         }
     }
 }

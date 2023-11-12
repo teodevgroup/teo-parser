@@ -7,7 +7,7 @@ macro_rules! declare_node {
             path: Vec<usize>,
         }
     };
-    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty)*) => {
+    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty)* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -46,7 +46,7 @@ macro_rules! declare_container_node {
             pub(crate) actual_availability: RefCell<Availability>,
         }
     };
-    ($struct_name:ident, named, availability, $($vis: vis $element: ident: $ty: ty),*) => {
+    ($struct_name:ident, named, availability, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -58,7 +58,7 @@ macro_rules! declare_container_node {
             $($vis $element: $ty),*
         }
     };
-    ($struct_name:ident, named, $($vis: vis $element: ident: $ty: ty),*) => {
+    ($struct_name:ident, named, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -68,7 +68,7 @@ macro_rules! declare_container_node {
             $($vis $element: $ty),*
         }
     };
-    ($struct_name:ident, availability, $($vis: vis $element: ident: $ty: ty),*) => {
+    ($struct_name:ident, availability, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -79,7 +79,7 @@ macro_rules! declare_container_node {
             $($vis $element: $ty),*
         }
     };
-    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),*) => {
+    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
             span: crate::ast::span::Span,
@@ -104,6 +104,20 @@ macro_rules! impl_node_defaults {
             }
             fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
                 None
+            }
+        }
+        impl From<$struct_name> for crate::ast::node::Node {
+            fn from(value: $struct_name) -> Self {
+                crate::ast::node::Node::$struct_name(value)
+            }
+        }
+        impl TryFrom<crate::ast::node::Node> for $struct_name {
+            type Error = &'static str;
+            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
             }
         }
     };
@@ -145,6 +159,20 @@ macro_rules! impl_container_node_defaults {
                 Some(&self.children)
             }
         }
+        impl From<$struct_name> for crate::ast::node::Node {
+            fn from(value: $struct_name) -> Self {
+                crate::ast::node::Node::$struct_name(value)
+            }
+        }
+        impl TryFrom<crate::ast::node::Node> for $struct_name {
+            type Error = &'static str;
+            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
+            }
+        }
     };
     ($struct_name:ident, named) => {
         impl crate::traits::identifiable::Identifiable for $struct_name {
@@ -158,6 +186,20 @@ macro_rules! impl_container_node_defaults {
             }
             fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
                 Some(&self.children)
+            }
+        }
+        impl From<$struct_name> for crate::ast::node::Node {
+            fn from(value: $struct_name) -> Self {
+                crate::ast::node::Node::$struct_name(value)
+            }
+        }
+        impl TryFrom<crate::ast::node::Node> for $struct_name {
+            type Error = &'static str;
+            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
             }
         }
         impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
@@ -178,6 +220,20 @@ macro_rules! impl_container_node_defaults {
             }
             fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
                 Some(&self.children)
+            }
+        }
+        impl From<$struct_name> for crate::ast::node::Node {
+            fn from(value: $struct_name) -> Self {
+                crate::ast::node::Node::$struct_name(value)
+            }
+        }
+        impl TryFrom<crate::ast::node::Node> for $struct_name {
+            type Error = &'static str;
+            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
             }
         }
         impl crate::traits::has_availability::HasAvailability for $struct_name {
@@ -201,6 +257,20 @@ macro_rules! impl_container_node_defaults {
             }
             fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
                 Some(&self.children)
+            }
+        }
+        impl From<$struct_name> for crate::ast::node::Node {
+            fn from(value: $struct_name) -> Self {
+                crate::ast::node::Node::$struct_name(value)
+            }
+        }
+        impl TryFrom<crate::ast::node::Node> for $struct_name {
+            type Error = &'static str;
+            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
             }
         }
         impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
@@ -236,19 +306,16 @@ macro_rules! impl_container_node_defaults_with_display {
 
 #[macro_export]
 macro_rules! node_children_iter {
-    ($struct_name:ident, $child_struct_name:ident, $iter_name:ident, $field_name:ident, $as_expression:ident) => {
+    ($struct_name:ident, $child_struct_name:ident, $iter_name:ident, $field_name:ident) => {
         pub struct $iter_name<'a> {
             index: usize,
             owner: &'a $struct_name,
         }
-
         impl<'a> Iterator for $iter_name<'a> {
-
             type Item = &'a $child_struct_name;
-
             fn next(&mut self) -> Option<Self::Item> {
                 self.index += 1;
-                self.owner.$field_name.get(self.index - 1).map(|i| self.owner.children.get(i).unwrap().$as_expression().unwrap())
+                self.owner.$field_name.get(self.index - 1).map(|i| self.owner.children.get(i).unwrap().try_into().unwrap())
             }
         }
     };
@@ -268,18 +335,18 @@ macro_rules! node_children_iter_fn {
 
 #[macro_export]
 macro_rules! node_child_fn {
-    ($name:ident, $struct_type:ident, $as_expression:ident) => {
+    ($name:ident, $struct_type:ident) => {
         pub fn $name(&self) -> &$struct_type {
-            self.children.get(&self.$name).unwrap().$as_expression().unwrap()
+            self.children.get(&self.$name).unwrap().try_into().unwrap()
         }
     }
 }
 
 #[macro_export]
 macro_rules! node_optional_child_fn {
-    ($name:ident, $class:ident, $as_expression:ident) => {
+    ($name:ident, $class:ident) => {
         pub fn $name(&self) -> Option<&$class> {
-            self.$name.map(|n| self.children.get(&n).unwrap().$as_expression()).flatten()
+            self.$name.map(|n| self.children.get(&n).unwrap().try_into()).flatten()
         }
     }
 }

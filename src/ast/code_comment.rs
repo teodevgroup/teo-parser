@@ -15,6 +15,6 @@ impl CodeComment {
 impl Display for CodeComment {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.lines.iter().try_for_each(|l| f.write_fmt(format_args!("// {}", l)))
+        self.lines.iter().try_for_each(|l| f.write_fmt(format_args!("// {}\n", l)))
     }
 }
