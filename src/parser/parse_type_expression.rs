@@ -107,7 +107,7 @@ fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
     }
     TypeTuple {
         span,
-        kinds,
+        items: kinds,
         item_optional,
         arity,
         collection_optional,

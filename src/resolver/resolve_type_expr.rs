@@ -104,7 +104,7 @@ fn resolve_type_expr_kind<'a>(
             resolved
         }
         TypeExprKind::TypeTuple(t) => {
-            let mut resolved = Type::Tuple(t.kinds.iter().map(|k| resolve_type_expr_kind(
+            let mut resolved = Type::Tuple(t.items.iter().map(|k| resolve_type_expr_kind(
                 k,
                 generics_declaration,
                 generics_constraint,

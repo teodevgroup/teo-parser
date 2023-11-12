@@ -66,7 +66,7 @@ fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, bina
 }
 
 fn find_completion_in_type_tuple(schema: &Schema, source: &Source, tuple: &TypeTuple, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
-    for kind in &tuple.kinds {
+    for kind in &tuple.items {
         if kind.span().contains_line_col(line_col) {
             return find_completion_in_type_expr_kind(schema, source, kind, line_col, namespace_path, generics, filter, availability);
         }

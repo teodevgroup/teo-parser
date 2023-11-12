@@ -64,7 +64,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             vec![]
         }
         TypeExprKind::TypeTuple(type_tuple) => {
-            for t in &type_tuple.kinds {
+            for t in &type_tuple.items {
                 if t.span().contains_line_col(line_col) {
                     return jump_to_definition_in_type_expr_kind(
                         schema,
