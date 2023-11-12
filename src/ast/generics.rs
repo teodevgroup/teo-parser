@@ -1,38 +1,42 @@
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
 
-#[derive(Debug)]
-pub struct GenericsDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub identifiers: Vec<Identifier>,
-}
+declare_container_node!(GenericsDeclaration,
+    pub(crate) identifiers: Vec<usize>,
+);
+
+impl_container_node_defaults!(GenericsDeclaration);
+
+node_children_iter!(GenericsDeclaration, Identifier, IdentifiersIter, identifiers);
 
 impl GenericsDeclaration {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
-
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
+    node_children_iter_fn!(identifiers, IdentifiersIter);
 
     pub fn names(&self) -> Vec<&str> {
-        self.identifiers.iter().map(|i| i.name()).collect()
+        self.identifiers().map(|i| i.name()).collect()
     }
 }
 
-#[derive(Debug)]
-pub struct GenericsConstraint {
-    pub span: Span,
-    pub items: Vec<GenericsConstraintItem>
+declare_container_node!(GenericsConstraint, pub(crate) items: Vec<usize>);
+
+impl_container_node_defaults!(GenericsConstraint);
+
+node_children_iter!(GenericsConstraint, GenericsConstraintItem, ItemsIter, items);
+
+impl GenericsConstraint {
+
+    node_children_iter_fn!(items, ItemsIter);
 }
 
-#[derive(Debug)]
-pub struct GenericsConstraintItem {
-    pub span: Span,
-    pub identifier: Identifier,
-    pub type_expr: TypeExpr,
+declare_container_node!(GenericsConstraintItem, pub(crate) identifier: usize, pub(crate) type_expr: usize);
+
+impl_container_node_defaults!(GenericsConstraintItem);
+
+impl GenericsConstraintItem {
+
+    node_child_fn!(identifier, Identifier);
+
+    node_child_fn!(type_expr, TypeExpr);
 }
