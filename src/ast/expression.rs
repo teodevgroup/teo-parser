@@ -40,25 +40,25 @@ pub enum ExpressionKind {
 
 impl ExpressionKind {
 
-    pub fn span(&self) -> Span {
+    pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
-            ExpressionKind::Group(e) => e.span,
-            ExpressionKind::ArithExpr(e) => e.span(),
-            ExpressionKind::NumericLiteral(e) => e.span,
-            ExpressionKind::StringLiteral(e) => e.span,
-            ExpressionKind::RegexLiteral(e) => e.span,
-            ExpressionKind::BoolLiteral(e) => e.span,
-            ExpressionKind::NullLiteral(e) => e.span,
-            ExpressionKind::EnumVariantLiteral(e) => e.span,
-            ExpressionKind::TupleLiteral(e) => e.span,
-            ExpressionKind::ArrayLiteral(e) => e.span,
-            ExpressionKind::DictionaryLiteral(e) => e.span,
-            ExpressionKind::Identifier(e) => e.span(),
-            ExpressionKind::ArgumentList(e) => e.span(),
-            ExpressionKind::Subscript(e) => e.span,
-            ExpressionKind::IntSubscript(i) => i.span,
-            ExpressionKind::Unit(e) => e.span,
-            ExpressionKind::Pipeline(e) => e.span,
+            ExpressionKind::Group(n) => n,
+            ExpressionKind::ArithExpr(n) => n,
+            ExpressionKind::NumericLiteral(n) => n,
+            ExpressionKind::StringLiteral(n) => n,
+            ExpressionKind::RegexLiteral(n) => n,
+            ExpressionKind::BoolLiteral(n) => n,
+            ExpressionKind::NullLiteral(n) => n,
+            ExpressionKind::EnumVariantLiteral(n) => n,
+            ExpressionKind::TupleLiteral(n) => n,
+            ExpressionKind::ArrayLiteral(n) => n,
+            ExpressionKind::DictionaryLiteral(n) => n,
+            ExpressionKind::Identifier(n) => n,
+            ExpressionKind::ArgumentList(n) => n,
+            ExpressionKind::Subscript(n) => n,
+            ExpressionKind::IntSubscript(n) => n,
+            ExpressionKind::Unit(n) => n,
+            ExpressionKind::Pipeline(n) => n,
         }
     }
 
@@ -224,27 +224,26 @@ impl ExpressionKind {
     }
 }
 
+impl Identifiable for ExpressionKind {
+    fn path(&self) -> &Vec<usize> {
+        self.as_dyn_node_trait().path()
+    }
+}
+
+impl NodeTrait for ExpressionKind {
+
+    fn span(&self) -> Span {
+        self.as_dyn_node_trait().span()
+    }
+
+    fn children(&self) -> Option<&BTreeMap<usize, Node>> {
+        self.as_dyn_node_trait().children()
+    }
+}
+
 impl Display for ExpressionKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ExpressionKind::Group(g) => Display::fmt(g, f),
-            ExpressionKind::NumericLiteral(e) => Display::fmt(e, f),
-            ExpressionKind::StringLiteral(s) => Display::fmt(s, f),
-            ExpressionKind::RegexLiteral(r) => Display::fmt(r, f),
-            ExpressionKind::BoolLiteral(b) => Display::fmt(b, f),
-            ExpressionKind::NullLiteral(n) => Display::fmt(n, f),
-            ExpressionKind::EnumVariantLiteral(e) => Display::fmt(e, f),
-            ExpressionKind::TupleLiteral(t) => Display::fmt(t, f),
-            ExpressionKind::ArrayLiteral(a) => Display::fmt(a, f),
-            ExpressionKind::DictionaryLiteral(d) => Display::fmt(d, f),
-            ExpressionKind::Identifier(i) => Display::fmt(i, f),
-            ExpressionKind::ArgumentList(a) => Display::fmt(a, f),
-            ExpressionKind::Subscript(s) => Display::fmt(s, f),
-            ExpressionKind::IntSubscript(i) => Display::fmt(i, f),
-            ExpressionKind::Unit(u) => Display::fmt(u, f),
-            ExpressionKind::Pipeline(p) => Display::fmt(p, f),
-            ExpressionKind::ArithExpr(a) => Display::fmt(a, f),
-        }
+        Display::fmt(self.as_dyn_node_trait(), f)
     }
 }
 
@@ -278,17 +277,17 @@ impl Display for Expression {
 impl Identifiable for Expression {
 
     fn path(&self) -> &Vec<usize> {
-        todo!()
+        self.kind.path()
     }
 }
 
 impl NodeTrait for Expression {
     fn span(&self) -> Span {
-        todo!()
+        self.kind.span()
     }
 
     fn children(&self) -> Option<&BTreeMap<usize, Node>> {
-        todo!()
+        self.kind.children()
     }
 }
 
