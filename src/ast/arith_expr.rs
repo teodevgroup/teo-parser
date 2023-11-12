@@ -1,6 +1,11 @@
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::expression::Expression;
 use crate::ast::span::Span;
+use crate::{declare_container_node, node_child_fn};
+use crate::ast::node::Node;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Operator {
@@ -63,26 +68,53 @@ impl Display for Operator {
     }
 }
 
-#[derive(Debug)]
-pub struct UnaryOperation {
-    pub span: Span,
-    pub op: Operator,
-    pub rhs: Box<ArithExpr>,
+declare_container_node!(UnaryOperation, op: Operator, rhs: usize);
+
+impl UnaryOperation {
+
+    node_child_fn!(rhs, ArithExpr, as_arith_expr);
 }
 
-#[derive(Debug)]
-pub struct UnaryPostfixOperation {
-    pub span: Span,
-    pub op: Operator,
-    pub lhs: Box<ArithExpr>,
+impl Display for UnaryOperation {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.op, f)?;
+        Display::fmt(&self.rhs, f)
+    }
 }
 
-#[derive(Debug)]
-pub struct BinaryOperation {
-    pub span: Span,
-    pub lhs: Box<ArithExpr>,
-    pub op: Operator,
-    pub rhs: Box<ArithExpr>,
+declare_container_node!(UnaryPostfixOperation, op: Operator, lhs: usize);
+
+impl UnaryPostfixOperation {
+
+    node_child_fn!(lhs, ArithExpr, as_arith_expr);
+}
+
+impl Display for UnaryPostfixOperation {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.lhs, f)?;
+        Display::fmt(&self.op, f)
+    }
+}
+
+declare_container_node!(BinaryOperation, lhs: usize, op: Operator, rhs: usize);
+
+impl BinaryOperation {
+
+    node_child_fn!(lhs, ArithExpr, as_arith_expr);
+    node_child_fn!(rhs, ArithExpr, as_arith_expr);
+}
+
+impl Display for BinaryOperation {
+
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.lhs, f)?;
+        f.write_str(" ")?;
+        Display::fmt(&self.op, f)?;
+        f.write_str(" ")?;
+        Display::fmt(&self.rhs, f)
+    }
 }
 
 #[derive(Debug)]
@@ -95,12 +127,12 @@ pub enum ArithExpr {
 
 impl ArithExpr {
 
-    pub fn span(&self) -> Span {
+    pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
-            ArithExpr::Expression(e) => e.span(),
-            ArithExpr::UnaryOperation(u) => u.span,
-            ArithExpr::BinaryOperation(b) => b.span,
-            ArithExpr::UnaryPostfixOperation(u) => u.span,
+            ArithExpr::Expression(n) => n,
+            ArithExpr::UnaryOperation(n) => n,
+            ArithExpr::BinaryOperation(n) => n,
+            ArithExpr::UnaryPostfixOperation(n) => n,
         }
     }
 
@@ -119,17 +151,31 @@ impl ArithExpr {
     }
 }
 
+impl Identifiable for ArithExpr {
+    fn path(&self) -> &Vec<usize> {
+        self.as_dyn_node_trait().path()
+    }
+}
+
+impl NodeTrait for ArithExpr {
+    fn span(&self) -> Span {
+        self.as_dyn_node_trait().span()
+    }
+
+    fn children(&self) -> Option<&BTreeMap<usize, Node>> {
+        self.as_dyn_node_trait().children()
+    }
+}
+
 impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ArithExpr::Expression(e) => Display::fmt(&e, f),
             ArithExpr::UnaryOperation(u) => {
-                Display::fmt(&u.op, f)?;
-                Display::fmt(&u.rhs, f)
+
             },
             ArithExpr::UnaryPostfixOperation(u) => {
-                Display::fmt(&u.lhs, f)?;
-                Display::fmt(&u.op, f)
+
             }
             ArithExpr::BinaryOperation(b) => {
                 Display::fmt(&b.lhs, f)?;
