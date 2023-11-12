@@ -3,16 +3,16 @@ macro_rules! declare_node {
     ($struct_name:ident) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            pub span: crate::ast::span::Span,
-            pub path: Vec<usize>,
+            span: crate::ast::span::Span,
+            path: Vec<usize>,
         }
     };
-    ($struct_name:ident, $($element: ident: $ty: ty),*) => {
+    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),*) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            pub span: crate::ast::span::Span,
-            pub path: Vec<usize>,
-            pub $($element: $ty),*
+            span: crate::ast::span::Span,
+            path: Vec<usize>,
+            $($vis $element: $ty),*
         }
     }
 }
@@ -22,18 +22,18 @@ macro_rules! declare_container_node {
     ($struct_name:ident) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            pub span: Span,
-            pub children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            pub path: Vec<usize>,
+            span: Span,
+            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            path: Vec<usize>,
         }
     };
-    ($struct_name:ident, $($element: ident: $ty: ty),*) => {
+    ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),*) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            pub span: crate::ast::span::Span,
-            pub children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            pub path: Vec<usize>,
-            pub $($element: $ty),*
+            span: crate::ast::span::Span,
+            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            path: Vec<usize>,
+            $($vis $element: $ty),*
         }
     }
 }

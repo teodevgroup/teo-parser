@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use crate::traits::node_trait::NodeTrait;
 use super::span::Span;
 use super::identifier::Identifier;
 
@@ -11,12 +12,12 @@ pub struct IdentifierPath {
 impl IdentifierPath {
 
     pub fn names(&self) -> Vec<&str> {
-        self.identifiers.iter().map(|i| i.name.as_str()).collect()
+        self.identifiers.iter().map(|i| i.name()).collect()
     }
 
     pub fn from_identifier(identifier: Identifier) -> Self {
         Self {
-            span: identifier.span,
+            span: identifier.span(),
             identifiers: vec![identifier],
         }
     }

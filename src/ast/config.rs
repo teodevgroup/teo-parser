@@ -9,6 +9,7 @@ use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::node_trait::NodeTrait;
 
 #[derive(Debug)]
 pub struct Config {
@@ -27,7 +28,7 @@ impl Config {
 
     pub fn name_span(&self) -> Span {
         if let Some(identifier) = &self.identifier {
-            identifier.span
+            identifier.span()
         } else {
             self.keyword.span
         }
