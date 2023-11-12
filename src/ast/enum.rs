@@ -13,6 +13,7 @@ use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
 #[derive(Debug)]

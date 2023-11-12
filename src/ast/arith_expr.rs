@@ -129,7 +129,7 @@ impl ArithExpr {
 
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
-            ArithExpr::Expression(n) => n,
+            ArithExpr::Expression(n) => n.as_ref(),
             ArithExpr::UnaryOperation(n) => n,
             ArithExpr::BinaryOperation(n) => n,
             ArithExpr::UnaryPostfixOperation(n) => n,

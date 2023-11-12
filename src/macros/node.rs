@@ -3,7 +3,7 @@ macro_rules! declare_node {
     ($struct_name:ident) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            pub span: Span,
+            pub span: crate::ast::span::Span,
             pub path: Vec<usize>,
         }
     };
@@ -59,11 +59,19 @@ macro_rules! impl_node_defaults {
 
 #[macro_export]
 macro_rules! impl_node_defaults_with_display {
-    ($struct_name:ident, $display_from:ident) => {
+    ($struct_name:ident, $display:ident) => {
         crate::impl_node_defaults!($struct_name);
         impl std::fmt::Display for $struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(self.$display_from())
+                f.write_str(&self.$display)
+            }
+        }
+    };
+    ($struct_name:ident, $display:expr) => {
+        crate::impl_node_defaults!($struct_name);
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str($display)
             }
         }
     };
