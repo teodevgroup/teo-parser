@@ -5,11 +5,9 @@ use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Copy, Clone)]
@@ -107,41 +105,27 @@ pub struct FieldResolved {
     pub class: FieldClass,
 }
 
-#[derive(Debug)]
-pub struct Field {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub decorators: Vec<Decorator>,
-    pub empty_decorators_spans: Vec<Span>,
-    pub identifier: Identifier,
-    pub type_expr: TypeExpr,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub resolved: RefCell<Option<FieldResolved>>,
-}
+declare_container_node!(Field, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) type_expr: usize,
+    pub(crate) resolved: RefCell<Option<FieldResolved>>,
+);
 
-impl Identifiable for Field {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+impl_container_node_defaults!(Field, named, availability);
 
-impl NamedIdentifiable for Field {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
+node_children_iter!(Field, Decorator, DecoratorsIter, decorators);
 
-impl HasAvailability for Field {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
+impl Field {
 
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_optional_child_fn!(comment, Comment);
+
+    node_children_iter_fn!(decorators, DecoratorsIter);
+
+    node_child_fn!(identifier, Identifier);
+
+    node_child_fn!(type_expr, TypeExpr);
 }
 
 impl InfoProvider for Field {

@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::ArithExpr;
@@ -7,9 +8,13 @@ use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
 use crate::ast::int_subscript::IntSubscript;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
+use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
+use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
+use crate::traits::resolved::Resolve;
 use crate::value::TypeAndValue;
 
 #[derive(Debug)]
@@ -48,8 +53,8 @@ impl ExpressionKind {
             ExpressionKind::TupleLiteral(e) => e.span,
             ExpressionKind::ArrayLiteral(e) => e.span,
             ExpressionKind::DictionaryLiteral(e) => e.span,
-            ExpressionKind::Identifier(e) => e.span,
-            ExpressionKind::ArgumentList(e) => e.span,
+            ExpressionKind::Identifier(e) => e.span(),
+            ExpressionKind::ArgumentList(e) => e.span(),
             ExpressionKind::Subscript(e) => e.span,
             ExpressionKind::IntSubscript(i) => i.span,
             ExpressionKind::Unit(e) => e.span,
@@ -255,23 +260,6 @@ impl Expression {
         Self { kind, resolved: RefCell::new(None) }
     }
 
-    pub fn span(&self) -> Span {
-        self.kind.span()
-    }
-
-    pub fn resolve(&self, resolved: TypeAndValue) -> TypeAndValue {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved.clone());
-        resolved
-    }
-
-    pub fn resolved(&self) -> &TypeAndValue {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
-
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
         self.kind.unwrap_enumerable_enum_member_strings()
     }
@@ -284,5 +272,28 @@ impl Expression {
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.kind, f)
+    }
+}
+
+impl Identifiable for Expression {
+
+    fn path(&self) -> &Vec<usize> {
+        todo!()
+    }
+}
+
+impl NodeTrait for Expression {
+    fn span(&self) -> Span {
+        todo!()
+    }
+
+    fn children(&self) -> Option<&BTreeMap<usize, Node>> {
+        todo!()
+    }
+}
+
+impl Resolve<TypeAndValue> for Expression {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<TypeAndValue>> {
+        &self.resolved
     }
 }
