@@ -42,7 +42,10 @@ use crate::ast::subscript::Subscript;
 use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGroup, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
+use crate::availability::Availability;
+use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
+use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 
 #[derive(Debug)]
@@ -859,6 +862,96 @@ impl Node {
             Node::TypeSubscript(n) => n,
             Node::UseMiddlewareBlock(n) => n,
             Node::Punctuation(n) => n,
+        }
+    }
+
+    pub fn identifier_span(&self) -> Option<Span> {
+        match self {
+            Node::Constant(c) => Some(c.identifier().span()),
+            Node::Enum(e) => Some(e.identifier().span()),
+            Node::Model(m) => Some(m.identifier().span()),
+            Node::Config(c) => Some(c.identifier().as_ref().map_or(c.keyword().span(), |i| i.span())),
+            Node::ConfigDeclaration(c) => Some(c.identifier().span()),
+            Node::DataSet(d) => Some(d.identifier().span()),
+            Node::MiddlewareDeclaration(m) => Some(m.identifier().span()),
+            Node::HandlerGroupDeclaration(a) => Some(a.identifier().span()),
+            Node::InterfaceDeclaration(i) => Some(i.identifier().span()),
+            Node::Namespace(n) => Some(n.identifier().span()),
+            Node::DecoratorDeclaration(d) => Some(d.identifier().span()),
+            Node::PipelineItemDeclaration(p) => Some(p.identifier().span()),
+            Node::StructDeclaration(s) => Some(s.identifier().span()),
+            _ => None,
+        }
+    }
+
+    pub fn available_test(&self, availability: Availability) -> bool {
+        match self {
+            Node::Constant(t) => t.define_availability().contains(availability),
+            Node::Enum(t) => t.define_availability().contains(availability),
+            Node::Model(t) => t.define_availability().contains(availability),
+            Node::DataSet(t) => t.define_availability().contains(availability),
+            Node::InterfaceDeclaration(t) => t.define_availability().contains(availability),
+            Node::DecoratorDeclaration(t) => t.define_availability().contains(availability),
+            Node::PipelineItemDeclaration(t) => t.define_availability().contains(availability),
+            Node::StructDeclaration(t) => t.define_availability().contains(availability),
+            _ => true,
+        }
+    }
+
+    pub fn string_path(&self) -> Option<&Vec<String>> {
+        match self {
+            Node::Constant(c) => Some(c.string_path()),
+            Node::Enum(e) => Some(e.string_path()),
+            Node::Model(m) => Some(m.string_path()),
+            Node::Config(c) => Some(c.string_path()),
+            Node::ConfigDeclaration(c) => Some(c.string_path()),
+            Node::DataSet(d) => Some(d.string_path()),
+            Node::MiddlewareDeclaration(m) => Some(m.string_path()),
+            Node::HandlerGroupDeclaration(h) => Some(h.string_path()),
+            Node::InterfaceDeclaration(i) => Some(i.string_path()),
+            Node::Namespace(n) => Some(n.string_path()),
+            Node::DecoratorDeclaration(d) => Some(d.string_path()),
+            Node::PipelineItemDeclaration(p) => Some(p.string_path()),
+            Node::StructDeclaration(s) => Some(s.string_path()),
+            _ => None,
+        }
+    }
+
+    pub fn str_path(&self) -> Option<Vec<&str>> {
+        match self {
+            Node::Constant(c) => Some(c.str_path()),
+            Node::Enum(e) => Some(e.str_path()),
+            Node::Model(m) => Some(m.str_path()),
+            Node::Config(c) => Some(c.str_path()),
+            Node::ConfigDeclaration(c) => Some(c.str_path()),
+            Node::DataSet(d) => Some(d.str_path()),
+            Node::MiddlewareDeclaration(m) => Some(m.str_path()),
+            Node::HandlerGroupDeclaration(h) => Some(h.str_path()),
+            Node::InterfaceDeclaration(i) => Some(i.str_path()),
+            Node::Namespace(n) => Some(n.str_path()),
+            Node::DecoratorDeclaration(d) => Some(d.str_path()),
+            Node::PipelineItemDeclaration(p) => Some(p.str_path()),
+            Node::StructDeclaration(s) => Some(s.str_path()),
+            _ => None,
+        }
+    }
+
+    pub fn name(&self) -> Option<&str> {
+        match self {
+            Node::Constant(c) => Some(c.identifier().name()),
+            Node::Enum(e) => Some(e.identifier().name()),
+            Node::Model(m) => Some(m.identifier().name()),
+            Node::Config(c) => Some(c.name()),
+            Node::ConfigDeclaration(c) => Some(c.identifier().name()),
+            Node::DataSet(d) => Some(d.identifier().name()),
+            Node::MiddlewareDeclaration(m) => Some(m.identifier().name()),
+            Node::HandlerGroupDeclaration(a) => Some(a.identifier().name()),
+            Node::InterfaceDeclaration(i) => Some(i.identifier().name()),
+            Node::Namespace(n) => Some(n.identifier().name()),
+            Node::DecoratorDeclaration(d) => Some(d.identifier().name()),
+            Node::PipelineItemDeclaration(p) => Some(p.identifier().name()),
+            Node::StructDeclaration(s) => Some(s.identifier().name()),
+            _ => None,
         }
     }
 }
