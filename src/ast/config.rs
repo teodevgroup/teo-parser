@@ -5,29 +5,34 @@ use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 
-#[derive(Debug)]
-pub struct Config {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
+declare_container_node!(Config, named,
     pub keyword: ConfigKeyword,
-    pub identifier: Option<Identifier>,
-    pub items: Vec<ConfigItem>,
+    pub identifier: Option<usize>,
+    pub items: Vec<usize>,
     pub unattached_identifiers: Vec<Identifier>,
     pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+    pub actual_availability: RefCell<Availability>
+);
+
+node_children_iter!(Config, ConfigItem, ItemsIter, items, as_config_item);
+
+impl_container_node_defaults!(Config);
 
 impl Config {
 
+    node_optional_child_fn!(identifier, Identifier, as_identifier);
+
+    node_children_iter_fn!(items, ItemsIter);
+
     pub fn name_span(&self) -> Span {
-        if let Some(identifier) = &self.identifier {
+        if let Some(identifier) = self.identifier() {
             identifier.span()
         } else {
             self.keyword.span
@@ -35,14 +40,7 @@ impl Config {
     }
 
     pub fn get_item(&self, name: impl AsRef<str>) -> Option<&Expression> {
-        self.items.iter().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| &item.expression)
-    }
-}
-
-impl Identifiable for Config {
-
-    fn path(&self) -> &Vec<usize> {
-        &self.path
+        self.items().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| &item.expression)
     }
 }
 

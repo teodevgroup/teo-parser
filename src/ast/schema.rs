@@ -14,6 +14,7 @@ use crate::ast::r#enum::Enum;
 use crate::ast::source::Source;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::top::Top;
+use crate::traits::identifiable::Identifiable;
 
 #[derive(Debug)]
 pub struct Schema {
@@ -206,19 +207,19 @@ impl SchemaReferences {
     }
 
     pub fn add_config(&mut self, config: &Config) {
-        self.configs.push(config.path.clone());
+        self.configs.push(config.path().clone());
         if config.keyword.is_client() {
-            self.clients.push(config.path.clone());
+            self.clients.push(config.path().clone());
         } else if config.keyword.is_connector() {
-            self.connectors.push(config.path.clone());
+            self.connectors.push(config.path().clone());
         } else if config.keyword.is_server() {
-            self.server = Some(config.path.clone());
+            self.server = Some(config.path().clone());
         } else if config.keyword.is_entity() {
-            self.entities.push(config.path.clone());
+            self.entities.push(config.path().clone());
         } else if config.keyword.is_test() {
-            self.test = Some(config.path.clone());
+            self.test = Some(config.path().clone());
         } else if config.keyword.is_debug() {
-            self.debug = Some(config.path.clone());
+            self.debug = Some(config.path().clone());
         }
     }
 }
