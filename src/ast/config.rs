@@ -12,7 +12,7 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 
 declare_container_node!(Config, named, availability,
-    pub keyword: ConfigKeyword,
+    pub keyword: usize,
     pub identifier: Option<usize>,
     pub items: Vec<usize>,
     pub unattached_identifiers: Vec<Identifier>
@@ -34,12 +34,12 @@ impl Config {
         if let Some(identifier) = self.identifier() {
             identifier.span()
         } else {
-            self.keyword.span
+            self.keyword().span
         }
     }
 
     pub fn get_item(&self, name: impl AsRef<str>) -> Option<&Expression> {
-        self.items().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| &item.expression)
+        self.items().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| item.expression())
     }
 }
 

@@ -5,6 +5,7 @@ use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
@@ -12,22 +13,22 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 use crate::value::TypeAndValue;
 
-#[derive(Debug, Clone)]
-pub struct ConstantResolved {
-    pub expression_resolved: TypeAndValue,
-}
+declare_container_node!(Constant, named, availability,
+    identifier: usize,
+    type_expr: Option<usize>,
+    expression: usize,
+    resolved: RefCell<Option<TypeAndValue>>,
+);
 
-#[derive(Debug)]
-pub struct Constant {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub identifier: Identifier,
-    pub type_expr: Option<TypeExpr>,
-    pub expression: Expression,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub resolved: RefCell<Option<ConstantResolved>>,
+impl_container_node_defaults!(Constant, named, availability);
+
+impl Constant {
+
+    node_child_fn!(identifier, Identifier);
+
+    node_optional_child_fn!(type_expr, TypeExpr);
+
+    node_child_fn!(expression, Expression);
 }
 
 impl Display for Constant {
@@ -40,36 +41,14 @@ impl Display for Constant {
     }
 }
 
-impl Identifiable for Constant {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for Constant {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for Constant {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
-}
-
 impl InfoProvider for Constant {
     fn namespace_skip(&self) -> usize {
         1
     }
 }
 
-impl Resolve<ConstantResolved> for Constant {
-    fn resolved_ref_cell(&self) -> &RefCell<Option<ConstantResolved>> {
+impl Resolve<TypeAndValue> for Constant {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<TypeAndValue>> {
         &self.resolved
     }
 }

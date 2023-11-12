@@ -1,10 +1,8 @@
-use crate::ast::span::Span;
+use crate::{declare_node, impl_node_defaults_with_display};
 
-#[derive(Debug)]
-pub struct ConfigKeyword {
-    pub span: Span,
-    pub name: String,
-}
+declare_node!(ConfigKeyword, name: String);
+
+impl_node_defaults_with_display!(ConfigKeyword, name);
 
 impl ConfigKeyword {
 

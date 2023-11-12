@@ -4,46 +4,28 @@ use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::DictionaryLiteral;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
+use crate::r#type::reference::Reference;
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 
-#[derive(Debug)]
-pub struct DataSet {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub identifier: Identifier,
-    pub define_availability: Availability,
+declare_container_node!(DataSet, named, availability,
+    identifier: usize,
     pub auto_seed: bool,
     pub notrack: bool,
-    pub groups: Vec<DataSetGroup>,
-    pub actual_availability: RefCell<Availability>,
-}
+    pub groups: Vec<usize>,
+);
 
-impl Identifiable for DataSet {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+impl_container_node_defaults!(DataSet, named, availability);
 
-impl NamedIdentifiable for DataSet {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
+node_children_iter!(DataSet, DataSetGroup, GroupsIter, groups);
 
-impl HasAvailability for DataSet {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
+impl DataSet {
 
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_child_fn!(identifier, Identifier);
+
+    node_children_iter_fn!(groups, GroupsIter);
 }
 
 impl InfoProvider for DataSet {
@@ -52,44 +34,21 @@ impl InfoProvider for DataSet {
     }
 }
 
-#[derive(Debug)]
-pub struct DataSetGroupResolved {
-    pub model_path: Vec<usize>,
-    pub model_string_path: Vec<String>,
-}
+declare_container_node!(DataSetGroup, named, availability,
+    identifier_path: usize,
+    records: Vec<usize>,
+    resolved: RefCell<Option<Reference>>,
+);
 
-#[derive(Debug)]
-pub struct DataSetGroup {
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub identifier_path: IdentifierPath,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub span: Span,
-    pub records: Vec<DataSetRecord>,
-    pub resolved: RefCell<Option<DataSetGroupResolved>>,
-}
+impl_container_node_defaults!(DataSetGroup, named, availability);
 
-impl Identifiable for DataSetGroup {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+node_children_iter!(DataSetGroup, DataSetRecord, RecordsIter, records);
 
-impl NamedIdentifiable for DataSetGroup {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
+impl DataSetGroup {
 
-impl HasAvailability for DataSetGroup {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
+    node_child_fn!(identifier_path, IdentifierPath);
 
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_children_iter_fn!(records, RecordsIter);
 }
 
 impl InfoProvider for DataSetGroup {
@@ -98,49 +57,25 @@ impl InfoProvider for DataSetGroup {
     }
 }
 
-impl Resolve<DataSetGroupResolved> for DataSetGroup {
-    fn resolved_ref_cell(&self) -> &RefCell<Option<DataSetGroupResolved>> {
+impl Resolve<Reference> for DataSetGroup {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<Reference>> {
         &self.resolved
     }
 }
 
-#[derive(Debug)]
-pub struct DataSetRecordResolved {
-    pub value: Value,
-}
+declare_container_node!(DataSetRecord, named, availability,
+    identifier: usize,
+    dictionary: usize,
+    resolved: RefCell<Option<Value>>,
+);
 
-#[derive(Debug)]
-pub struct DataSetRecord {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub identifier: Identifier,
-    pub dictionary: DictionaryLiteral,
-    pub resolved: RefCell<Option<DataSetRecordResolved>>,
-}
+impl_container_node_defaults!(DataSetRecord, named, availability);
 
-impl Identifiable for DataSetRecord {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
+impl DataSetRecord {
 
-impl NamedIdentifiable for DataSetRecord {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
+    node_child_fn!(identifier, Identifier);
 
-impl HasAvailability for DataSetRecord {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
-    }
+    node_child_fn!(dictionary, DictionaryLiteral);
 }
 
 impl InfoProvider for DataSetRecord {
@@ -149,8 +84,8 @@ impl InfoProvider for DataSetRecord {
     }
 }
 
-impl Resolve<DataSetRecordResolved> for DataSetRecord {
-    fn resolved_ref_cell(&self) -> &RefCell<Option<DataSetRecordResolved>> {
+impl Resolve<Value> for DataSetRecord {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<Value>> {
         &self.resolved
     }
 }
