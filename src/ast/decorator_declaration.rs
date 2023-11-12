@@ -5,42 +5,38 @@ use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::traits::info_provider::InfoProvider;
 
-#[derive(Debug)]
-pub struct DecoratorDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub define_availability: Availability,
-    pub comment: Option<Comment>,
+declare_container_node!(DecoratorDeclaration, named, availability,
     pub exclusive: bool,
     pub unique: bool,
     pub decorator_class: ReferenceSpace,
-    pub identifier: Identifier,
-    pub generics_declaration: Option<GenericsDeclaration>,
-    pub argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub generics_constraint: Option<GenericsConstraint>,
-    pub variants: Vec<DecoratorDeclarationVariant>,
-}
+    comment: Option<usize>,
+    identifier: usize,
+    generics_declaration: Option<usize>,
+    argument_list_declaration: Option<usize>,
+    generics_constraint: Option<usize>,
+    variants: Vec<usize>,
+);
+
+impl_container_node_defaults!(DecoratorDeclaration, named, availability);
+
+node_children_iter!(DecoratorDeclaration, DecoratorDeclarationVariant, VariantsIter, variants);
 
 impl DecoratorDeclaration {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
+    node_optional_child_fn!(comment, Comment);
 
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
+    node_child_fn!(identifier, Identifier);
 
-    pub fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
-    }
+    node_optional_child_fn!(generics_declaration, GenericsDeclaration);
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
-    }
+    node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
+
+    node_optional_child_fn!(generics_constraint, GenericsConstraint);
+
+    node_children_iter_fn!(variants, VariantsIter);
 
     pub fn has_variants(&self) -> bool {
         !self.variants.is_empty()
@@ -48,14 +44,14 @@ impl DecoratorDeclaration {
 
     pub fn callable_variants(&self) -> Vec<CallableVariant> {
         if self.has_variants() {
-            self.variants.iter().map(|v| CallableVariant {
-                generics_declarations: if let Some(generics_declaration) = v.generics_declaration.as_ref() {
+            self.variants().map(|v| CallableVariant {
+                generics_declarations: if let Some(generics_declaration) = v.generics_declaration() {
                     vec![generics_declaration]
                 } else {
                     vec![]
                 },
-                argument_list_declaration: v.argument_list_declaration.as_ref(),
-                generics_constraints: if let Some(generics_constraint) = v.generics_constraint.as_ref() {
+                argument_list_declaration: v.argument_list_declaration(),
+                generics_constraints: if let Some(generics_constraint) = v.generics_constraint() {
                     vec![generics_constraint]
                 } else {
                     vec![]
@@ -65,13 +61,13 @@ impl DecoratorDeclaration {
             }).collect()
         } else {
             vec![CallableVariant {
-                generics_declarations: if let Some(generics_declaration) = self.generics_declaration.as_ref() {
+                generics_declarations: if let Some(generics_declaration) = self.generics_declaration() {
                     vec![generics_declaration]
                 } else {
                     vec![]
                 },
-                argument_list_declaration: self.argument_list_declaration.as_ref(),
-                generics_constraints: if let Some(generics_constraint) = self.generics_constraint.as_ref() {
+                argument_list_declaration: self.argument_list_declaration(),
+                generics_constraints: if let Some(generics_constraint) = self.generics_constraint() {
                     vec![generics_constraint]
                 } else {
                     vec![]
@@ -83,11 +79,29 @@ impl DecoratorDeclaration {
     }
 }
 
-#[derive(Debug)]
-pub struct DecoratorDeclarationVariant {
-    pub span: Span,
-    pub comment: Option<Comment>,
-    pub generics_declaration: Option<GenericsDeclaration>,
-    pub argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub generics_constraint: Option<GenericsConstraint>,
+impl InfoProvider for DecoratorDeclaration {
+    fn namespace_skip(&self) -> usize {
+        1
+    }
+}
+
+declare_container_node!(DecoratorDeclarationVariant,
+    comment: Option<usize>,
+    generics_declaration: Option<usize>,
+    argument_list_declaration: Option<usize>,
+    generics_constraint: Option<usize>,
+);
+
+impl_container_node_defaults!(DecoratorDeclarationVariant);
+
+impl DecoratorDeclarationVariant {
+
+    node_optional_child_fn!(comment, Comment);
+
+    node_optional_child_fn!(generics_declaration, GenericsDeclaration);
+
+    node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
+
+    node_optional_child_fn!(generics_constraint, GenericsConstraint);
+
 }

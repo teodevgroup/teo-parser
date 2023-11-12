@@ -1,32 +1,26 @@
 use std::cell::RefCell;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::identifier_path::IdentifierPath;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
+use crate::traits::resolved::Resolve;
 
-#[derive(Debug)]
-pub struct DecoratorResolved {
-    pub path: Vec<usize>,
-}
+declare_container_node!(Decorator,
+    identifier_path: usize,
+    argument_list: Option<usize>,
+    resolved: RefCell<Option<Vec<usize>>>,
+);
 
-#[derive(Debug)]
-pub struct Decorator {
-    pub span: Span,
-    pub identifier_path: IdentifierPath,
-    pub argument_list: Option<ArgumentList>,
-    pub resolved: RefCell<Option<DecoratorResolved>>,
-}
+impl_container_node_defaults!(Decorator);
 
 impl Decorator {
 
-    pub fn resolve(&self, resolved: DecoratorResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
+    node_child_fn!(identifier_path, IdentifierPath);
 
-    pub fn resolved(&self) -> &DecoratorResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
+    node_optional_child_fn!(argument_list, ArgumentList);
+}
 
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
+impl Resolve<Vec<usize>> for Decorator {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<Vec<usize>>> {
+        &self.resolved
     }
 }
