@@ -1,4 +1,5 @@
-use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
+use crate::ast::argument_declaration::{ArgumentDeclaration};
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;

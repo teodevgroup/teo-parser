@@ -1,7 +1,9 @@
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::argument::Argument;
-use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
+use crate::ast::argument_declaration::{ArgumentDeclaration};
 use crate::ast::argument_list::ArgumentList;
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::arith_expr::{ArithExpr, BinaryOperation, UnaryOperation, UnaryPostfixOperation};
 use crate::ast::availability_flag::AvailabilityFlag;
 use crate::ast::availability_flag_end::AvailabilityFlagEnd;
@@ -31,6 +33,7 @@ use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
+use crate::ast::punctuations::Punctuation;
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
@@ -103,6 +106,7 @@ pub enum Node {
     TypeTuple(TypeTuple),
     TypeSubscript(TypeSubscript),
     UseMiddlewareBlock(UseMiddlewaresBlock),
+    Punctuation(Punctuation),
 }
 
 impl Node {
@@ -767,6 +771,17 @@ impl Node {
         }
     }
 
+    pub fn is_punctuation(&self) -> bool {
+        self.as_punctuation().is_some()
+    }
+
+    pub fn as_punctuation(&self) -> Option<&Punctuation> {
+        match self {
+            Node::Punctuation(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -829,6 +844,7 @@ impl Node {
             Node::TypeTuple(n) => n,
             Node::TypeSubscript(n) => n,
             Node::UseMiddlewareBlock(n) => n,
+            Node::Punctuation(n) => n,
         }
     }
 }
@@ -853,7 +869,7 @@ impl NodeTrait for Node {
         self.as_dyn_node_trait().span()
     }
 
-    fn children(&self) -> Option<&Vec<Node>> {
+    fn children(&self) -> Option<&BTreeMap<usize, Node>> {
         self.as_dyn_node_trait().children()
     }
 }

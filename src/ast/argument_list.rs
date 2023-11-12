@@ -1,23 +1,30 @@
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::argument::Argument;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
-use crate::{declare_container_node};
+use crate::{declare_container_node, node_children_iter, node_children_iter_fn};
 
-declare_container_node!(ArgumentList);
+declare_container_node!(ArgumentList, arguments: Vec<usize>);
+
+node_children_iter!(
+    ArgumentList,
+    Argument,
+    ArgumentsIter,
+    arguments,
+    as_argument
+);
 
 impl ArgumentList {
 
-    fn arguments(&self) -> Vec<&Argument> {
-        self.children.iter().filter_map(|c| c.as_argument()).collect()
-    }
+    node_children_iter_fn!(arguments, ArgumentsIter);
 }
 
 impl Default for ArgumentList {
 
     fn default() -> Self {
 
-        Self { children: Vec::default(), path: Vec::default(), span: Span::default() }
+        Self { children: BTreeMap::default(), arguments: Vec::default(), path: Vec::default(), span: Span::default() }
     }
 }
 
@@ -49,7 +56,7 @@ impl crate::traits::node_trait::NodeTrait for ArgumentList {
         self.span
     }
 
-    fn children(&self) -> Option<&Vec<Node>> {
+    fn children(&self) -> Option<&BTreeMap<usize, Node>> {
         Some(&self.children)
     }
 }

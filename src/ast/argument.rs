@@ -1,27 +1,27 @@
 use std::cell::RefCell;
-use std::fmt::{Display, Formatter};
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
-use crate::ast::node::Node;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, impl_container_node_defaults_with_display, node_child_fn, node_optional_child_fn};
 use crate::r#type::r#type::Type;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 
-#[derive(Debug)]
-pub struct Argument {
-    pub span: Span,
-    pub children: Vec<Node>,
-    pub path: Vec<usize>,
-    pub name: Option<Identifier>,
-    pub value: Expression,
-    pub resolved: RefCell<Option<ArgumentResolved>>,
-}
+declare_container_node!(
+    Argument,
+    name: Option<usize>,
+    value: usize,
+    resolved: RefCell<Option<ArgumentResolved>>
+);
+
+impl_container_node_defaults_with_display!(Argument);
 
 impl Argument {
 
+    node_optional_child_fn!(name, Identifier, as_identifier);
+
+    node_child_fn!(value, Expression, as_expression);
+
     pub fn get_type(&self) -> &Type {
-        &self.value.resolved().r#type
+        &self.value().resolved().r#type
     }
 
     pub fn resolve(&self, resolved: ArgumentResolved) {
@@ -37,7 +37,7 @@ impl Argument {
     }
 
     pub fn resolved_name(&self) -> Option<&str> {
-        if let Some(name) = &self.name {
+        if let Some(name) = self.name() {
             Some(name.name())
         } else {
             if self.is_resolved() {
@@ -49,37 +49,8 @@ impl Argument {
     }
 }
 
-impl Display for Argument {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if let Some(name) = &self.name {
-            f.write_str(&name.name)?;
-            f.write_str(": ")?;
-        }
-        Display::fmt(&self.value, f)
-    }
-}
-
 #[derive(Debug)]
 pub struct ArgumentResolved {
     pub name: String,
     pub expect: Type,
-}
-
-impl Identifiable for Argument {
-
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NodeTrait for Argument {
-
-    fn span(&self) -> Span {
-        self.span
-    }
-
-    fn children(&self) -> Option<&Vec<Node>> {
-        Some(&self.children)
-    }
 }

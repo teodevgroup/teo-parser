@@ -38,6 +38,7 @@ pub mod generics;
 pub mod decorator_declaration;
 pub mod pipeline_item_declaration;
 pub mod argument_declaration;
+pub mod argument_list_declaration;
 pub mod struct_declaration;
 pub mod function_declaration;
 pub mod callable_variant;

@@ -1,4 +1,4 @@
-use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 

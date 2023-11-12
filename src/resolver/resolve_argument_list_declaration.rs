@@ -1,5 +1,6 @@
 use maplit::btreemap;
-use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
+use crate::ast::argument_declaration::{ArgumentDeclaration};
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;

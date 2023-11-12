@@ -1,4 +1,5 @@
-use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
+use crate::ast::argument_declaration::{ArgumentDeclaration};
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::schema::Schema;

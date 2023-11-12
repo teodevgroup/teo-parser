@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use teo_teon::value::Value;
-use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::arith_expr::ArithExpr;
 use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;

@@ -1,15 +1,11 @@
-use crate::ast::argument_declaration::{ArgumentDeclaration, ArgumentListDeclaration};
+use crate::ast::argument_declaration::{ArgumentDeclaration};
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
-use crate::ast::config_declaration::ConfigDeclaration;
-use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
-use crate::definition::jump_to_definition_in_field::jump_to_definition_in_field;
 use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_type_expr_kind;
-use crate::search::search_availability::search_availability;
 
 pub(super) fn jump_to_definition_in_argument_list_declaration(
     schema: &Schema,

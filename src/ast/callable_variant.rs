@@ -1,4 +1,4 @@
-use crate::ast::argument_declaration::ArgumentListDeclaration;
+use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::r#type::r#type::Type;
 
