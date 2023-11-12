@@ -1,28 +1,13 @@
-use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
-use crate::ast::span::Span;
 use crate::ast::unit::Unit;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
 
-#[derive(Debug)]
-pub struct Pipeline {
-    pub unit: Box<Unit>,
-    pub span: Span,
-    pub resolved: RefCell<Option<PipelineResolved>>,
-}
+declare_container_node!(Pipeline, pub(crate) unit: usize);
+
+impl_container_node_defaults!(Pipeline);
 
 impl Pipeline {
-
-    pub fn resolve(&self, resolved: PipelineResolved) {
-        *(unsafe { &mut *self.resolved.as_ptr() }) = Some(resolved);
-    }
-
-    pub fn resolved(&self) -> &PipelineResolved {
-        (unsafe { &*self.resolved.as_ptr() }).as_ref().unwrap()
-    }
-
-    pub fn is_resolved(&self) -> bool {
-        self.resolved.borrow().is_some()
-    }
+    node_child_fn!(unit, Unit);
 }
 
 impl Display for Pipeline {
@@ -31,16 +16,4 @@ impl Display for Pipeline {
         f.write_str("$")?;
         Display::fmt(&self.unit, f)
     }
-}
-
-#[derive(Debug)]
-pub struct PipelineResolved {
-    pub items: Vec<Item>
-}
-
-#[derive(Debug)]
-pub struct Item {
-    pub path_start: usize,
-    pub path_end: usize,
-    pub argument_list: Option<usize>,
 }

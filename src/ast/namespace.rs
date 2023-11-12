@@ -4,73 +4,54 @@ use std::sync::Arc;
 use maplit::btreeset;
 use crate::ast::handler::HandlerGroupDeclaration;
 use crate::availability::Availability;
-use crate::ast::comment::Comment;
 use crate::ast::config::Config;
-use crate::ast::constant::Constant;
 use crate::ast::data_set::DataSet;
-use crate::ast::identifier::Identifier;
-use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::r#enum::Enum;
-use crate::ast::span::Span;
 use crate::ast::top::Top;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
+use crate::ast::node::Node;
 
-#[derive(Debug)]
-pub struct Namespace {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub identifier: Identifier,
-    pub tops: BTreeMap<usize, Top>,
-    pub references: NamespaceReferences,
-}
+declare_container_node!(Namespace, named,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) references: NamespaceReferences,
+);
+
+impl_container_node_defaults!(Namespace, named);
 
 impl Namespace {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
+    node_child_fn!(identifier, Identifier);
 
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
-
-    pub fn str_path(&self) -> Vec<&str> {
-        self.string_path.iter().map(AsRef::as_ref).collect()
-    }
+    node_optional_child_fn!(comment, Comment);
 
     pub fn parent_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()
     }
 
-    pub fn tops(&self) -> Vec<&Top> {
-        self.tops.values().collect()
-    }
-
     pub fn get_connector(&self) -> Option<&Config> {
-        self.references.connector.map(|id| self.tops.get(&id).unwrap().as_config().unwrap())
+        self.references.connector.map(|id| self.children.get(&id).unwrap().as_config().unwrap())
     }
 
     fn get_enum(&self, id: usize) -> Option<&Enum> {
-        self.tops.get(&id).unwrap().as_enum()
+        self.children.get(&id).unwrap().as_enum()
     }
 
     fn get_model(&self, id: usize) -> Option<&Model> {
-        self.tops.get(&id).unwrap().as_model()
+        self.children.get(&id).unwrap().as_model()
     }
 
     pub fn get_namespace(&self, id: usize) -> Option<&Namespace> {
-        self.tops.get(&id).unwrap().as_namespace()
+        self.children.get(&id).unwrap().as_namespace()
     }
 
     fn get_data_set(&self, id: usize) -> Option<&DataSet> {
-        self.tops.get(&id).unwrap().as_data_set()
+        self.children.get(&id).unwrap().as_data_set()
     }
 
     fn get_handler_group(&self, id: usize) -> Option<&HandlerGroupDeclaration> {
-        self.tops.get(&id).unwrap().as_handler_group_declaration()
+        self.children.get(&id).unwrap().as_handler_group_declaration()
     }
 
     pub fn models(&self) -> Vec<&Model> {
@@ -103,8 +84,8 @@ impl Namespace {
         }).map(|t| *t)
     }
 
-    pub fn find_top_by_id(&self, id: usize) -> Option<&Top> {
-        self.tops.get(&id)
+    pub fn find_top_by_id(&self, id: usize) -> Option<&Node> {
+        self.children.get(&id)
     }
 
     pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {

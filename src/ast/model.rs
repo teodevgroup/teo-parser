@@ -8,32 +8,46 @@ use crate::ast::field::Field;
 use crate::ast::handler::HandlerDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 
-#[derive(Debug)]
-pub struct Model {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub decorators: Vec<Decorator>,
-    pub empty_decorator_spans: Vec<Span>,
-    pub identifier: Identifier,
-    pub fields: Vec<Field>,
-    pub empty_field_decorator_spans: Vec<Span>,
-    pub unattached_field_decorators: Vec<Decorator>,
-    pub handlers: Vec<HandlerDeclaration>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-    pub resolved: RefCell<Option<ModelResolved>>,
+declare_container_node!(Model, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorator_spans: Vec<Span>,
+    pub(crate) identifier: usize,
+    pub(crate) fields: Vec<usize>,
+    pub(crate) empty_field_decorator_spans: Vec<Span>,
+    pub(crate) unattached_field_decorators: Vec<Decorator>,
+    pub(crate) handlers: Vec<usize>,
+    pub(crate) resolved: RefCell<Option<ModelResolved>>,
+);
+
+impl_container_node_defaults!(Model, named, availability);
+
+node_children_iter!(Model, Decorator, DecoratorsIter, decorators);
+
+node_children_iter!(Model, Field, FieldsIter, fields);
+
+node_children_iter!(Model, HandlerDeclaration, HandlersIter, handlers);
+
+impl Model {
+
+    node_optional_child_fn!(comment, Comment);
+
+    node_child_fn!(identifier, Identifier);
+
+    node_children_iter_fn!(decorators, DecoratorsIter);
+
+    node_children_iter_fn!(fields, FieldsIter);
+
+    node_children_iter_fn!(handlers, HandlersIter);
 }
 
 #[derive(Debug, Serialize)]
@@ -49,31 +63,9 @@ impl ModelResolved {
     }
 }
 
-impl Identifiable for Model {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for Model {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
 impl Resolve<ModelResolved> for Model {
     fn resolved_ref_cell(&self) -> &RefCell<Option<ModelResolved>> {
         &self.resolved
-    }
-}
-
-impl HasAvailability for Model {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
     }
 }
 
