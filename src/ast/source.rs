@@ -5,6 +5,7 @@ use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::top::Top;
 
 #[derive(Debug)]
@@ -12,28 +13,28 @@ pub struct Source {
     pub id: usize,
     pub builtin: bool,
     pub file_path: String,
-    pub tops: BTreeMap<usize, Top>,
+    pub children: BTreeMap<usize, Node>,
     pub references: SourceReferences,
 }
 
 impl Source {
 
-    pub fn new(id: usize, builtin: bool, file_path: String, tops: BTreeMap<usize, Top>, references: SourceReferences) -> Self {
+    pub fn new(id: usize, builtin: bool, file_path: String, children: BTreeMap<usize, Node>, references: SourceReferences) -> Self {
         Self {
             id,
             builtin,
             file_path,
-            tops,
+            children,
             references,
         }
     }
 
-    pub fn tops(&self) -> Vec<&Top> {
-        self.tops.values().collect()
+    pub fn children(&self) -> Vec<&Node> {
+        self.children.values().collect()
     }
 
     pub fn imports(&self) -> Vec<&Import> {
-        self.references.imports.iter().map(|id| self.tops.get(id).unwrap().as_import().unwrap()).collect()
+        self.references.imports.iter().map(|id| self.children.get(id).unwrap().as_import().unwrap()).collect()
     }
 
     pub fn namespaces(&self) -> Vec<&Namespace> {
@@ -41,19 +42,19 @@ impl Source {
     }
 
     pub fn get_connector(&self) -> Option<&Config> {
-        self.references.connector.map(|id| self.tops.get(&id).unwrap().as_config().unwrap())
+        self.references.connector.map(|id| self.children.get(&id).unwrap().as_config().unwrap())
     }
 
     pub fn get_namespace(&self, id: usize) -> Option<&Namespace> {
-        self.tops.get(&id).unwrap().as_namespace()
+        self.children.get(&id).unwrap().as_namespace()
     }
 
-    pub fn find_top_by_id(&self, id: usize) -> Option<&Top> {
-        self.tops.get(&id)
+    pub fn find_top_by_id(&self, id: usize) -> Option<&Node> {
+        self.children.get(&id)
     }
 
-    pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
-        self.tops().iter().find(|t| {
+    pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
+        self.children().iter().find(|t| {
             if let Some(n) = t.name() {
                 (n == name) && filter(t) && t.available_test(availability)
             } else {
@@ -62,7 +63,7 @@ impl Source {
         }).map(|t| *t)
     }
 
-    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
+    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Node> {
         if *path.first().unwrap() != self.id {
             return None;
         }
@@ -82,7 +83,7 @@ impl Source {
         }
     }
 
-    pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
+    pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Node> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter, availability)
         } else {

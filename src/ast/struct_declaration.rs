@@ -6,38 +6,41 @@ use crate::ast::comment::Comment;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
-use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 use crate::r#type::Type::StructObject;
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 
-#[derive(Debug)]
-pub struct StructDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub comment: Option<Comment>,
-    pub identifier: Identifier,
-    pub generics_declaration: Option<GenericsDeclaration>,
-    pub generics_constraint: Option<GenericsConstraint>,
-    pub function_declarations: Vec<FunctionDeclaration>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>,
-}
+declare_container_node!(StructDeclaration, named, availability,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) generics_declaration: Option<usize>,
+    pub(crate) generics_constraint: Option<usize>,
+    pub(crate) function_declarations: Vec<usize>,
+);
+
+impl_container_node_defaults!(StructDeclaration, named, availability);
+
+node_children_iter!(StructDeclaration, FunctionDeclaration, FunctionsIter, function_declarations);
 
 impl StructDeclaration {
 
+    node_optional_child_fn!(comment, Comment);
+    node_child_fn!(identifier, Identifier);
+    node_optional_child_fn!(generics_declaration, GenericsDeclaration);
+    node_optional_child_fn!(generics_constraint, GenericsConstraint);
+    node_children_iter_fn!(function_declarations, FunctionsIter);
+
     pub fn instance_function(&self, name: &str) -> Option<&FunctionDeclaration> {
-        self.function_declarations.iter().find(|f| !f.r#static && f.identifier.name() == name)
+        self.function_declarations().find(|f| !f.r#static && f.identifier.name() == name)
     }
 
     pub fn static_function(&self, name: &str) -> Option<&FunctionDeclaration> {
-        self.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == name)
+        self.function_declarations().find(|f| f.r#static && f.identifier.name() == name)
     }
 
     pub fn keywords_map(&self) -> BTreeMap<Keyword, Type> {
@@ -48,28 +51,6 @@ impl StructDeclaration {
                 vec![]
             })
         }
-    }
-}
-
-impl Identifiable for StructDeclaration {
-    fn path(&self) -> &Vec<usize> {
-        &self.path
-    }
-}
-
-impl NamedIdentifiable for StructDeclaration {
-    fn string_path(&self) -> &Vec<String> {
-        &self.string_path
-    }
-}
-
-impl HasAvailability for StructDeclaration {
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        *self.actual_availability.borrow()
     }
 }
 

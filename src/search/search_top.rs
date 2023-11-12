@@ -11,7 +11,7 @@ pub(crate) fn search_top<'a>(schema: &'a Schema, file_path: &str, line_col: (usi
 }
 
 fn search_top_in_source(source: &Source, line_col: (usize, usize)) -> Option<&Top> {
-    for top in source.tops() {
+    for top in source.children() {
         if top.span().contains_line_col(line_col) {
             return if let Some(namespace) = top.as_namespace() {
                 if let Some(top_in_namespace) = search_top_in_namespace(namespace, line_col) {

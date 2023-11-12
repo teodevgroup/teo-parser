@@ -23,7 +23,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
         }
         break
     }
-    for top in source.tops() {
+    for top in source.children() {
         if let Some(namespace) = top.as_namespace() {
             if namespace.tops().iter().find(|t| filter(t)).is_some() {
                 result.push(namespace.path.clone());

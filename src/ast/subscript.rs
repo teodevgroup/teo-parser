@@ -1,11 +1,17 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::expression::{Expression, ExpressionKind};
+use crate::ast::expression::Expression;
 use crate::ast::span::Span;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
 
-#[derive(Debug)]
-pub struct Subscript {
-    pub expression: Box<Expression>,
-    pub span: Span,
+declare_container_node!(Subscript,
+    pub(crate) expression: usize,
+);
+
+impl_container_node_defaults!(Subscript);
+
+impl Subscript {
+
+    node_child_fn!(expression, Expression);
 }
 
 impl Display for Subscript {

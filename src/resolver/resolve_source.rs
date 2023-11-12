@@ -16,7 +16,7 @@ use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_bloc
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
-    for top in context.source().tops() {
+    for top in context.source().children() {
         match top {
             Top::Import(_) => (), // resolved when parsing,
             Top::Constant(constant) => resolve_constant(constant, context),
@@ -38,7 +38,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
 }
 
 pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
-    for top in context.source().tops() {
+    for top in context.source().children() {
         match top {
             Top::DataSet(data_set) => resolve_data_set(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_second(namespace, context),
@@ -51,7 +51,7 @@ pub(super) fn resolve_source_second<'a>(context: &'a ResolverContext<'a>) {
 }
 
 pub(super) fn resolve_source_third<'a>(context: &'a ResolverContext<'a>) {
-    for top in context.source().tops() {
+    for top in context.source().children() {
         match top {
             Top::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Top::Namespace(namespace) => resolve_namespace_third(namespace, context),
