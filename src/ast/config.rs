@@ -7,23 +7,20 @@ use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 
-declare_container_node!(Config, named,
+declare_container_node!(Config, named, availability,
     pub keyword: ConfigKeyword,
     pub identifier: Option<usize>,
     pub items: Vec<usize>,
-    pub unattached_identifiers: Vec<Identifier>,
-    pub define_availability: Availability,
-    pub actual_availability: RefCell<Availability>
+    pub unattached_identifiers: Vec<Identifier>
 );
 
 node_children_iter!(Config, ConfigItem, ItemsIter, items, as_config_item);
 
-impl_container_node_defaults!(Config);
+impl_container_node_defaults!(Config, availability);
 
 impl Config {
 
@@ -56,17 +53,6 @@ impl NamedIdentifiable for Config {
         } else {
             self.keyword.name()
         }
-    }
-}
-
-impl HasAvailability for Config {
-
-    fn define_availability(&self) -> Availability {
-        self.define_availability
-    }
-
-    fn actual_availability(&self) -> Availability {
-        self.actual_availability.borrow().clone()
     }
 }
 

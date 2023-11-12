@@ -22,18 +22,40 @@ macro_rules! declare_container_node {
     ($struct_name:ident) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: Span,
-            path: Vec<usize>,
-            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) span: Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
         }
     };
     ($struct_name:ident, named) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: Span,
+            pub(crate) span: Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) string_path: Vec<String>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+        }
+    };
+    ($struct_name:ident, availability) => {
+        #[derive(Debug)]
+        pub struct $struct_name {
+            pub(crate) span: Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) define_availability: Availability,
+            pub(crate) actual_availability: RefCell<Availability>,
+        }
+    };
+    ($struct_name:ident, named, availability, $($vis: vis $element: ident: $ty: ty),*) => {
+        #[derive(Debug)]
+        pub struct $struct_name {
+            span: crate::ast::span::Span,
             path: Vec<usize>,
             string_path: Vec<String>,
             children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) define_availability: Availability,
+            pub(crate) actual_availability: RefCell<Availability>,
+            $($vis $element: $ty),*
         }
     };
     ($struct_name:ident, named, $($vis: vis $element: ident: $ty: ty),*) => {
@@ -43,6 +65,17 @@ macro_rules! declare_container_node {
             path: Vec<usize>,
             string_path: Vec<String>,
             children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            $($vis $element: $ty),*
+        }
+    };
+    ($struct_name:ident, availability, $($vis: vis $element: ident: $ty: ty),*) => {
+        #[derive(Debug)]
+        pub struct $struct_name {
+            span: crate::ast::span::Span,
+            path: Vec<usize>,
+            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) define_availability: Availability,
+            pub(crate) actual_availability: RefCell<Availability>,
             $($vis $element: $ty),*
         }
     };
@@ -110,6 +143,77 @@ macro_rules! impl_container_node_defaults {
             }
             fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
                 Some(&self.children)
+            }
+        }
+    };
+    ($struct_name:ident, named) => {
+        impl crate::traits::identifiable::Identifiable for $struct_name {
+            fn path(&self) -> &Vec<usize> {
+               &self.path
+            }
+        }
+        impl crate::traits::node_trait::NodeTrait for $struct_name {
+            fn span(&self) -> crate::ast::span::Span {
+                self.span
+            }
+            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
+                Some(&self.children)
+            }
+        }
+        impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
+            fn string_path(&self) -> &Vec<String> {
+                &self.string_path
+            }
+        }
+    };
+    ($struct_name:ident, availability) => {
+        impl crate::traits::identifiable::Identifiable for $struct_name {
+            fn path(&self) -> &Vec<usize> {
+               &self.path
+            }
+        }
+        impl crate::traits::node_trait::NodeTrait for $struct_name {
+            fn span(&self) -> crate::ast::span::Span {
+                self.span
+            }
+            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
+                Some(&self.children)
+            }
+        }
+        impl crate::traits::has_availability::HasAvailability for $struct_name {
+            fn define_availability(&self) -> Availability {
+                self.define_availability
+            }
+            fn actual_availability(&self) -> Availability {
+                *self.actual_availability.borrow()
+            }
+        }
+    };
+    ($struct_name:ident, named, availability) => {
+        impl crate::traits::identifiable::Identifiable for $struct_name {
+            fn path(&self) -> &Vec<usize> {
+               &self.path
+            }
+        }
+        impl crate::traits::node_trait::NodeTrait for $struct_name {
+            fn span(&self) -> crate::ast::span::Span {
+                self.span
+            }
+            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
+                Some(&self.children)
+            }
+        }
+        impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
+            fn string_path(&self) -> &Vec<String> {
+                &self.string_path
+            }
+        }
+        impl crate::traits::has_availability::HasAvailability for $struct_name {
+            fn define_availability(&self) -> Availability {
+                self.define_availability
+            }
+            fn actual_availability(&self) -> Availability {
+                *self.actual_availability.borrow()
             }
         }
     };
