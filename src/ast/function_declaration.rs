@@ -5,37 +5,36 @@ use crate::ast::comment::Comment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
-use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
+use crate::traits::info_provider::InfoProvider;
 
-#[derive(Debug)]
-pub struct FunctionDeclaration {
-    pub span: Span,
-    pub path: Vec<usize>,
-    pub string_path: Vec<String>,
-    pub define_availability: Availability,
-    pub comment: Option<Comment>,
+declare_container_node!(FunctionDeclaration, named, availability,
     pub r#static: bool,
-    pub identifier: Identifier,
-    pub generics_declaration: Option<GenericsDeclaration>,
-    pub argument_list_declaration: Option<ArgumentListDeclaration>,
-    pub generics_constraint: Option<GenericsConstraint>,
-    pub return_type: TypeExpr,
-}
+    pub inside_struct: bool,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) generics_declaration: Option<usize>,
+    pub(crate) argument_list_declaration: Option<usize>,
+    pub(crate) generics_constraint: Option<usize>,
+    pub(crate) return_type: usize,
+);
+
+impl_container_node_defaults!(FunctionDeclaration, named, availability);
 
 impl FunctionDeclaration {
 
-    pub fn source_id(&self) -> usize {
-        *self.path.first().unwrap()
-    }
+    node_optional_child_fn!(comment, Comment);
 
-    pub fn id(&self) -> usize {
-        *self.path.last().unwrap()
-    }
+    node_child_fn!(identifier, Identifier);
 
-    pub fn namespace_str_path(&self) -> Vec<&str> {
-        self.string_path.iter().rev().skip(2).rev().map(AsRef::as_ref).collect()
-    }
+    node_optional_child_fn!(generics_declaration, GenericsDeclaration);
+
+    node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
+
+    node_optional_child_fn!(generics_constraint, GenericsConstraint);
+
+    node_optional_child_fn!(return_type, TypeExpr);
 
     pub fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
         let mut generics_declaration = vec![];
@@ -59,5 +58,16 @@ impl FunctionDeclaration {
             pipeline_input: None,
             pipeline_output: None,
         }]
+    }
+}
+
+impl InfoProvider for FunctionDeclaration {
+
+    fn namespace_skip(&self) -> usize {
+        if self.inside_struct {
+            2
+        } else {
+            1
+        }
     }
 }
