@@ -3,7 +3,7 @@ use crate::availability::Availability;
 use crate::ast::constant::Constant;
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::identifier::Identifier;
-use crate::parser::parse_expression::parse_expression_kind;
+use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
@@ -19,7 +19,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserConte
         match current.as_rule() {
             Rule::identifier => identifier = Some(parse_identifier(&current)),
             Rule::expression => expression = Some(Expression {
-                kind: parse_expression_kind(current, context),
+                kind: parse_expression(current, context),
                 resolved: RefCell::new(None),
             }),
             Rule::type_expression => type_expr = Some(parse_type_expression(current, context)),

@@ -13,16 +13,16 @@ use crate::parser::parse_subscript::{parse_int_subscript, parse_subscript};
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_expression_kind(pair: Pair<'_>, context: &mut ParserContext) -> ExpressionKind {
+pub(super) fn parse_expression(pair: Pair<'_>, context: &mut ParserContext) -> Expression {
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::arith_expr => return ExpressionKind::ArithExpr(parse_arith_expr(current, context)),
-            Rule::unit => return ExpressionKind::Unit(parse_unit(current, context)),
-            Rule::pipeline => return ExpressionKind::Pipeline(parse_pipeline(current, context)),
+            Rule::arith_expr => return Expression::new(ExpressionKind::ArithExpr(parse_arith_expr(current, context))),
+            Rule::unit => return Expression::new(ExpressionKind::Unit(parse_unit(current, context))),
+            Rule::pipeline => return Expression::new(ExpressionKind::Pipeline(parse_pipeline(current, context))),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    ExpressionKind::NullLiteral(NullLiteral::default())
+    Expression::new(ExpressionKind::NullLiteral(NullLiteral::default()))
 }
 
 pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {

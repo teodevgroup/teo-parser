@@ -1,5 +1,4 @@
 use crate::ast::schema::Schema;
-use crate::ast::top::Top;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_config::jump_to_definition_in_config;
 use crate::definition::jump_to_definition_in_config_declaration::jump_to_definition_in_config_declaration;

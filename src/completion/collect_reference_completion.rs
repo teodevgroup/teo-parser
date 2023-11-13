@@ -3,7 +3,6 @@ use crate::availability::Availability;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 
 pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Vec<Vec<usize>> {
     let mut examined_sources = vec![];

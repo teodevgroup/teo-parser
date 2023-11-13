@@ -1,7 +1,6 @@
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 
 pub(crate) fn search_top<'a>(schema: &'a Schema, file_path: &str, line_col: (usize, usize)) -> Option<&'a Top> {
     if let Some(source) = schema.sources().iter().find(|s| s.file_path.as_str() == file_path) {

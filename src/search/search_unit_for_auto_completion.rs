@@ -5,7 +5,6 @@ use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::subscript::Subscript;
-use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;

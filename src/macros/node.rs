@@ -49,10 +49,10 @@ macro_rules! declare_container_node {
     ($struct_name:ident, named, availability, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            path: Vec<usize>,
-            string_path: Vec<String>,
-            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) string_path: Vec<String>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
             pub(crate) define_availability: Availability,
             pub(crate) actual_availability: RefCell<Availability>,
             $($vis $element: $ty),*
@@ -61,19 +61,19 @@ macro_rules! declare_container_node {
     ($struct_name:ident, named, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            path: Vec<usize>,
-            string_path: Vec<String>,
-            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) string_path: Vec<String>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
             $($vis $element: $ty),*
         }
     };
     ($struct_name:ident, availability, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            path: Vec<usize>,
-            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) path: Vec<usize>,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
             pub(crate) define_availability: Availability,
             pub(crate) actual_availability: RefCell<Availability>,
             $($vis $element: $ty),*
@@ -82,9 +82,9 @@ macro_rules! declare_container_node {
     ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            path: Vec<usize>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
+            pub(crate) path: Vec<usize>,
             $($vis $element: $ty),*
         }
     };

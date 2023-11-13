@@ -6,7 +6,6 @@ use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::node::Node;
-use crate::ast::top::Top;
 
 #[derive(Debug)]
 pub struct Source {

@@ -4,7 +4,6 @@ use crate::ast::decorator::Decorator;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 use crate::completion::collect_argument_list_names::collect_argument_list_names_from_decorator_declaration;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_argument_list::find_completion_in_argument_list;

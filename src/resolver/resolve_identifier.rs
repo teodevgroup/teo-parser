@@ -5,7 +5,6 @@ use crate::value::TypeAndValue;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::reference_space::ReferenceSpace;
-use crate::ast::top::Top;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;

@@ -2,7 +2,6 @@ use std::sync::Arc;
 use crate::availability::Availability;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 use crate::completion::collect_reference_completion::collect_reference_completion_in_source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::completion_item_from_top::completion_item_from_top;

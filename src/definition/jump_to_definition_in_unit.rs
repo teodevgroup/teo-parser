@@ -2,7 +2,6 @@ use crate::availability::Availability;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;

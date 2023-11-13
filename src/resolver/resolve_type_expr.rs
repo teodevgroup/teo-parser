@@ -5,7 +5,6 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOperator};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
-use crate::ast::top::Top;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;

@@ -9,8 +9,10 @@ schema = {
 // #############
 WHITESPACE = _{ SPACE_SEPARATOR | "\t" }
 EMPTY_LINES = @{ (WHITESPACE* ~ NEWLINE)+ }
-BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
-BLOCK_CLOSE = { "}" }
+
+// #############
+// keywords
+// #############
 ENUM_KEYWORD = { "enum" }
 MODEL_KEYWORD = { "model" }
 STRUCT_KEYWORD = { "struct" }
@@ -52,12 +54,19 @@ FORM_KEYWORD = _{ "form" }
 INTERFACE_KEYWORD = { "interface" }
 OPTION_KEYWORD = { "option" }
 EXTENDS_KEYWORD = _{ "extends" }
-COLON = _{ ":" }
-TRAILING_COMMA = @{ "," }
-OPTIONAL = { "?" }
-HASH_TAG = { "#" }
+
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
+
+// #############
+// punctuations
+// #############
+COLON = @{ ":" }
+COMMA = @{ "," }
+BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
+BLOCK_CLOSE = { "}" }
+OPTIONAL = { "?" }
+HASH_TAG = { "#" }
 
 // #############
 // identifier
@@ -70,19 +79,19 @@ identifier_path = { identifier ~ ("." ~ identifier)* }
 // #############
 type_expression = { (type_subscript | type_item | type_group | type_tuple | type_reference) ~ (BI_OR ~ (type_subscript | type_item | type_group | type_tuple | type_reference))* }
 type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
-type_generics = { "<" ~ type_expression ~ ("," ~ type_expression)* ~ ","? ~ ">" }
+type_generics = { "<" ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA? ~ ">" }
 arity = {"[]" | "{}" }
 type_group = { "(" ~ type_expression ~ ")" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
-type_tuple = { "(" ~ type_expression ~ "," ~ type_expression? ~ ("," ~ type_expression)* ~ ","? ~ ")" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
+type_tuple = { "(" ~ type_expression ~ COMMA ~ type_expression? ~ (COMMA ~ type_expression)* ~ COMMA? ~ ")" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_subscript = { type_item ~ "[" ~ type_expression ~ "]" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_reference = { enum_variant_literal }
 
 // #############
 // generics
 // #############
-generics_declaration = { "<" ~ identifier ~ ("," ~ identifier)* ~ ","? ~ ">" }
-generics_constraint = { "where" ~ generics_constraint_item ~ ("," ~ generics_constraint_item)* ~ ","? }
-generics_constraint_item = { identifier ~ ":" ~ type_expression }
+generics_declaration = { "<" ~ identifier ~ (COMMA ~ identifier)* ~ COMMA? ~ ">" }
+generics_constraint = { "where" ~ generics_constraint_item ~ (COMMA ~ generics_constraint_item)* ~ COMMA? }
+generics_constraint_item = { identifier ~ COLON ~ type_expression }
 
 // #############
 // import
@@ -94,7 +103,7 @@ import_statement = {
     ~ string_literal
 }
 
-import_identifier_list = { "{" ~ (identifier ~ ("," ~ identifier)*)? ~ TRAILING_COMMA? ~ BLOCK_CLOSE }
+import_identifier_list = { "{" ~ (identifier ~ (COMMA ~ identifier)*)? ~ COMMA? ~ BLOCK_CLOSE }
 
 // #############
 // numeric literals
@@ -133,18 +142,18 @@ enum_variant_literal = { "." ~ identifier ~ argument_list? }
 // #############
 // tuple literals
 // #############
-tuple_literal = { "(" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ("," | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ "," ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ("," ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ","?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ")" }
+tuple_literal = { "(" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ")" }
 
 // #############
 // array literals
 // #############
-array_literal = { "[" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (expression ~ (NEWLINE | comment_block)* ~ ( "," ~ (NEWLINE | comment_block)* ~ expression )* ~ (NEWLINE | comment_block)* ~ ","?)? ~ (NEWLINE | comment_block)* ~ "]" }
+array_literal = { "[" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (expression ~ (NEWLINE | comment_block)* ~ ( COMMA ~ (NEWLINE | comment_block)* ~ expression )* ~ (NEWLINE | comment_block)* ~ COMMA?)? ~ (NEWLINE | comment_block)* ~ "]" }
 
 // #############
 // dict literals
 // #############
-named_expression = { expression ~ ":" ~ expression }
-dictionary_literal = { "{" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (named_expression ~ ( (NEWLINE | comment_block)* ~ "," ~ (NEWLINE | comment_block)* ~ named_expression )* ~ (NEWLINE | comment_block)* ~ ","? ~ (NEWLINE | comment_block)*)? ~ BLOCK_CLOSE }
+named_expression = { expression ~ COLON ~ expression }
+dictionary_literal = { "{" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (named_expression ~ ( (NEWLINE | comment_block)* ~ COMMA ~ (NEWLINE | comment_block)* ~ named_expression )* ~ (NEWLINE | comment_block)* ~ COMMA? ~ (NEWLINE | comment_block)*)? ~ BLOCK_CLOSE }
 
 // #############
 // subscript
@@ -238,15 +247,14 @@ expression = {
 // variable & constant declaration
 // #############
 
-constant_statement = { "let" ~ identifier ~ (":" ~ type_expression)? ~ "=" ~ expression }
+constant_statement = { "let" ~ identifier ~ (COLON ~ type_expression)? ~ "=" ~ expression }
 
 // #############
 // arguments
 // #############
-argument_list = { "(" ~ (NEWLINE | WHITESPACE)* ~ (argument ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument ~ (NEWLINE | WHITESPACE)*)*)? ~ TRAILING_COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
-argument = { named_argument | empty_argument | expression }
-empty_argument = { identifier ~ ":" }
-named_argument = { identifier ~ ":" ~ expression }
+argument_list = { "(" ~ (NEWLINE | WHITESPACE)* ~ ((argument | empty_argument) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument | empty_argument) ~ (NEWLINE | WHITESPACE)*)*)? ~ COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
+empty_argument = { identifier ~ COLON }
+argument = { (identifier ~ COLON)? ~ expression }
 
 // #############
 // decorator and pipeline
@@ -261,12 +269,12 @@ pipeline = { "$" ~ identifier_unit }
 argument_list_declaration = {
   "(" ~
   (NEWLINE | WHITESPACE)* ~
-  (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ "," ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~
-  TRAILING_COMMA? ~
+  (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~
+  COMMA? ~
   (NEWLINE | WHITESPACE)* ~
   ")"
 }
-argument_declaration = { identifier ~ OPTIONAL? ~ ":" ~ type_expression }
+argument_declaration = { identifier ~ OPTIONAL? ~ COLON ~ type_expression }
 
 // #############
 // config blocks
@@ -438,7 +446,7 @@ config_declaration = {
 // #############
 
 interface_declaration = {
-    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ ("," ~ type_expression)* ~ ","?)? ~ generics_constraint? ~ BLOCK_OPEN
+    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA?)? ~ generics_constraint? ~ BLOCK_OPEN
     ~ (field_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
@@ -496,7 +504,7 @@ function_declaration = {
   identifier ~
   generics_declaration? ~
   argument_list_declaration ~
-  ":" ~
+  COLON ~
   type_expression ~
   generics_constraint?
 }

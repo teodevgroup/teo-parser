@@ -7,9 +7,9 @@ use crate::traits::node_trait::NodeTrait;
 
 declare_container_node!(
     Argument,
-    name: Option<usize>,
-    value: usize,
-    resolved: RefCell<Option<ArgumentResolved>>
+    pub(crate) name: Option<usize>,
+    pub(crate) value: usize,
+    pub(crate) resolved: RefCell<Option<ArgumentResolved>>
 );
 
 impl_container_node_defaults_with_display!(Argument);

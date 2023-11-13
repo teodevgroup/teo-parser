@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::ast::arith_expr::{ArithExpr, BinaryOperation, Operator, UnaryOperation, UnaryPostfixOperation};
 use crate::ast::expression::Expression;
-use crate::parser::parse_expression::parse_expression_kind;
+use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
@@ -9,7 +9,7 @@ use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
 pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> ArithExpr {
     let span = parse_span(&pair);
     let result = EXPR_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
-        Rule::operand => ArithExpr::Expression(Box::new(Expression { kind: parse_expression_kind(primary, context), resolved: RefCell::new(None) })),
+        Rule::operand => ArithExpr::Expression(Box::new(Expression { kind: parse_expression(primary, context), resolved: RefCell::new(None) })),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             panic!("unreachable 3")

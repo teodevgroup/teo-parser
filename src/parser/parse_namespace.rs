@@ -1,7 +1,6 @@
 use maplit::btreemap;
 use crate::availability::Availability;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
-use crate::ast::top::Top;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;

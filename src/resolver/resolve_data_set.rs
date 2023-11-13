@@ -1,5 +1,5 @@
 use maplit::btreemap;
-use crate::ast::data_set::{DataSet, DataSetGroup, DataSetGroupResolved};
+use crate::ast::data_set::{DataSet, DataSetGroup};
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;

@@ -1,4 +1,3 @@
-use crate::ast::top::Top;
 use crate::resolver::resolve_handler_group::{resolve_handler_group_decorators, resolve_handler_group_types};
 use crate::resolver::resolve_config::resolve_config;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration;

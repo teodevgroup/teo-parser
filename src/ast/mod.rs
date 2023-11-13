@@ -28,7 +28,6 @@ pub mod decorator;
 pub mod group;
 pub mod literals;
 pub mod middleware;
-pub mod top;
 pub mod field;
 pub mod pipeline;
 pub mod subscript;

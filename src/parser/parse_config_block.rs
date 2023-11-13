@@ -7,7 +7,7 @@ use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
-use crate::parser::parse_expression::parse_expression_kind;
+use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -69,7 +69,7 @@ fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem 
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::expression => expression = Some(Expression::new(parse_expression_kind(current, context))),
+            Rule::expression => expression = Some(Expression::new(parse_expression(current, context))),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

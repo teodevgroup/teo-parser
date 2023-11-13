@@ -3,7 +3,6 @@ use crate::availability::Availability;
 use crate::value::TypeAndValue;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 use crate::traits::resolved::Resolve;

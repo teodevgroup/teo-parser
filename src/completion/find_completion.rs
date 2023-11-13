@@ -1,5 +1,4 @@
 use crate::ast::schema::Schema;
-use crate::ast::top::Top;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_config::find_completion_in_config;
 use crate::completion::find_completion_in_config_declaration::find_completion_in_config_declaration;

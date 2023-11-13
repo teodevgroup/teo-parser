@@ -5,7 +5,7 @@ use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::{declare_container_node, node_children_iter, node_children_iter_fn};
 
-declare_container_node!(ArgumentList, arguments: Vec<usize>);
+declare_container_node!(ArgumentList, pub(crate) arguments: Vec<usize>);
 
 node_children_iter!(ArgumentList, Argument, ArgumentsIter, arguments);
 

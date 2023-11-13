@@ -7,7 +7,7 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expression::Expression;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::parser::parse_argument::parse_argument_list;
-use crate::parser::parse_expression::{parse_expression_kind};
+use crate::parser::parse_expression::{parse_expression};
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -83,7 +83,7 @@ pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::expression => expressions.push(Expression {
-                kind: parse_expression_kind(current, context),
+                kind: parse_expression(current, context),
                 resolved: RefCell::new(None),
             }),
             Rule::comment_block => (),
@@ -99,7 +99,7 @@ pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::expression => expressions.push(Expression {
-                kind: parse_expression_kind(current, context),
+                kind: parse_expression(current, context),
                 resolved: RefCell::new(None),
             }),
             Rule::comment_block => (),
@@ -129,12 +129,12 @@ fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (Expre
         match current.as_rule() {
             Rule::expression => if key.is_none() {
                 key = Some(Expression {
-                    kind: parse_expression_kind(current, context),
+                    kind: parse_expression(current, context),
                     resolved: RefCell::new(None),
                 });
             } else {
                 value = Some(Expression {
-                    kind: parse_expression_kind(current, context),
+                    kind: parse_expression(current, context),
                     resolved: RefCell::new(None),
                 });
             },

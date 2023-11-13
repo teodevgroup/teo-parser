@@ -13,7 +13,6 @@ use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::source::Source;
 use crate::ast::struct_declaration::StructDeclaration;
-use crate::ast::top::Top;
 use crate::traits::identifiable::Identifiable;
 
 #[derive(Debug)]

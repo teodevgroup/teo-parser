@@ -3,7 +3,6 @@ use crate::availability::Availability;
 use crate::ast::decorator::Decorator;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::top::Top;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};

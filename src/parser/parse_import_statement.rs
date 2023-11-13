@@ -42,7 +42,7 @@ fn parse_import_identifier_list(pair: Pair<'_>, context: &mut ParserContext) -> 
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => identifiers.push(parse_identifier(&current)),
-            Rule::TRAILING_COMMA | Rule::BLOCK_CLOSE => (),
+            Rule::COMMA | Rule::BLOCK_CLOSE => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
