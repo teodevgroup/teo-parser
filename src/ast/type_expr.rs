@@ -316,6 +316,12 @@ pub struct TypeExpr {
     pub resolved: RefCell<Option<Type>>,
 }
 
+impl TypeExpr {
+    pub fn new(kind: TypeExprKind) -> Self {
+        Self { kind, resolved: RefCell::new(None) }
+    }
+}
+
 impl Identifiable for TypeExpr {
     fn path(&self) -> &Vec<usize> {
         self.kind.as_dyn_node_trait().path()

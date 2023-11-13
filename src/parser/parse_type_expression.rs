@@ -6,38 +6,43 @@ use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
 use crate::ast::arity::Arity;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_optional};
-use crate::ast::node::Node::TypeExpr;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_enum_variant_literal;
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext) -> TypeExpr {
-    let span = parse_span(&pair);
-    let kind = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
-        Rule::type_item => TypeExprKind::TypeItem(parse_type_item(primary, context)),
-        Rule::type_group => TypeExprKind::TypeGroup(parse_type_group(primary, context)),
-        Rule::type_tuple => TypeExprKind::TypeTuple(parse_type_tuple(primary, context)),
-        Rule::type_subscript => TypeExprKind::TypeSubscript(parse_type_subscript(primary, context)),
-        Rule::type_reference => TypeExprKind::FieldName(parse_type_reference(primary, context)),
+    let result = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
+        Rule::type_item => TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(primary, context)))),
+        Rule::type_group => TypeExpr::new(TypeExprKind::TypeGroup(parse_type_group(primary, context))),
+        Rule::type_tuple => TypeExpr::new(TypeExprKind::TypeTuple(parse_type_tuple(primary, context))),
+        Rule::type_subscript => TypeExpr::new(TypeExprKind::TypeSubscript(parse_type_subscript(primary, context))),
+        Rule::type_reference => TypeExpr::new(TypeExprKind::FieldName(parse_type_reference(primary, context))),
         _ => {
             context.insert_unparsed(parse_span(&primary));
-            panic!("unreachable 6")
+            unreachable!()
         },
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
             Rule::BI_OR => TypeOperator::BitOr,
-            _ => panic!("unreachable 7"),
+            _ => unreachable!(),
         };
-        TypeExprKind::BinaryOp(TypeBinaryOperation {
+        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        let lhs_id = lhs.id();
+        let rhs_id = rhs.id();
+        children.insert(lhs_id, lhs.into());
+        children.insert(lhs_id, lhs.into());
+        let operation = TypeBinaryOperation {
             span,
-            lhs: Box::new(lhs),
+            children,
+            path,
+            lhs: lhs_id,
             op,
-            rhs: Box::new(rhs),
-        })
+            rhs: rhs_id,
+        };
+        parse_container_node_variables_cleanup!(context);
+        TypeExpr::new(TypeExprKind::BinaryOp(operation))
     }).parse(pair.into_inner());
-    TypeExpr {
-        kind,
-        resolved: RefCell::new(None),
-    }
+    result
 }
 
 fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
