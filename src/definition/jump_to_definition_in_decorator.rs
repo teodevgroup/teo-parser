@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use crate::availability::Availability;
 use crate::ast::decorator::Decorator;
+use crate::ast::node::Node;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;

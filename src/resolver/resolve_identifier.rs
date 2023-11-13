@@ -4,6 +4,7 @@ use crate::availability::Availability;
 use crate::value::TypeAndValue;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
+use crate::ast::node::Node;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;

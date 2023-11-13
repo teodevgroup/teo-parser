@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use crate::availability::Availability;
 use crate::ast::decorator::Decorator;
+use crate::ast::node::Node;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -8,6 +9,8 @@ use crate::completion::collect_argument_list_names::collect_argument_list_names_
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_argument_list::find_completion_in_argument_list;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
+use crate::traits::node_trait::NodeTrait;
+use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn find_completion_in_decorator<'a>(
@@ -31,8 +34,8 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Vec<CompletionItem> {
-    if let Some(argument_list) = &decorator.argument_list {
-        if argument_list.span.contains_line_col(line_col) {
+    if let Some(argument_list) = decorator.argument_list() {
+        if argument_list.span().contains_line_col(line_col) {
             let names = if decorator.is_resolved() {
                 collect_argument_list_names_from_decorator_declaration(schema.find_top_by_path(&decorator.resolved().path).unwrap().as_decorator_declaration().unwrap())
             } else {
@@ -42,7 +45,7 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
         }
     }
     let mut user_typed_spaces = vec![];
-    for identifier in decorator.identifier_path.identifiers.iter() {
+    for identifier in decorator.identifier_path().identifiers() {
         if identifier.span.contains_line_col(line_col) {
             break
         } else {

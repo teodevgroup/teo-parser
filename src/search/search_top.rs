@@ -1,8 +1,10 @@
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
+use crate::traits::node_trait::NodeTrait;
 
-pub(crate) fn search_top<'a>(schema: &'a Schema, file_path: &str, line_col: (usize, usize)) -> Option<&'a Top> {
+pub(crate) fn search_top<'a>(schema: &'a Schema, file_path: &str, line_col: (usize, usize)) -> Option<&'a Node> {
     if let Some(source) = schema.sources().iter().find(|s| s.file_path.as_str() == file_path) {
         return search_top_in_source(source, line_col);
     }

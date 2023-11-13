@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use crate::availability::Availability;
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use crate::ast::node::Node;
 use crate::availability::Availability;
 use crate::value::TypeAndValue;
 use crate::ast::schema::Schema;
@@ -50,7 +51,7 @@ pub fn search_identifier_path_names_with_filter_to_top<'a>(
     namespace_str_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-) -> Option<&'a Top> {
+) -> Option<&'a Node> {
     let mut used_sources = vec![];
     let reference = search_identifier_path_names_in_source_to_top(
         identifier_path_names,
@@ -87,7 +88,7 @@ fn search_identifier_path_names_in_source_to_top<'a>(
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
     availability: Availability,
-) -> Option<&'a Top> {
+) -> Option<&'a Node> {
     if used_sources.contains(&source.id) {
         return None;
     }

@@ -10,6 +10,7 @@ use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::struct_declaration::StructDeclaration;
@@ -19,21 +20,21 @@ use crate::utils::output::readable_namespace_path;
 
 pub(super) fn completion_item_from_top(top: &Node) -> CompletionItem {
     match top {
-        Top::Import(_) => unreachable!(),
-        Top::Config(c) => completion_item_from_config(c),
-        Top::ConfigDeclaration(c) => completion_item_from_config_declaration(c),
-        Top::Constant(c) => completion_item_from_constant(c),
-        Top::Enum(e) => completion_item_from_enum(e),
-        Top::Model(m) => completion_item_from_model(m),
-        Top::DataSet(d) => completion_item_from_data_set(d),
-        Top::Middleware(m) => completion_item_from_middleware(m),
-        Top::HandlerGroup(h) => completion_item_from_handler_group(h),
-        Top::Interface(i) => completion_item_from_interface(i),
-        Top::Namespace(namespace) => completion_item_from_namespace(namespace),
-        Top::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),
-        Top::PipelineItemDeclaration(p) => completion_item_from_pipeline_item_declaration(p),
-        Top::StructDeclaration(s) => completion_item_from_struct_declaration(s),
-        Top::UseMiddlewareBlock(_) => unreachable!(),
+        Node::Import(_) => unreachable!(),
+        Node::Config(c) => completion_item_from_config(c),
+        Node::ConfigDeclaration(c) => completion_item_from_config_declaration(c),
+        Node::Constant(c) => completion_item_from_constant(c),
+        Node::Enum(e) => completion_item_from_enum(e),
+        Node::Model(m) => completion_item_from_model(m),
+        Node::DataSet(d) => completion_item_from_data_set(d),
+        Node::MiddlewareDeclaration(m) => completion_item_from_middleware(m),
+        Node::HandlerGroupDeclaration(h) => completion_item_from_handler_group(h),
+        Node::InterfaceDeclaration(i) => completion_item_from_interface(i),
+        Node::Namespace(namespace) => completion_item_from_namespace(namespace),
+        Node::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),
+        Node::PipelineItemDeclaration(p) => completion_item_from_pipeline_item_declaration(p),
+        Node::StructDeclaration(s) => completion_item_from_struct_declaration(s),
+        Node::UseMiddlewareBlock(_) => unreachable!(),
     }
 }
 

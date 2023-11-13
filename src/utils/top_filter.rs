@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use crate::ast::node::Node;
 use crate::ast::r#enum::Enum;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::struct_declaration::StructDeclaration;

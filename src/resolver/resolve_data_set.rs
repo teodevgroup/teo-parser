@@ -7,6 +7,7 @@ use crate::resolver::resolve_identifier::resolve_identifier_path_with_filter;
 use crate::resolver::resolve_model_shapes::{has_property_setter, is_field_readonly};
 use crate::resolver::resolver_context::{ExaminedDataSetRecord, ResolverContext};
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_model;
 
@@ -23,24 +24,21 @@ pub(super) fn resolve_data_set<'a>(data_set: &'a DataSet, context: &'a ResolverC
 
 fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, context: &'a ResolverContext<'a>) {
     *group.actual_availability.borrow_mut() = context.current_availability();
-    if let Some(reference) = resolve_identifier_path_with_filter(&group.identifier_path, context, &top_filter_for_model(), context.current_availability()) {
+    if let Some(reference) = resolve_identifier_path_with_filter(group.identifier_path(), context, &top_filter_for_model(), context.current_availability()) {
         let model = context.schema.find_top_by_path(reference.r#type().as_model_reference().unwrap().path()).unwrap().as_model().unwrap();
-        group.resolve(DataSetGroupResolved {
-            model_path: model.path.clone(),
-            model_string_path: model.string_path.clone(),
-        });
+        group.resolve(Reference::new(model.path.clone(), model.string_path.clone()));
     } else {
-        context.insert_diagnostics_error(group.identifier_path.span, "model not found");
+        context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
     }
     // record each record names
-    for record in &group.records {
+    for record in group.records() {
         let examined = ExaminedDataSetRecord {
             data_set: data_set.string_path.clone(),
-            group: group.resolved().model_string_path.clone(),
+            group: group.resolved().string_path().clone(),
             record: record.identifier.name().to_owned(),
         };
         if context.has_examined_data_set_record(&examined) {
-            context.insert_diagnostics_error(record.identifier.span, "duplicated record");
+            context.insert_diagnostics_error(record.identifier().span, "duplicated record");
         }
         context.add_examined_data_set_record(examined);
     }

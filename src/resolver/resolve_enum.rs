@@ -10,21 +10,22 @@ use crate::ast::reference_space::ReferenceSpace;
 use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_declaration;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a>) {
     *r#enum.actual_availability.borrow_mut() = context.current_availability();
     if context.has_examined_default_path(&r#enum.string_path, r#enum.define_availability) {
-        context.insert_duplicated_identifier(r#enum.identifier.span);
+        context.insert_duplicated_identifier(r#enum.identifier().span());
     }
     context.clear_examined_fields();
     // decorators
-    for decorator in &r#enum.decorators {
+    for decorator in r#enum.decorators() {
         resolve_decorator(decorator, context, &btreemap!{}, ReferenceSpace::EnumDecorator);
     }
     // members
     let option_member_map = Mutex::new(btreemap!{});
-    for (index, member) in r#enum.members.iter().enumerate() {
+    for (index, member) in r#enum.members().enumerate() {
         resolve_enum_member(member, context, r#enum.option, index, &option_member_map);
     }
     context.add_examined_default_path(r#enum.string_path.clone(), r#enum.define_availability);
@@ -39,36 +40,37 @@ pub(super) fn resolve_enum_member<'a>(
 ) {
     *member.actual_availability.borrow_mut() = context.current_availability();
     // decorators
-    for decorator in &member.decorators {
+    for decorator in member.decorators() {
         resolve_decorator(decorator, context, &btreemap!{}, ReferenceSpace::EnumMemberDecorator)
     }
     // expression
-    if let Some(member_expression) = &member.expression {
+    if let Some(member_expression) = member.expression() {
         if option {
             match member_expression {
-                EnumMemberExpression::StringLiteral(s) => {
-                    member.resolve(EnumMemberResolved { value: Value::Int(1 << index) });
+                Expression::StringLiteral(s) => {
+                    member.resolve(Value::Int(1 << index));
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Option value expression should be numeric or defined member expression"
                     )
                 },
-                EnumMemberExpression::NumericLiteral(n) => {
+                Expression::NumericLiteral(n) => {
                     let value = n.value.as_int().unwrap();
-                    member.resolve(EnumMemberResolved { value: Value::Int(value) });
+                    member.resolve(Value::Int(value));
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 },
-                EnumMemberExpression::ArithExpr(expr) => {
+                Expression::ArithExpr(expr) => {
                     let value = resolve_enum_member_expr(expr, context, map);
-                    member.resolve(EnumMemberResolved { value: Value::Int(value) });
+                    member.resolve(Value::Int(value));
                     map.lock().unwrap().insert(member.identifier.name(), value);
                 }
+                _ => unreachable!()
             }
         } else {
             match member_expression.as_string_literal() {
-                Some(s) => member.resolve(EnumMemberResolved { value: Value::String(s.value.clone()) }),
+                Some(s) => member.resolve(Value::String(s.value.clone())),
                 None => {
-                    member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()) });
+                    member.resolve(Value::String(member.identifier().name().to_owned()));
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Enum value expression should be string literal"
@@ -78,13 +80,13 @@ pub(super) fn resolve_enum_member<'a>(
         }
     } else {
         if option {
-            member.resolve(EnumMemberResolved { value: Value::Int(1 << index) });
+            member.resolve(Value::Int(1 << index));
         } else {
-            member.resolve(EnumMemberResolved { value: Value::String(member.identifier.name.clone()) });
+            member.resolve(Value::String(member.identifier().name().to_owned()));
         }
     }
     // argument list
-    if let Some(argument_list_declaration) = &member.argument_list_declaration {
+    if let Some(argument_list_declaration) = member.argument_list_declaration() {
         resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context, member.define_availability);
     }
 }
@@ -92,7 +94,7 @@ pub(super) fn resolve_enum_member<'a>(
 fn resolve_enum_member_expression<'a>(expression: &Expression, context: &ResolverContext<'a>, map: &Mutex<BTreeMap<&'a str, i32>>) -> i32 {
     match &expression.kind {
         ExpressionKind::Unit(u) => if u.expressions.len() == 1 {
-            resolve_enum_member_expression(u.expressions.get(0).unwrap(), context, map)
+            resolve_enum_member_expression(u.expressions().get(0).unwrap(), context, map)
         } else {
             context.insert_diagnostics_error(expression.span(), "EnumMemberError: Only number literals and enum variant literals are allowed");
             0
