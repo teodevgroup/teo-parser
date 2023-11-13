@@ -1,11 +1,12 @@
 use std::cell::RefCell;
-use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeGenerics, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
 use crate::ast::arity::Arity;
 use crate::ast::literals::EnumVariantLiteral;
-use crate::parser::parse_identifier::parse_identifier;
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_optional};
+use crate::ast::node::Node::TypeExpr;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_enum_variant_literal;
 
@@ -40,17 +41,21 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
 }
 
 fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
-    let span = parse_span(&pair);
-    let mut identifier_path = None;
-    let mut generics = vec![];
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut identifier_path = 0;
+    let mut generics = None;
     let mut item_optional = false;
     let mut arity = Arity::Scalar;
     let mut collection_optional = false;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON => {},
-            Rule::identifier_path => identifier_path = Some(parse_identifier_path(current, context)),
-            Rule::type_generics => generics = parse_type_generics(current, context),
+            Rule::identifier_path => parse_set!(parse_identifier_path(current, context), children, identifier_path),
+            Rule::type_generics => parse_set_optional!(parse_type_generics(current, context), children, generics),
             Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
             Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
@@ -58,95 +63,127 @@ fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
     }
     TypeItem {
         span,
-        identifier_path: identifier_path.unwrap(),
+        children,
+        path,
+        identifier_path,
         generics,
-        item_optional,
         arity,
+        item_optional,
         collection_optional,
     }
 }
 
 fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
-    let span = parse_span(&pair);
-    let mut kind = None;
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut type_expr = 0;
     let mut item_optional = false;
     let mut arity = Arity::Scalar;
     let mut collection_optional = false;
-
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::type_expression => kind = Some(parse_type_expression(current, context).kind),
+            Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),
             Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
             Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     TypeGroup {
         span,
-        kind: Box::new(kind.unwrap()),
+        children,
+        path,
         item_optional,
         arity,
         collection_optional,
+        type_expr,
     }
 }
 
 fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
-    let span = parse_span(&pair);
-    let mut kinds = vec![];
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut items = vec![];
     let mut item_optional = false;
     let mut arity = Arity::Scalar;
     let mut collection_optional = false;
-
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::type_expression => kinds.push(parse_type_expression(current, context).kind),
+            Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, items),
             Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
             Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     TypeTuple {
         span,
-        items: kinds,
+        children,
+        path,
+        items,
         item_optional,
         arity,
         collection_optional,
     }
 }
 
-fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> Vec<TypeExprKind> {
-    let mut items = vec![];
+fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> TypeGenerics {
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut type_exprs = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::type_expression => items.push(parse_type_expression(current, context).kind),
+            Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, type_exprs),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    items
+    parse_container_node_variables_cleanup!(context);
+    TypeGenerics {
+        span,
+        children,
+        path,
+        type_exprs,
+    }
 }
 
 fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubscript {
-    let span = parse_span(&pair);
-    let mut type_item = None;
-    let mut type_expr = None;
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut container = 0;
+    let mut argument = 0;
     let mut item_optional = false;
     let mut arity = Arity::Scalar;
     let mut collection_optional = false;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::type_item => type_item = Some(parse_type_item(current, context)),
-            Rule::type_expression => type_expr = Some(parse_type_expression(current, context).kind),
+            Rule::type_item => parse_set!(parse_type_item(current, context), children, container),
+            Rule::type_expression => parse_set!(parse_type_expression(current, context), children, argument),
             Rule::arity => if current.as_str() == "[]" { arity = Arity::Array; } else { arity = Arity::Dictionary; },
             Rule::OPTIONAL => if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     TypeSubscript {
         span,
-        type_item: type_item.unwrap(),
-        type_expr: Box::new(type_expr.unwrap()),
-        item_optional,
+        children,
+        path,
+        container,
+        argument,
         arity,
+        item_optional,
         collection_optional,
     }
 }

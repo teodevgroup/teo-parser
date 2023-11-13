@@ -5,7 +5,7 @@ use crate::ast::arity::Arity;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;
-use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
+use crate::{declare_container_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::node::Node;
 use crate::r#type::r#type::Type;
 use crate::traits::identifiable::Identifiable;
@@ -181,38 +181,26 @@ impl Display for TypeSubscript {
 
 declare_container_node!(TypeItem,
     pub(crate) identifier_path: usize,
-    pub(crate) generics: Vec<usize>,
+    pub(crate) generics: Option<usize>,
     pub arity: Arity,
     pub item_optional: bool,
     pub collection_optional: bool,
 );
 
 impl_container_node_defaults!(TypeItem);
-
-node_children_iter!(TypeItem, TypeExpr, GenericsIter, generics);
-
 impl TypeItem {
 
     node_child_fn!(identifier_path, IdentifierPath);
 
-    node_children_iter_fn!(generics, GenericsIter);
+    node_optional_child_fn!(generics, TypeGenerics);
 }
 
 impl Display for TypeItem {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.identifier_path, f)?;
-        if self.generics.len() > 0 {
-            f.write_str("<")?;
-        }
-        for (index, arg) in self.generics.iter().enumerate() {
-            Display::fmt(arg, f)?;
-            if index != self.generics.len() - 1 {
-                f.write_str(", ")?;
-            }
-        }
-        if self.generics.len() > 0 {
-            f.write_str(">")?;
+        if let Some(generics) = self.generics() {
+            Display::fmt(generics, f)?;
         }
         if self.item_optional {
             f.write_str("?")?;
@@ -226,6 +214,36 @@ impl Display for TypeItem {
             if self.collection_optional {
                 f.write_str("?")?;
             }
+        }
+        Ok(())
+    }
+}
+
+declare_container_node!(TypeGenerics,
+    pub(crate) type_exprs: Vec<usize>,
+);
+
+impl_node_defaults!(TypeGenerics);
+
+node_children_iter!(TypeGenerics, TypeExpr, GenericsIter, type_exprs);
+
+impl TypeGenerics {
+    node_children_iter_fn!(type_exprs, GenericsIter);
+}
+
+impl Display for TypeGenerics {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.type_exprs.len() > 0 {
+            f.write_str("<")?;
+        }
+        for (index, arg) in self.type_exprs().enumerate() {
+            Display::fmt(arg, f)?;
+            if index != self.type_exprs.len() - 1 {
+                f.write_str(", ")?;
+            }
+        }
+        if self.type_exprs.len() > 0 {
+            f.write_str(">")?;
         }
         Ok(())
     }
