@@ -14,19 +14,19 @@ use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_argument_list(pair: Pair<'_>, context: &mut ParserContext) -> ArgumentList {
-    parse_container_node_variables!();
+    let (span, path, mut children) = parse_container_node_variables!(pair, context);
     let mut arguments = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::argument => parse_insert!(parse_argument(current, context), arguments),
-            Rule::PAREN_OPEN => parse_insert_punctuation!("("),
-            Rule::PAREN_CLOSE => parse_insert_punctuation!(")"),
-            Rule::COMMA => parse_insert_punctuation!(","),
+            Rule::argument => parse_insert!(parse_argument(current, context), children, arguments),
+            Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
+            Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
+            Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::empty_argument => context.insert_error(parse_span(&current), "empty argument"),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    parse_container_node_variables_cleanup!();
+    parse_container_node_variables_cleanup!(context);
     ArgumentList {
         span,
         path,
@@ -36,18 +36,18 @@ pub(super) fn parse_argument_list(pair: Pair<'_>, context: &mut ParserContext) -
 }
 
 pub(super) fn parse_argument(pair: Pair<'_>, context: &mut ParserContext) -> Argument {
-    parse_container_node_variables!();
+    let (span, path, mut children) = parse_container_node_variables!(pair, context);
     let mut name: Option<usize> = None;
     let mut value: usize = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => parse_set_optional!(parse_identifier(&current), name),
-            Rule::expression => parse_set!(parse_expression(current, context), expression),
-            Rule::COLON => parse_insert_punctuation!(":"),
+            Rule::identifier => parse_set_optional!(parse_identifier(&current), children, name),
+            Rule::expression => parse_set!(parse_expression(current, context), children, value),
+            Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    parse_container_node_variables_cleanup!();
+    parse_container_node_variables_cleanup!(context);
     Argument {
         span,
         children,

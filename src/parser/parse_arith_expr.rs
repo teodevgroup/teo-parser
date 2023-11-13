@@ -26,7 +26,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::NOT => Operator::Not,
             _ => unreachable!(),
         };
-        parse_container_node_variables!();
+        let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(rhs.id(), rhs.into());
         let operation = UnaryOperation {
             span,
@@ -35,7 +35,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             op,
             rhs: rhs.id(),
         };
-        parse_container_node_variables_cleanup!();
+        parse_container_node_variables_cleanup!(context);
         ArithExpr::UnaryOperation(operation)
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
@@ -62,7 +62,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::RANGE_OPEN => Operator::RangeOpen,
             _ => unreachable!(),
         };
-        parse_container_node_variables!();
+        let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
         children.insert(rhs.id(), rhs.into());
         let operation = BinaryOperation {
@@ -73,14 +73,14 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             lhs: lhs.id(),
             rhs: rhs.id(),
         };
-        parse_container_node_variables_cleanup!();
+        parse_container_node_variables_cleanup!(context);
         ArithExpr::BinaryOperation(operation)
     }).map_postfix(|lhs, op| {
         let op = match op.as_rule() {
             Rule::FORCE_UNWRAP => Operator::ForceUnwrap,
             _ => unreachable!(),
         };
-        parse_container_node_variables!();
+        let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
         let operation = UnaryPostfixOperation {
             span,
@@ -89,7 +89,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             op,
             lhs: lhs.id(),
         };
-        parse_container_node_variables_cleanup!();
+        parse_container_node_variables_cleanup!(context);
         ArithExpr::UnaryPostfixOperation(operation)
     }).parse(pair.into_inner());
     result

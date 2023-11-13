@@ -3,9 +3,8 @@ use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
-use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
-use crate::{parse_build_container_struct, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_expression::parse_expression;
@@ -59,25 +58,38 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
     }
 }
 
-fn parse_config_keyword(pair: Pair<'_>) -> ConfigKeyword {
-    parse_node_variables!();
+fn parse_config_keyword(pair: Pair<'_>, context: &mut ParserContext) -> ConfigKeyword {
+    let (span, path) = parse_node_variables!(pair, context);
     ConfigKeyword { span, path, name: pair.as_str().to_owned() }
 }
 
 fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem {
-    parse_container_node_variables!(named);
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut identifier = 0;
     let mut expression= 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => parse_set_identifier_and_string_path!(),
-            Rule::expression => parse_set!(parse_expression(current, context), expression),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::expression => parse_set!(parse_expression(current, context), children, expression),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    parse_container_node_variables_cleanup!();
-    parse_build_container_struct!(ConfigItem, named, availability,
-        identifier: identifier,
-        expression: expression,
-    );
+    parse_container_node_variables_cleanup!(context);
+    ConfigItem {
+        span,
+        path,
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
+        identifier,
+        expression,
+    }
 }
