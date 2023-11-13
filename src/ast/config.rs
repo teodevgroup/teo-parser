@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::availability::Availability;
-use crate::ast::config_keyword::ConfigKeyword;
+use crate::ast::keyword::Keyword;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
@@ -24,7 +24,7 @@ impl_container_node_defaults!(Config, availability);
 
 impl Config {
 
-    node_child_fn!(keyword, ConfigKeyword);
+    node_child_fn!(keyword, Keyword);
 
     node_optional_child_fn!(identifier, Identifier);
 

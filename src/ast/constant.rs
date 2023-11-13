@@ -14,10 +14,10 @@ use crate::traits::resolved::Resolve;
 use crate::value::TypeAndValue;
 
 declare_container_node!(Constant, named, availability,
-    identifier: usize,
-    type_expr: Option<usize>,
-    expression: usize,
-    resolved: RefCell<Option<TypeAndValue>>,
+    pub(crate) identifier: usize,
+    pub(crate) type_expr: Option<usize>,
+    pub(crate) expression: usize,
+    pub(crate) resolved: RefCell<Option<TypeAndValue>>,
 );
 
 impl_container_node_defaults!(Constant, named, availability);

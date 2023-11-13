@@ -1,17 +1,23 @@
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
+use crate::{parse_container_node_variables, parse_insert, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
-use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_path();
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
     let mut exclusive: bool = false;
     let mut unique: bool = false;
@@ -23,16 +29,18 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut relation: bool = false;
     let mut property: bool = false;
     let mut member: bool = false;
-    let mut identifier = None;
-    let mut string_path = None;
+    let mut identifier = 0;
     let mut generics_declaration = None;
     let mut argument_list_declaration = None;
     let mut generics_constraint = None;
     let mut variants = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
+            Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
+            Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
             Rule::MODEL_KEYWORD => model = true,
             Rule::ENUM_KEYWORD => r#enum = true,
             Rule::INTERFACE_KEYWORD => interface = true,
@@ -43,27 +51,26 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::MEMBER_KEYWORD => member = true,
             Rule::EXCLUSIVE_KEYWORD => exclusive = true,
             Rule::UNIQUE_KEYWORD => unique = true,
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
-            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
-            Rule::decorator_variant_declaration => variants.push(parse_decorator_variant_declaration(current, context)),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
+            Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
+            Rule::decorator_variant_declaration => parse_insert!(parse_decorator_variant_declaration(current, context), children, variants),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     DecoratorDeclaration {
         span,
         path,
-        string_path: string_path.unwrap(),
-        define_availability: context.current_availability_flag(),
-        comment,
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
         exclusive,
         unique,
         decorator_class: parse_decorator_class(model, r#enum, interface, handler, field, relation, property, member, &span, context),
-        identifier: identifier.unwrap(),
+        comment,
+        identifier,
         generics_declaration,
         argument_list_declaration,
         generics_constraint,
@@ -72,22 +79,28 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
 }
 
 fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorDeclarationVariant {
-    let span = parse_span(&pair);
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
     let mut comment = None;
     let mut generics_declaration = None;
     let mut argument_list_declaration = None;
     let mut generics_constraint = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
-            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
+            Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     DecoratorDeclarationVariant {
         span,
+        children,
+        path,
         comment,
         generics_declaration,
         argument_list_declaration,

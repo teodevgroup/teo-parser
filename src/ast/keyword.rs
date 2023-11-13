@@ -1,10 +1,27 @@
-use crate::{declare_node, impl_node_defaults_with_display};
+use std::fmt::{Display, Formatter};
+use crate::{declare_node, impl_node_defaults};
+use crate::ast::span::Span;
 
-declare_node!(ConfigKeyword, pub(crate) name: String);
+declare_node!(Keyword, pub(crate) name: String);
 
-impl_node_defaults_with_display!(ConfigKeyword, name);
+impl_node_defaults!(Keyword);
 
-impl ConfigKeyword {
+impl Display for Keyword {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name())?;
+        f.write_str(" ")
+    }
+}
+
+impl Keyword {
+
+    pub(crate) fn new(name: &'static str, span: Span, path: Vec<usize>) -> Self {
+        Self {
+            span,
+            path,
+            name: name.to_owned(),
+        }
+    }
 
     pub fn name(&self) -> &str {
         self.name.as_str()

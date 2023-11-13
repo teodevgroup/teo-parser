@@ -1,45 +1,47 @@
 use std::cell::RefCell;
-use crate::availability::Availability;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
-use crate::ast::identifier::Identifier;
-use crate::ast::identifier_path::IdentifierPath;
-use crate::ast::literals::DictionaryLiteral;
-use crate::parser::parse_identifier::parse_identifier;
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DataSet {
-    let span = parse_span(&pair);
-    let mut identifier: Option<Identifier> = None;
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
+    let mut identifier = 0;
     let mut auto_seed = false;
     let mut notrack = false;
     let mut groups = vec![];
-    let path = context.next_parent_path();
-    let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
-            Rule::BLOCK_OPEN => string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name())),
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
+            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
             Rule::AUTOSEED_KEYWORD => auto_seed = true,
             Rule::NOTRACK_KEYWORD => notrack = true,
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::dataset_group_declaration => groups.push(parse_data_set_group(current, context)),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::dataset_group_declaration => parse_insert!(parse_data_set_group(current, context), children, groups),
             Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    context.pop_parent_id();
-    context.pop_string_path();
+    parse_container_node_variables_cleanup!(context, named);
     DataSet {
         span,
         path,
-        string_path: string_path.unwrap(),
-        identifier: identifier.unwrap(),
-        define_availability: context.current_availability_flag(),
-        actual_availability: RefCell::new(Availability::none()),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
+        identifier,
         auto_seed,
         notrack,
         groups,
@@ -47,62 +49,72 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
 }
 
 fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetGroup {
-    let span = parse_span(&pair);
-    let mut identifier_path: Option<IdentifierPath> = None;
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
+    let mut identifier_path: usize = 0;
     let mut records = vec![];
-    let path = context.next_parent_path();
-    let mut string_path = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
-            Rule::BLOCK_OPEN => (),
+            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::identifier_path => {
-                identifier_path = Some(parse_identifier_path(current, context));
-                string_path = Some(context.next_parent_string_path(identifier_path.as_ref().unwrap().names().join(".")));
+                let node = parse_identifier_path(current, context);
+                identifier_path = node.id();
+                string_path = context.next_parent_string_path(node.names().join("."));
+                children.insert(node.id(), node.into());
             },
-            Rule::dataset_group_record_declaration => records.push(parse_data_set_group_record(current, context)),
+            Rule::dataset_group_record_declaration => parse_insert!(parse_data_set_group_record(current, context), children, records),
             Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    context.pop_parent_id();
-    context.pop_string_path();
+    parse_container_node_variables_cleanup!(context, named);
     DataSetGroup {
         span,
         path,
-        string_path: string_path.unwrap(),
-        identifier_path: identifier_path.unwrap(),
-        define_availability: context.current_availability_flag(),
-        actual_availability: RefCell::new(Availability::none()),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
+        identifier_path,
         records,
         resolved: RefCell::new(None),
     }
 }
 
 fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> DataSetRecord {
-    let span = parse_span(&pair);
-    let mut identifier: Option<Identifier> = None;
-    let mut dictionary: Option<DictionaryLiteral> = None;
-    let path = context.next_path();
-    let mut string_path = None;
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
+    let mut identifier = 0;
+    let mut dictionary = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::dictionary_literal => dictionary = Some(parse_dictionary_literal(current, context)),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context), children, dictionary),
             _ => (),
         }
     }
     DataSetRecord {
         span,
         path,
-        string_path: string_path.unwrap(),
-        define_availability: context.current_availability_flag(),
-        actual_availability: RefCell::new(Availability::none()),
-        identifier: identifier.unwrap(),
-        dictionary: dictionary.unwrap(),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
+        identifier,
+        dictionary,
         resolved: RefCell::new(None),
     }
 }

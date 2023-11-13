@@ -12,12 +12,12 @@ declare_container_node!(DecoratorDeclaration, named, availability,
     pub exclusive: bool,
     pub unique: bool,
     pub decorator_class: ReferenceSpace,
-    comment: Option<usize>,
-    identifier: usize,
-    generics_declaration: Option<usize>,
-    argument_list_declaration: Option<usize>,
-    generics_constraint: Option<usize>,
-    variants: Vec<usize>,
+    pub(crate) comment: Option<usize>,
+    pub(crate) identifier: usize,
+    pub(crate) generics_declaration: Option<usize>,
+    pub(crate) argument_list_declaration: Option<usize>,
+    pub(crate) generics_constraint: Option<usize>,
+    pub(crate) variants: Vec<usize>,
 );
 
 impl_container_node_defaults!(DecoratorDeclaration, named, availability);
@@ -86,10 +86,10 @@ impl InfoProvider for DecoratorDeclaration {
 }
 
 declare_container_node!(DecoratorDeclarationVariant,
-    comment: Option<usize>,
-    generics_declaration: Option<usize>,
-    argument_list_declaration: Option<usize>,
-    generics_constraint: Option<usize>,
+    pub(crate) comment: Option<usize>,
+    pub(crate) generics_declaration: Option<usize>,
+    pub(crate) argument_list_declaration: Option<usize>,
+    pub(crate) generics_constraint: Option<usize>,
 );
 
 impl_container_node_defaults!(DecoratorDeclarationVariant);

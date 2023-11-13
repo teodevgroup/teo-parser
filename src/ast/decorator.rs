@@ -5,9 +5,9 @@ use crate::{declare_container_node, impl_container_node_defaults, node_child_fn,
 use crate::traits::resolved::Resolve;
 
 declare_container_node!(Decorator,
-    identifier_path: usize,
-    argument_list: Option<usize>,
-    resolved: RefCell<Option<Vec<usize>>>,
+    pub(crate) identifier_path: usize,
+    pub(crate) argument_list: Option<usize>,
+    pub(crate) resolved: RefCell<Option<Vec<usize>>>,
 );
 
 impl_container_node_defaults!(Decorator);

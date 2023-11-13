@@ -11,10 +11,10 @@ use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 
 declare_container_node!(DataSet, named, availability,
-    identifier: usize,
+    pub(crate) identifier: usize,
     pub auto_seed: bool,
     pub notrack: bool,
-    pub groups: Vec<usize>,
+    pub(crate) groups: Vec<usize>,
 );
 
 impl_container_node_defaults!(DataSet, named, availability);
@@ -35,9 +35,9 @@ impl InfoProvider for DataSet {
 }
 
 declare_container_node!(DataSetGroup, named, availability,
-    identifier_path: usize,
-    records: Vec<usize>,
-    resolved: RefCell<Option<Reference>>,
+    pub(crate) identifier_path: usize,
+    pub(crate) records: Vec<usize>,
+    pub(crate) resolved: RefCell<Option<Reference>>,
 );
 
 impl_container_node_defaults!(DataSetGroup, named, availability);
@@ -64,9 +64,9 @@ impl Resolve<Reference> for DataSetGroup {
 }
 
 declare_container_node!(DataSetRecord, named, availability,
-    identifier: usize,
-    dictionary: usize,
-    resolved: RefCell<Option<Value>>,
+    pub(crate) identifier: usize,
+    pub(crate) dictionary: usize,
+    pub(crate) resolved: RefCell<Option<Value>>,
 );
 
 impl_container_node_defaults!(DataSetRecord, named, availability);
