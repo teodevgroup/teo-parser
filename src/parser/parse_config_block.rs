@@ -5,6 +5,7 @@ use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_expression::parse_expression;
@@ -59,27 +60,31 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
 }
 
 fn parse_config_keyword(pair: Pair<'_>) -> ConfigKeyword {
-    ConfigKeyword { span: parse_span(&pair), name: pair.as_str().to_owned() }
+    parse_node_variables!();
+    ConfigKeyword { span, path, name: pair.as_str().to_owned() }
 }
 
 fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem {
-    let span = parse_span(&pair);
-    let mut identifier: Option<Identifier> = None;
-    let mut expression: Option<Expression> = None;
+    parse_container_node_variables!(named);
+    let mut identifier = 0;
+    let mut expression= 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::expression => expression = Some(Expression::new(parse_expression(current, context))),
+            Rule::identifier => parse_set_identifier_and_string_path!(),
+            Rule::expression => parse_set!(parse_expression(current, context), expression),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+
+    parse_container_node_variables_cleanup!();
     ConfigItem {
         span,
-        path: context.next_path(),
-        string_path: context.next_string_path(identifier.as_ref().unwrap().name()),
+        path,
+        string_path: string_path.unwrap(),
+        children,
         define_availability: context.current_availability_flag(),
-        identifier: identifier.unwrap(),
-        expression: expression.unwrap(),
+        identifier,
+        expression,
         actual_availability: RefCell::new(Availability::none()),
     }
 }

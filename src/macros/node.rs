@@ -3,15 +3,15 @@ macro_rules! declare_node {
     ($struct_name:ident) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            path: Vec<usize>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) path: Vec<usize>,
         }
     };
     ($struct_name:ident, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
         #[derive(Debug)]
         pub struct $struct_name {
-            span: crate::ast::span::Span,
-            path: Vec<usize>,
+            pub(crate) span: crate::ast::span::Span,
+            pub(crate) path: Vec<usize>,
             $($vis $element: $ty),*
         }
     };

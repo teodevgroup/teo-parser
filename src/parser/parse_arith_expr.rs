@@ -9,17 +9,17 @@ use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
 pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> ArithExpr {
     let span = parse_span(&pair);
     let result = EXPR_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
-        Rule::operand => ArithExpr::Expression(Box::new(Expression { kind: parse_expression(primary, context), resolved: RefCell::new(None) })),
+        Rule::operand => ArithExpr::Expression(Box::new(parse_expression(primary, context))),
         _ => {
             context.insert_unparsed(parse_span(&primary));
-            panic!("unreachable 3")
+            unreachable!()
         },
     }).map_prefix(|op, rhs| {
         let op = match op.as_rule() {
             Rule::BI_NEG => Operator::BitNeg,
             Rule::NEG => Operator::Neg,
             Rule::NOT => Operator::Not,
-            _ => panic!("unreachable 4"),
+            _ => unreachable!(),
         };
         ArithExpr::UnaryOperation(UnaryOperation {
             span,

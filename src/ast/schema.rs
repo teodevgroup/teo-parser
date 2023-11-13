@@ -9,6 +9,7 @@ use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::source::Source;
@@ -60,7 +61,7 @@ impl Schema {
         None
     }
 
-    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Top> {
+    pub fn find_top_by_path(&self, path: &Vec<usize>) -> Option<&Node> {
         if path.len() < 2 {
             return None;
         }

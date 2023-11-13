@@ -1,6 +1,6 @@
 use crate::{declare_node, impl_node_defaults_with_display};
 
-declare_node!(ConfigKeyword, name: String);
+declare_node!(ConfigKeyword, pub(crate) name: String);
 
 impl_node_defaults_with_display!(ConfigKeyword, name);
 

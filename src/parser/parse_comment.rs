@@ -4,9 +4,10 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_comment(pair: Pair<'_>, context: &mut ParserContext) -> Comment {
+    let span = parse_span(&pair);
+    let path = context.next_path();
     let mut name = None;
     let mut desc = "".to_owned();
-    let span = parse_span(&pair);
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::triple_comment => {
@@ -28,6 +29,7 @@ pub(super) fn parse_comment(pair: Pair<'_>, context: &mut ParserContext) -> Comm
     }
     Comment {
         span,
+        path,
         name,
         desc: if desc.is_empty() { None } else { Some(desc) },
     }

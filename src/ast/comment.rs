@@ -5,10 +5,10 @@ use crate::impl_node_defaults;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 pub struct Comment {
-    span: Span,
-    path: Vec<usize>,
-    name: Option<String>,
-    desc: Option<String>,
+    pub(crate) span: Span,
+    pub(crate) path: Vec<usize>,
+    pub(crate) name: Option<String>,
+    pub(crate) desc: Option<String>,
 }
 
 impl_node_defaults!(Comment);
