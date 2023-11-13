@@ -12,7 +12,7 @@ use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext) -> TypeExpr {
     let result = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
-        Rule::type_item => TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(primary, context)))),
+        Rule::type_item => TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(primary, context))),
         Rule::type_group => TypeExpr::new(TypeExprKind::TypeGroup(parse_type_group(primary, context))),
         Rule::type_tuple => TypeExpr::new(TypeExprKind::TypeTuple(parse_type_tuple(primary, context))),
         Rule::type_subscript => TypeExpr::new(TypeExprKind::TypeSubscript(parse_type_subscript(primary, context))),

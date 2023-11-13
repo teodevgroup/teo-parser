@@ -56,7 +56,7 @@ pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &mut ParserContext) -
     }
 }
 
-pub(super) fn parse_numeric_literal(pair: &Pair<'_>, _context: &mut ParserContext) -> NumericLiteral {
+pub(super) fn parse_numeric_literal(pair: &Pair<'_>, context: &mut ParserContext) -> NumericLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     let str_value = pair.as_str();
     NumericLiteral {

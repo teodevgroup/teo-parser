@@ -47,7 +47,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
             } else {
                 empty_decorator_spans.push(parse_span(&current));
             },
-            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),,
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handlers),
             Rule::availability_start => parse_availability_flag(current, context),

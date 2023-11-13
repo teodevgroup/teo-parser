@@ -23,7 +23,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
     let mut decorators = vec![];
-    let mut empty_decorators_spans = vec![];
+    let mut empty_decorator_spans = vec![];
     let mut identifier = 0;
     let mut type_expr = 0;
     for current in pair.into_inner() {
@@ -32,13 +32,13 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
             Rule::EMPTY_LINES | Rule::comment_block | Rule::double_comment_block => {},
             Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
             Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
-            Rule::empty_decorator => empty_decorators_spans.push(parse_span(&current)),
+            Rule::empty_decorator => empty_decorator_spans.push(parse_span(&current)),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    parse_container_node_variables_cleanup!(named);
+    parse_container_node_variables_cleanup!(context, named);
     Field {
         span,
         path,
