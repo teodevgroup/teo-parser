@@ -77,7 +77,6 @@ impl PipelineItemDeclaration {
 declare_container_node!(PipelineItemDeclarationVariant,
     pub(crate) comment: Option<usize>,
     pub(crate) generics_declaration: Option<usize>,
-    pub(crate) generics_declaration: Option<usize>,
     pub(crate) argument_list_declaration: Option<usize>,
     pub(crate) generics_constraint: Option<usize>,
     pub(crate) input_type: usize,

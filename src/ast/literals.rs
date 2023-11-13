@@ -132,7 +132,7 @@ impl Display for ArrayLiteral {
     }
 }
 
-declare_container_node!(DictionaryLiteral, expressions: Vec<(usize, usize)>);
+declare_container_node!(DictionaryLiteral, pub(crate) expressions: Vec<(usize, usize)>);
 
 impl_container_node_defaults!(DictionaryLiteral);
 

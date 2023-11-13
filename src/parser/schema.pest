@@ -99,13 +99,9 @@ generics_constraint_item = { identifier ~ COLON ~ type_expression }
 // import
 // #############
 
-import_statement = {
-    IMPORT_KEYWORD
-    ~ (import_identifier_list ~ FROM_KEYWORD)?
-    ~ string_literal
-}
+import_statement = { IMPORT_KEYWORD ~ string_literal }
 
-import_identifier_list = { "{" ~ (identifier ~ (COMMA ~ identifier)*)? ~ COMMA? ~ BLOCK_CLOSE }
+//import_identifier_list = { "{" ~ (identifier ~ (COMMA ~ identifier)*)? ~ COMMA? ~ BLOCK_CLOSE }
 
 // #############
 // numeric literals

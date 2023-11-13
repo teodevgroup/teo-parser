@@ -13,12 +13,11 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     if context.current_availability_flag() != Availability::default() {
         context.insert_error(span, "import statement is placed in availability flag");
     }
-    let mut identifiers = vec![];
+
     let mut source: Option<StringLiteral> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::string_literal => source = Some(parse_string_literal(&current)),
-            Rule::import_identifier_list => identifiers = parse_import_identifier_list(current, context),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -30,23 +29,10 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     }
     Import {
         path: context.next_path(),
-        identifiers,
         source: source.unwrap(),
         span,
         file_path,
     }
-}
-
-fn parse_import_identifier_list(pair: Pair<'_>, context: &mut ParserContext) -> Vec<Identifier> {
-    let mut identifiers = vec![];
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::identifier => identifiers.push(parse_identifier(&current)),
-            Rule::COMMA | Rule::BLOCK_CLOSE => (),
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    identifiers
 }
 
 fn match_import_file(original: &str, context: &mut ParserContext) -> Option<String> {

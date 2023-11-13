@@ -1,4 +1,5 @@
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -9,11 +10,16 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_pipeline_item_declaration(pair: Pair<'_>, context: &mut ParserContext) -> PipelineItemDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_path();
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
-    let mut identifier = None;
-    let mut string_path = None;
+    let mut identifier = 0;
     let mut generics_declaration = None;
     let mut argument_list_declaration = None;
     let mut generics_constraint = None;
@@ -23,68 +29,75 @@ pub(super) fn parse_pipeline_item_declaration(pair: Pair<'_>, context: &mut Pars
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
-            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
-            Rule::pipeline_item_variant_declaration => variants.push(parse_pipeline_item_variant_declaration(current, context)),
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
+            Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
+            Rule::pipeline_item_variant_declaration => parse_insert!(parse_pipeline_item_variant_declaration(current, context), children, variants),
             Rule::type_expression => if input_type.is_some() {
-                output_type = Some(parse_type_expression(current, context));
+                parse_set_optional!(parse_type_expression(current, context), children, output_type);
             } else {
-                input_type = Some(parse_type_expression(current, context));
+                parse_set_optional!(parse_type_expression(current, context), children, input_type);
             }
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     PipelineItemDeclaration {
         span,
         path,
-        string_path: string_path.unwrap(),
-        define_availability: context.current_availability_flag(),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
         comment,
-        identifier: identifier.unwrap(),
+        identifier,
         generics_declaration,
         argument_list_declaration,
         generics_constraint,
-        variants,
         input_type,
         output_type,
+        variants,
     }
 }
 
 fn parse_pipeline_item_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> PipelineItemDeclarationVariant {
-    let span = parse_span(&pair);
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
     let mut comment = None;
     let mut generics_declaration = None;
     let mut argument_list_declaration = None;
     let mut generics_constraint = None;
-    let mut input_type = None;
-    let mut output_type = None;
+    let mut input_type = 0;
+    let mut output_type = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
-            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
-            Rule::type_expression => if input_type.is_some() {
-                output_type = Some(parse_type_expression(current, context));
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
+            Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
+            Rule::type_expression => if input_type != 0 {
+                parse_set!(parse_type_expression(current, context), children, output_type);
             } else {
-                input_type = Some(parse_type_expression(current, context));
-            },
+                parse_set!(parse_type_expression(current, context), children, input_type);
+            }
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     PipelineItemDeclarationVariant {
         span,
+        children,
+        path,
         comment,
         generics_declaration,
         argument_list_declaration,
         generics_constraint,
-        input_type: input_type.unwrap(),
-        output_type: output_type.unwrap(),
+        input_type,
+        output_type,
     }
 }
