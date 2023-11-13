@@ -108,6 +108,7 @@ pub struct FieldResolved {
 declare_container_node!(Field, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) identifier: usize,
     pub(crate) type_expr: usize,
     pub(crate) resolved: RefCell<Option<FieldResolved>>,

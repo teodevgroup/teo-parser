@@ -1,4 +1,5 @@
 use crate::ast::generics::{GenericsConstraint, GenericsConstraintItem, GenericsDeclaration};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set};
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
@@ -6,40 +7,70 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserContext) -> GenericsDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_path();
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
     let mut identifiers = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => identifiers.push(parse_identifier(&current)),
+            Rule::identifier => parse_insert!(parse_identifier(&current, context), children, identifiers),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    GenericsDeclaration { span, path, identifiers }
+    parse_container_node_variables_cleanup!(context);
+    GenericsDeclaration {
+        span,
+        children,
+        path,
+        identifiers,
+    }
 }
 
 pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &mut ParserContext) -> GenericsConstraint {
-    let span = parse_span(&pair);
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
     let mut items = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::generics_constraint_item => items.push(parse_generics_constraint_item(current, context)),
+            Rule::generics_constraint_item => parse_insert!(parse_generics_constraint_item(current, context), children, items),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    GenericsConstraint { span, items }
+    parse_container_node_variables_cleanup!(context);
+    GenericsConstraint {
+        span,
+        children,
+        path,
+        items,
+    }
 }
 
 fn parse_generics_constraint_item(pair: Pair<'_>, context: &mut ParserContext) -> GenericsConstraintItem {
-    let span = parse_span(&pair);
-    let mut identifier = None;
-    let mut type_expr = None;
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut identifier = 0;
+    let mut type_expr = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => identifier = Some(parse_identifier(&current)),
-            Rule::type_expression => type_expr = Some(parse_type_expression(current, context)),
+            Rule::identifier => parse_set!(parse_identifier(&current), children, identifier),
+            Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    GenericsConstraintItem { span, identifier: identifier.unwrap(), type_expr: type_expr.unwrap() }
+    parse_container_node_variables_cleanup!(context);
+    GenericsConstraintItem {
+        span,
+        children,
+        path,
+        identifier,
+        type_expr,
+    }
 }

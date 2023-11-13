@@ -1,73 +1,74 @@
-use std::cell::RefCell;
-use crate::availability::Availability;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
-use crate::ast::type_expr::TypeExpr;
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_decorator::parse_decorator;
-use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerGroupDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_parent_path();
-    let mut string_path = None;
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
-    let mut identifier = None;
+    let mut identifier = 0;
     let mut handler_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::HANDLER_KEYWORD => (),
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_parent_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::handler_declaration => handler_declarations.push(parse_handler_declaration(current, context)),
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handler_declarations),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    context.pop_parent_id();
-    context.pop_string_path();
+    parse_container_node_variables_cleanup!(context, named);
     HandlerGroupDeclaration {
         span,
         path,
-        string_path: string_path.unwrap(),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
         comment,
-        identifier: identifier.unwrap(),
+        identifier,
         handler_declarations,
-        define_availability: context.current_availability_flag(),
-        actual_availability: RefCell::new(Availability::none()),
     }
 }
 
 pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_path();
-    let mut string_path = None;
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
     let mut decorators = vec![];
     let mut empty_decorators_spans = vec![];
-    let mut identifier = None;
-    let mut input_type: Option<TypeExpr> = None;
-    let mut output_type: Option<TypeExpr> = None;
+    let mut identifier = 0;
+    let mut input_type = 0;
+    let mut output_type = 0;
     let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::type_expression => if input_type.is_some() {
-                output_type = Some(parse_type_expression(current, context));
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::type_expression => if input_type != 0 {
+                parse_set!(parse_type_expression(current, context), children, output_type);
             } else {
-                input_type = Some(parse_type_expression(current, context));
+                parse_set!(parse_type_expression(current, context), children, input_type);
             },
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::HANDLER_KEYWORD => (),
-            Rule::decorator => decorators.push(parse_decorator(current, context)),
+            Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
             Rule::empty_decorator => empty_decorators_spans.push(parse_span(&current)),
             Rule::req_type => if current.as_str() == "form" {
                 input_format = HandlerInputFormat::Form
@@ -75,18 +76,20 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserCont
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     HandlerDeclaration {
         span,
         path,
-        string_path: string_path.unwrap(),
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
         comment,
         decorators,
         empty_decorators_spans,
-        identifier: identifier.unwrap(),
-        input_type: input_type.unwrap(),
-        output_type: output_type.unwrap(),
+        identifier,
+        input_type,
+        output_type,
         input_format,
-        define_availability: context.current_availability_flag(),
-        actual_availability: RefCell::new(Availability::none()),
     }
 }

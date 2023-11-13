@@ -15,7 +15,7 @@ declare_container_node!(FunctionDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) identifier: usize,
     pub(crate) generics_declaration: Option<usize>,
-    pub(crate) argument_list_declaration: Option<usize>,
+    pub(crate) argument_list_declaration: usize,
     pub(crate) generics_constraint: Option<usize>,
     pub(crate) return_type: usize,
 );
@@ -30,7 +30,7 @@ impl FunctionDeclaration {
 
     node_optional_child_fn!(generics_declaration, GenericsDeclaration);
 
-    node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
+    node_child_fn!(argument_list_declaration, ArgumentListDeclaration);
 
     node_optional_child_fn!(generics_constraint, GenericsConstraint);
 
@@ -39,21 +39,21 @@ impl FunctionDeclaration {
     pub fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
         let mut generics_declaration = vec![];
         let mut generics_constraint = vec![];
-        if let Some(d) = struct_declaration.generics_declaration.as_ref() {
+        if let Some(d) = struct_declaration.generics_declaration() {
             generics_declaration.push(d);
         }
-        if let Some(d) = struct_declaration.generics_constraint.as_ref() {
+        if let Some(d) = struct_declaration.generics_constraint() {
             generics_constraint.push(d);
         }
-        if let Some(d) = self.generics_declaration.as_ref() {
+        if let Some(d) = self.generics_declaration() {
             generics_declaration.push(d);
         }
-        if let Some(d) = self.generics_constraint.as_ref() {
+        if let Some(d) = self.generics_constraint() {
             generics_constraint.push(d);
         }
         vec![CallableVariant {
             generics_declarations: generics_declaration,
-            argument_list_declaration: self.argument_list_declaration.as_ref(),
+            argument_list_declaration: Some(self.argument_list_declaration()),
             generics_constraints: generics_constraint,
             pipeline_input: None,
             pipeline_output: None,

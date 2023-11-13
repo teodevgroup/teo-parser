@@ -1,51 +1,56 @@
 use crate::ast::function_declaration::FunctionDeclaration;
+use crate::{parse_container_node_variables, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_comment::parse_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
-use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserContext) -> FunctionDeclaration {
-    let span = parse_span(&pair);
-    let path = context.next_path();
-    let mut string_path = None;
+pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserContext, inside_struct: bool) -> FunctionDeclaration {
+    let (
+        span,
+        path,
+        mut string_path,
+        mut children,
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
     let mut r#static = false;
-    let mut identifier = None;
+    let mut identifier = 0;
     let mut generics_declaration = None;
-    let mut argument_list_declaration = None;
+    let mut argument_list_declaration = 0;
     let mut generics_constraint = None;
-    let mut return_type = None;
+    let mut return_type = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::FUNCTION_KEYWORD => (),
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
             Rule::STATIC_KEYWORD => r#static = true,
-            Rule::identifier => {
-                identifier = Some(parse_identifier(&current));
-                string_path = Some(context.next_string_path(identifier.as_ref().unwrap().name()));
-            },
-            Rule::generics_declaration => generics_declaration = Some(parse_generics_declaration(current, context)),
-            Rule::generics_constraint => generics_constraint = Some(parse_generics_constraint(current, context)),
-            Rule::argument_list_declaration => argument_list_declaration = Some(parse_argument_list_declaration(current, context)),
-            Rule::type_expression => return_type = Some(parse_type_expression(current, context)),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
+            Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
+            Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
+            Rule::argument_list_declaration => parse_set!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::type_expression => parse_set!(parse_type_expression(current, context), children, return_type),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     FunctionDeclaration {
         span,
         path,
-        string_path: string_path.unwrap(),
-        define_availability: context.current_availability_flag(),
-        comment,
+        string_path,
+        children,
+        define_availability,
+        actual_availability,
         r#static,
-        identifier: identifier.unwrap(),
+        inside_struct,
+        comment,
+        identifier,
         generics_declaration,
         argument_list_declaration,
         generics_constraint,
-        return_type: return_type.unwrap()
+        return_type,
     }
 }

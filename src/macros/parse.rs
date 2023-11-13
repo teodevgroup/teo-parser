@@ -57,7 +57,7 @@ macro_rules! parse_set_identifier_and_string_path {
         {
             let node = crate::parser::parse_identifier::parse_identifier(&$current, $context);
             $identifier = node.id();
-            $string_path = Some($context.next_string_path(node.name()));
+            $string_path = Some($context.next_parent_string_path(node.name()));
             $children.insert(node.id(), node.into());
         }
     };
