@@ -9,7 +9,7 @@ pub(crate) fn search_top<'a>(schema: &'a Schema, file_path: &str, line_col: (usi
     None
 }
 
-fn search_top_in_source(source: &Source, line_col: (usize, usize)) -> Option<&Top> {
+fn search_top_in_source(source: &Source, line_col: (usize, usize)) -> Option<&Node> {
     for top in source.children() {
         if top.span().contains_line_col(line_col) {
             return if let Some(namespace) = top.as_namespace() {
@@ -26,7 +26,7 @@ fn search_top_in_source(source: &Source, line_col: (usize, usize)) -> Option<&To
     None
 }
 
-fn search_top_in_namespace(namespace: &Namespace, line_col: (usize, usize)) -> Option<&Top> {
+fn search_top_in_namespace(namespace: &Namespace, line_col: (usize, usize)) -> Option<&Node> {
     for top in namespace.tops() {
         if top.span().contains_line_col(line_col) {
             return if let Some(namespace) = top.as_namespace() {

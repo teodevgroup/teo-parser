@@ -140,7 +140,7 @@ node_children_pair_iter!(DictionaryLiteral, Expression, DictionaryLiteralExpress
 
 impl DictionaryLiteral {
 
-    node_children_iter_fn!(DictionaryLiteral, expressions);
+    node_children_iter_fn!(expressions, DictionaryLiteralExpressionsIter);
 }
 
 impl Display for DictionaryLiteral {

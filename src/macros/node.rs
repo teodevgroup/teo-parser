@@ -42,8 +42,8 @@ macro_rules! declare_container_node {
             pub(crate) span: Span,
             pub(crate) path: Vec<usize>,
             pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            pub(crate) define_availability: Availability,
-            pub(crate) actual_availability: RefCell<Availability>,
+            pub(crate) define_availability: crate::availability::Availability,
+            pub(crate) actual_availability: std::cell::RefCell<crate::availability::Availability>,
         }
     };
     ($struct_name:ident, named, availability, $($vis: vis $element: ident: $ty: ty),* $(,)?) => {
@@ -53,8 +53,8 @@ macro_rules! declare_container_node {
             pub(crate) path: Vec<usize>,
             pub(crate) string_path: Vec<String>,
             pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            pub(crate) define_availability: Availability,
-            pub(crate) actual_availability: RefCell<Availability>,
+            pub(crate) define_availability: crate::availability::Availability,
+            pub(crate) actual_availability: std::cell::RefCell<crate::availability::Availability>,
             $($vis $element: $ty),*
         }
     };
@@ -74,8 +74,8 @@ macro_rules! declare_container_node {
             pub(crate) span: crate::ast::span::Span,
             pub(crate) path: Vec<usize>,
             pub(crate) children: std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>,
-            pub(crate) define_availability: Availability,
-            pub(crate) actual_availability: RefCell<Availability>,
+            pub(crate) define_availability: crate::availability::Availability,
+            pub(crate) actual_availability: std::cell::RefCell<crate::availability::Availability>,
             $($vis $element: $ty),*
         }
     };
@@ -237,10 +237,10 @@ macro_rules! impl_container_node_defaults {
             }
         }
         impl crate::traits::has_availability::HasAvailability for $struct_name {
-            fn define_availability(&self) -> Availability {
+            fn define_availability(&self) -> crate::availability::Availability {
                 self.define_availability
             }
-            fn actual_availability(&self) -> Availability {
+            fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
             }
         }
@@ -279,10 +279,10 @@ macro_rules! impl_container_node_defaults {
             }
         }
         impl crate::traits::has_availability::HasAvailability for $struct_name {
-            fn define_availability(&self) -> Availability {
+            fn define_availability(&self) -> crate::availability::Availability {
                 self.define_availability
             }
-            fn actual_availability(&self) -> Availability {
+            fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
             }
         }

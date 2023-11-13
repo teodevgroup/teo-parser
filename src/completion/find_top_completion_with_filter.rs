@@ -11,7 +11,7 @@ pub fn find_top_completion_with_filter<'a>(
     source: &'a Source,
     namespace_path: &Vec<&str>,
     user_typed_prefix: &Vec<&str>,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Vec<CompletionItem> {
     let paths = collect_reference_completion_in_source(schema, source, namespace_path, user_typed_prefix, filter, availability);

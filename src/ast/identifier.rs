@@ -1,6 +1,6 @@
 use crate::{declare_node, impl_node_defaults_with_display};
 
-declare_node!(Identifier, name: String);
+declare_node!(Identifier, pub(crate) name: String);
 
 impl Identifier {
 

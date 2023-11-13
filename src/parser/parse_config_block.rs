@@ -5,7 +5,7 @@ use crate::ast::config_item::ConfigItem;
 use crate::ast::config_keyword::ConfigKeyword;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
+use crate::{parse_build_container_struct, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_expression::parse_expression;
@@ -75,16 +75,9 @@ fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem 
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-
     parse_container_node_variables_cleanup!();
-    ConfigItem {
-        span,
-        path,
-        string_path: string_path.unwrap(),
-        children,
-        define_availability: context.current_availability_flag(),
-        identifier,
-        expression,
-        actual_availability: RefCell::new(Availability::none()),
-    }
+    parse_build_container_struct!(ConfigItem, named, availability,
+        identifier: identifier,
+        expression: expression,
+    );
 }

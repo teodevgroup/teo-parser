@@ -68,7 +68,7 @@ impl Display for Operator {
     }
 }
 
-declare_container_node!(UnaryOperation, op: Operator, rhs: usize);
+declare_container_node!(UnaryOperation, pub(crate) op: Operator, pub(crate) rhs: usize);
 
 impl UnaryOperation {
 
@@ -83,7 +83,7 @@ impl Display for UnaryOperation {
     }
 }
 
-declare_container_node!(UnaryPostfixOperation, op: Operator, lhs: usize);
+declare_container_node!(UnaryPostfixOperation, pub(crate) op: Operator, pub(crate) lhs: usize);
 
 impl UnaryPostfixOperation {
 
@@ -98,7 +98,7 @@ impl Display for UnaryPostfixOperation {
     }
 }
 
-declare_container_node!(BinaryOperation, lhs: usize, op: Operator, rhs: usize);
+declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub(crate) op: Operator, pub(crate) rhs: usize);
 
 impl BinaryOperation {
 

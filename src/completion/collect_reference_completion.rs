@@ -4,12 +4,12 @@ use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 
-pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Vec<Vec<usize>> {
+pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Vec<Vec<usize>> {
     let mut examined_sources = vec![];
     collect_reference_completion_in_source_internal(schema, source, namespace_path, user_typed_prefix, filter, &mut examined_sources, availability)
 }
 
-fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, source: &'a Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, examined_sources: &mut Vec<&'a str>, availability: Availability) -> Vec<Vec<usize>> {
+fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, source: &'a Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Node) -> bool>, examined_sources: &mut Vec<&'a str>, availability: Availability) -> Vec<Vec<usize>> {
     examined_sources.push(&source.file_path);
     let mut result = vec![];
     let mut namespace_path_mut = namespace_path.clone();
@@ -50,7 +50,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     result
 }
 
-fn collect_reference_completion_in_namespace(namespace: &Namespace, filter: &Arc<dyn Fn(&Top) -> bool>) -> Vec<Vec<usize>> {
+fn collect_reference_completion_in_namespace(namespace: &Namespace, filter: &Arc<dyn Fn(&Node) -> bool>) -> Vec<Vec<usize>> {
     let mut result = vec![];
     for top in namespace.tops() {
         if let Some(namespace) = top.as_namespace() {

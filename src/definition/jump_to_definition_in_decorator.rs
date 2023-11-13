@@ -13,7 +13,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     decorator: &'a Decorator,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Vec<Definition> {
     let mut user_typed_spaces = vec![];

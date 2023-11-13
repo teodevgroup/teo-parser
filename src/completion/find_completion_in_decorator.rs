@@ -28,7 +28,7 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
     decorator: &'a Decorator,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Vec<CompletionItem> {
     if let Some(argument_list) = &decorator.argument_list {

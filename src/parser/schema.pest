@@ -8,7 +8,7 @@ schema = {
 // constants
 // #############
 WHITESPACE = _{ SPACE_SEPARATOR | "\t" }
-EMPTY_LINES = @{ (WHITESPACE* ~ NEWLINE)+ }
+EMPTY_LINES = _{ (WHITESPACE* ~ NEWLINE)+ }
 
 // #############
 // keywords

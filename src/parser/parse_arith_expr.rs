@@ -1,15 +1,20 @@
 use std::cell::RefCell;
 use crate::ast::arith_expr::{ArithExpr, BinaryOperation, Operator, UnaryOperation, UnaryPostfixOperation};
 use crate::ast::expression::Expression;
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup};
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> ArithExpr {
     let span = parse_span(&pair);
     let result = EXPR_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
-        Rule::operand => ArithExpr::Expression(Box::new(parse_expression(primary, context))),
+        Rule::operand => {
+            let expression = parse_expression(primary, context);
+            ArithExpr::Expression(Box::new(expression))
+        },
         _ => {
             context.insert_unparsed(parse_span(&primary));
             unreachable!()
@@ -21,11 +26,17 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::NOT => Operator::Not,
             _ => unreachable!(),
         };
-        ArithExpr::UnaryOperation(UnaryOperation {
+        parse_container_node_variables!();
+        children.insert(rhs.id(), rhs.into());
+        let operation = UnaryOperation {
             span,
+            path,
+            children,
             op,
-            rhs: Box::new(rhs),
-        })
+            rhs: rhs.id(),
+        };
+        parse_container_node_variables_cleanup!();
+        ArithExpr::UnaryOperation(operation)
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
             Rule::ADD => Operator::Add,
@@ -49,24 +60,37 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::NEQ => Operator::Neq,
             Rule::RANGE_CLOSE => Operator::RangeClose,
             Rule::RANGE_OPEN => Operator::RangeOpen,
-            _ => panic!("unreachable 5"),
+            _ => unreachable!(),
         };
-        ArithExpr::BinaryOperation(BinaryOperation {
+        parse_container_node_variables!();
+        children.insert(lhs.id(), lhs.into());
+        children.insert(rhs.id(), rhs.into());
+        let operation = BinaryOperation {
             span,
-            lhs: Box::new(lhs),
+            path,
+            children,
             op,
-            rhs: Box::new(rhs),
-        })
+            lhs: lhs.id(),
+            rhs: rhs.id(),
+        };
+        parse_container_node_variables_cleanup!();
+        ArithExpr::BinaryOperation(operation)
     }).map_postfix(|lhs, op| {
         let op = match op.as_rule() {
             Rule::FORCE_UNWRAP => Operator::ForceUnwrap,
-            _ => panic!("unreachable 6"),
+            _ => unreachable!(),
         };
-        ArithExpr::UnaryPostfixOperation(UnaryPostfixOperation {
+        parse_container_node_variables!();
+        children.insert(lhs.id(), lhs.into());
+        let operation = UnaryPostfixOperation {
             span,
-            lhs: Box::new(lhs),
+            path,
+            children,
             op,
-        })
+            lhs: lhs.id(),
+        };
+        parse_container_node_variables_cleanup!();
+        ArithExpr::UnaryPostfixOperation(operation)
     }).parse(pair.into_inner());
     result
 }

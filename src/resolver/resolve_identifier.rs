@@ -39,7 +39,7 @@ pub(super) fn resolve_identifier(
 pub(super) fn resolve_identifier_with_filter(
     identifier: &Identifier,
     context: &ResolverContext,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<TypeAndValue> {
     resolve_identifier_path_with_filter(
@@ -67,7 +67,7 @@ pub(super) fn resolve_identifier_path(
 pub(super) fn resolve_identifier_path_with_filter(
     identifier_path: &IdentifierPath,
     context: &ResolverContext,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<TypeAndValue> {
     search_identifier_path_names_with_filter_to_type_and_value(

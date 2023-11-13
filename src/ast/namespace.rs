@@ -9,6 +9,7 @@ use crate::ast::data_set::DataSet;
 use crate::ast::model::Model;
 use crate::ast::r#enum::Enum;
 use crate::ast::identifier::Identifier;
+use crate::ast::comment::Comment;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::ast::node::Node;
 
@@ -74,7 +75,7 @@ impl Namespace {
         self.references.data_sets.iter().map(|m| self.get_data_set(*m).unwrap()).collect()
     }
 
-    pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
+    pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
         self.tops().iter().find(|t| {
             if let Some(n) = t.name() {
                 (n == name) && filter(t) && t.available_test(availability)
@@ -88,7 +89,7 @@ impl Namespace {
         self.children.get(&id)
     }
 
-    pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Top) -> bool>, availability: Availability) -> Option<&Top> {
+    pub fn find_top_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
         if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter, availability)
         } else {

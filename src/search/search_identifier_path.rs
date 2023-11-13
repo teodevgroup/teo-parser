@@ -12,7 +12,7 @@ pub fn search_identifier_path_names_with_filter_to_type_and_value(
     schema: &Schema,
     source: &Source,
     namespace_str_path: &Vec<&str>,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<TypeAndValue> {
     search_identifier_path_names_with_filter_to_top(
@@ -30,7 +30,7 @@ pub fn search_identifier_path_names_with_filter_to_path(
     schema: &Schema,
     source: &Source,
     namespace_str_path: &Vec<&str>,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<Vec<usize>> {
     search_identifier_path_names_with_filter_to_top(
@@ -48,7 +48,7 @@ pub fn search_identifier_path_names_with_filter_to_top<'a>(
     schema: &'a Schema,
     source: &'a Source,
     namespace_str_path: &Vec<&str>,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<&'a Top> {
     let mut used_sources = vec![];
@@ -82,7 +82,7 @@ pub fn search_identifier_path_names_with_filter_to_top<'a>(
 fn search_identifier_path_names_in_source_to_top<'a>(
     identifier_path_names: &Vec<&str>,
     schema: &'a Schema,
-    filter: &Arc<dyn Fn(&Top) -> bool>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
     source: &'a Source,
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
@@ -124,7 +124,7 @@ fn search_identifier_path_names_in_source_to_top<'a>(
     None
 }
 
-fn top_to_reference_type_and_value(top: &Top) -> TypeAndValue {
+fn top_to_reference_type_and_value(top: &Node) -> TypeAndValue {
     TypeAndValue {
         r#type: match top {
             Top::Import(_) => Type::Undetermined,
