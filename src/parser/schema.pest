@@ -65,6 +65,8 @@ COLON = @{ ":" }
 COMMA = @{ "," }
 BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
 BLOCK_CLOSE = { "}" }
+PAREN_OPEN = { "(" }
+PAREN_CLOSE = { ")" }
 OPTIONAL = { "?" }
 HASH_TAG = { "#" }
 
@@ -81,8 +83,8 @@ type_expression = { (type_subscript | type_item | type_group | type_tuple | type
 type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_generics = { "<" ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA? ~ ">" }
 arity = {"[]" | "{}" }
-type_group = { "(" ~ type_expression ~ ")" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
-type_tuple = { "(" ~ type_expression ~ COMMA ~ type_expression? ~ (COMMA ~ type_expression)* ~ COMMA? ~ ")" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
+type_group = { PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
+type_tuple = { PAREN_OPEN ~ type_expression ~ COMMA ~ type_expression? ~ (COMMA ~ type_expression)* ~ COMMA? ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_subscript = { type_item ~ "[" ~ type_expression ~ "]" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_reference = { enum_variant_literal }
 
@@ -142,7 +144,7 @@ enum_variant_literal = { "." ~ identifier ~ argument_list? }
 // #############
 // tuple literals
 // #############
-tuple_literal = { "(" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ")" }
+tuple_literal = { PAREN_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ PAREN_CLOSE }
 
 // #############
 // array literals
@@ -207,7 +209,7 @@ arith_expr = { UNARY_OPERATOR? ~ operand ~ UNARY_TRAILING_OPERATOR? ~ (BINARY_OP
 // #############
 // group
 // #############
-group = { "(" ~ expression ~ ")" }
+group = { PAREN_OPEN ~ expression ~ PAREN_CLOSE }
 
 // #############
 // unit & expression
@@ -252,7 +254,7 @@ constant_statement = { "let" ~ identifier ~ (COLON ~ type_expression)? ~ "=" ~ e
 // #############
 // arguments
 // #############
-argument_list = { "(" ~ (NEWLINE | WHITESPACE)* ~ ((argument | empty_argument) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument | empty_argument) ~ (NEWLINE | WHITESPACE)*)*)? ~ COMMA? ~ (NEWLINE | WHITESPACE)* ~ ")" }
+argument_list = { PAREN_OPEN ~ (NEWLINE | WHITESPACE)* ~ ((argument | empty_argument) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument | empty_argument) ~ (NEWLINE | WHITESPACE)*)*)? ~ COMMA? ~ (NEWLINE | WHITESPACE)* ~ PAREN_CLOSE }
 empty_argument = { identifier ~ COLON }
 argument = { (identifier ~ COLON)? ~ expression }
 
@@ -267,12 +269,12 @@ pipeline = { "$" ~ identifier_unit }
 // arguments declaration
 // #############
 argument_list_declaration = {
-  "(" ~
+  PAREN_OPEN ~
   (NEWLINE | WHITESPACE)* ~
   (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~
   COMMA? ~
   (NEWLINE | WHITESPACE)* ~
-  ")"
+  PAREN_CLOSE
 }
 argument_declaration = { identifier ~ OPTIONAL? ~ COLON ~ type_expression }
 
@@ -424,7 +426,7 @@ handler_declaration = {
     triple_comment_block? ~
     (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
     DECLARE_KEYWORD ~ HANDLER_KEYWORD ~
-    identifier ~ "(" ~ type_expression ~ ")" ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
+    identifier ~ PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
 }
 
 middleware_declaration = {
@@ -473,7 +475,7 @@ use_middlewares_block = {
 // availability
 // #############
 availability_start = {
-    HASH_TAG ~ "if" ~ "available" ~ "(" ~ identifier ~ ")"
+    HASH_TAG ~ "if" ~ "available" ~ PAREN_OPEN ~ identifier ~ PAREN_CLOSE
 }
 
 availability_end = {

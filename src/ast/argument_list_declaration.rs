@@ -1,7 +1,7 @@
 use crate::{declare_container_node, impl_container_node_defaults, impl_container_node_defaults_with_display, node_children_iter, node_children_iter_fn};
 use crate::ast::argument_declaration::ArgumentDeclaration;
 
-declare_container_node!(ArgumentListDeclaration, argument_declarations: Vec<usize>);
+declare_container_node!(ArgumentListDeclaration, pub(crate) argument_declarations: Vec<usize>);
 
 impl_container_node_defaults_with_display!(ArgumentListDeclaration);
 
