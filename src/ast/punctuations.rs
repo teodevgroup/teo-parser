@@ -26,7 +26,7 @@ impl_node_defaults!(Punctuation);
 impl Write for Punctuation {
 
     fn write(&self, writer: &mut Writer) {
-        writer.write(self, self.content());
+        writer.write_content(self, self.content());
     }
 
     fn prefer_whitespace_before(&self) -> bool {
@@ -60,6 +60,13 @@ impl Write for Punctuation {
     fn is_block_end(&self) -> bool {
         match self.content() {
             ")" | "]" | "}" => true,
+            _ => false,
+        }
+    }
+
+    fn is_block_element_delimiter(&self) -> bool {
+        match self.content() {
+            "," => true,
             _ => false,
         }
     }

@@ -1,6 +1,6 @@
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub(super) struct State {
-    pub(super) processing_index: usize,
+    pub(super) processing_path: Vec<usize>,
     pub(super) indent_level: usize,
     pub(super) previous_node_requires_whitespace_after: bool,
     pub(super) previous_node_is_decorator: bool,
@@ -11,7 +11,7 @@ pub(super) struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            processing_index: 0,
+            processing_path: vec![],
             indent_level: 0,
             previous_node_requires_whitespace_after: false,
             previous_node_is_decorator: false,

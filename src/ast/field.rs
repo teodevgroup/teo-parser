@@ -6,9 +6,11 @@ use crate::ast::type_expr::TypeExpr;
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 #[derive(Debug, Copy, Clone)]
 pub enum FieldHint {
@@ -138,6 +140,20 @@ impl InfoProvider for Field {
 impl Resolve<FieldResolved> for Field {
     fn resolved_ref_cell(&self) -> &RefCell<Option<FieldResolved>> {
         &self.resolved
+    }
+}
+
+impl Write for Field {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        true
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        true
     }
 }
 

@@ -43,10 +43,12 @@ use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGroup, TypeSubscr
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
 use crate::availability::Availability;
+use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
+use crate::traits::write::Write;
 
 #[derive(Debug)]
 pub enum Node {
@@ -813,7 +815,7 @@ impl Node {
             Node::CodeComment(n) => n,
             Node::Comment(n) => n,
             Node::Config(n) => n,
-            Node::ConfigKeyword(n) => n,
+            Node::Keyword(n) => n,
             Node::ConfigItem(n) => n,
             Node::ConfigDeclaration(n) => n,
             Node::Constant(n) => n,
@@ -964,19 +966,79 @@ impl Display for Node {
 }
 
 impl Identifiable for Node {
-
     fn path(&self) -> &Vec<usize> {
         self.as_dyn_node_trait().path()
+    }
+
+    fn source_id(&self) -> usize {
+        self.as_dyn_node_trait().source_id()
+    }
+
+    fn id(&self) -> usize {
+        self.as_dyn_node_trait().id()
     }
 }
 
 impl NodeTrait for Node {
-
     fn span(&self) -> Span {
         self.as_dyn_node_trait().span()
     }
 
     fn children(&self) -> Option<&BTreeMap<usize, Node>> {
         self.as_dyn_node_trait().children()
+    }
+
+    fn has_children(&self) -> bool {
+        self.as_dyn_node_trait().has_children()
+    }
+
+    fn child(&self, id: usize) -> Option<&Node> {
+        self.as_dyn_node_trait().child(id)
+    }
+}
+
+impl Write for Node {
+    fn write(&self, writer: &mut Writer) {
+        self.as_dyn_node_trait().write(writer)
+    }
+
+    fn write_output_with_default_writer(&self) -> String {
+        self.as_dyn_node_trait().write_output_with_default_writer()
+    }
+
+    fn prefer_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_before()
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_after()
+    }
+
+    fn prefer_always_no_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_always_no_whitespace_before()
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_start_on_new_line()
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_end_on_new_line()
+    }
+
+    fn is_block_start(&self) -> bool {
+        self.as_dyn_node_trait().is_block_start()
+    }
+
+    fn is_block_end(&self) -> bool {
+        self.as_dyn_node_trait().is_block_end()
+    }
+
+    fn is_block_element_delimiter(&self) -> bool {
+        self.as_dyn_node_trait().is_block_element_delimiter()
+    }
+
+    fn wrap(&self, content: &str, available_length: usize) -> String {
+        self.as_dyn_node_trait().wrap(content, available_length)
     }
 }

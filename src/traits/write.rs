@@ -7,7 +7,7 @@ pub trait Write {
     fn write_output_with_default_writer(&self) -> String {
         let mut writer = Writer::default();
         self.write(&mut writer);
-        writer.output()
+        writer.flush()
     }
 
     fn prefer_whitespace_before(&self) -> bool {
@@ -22,6 +22,14 @@ pub trait Write {
         false
     }
 
+    fn always_start_on_new_line(&self) -> bool {
+        false
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        false
+    }
+
     fn is_block_start(&self) -> bool {
         false
     }
@@ -30,11 +38,11 @@ pub trait Write {
         false
     }
 
-    fn wrap(&self, content: &str, available_length: usize) -> String {
-        content.to_owned()
+    fn is_block_element_delimiter(&self) -> bool {
+        false
     }
 
-    fn always_start_on_new_line(&self) -> bool {
-        false
+    fn wrap(&self, content: &str, available_length: usize) -> String {
+        content.to_owned()
     }
 }
