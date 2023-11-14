@@ -120,24 +120,29 @@ macro_rules! impl_node_defaults {
                 }
             }
         }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.write_output_with_default_writer())
+            }
+        }
     };
 }
 
 #[macro_export]
-macro_rules! impl_node_defaults_with_display {
+macro_rules! impl_node_defaults_with_write {
     ($struct_name:ident, $display:ident) => {
         crate::impl_node_defaults!($struct_name);
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.$display)
+        impl crate::traits::write::Write for $struct_name {
+            fn write(&self, writer: &mut crate::format::Writer) {
+                writer.write(&self.$display);
             }
         }
     };
     ($struct_name:ident, $display:expr) => {
         crate::impl_node_defaults!($struct_name);
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str($display)
+        impl crate::traits::write::Write for $struct_name {
+            fn write(&self, writer: &mut crate::format::Writer) {
+                writer.write($display);
             }
         }
     };

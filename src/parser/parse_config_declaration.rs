@@ -1,5 +1,5 @@
 use crate::ast::config_declaration::ConfigDeclaration;
-use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_comment::parse_comment;
@@ -25,6 +25,9 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
     let mut fields: Vec<usize> = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
+            Rule::CONFIG_KEYWORD => parse_insert_keyword!(context, current, children, "config"),
             Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::identifier => {
@@ -37,7 +40,6 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserConte
                 children.insert(node.id(), node.into());
             },
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),

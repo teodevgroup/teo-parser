@@ -1,12 +1,12 @@
-use std::cell::RefCell;
-use crate::availability::Availability;
 use crate::ast::comment::Comment;
 use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::write::Write;
 
 declare_container_node!(ConfigDeclaration, named, availability,
     pub comment: Option<usize>,
@@ -35,5 +35,12 @@ impl InfoProvider for ConfigDeclaration {
 
     fn namespace_skip(&self) -> usize {
         1
+    }
+}
+
+impl Write for ConfigDeclaration {
+
+    fn write(&self, writer: &mut Writer) {
+
     }
 }

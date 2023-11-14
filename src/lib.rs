@@ -11,6 +11,7 @@ pub mod search;
 pub mod traits;
 pub mod availability;
 pub mod value;
+pub mod format;
 #[macro_use]
 pub mod macros;
 

@@ -5,27 +5,27 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
-use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults_with_display, node_child_fn, node_children_iter, node_children_iter_fn, node_children_pair_iter, node_optional_child_fn};
+use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults_with_write, node_child_fn, node_children_iter, node_children_iter_fn, node_children_pair_iter, node_optional_child_fn};
 
 declare_node!(NumericLiteral, pub(crate) value: Value, pub(crate) display: String);
 
-impl_node_defaults_with_display!(NumericLiteral, display);
+impl_node_defaults_with_write!(NumericLiteral, display);
 
 declare_node!(StringLiteral, pub(crate) value: String, pub(crate) display: String);
 
-impl_node_defaults_with_display!(StringLiteral, display);
+impl_node_defaults_with_write!(StringLiteral, display);
 
 declare_node!(RegexLiteral, pub(crate) value: Regex, pub(crate) display: String);
 
-impl_node_defaults_with_display!(RegexLiteral, display);
+impl_node_defaults_with_write!(RegexLiteral, display);
 
 declare_node!(BoolLiteral, pub(crate) value: bool);
 
-impl_node_defaults_with_display!(BoolLiteral, value);
+impl_node_defaults_with_write!(BoolLiteral, value);
 
 declare_node!(NullLiteral);
 
-impl_node_defaults_with_display!(NullLiteral, "null");
+impl_node_defaults_with_write!(NullLiteral, "null");
 
 declare_container_node!(EnumVariantLiteral,
     pub(crate) identifier: usize,

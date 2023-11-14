@@ -1,6 +1,8 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
 use crate::{declare_node, impl_node_defaults};
 use crate::ast::span::Span;
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(Punctuation, content: &'static str);
 
@@ -21,10 +23,10 @@ impl Punctuation {
 
 impl_node_defaults!(Punctuation);
 
-impl Display for Punctuation {
+impl Write for Punctuation {
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self.content() {
+    fn write(&self, writer: &mut Writer) {
+        writer.write(match self.content() {
             ":" => ": ",
             "," => ", ",
             _ => self.content(),

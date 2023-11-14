@@ -1,4 +1,4 @@
-use crate::{declare_node, impl_node_defaults_with_display};
+use crate::{declare_node, impl_node_defaults_with_write};
 
 declare_node!(Identifier, pub(crate) name: String);
 
@@ -9,4 +9,4 @@ impl Identifier {
     }
 }
 
-impl_node_defaults_with_display!(Identifier, name);
+impl_node_defaults_with_write!(Identifier, name);

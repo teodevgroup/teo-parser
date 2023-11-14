@@ -3,8 +3,9 @@ use std::fmt::Display;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::traits::identifiable::Identifiable;
+use crate::traits::write::Write;
 
-pub trait NodeTrait: Identifiable + Display {
+pub trait NodeTrait: Identifiable + Write + Display {
 
     fn span(&self) -> Span;
 

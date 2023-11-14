@@ -1,25 +1,26 @@
-use std::fmt::{Display, Formatter};
 use crate::{declare_node, impl_node_defaults};
 use crate::ast::span::Span;
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(Keyword, pub(crate) name: String);
 
 impl_node_defaults!(Keyword);
 
-impl Display for Keyword {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.name())?;
-        f.write_str(" ")
+impl Write for Keyword {
+    fn write(&self, writer: &mut Writer) {
+        writer.write(&self.name);
+        writer.write(" ");
     }
 }
 
 impl Keyword {
 
-    pub(crate) fn new(name: &'static str, span: Span, path: Vec<usize>) -> Self {
+    pub(crate) fn new(name: impl AsRef<str>, span: Span, path: Vec<usize>) -> Self {
         Self {
             span,
             path,
-            name: name.to_owned(),
+            name: name.as_ref().to_owned(),
         }
     }
 

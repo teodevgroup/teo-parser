@@ -9,6 +9,16 @@ macro_rules! parse_insert_punctuation {
 }
 
 #[macro_export]
+macro_rules! parse_insert_keyword {
+    ($context:ident, $current:ident, $children:ident, $content:expr) => {
+        {
+            let keyword = crate::ast::keyword::Keyword::new($content, parse_span(&$current), $context.next_path());
+            $children.insert(punc.id(), punc.into());
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! parse_append {
     ($expr:expr, $children:ident) => {
         {
