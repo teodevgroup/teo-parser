@@ -129,26 +129,6 @@ macro_rules! impl_node_defaults {
 }
 
 #[macro_export]
-macro_rules! impl_node_defaults_with_write {
-    ($struct_name:ident, $display:ident) => {
-        crate::impl_node_defaults!($struct_name);
-        impl crate::traits::write::Write for $struct_name {
-            fn write(&self, writer: &mut crate::format::Writer) {
-                writer.write(&self.$display);
-            }
-        }
-    };
-    ($struct_name:ident, $display:expr) => {
-        crate::impl_node_defaults!($struct_name);
-        impl crate::traits::write::Write for $struct_name {
-            fn write(&self, writer: &mut crate::format::Writer) {
-                writer.write($display);
-            }
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! impl_container_node_defaults {
     ($struct_name:ident) => {
         impl crate::traits::identifiable::Identifiable for $struct_name {

@@ -9,8 +9,11 @@ impl_node_defaults!(Keyword);
 
 impl Write for Keyword {
     fn write(&self, writer: &mut Writer) {
-        writer.write(&self.name);
-        writer.write(" ");
+        writer.write(self, &self.name);
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        true
     }
 }
 

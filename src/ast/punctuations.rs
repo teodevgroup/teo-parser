@@ -26,10 +26,41 @@ impl_node_defaults!(Punctuation);
 impl Write for Punctuation {
 
     fn write(&self, writer: &mut Writer) {
-        writer.write(match self.content() {
-            ":" => ": ",
-            "," => ", ",
-            _ => self.content(),
-        })
+        writer.write(self, self.content());
+    }
+
+    fn prefer_whitespace_before(&self) -> bool {
+        match self.content() {
+            "@" | "}" => true,
+            _ => false,
+        }
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        match self.content() {
+            "," | ":" | "{" => true,
+            _ => false,
+        }
+    }
+
+    fn prefer_always_no_whitespace_before(&self) -> bool {
+        match self.content() {
+            ")" | "]" => true,
+            _ => false,
+        }
+    }
+
+    fn is_block_start(&self) -> bool {
+        match self.content() {
+            "(" | "[" | "{" => true,
+            _ => false,
+        }
+    }
+
+    fn is_block_end(&self) -> bool {
+        match self.content() {
+            ")" | "]" | "}" => true,
+            _ => false,
+        }
     }
 }
