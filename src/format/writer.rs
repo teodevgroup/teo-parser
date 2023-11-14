@@ -40,7 +40,7 @@ impl<'a> Writer<'a> {
     }
 
     pub fn flush(&self) -> String {
-        let mut flusher = Flusher::new(self);
+        let mut flusher = Flusher::new_from_beginning(&self.commands, self.preferences);
         flusher.flush()
     }
 }

@@ -64,7 +64,7 @@ impl<'a> BranchCommand<'a> {
 
 impl<'a> LeafCommand<'a> {
 
-    pub(super) fn content(&'a self) -> &'a str {
-        self.content
+    pub(super) fn contents(&'a self) -> &'a Vec<&'a str> {
+        &self.contents
     }
 }
