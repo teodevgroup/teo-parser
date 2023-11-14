@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use serde::Serialize;
 use crate::availability::Availability;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
@@ -51,7 +51,7 @@ node_children_iter!(HandlerDeclaration, Decorator, DecoratorsIter, decorators);
 
 impl HandlerDeclaration {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_children_iter_fn!(decorators, DecoratorsIter);
 

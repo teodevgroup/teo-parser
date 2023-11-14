@@ -1,11 +1,18 @@
-use std::fmt::{Display, Formatter};
-use crate::declare_node;
+use crate::{declare_node, impl_node_defaults};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(AvailabilityFlag, name: String);
 
-impl Display for AvailabilityFlag {
+impl_node_defaults!(AvailabilityFlag);
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("#if available({})", self.name))
+impl Write for AvailabilityFlag {
+
+    fn write(&self, writer: &mut Writer) {
+        writer.write_contents(self, vec!["#if available(", self.name(), ")\n"]);
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

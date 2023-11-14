@@ -8,7 +8,7 @@ use crate::ast::arith_expr::{ArithExpr, BinaryOperation, UnaryOperation, UnaryPo
 use crate::ast::availability_flag::AvailabilityFlag;
 use crate::ast::availability_flag_end::AvailabilityFlagEnd;
 use crate::ast::code_comment::CodeComment;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::config_item::ConfigItem;
@@ -63,7 +63,7 @@ pub enum Node {
     AvailabilityFlag(AvailabilityFlag),
     AvailabilityFlagEnd(AvailabilityFlagEnd),
     CodeComment(CodeComment),
-    Comment(Comment),
+    DocComment(DocComment),
     Config(Config),
     Keyword(Keyword),
     ConfigItem(ConfigItem),
@@ -239,13 +239,13 @@ impl Node {
         }
     }
 
-    pub fn is_comment(&self) -> bool {
-        self.as_comment().is_some()
+    pub fn is_doc_comment(&self) -> bool {
+        self.as_doc_comment().is_some()
     }
 
-    pub fn as_comment(&self) -> Option<&Comment> {
+    pub fn as_doc_comment(&self) -> Option<&DocComment> {
         match self {
-            Node::Comment(c) => Some(c),
+            Node::DocComment(c) => Some(c),
             _ => None,
         }
     }
@@ -813,7 +813,7 @@ impl Node {
             Node::AvailabilityFlag(n) => n,
             Node::AvailabilityFlagEnd(n) => n,
             Node::CodeComment(n) => n,
-            Node::Comment(n) => n,
+            Node::DocComment(n) => n,
             Node::Config(n) => n,
             Node::Keyword(n) => n,
             Node::ConfigItem(n) => n,
@@ -1036,6 +1036,10 @@ impl Write for Node {
 
     fn is_block_element_delimiter(&self) -> bool {
         self.as_dyn_node_trait().is_block_element_delimiter()
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        self.as_dyn_node_trait().is_block_level_element()
     }
 
     fn wrap(&self, content: &str, available_length: usize) -> String {

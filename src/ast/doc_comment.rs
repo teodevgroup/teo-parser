@@ -1,19 +1,21 @@
 use std::fmt::{Display, Formatter};
 use serde::Serialize;
 use crate::ast::span::Span;
+use crate::format::Writer;
 use crate::impl_node_defaults;
+use crate::traits::write::Write;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
-pub struct Comment {
+pub struct DocComment {
     pub(crate) span: Span,
     pub(crate) path: Vec<usize>,
     pub(crate) name: Option<String>,
     pub(crate) desc: Option<String>,
 }
 
-impl_node_defaults!(Comment);
+impl_node_defaults!(DocComment);
 
-impl Comment {
+impl DocComment {
 
     pub fn name(&self) -> Option<&str> {
         self.name.as_ref().map(|n| n.as_str())
@@ -24,15 +26,20 @@ impl Comment {
     }
 }
 
-impl Display for Comment {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl Write for DocComment {
+    fn write(&self, writer: &mut Writer) {
+        let mut contents = vec![];
         if let Some(name) = self.name() {
-            f.write_fmt(format_args!("/// @name {}\n", name))?;
+            contents.push("/// @name ");
+            contents.push(name);
+            contents.push("\n");
         }
         if let Some(desc) = self.desc() {
-            f.write_fmt(format_args!("/// {}", desc))?;
+            contents.push("/// ");
+            contents.push(desc);
+            contents.push("\n");
         }
-        Ok(())
+        writer.write_contents(self, contents);
+
     }
 }

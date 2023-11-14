@@ -3,7 +3,7 @@ use teo_teon::value::Value;
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
@@ -30,7 +30,7 @@ node_children_iter!(Enum, EnumMember, EnumMembersIter, members);
 
 impl Enum {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_child_fn!(identifier, Identifier);
 
@@ -60,7 +60,7 @@ node_children_iter!(EnumMember, Decorator, EnumMemberDecoratorsIter, decorators)
 
 impl EnumMember {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_children_iter_fn!(decorators, EnumMemberDecoratorsIter);
 

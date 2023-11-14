@@ -8,7 +8,7 @@ pub mod config_item;
 pub mod keyword;
 pub mod model;
 pub mod r#enum;
-pub mod comment;
+pub mod doc_comment;
 pub mod code_comment;
 pub mod source;
 pub mod arith_expr;

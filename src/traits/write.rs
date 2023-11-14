@@ -42,6 +42,10 @@ pub trait Write {
         false
     }
 
+    fn is_block_level_element(&self) -> bool {
+        false
+    }
+
     fn wrap(&self, content: &str, available_length: usize) -> String {
         content.to_owned()
     }

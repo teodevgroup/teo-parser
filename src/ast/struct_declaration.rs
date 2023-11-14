@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use maplit::btreemap;
 use crate::availability::Availability;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
@@ -29,7 +29,7 @@ node_children_iter!(StructDeclaration, FunctionDeclaration, FunctionsIter, funct
 
 impl StructDeclaration {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
     node_child_fn!(identifier, Identifier);
     node_optional_child_fn!(generics_declaration, GenericsDeclaration);
     node_optional_child_fn!(generics_constraint, GenericsConstraint);

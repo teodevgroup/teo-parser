@@ -1,5 +1,6 @@
-use std::fmt::{Display, Formatter};
 use crate::{declare_node, impl_node_defaults};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(CodeComment, lines: Vec<String>);
 
@@ -12,9 +13,14 @@ impl CodeComment {
     }
 }
 
-impl Display for CodeComment {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.lines.iter().try_for_each(|l| f.write_fmt(format_args!("// {}\n", l)))
+impl Write for CodeComment {
+    fn write(&self, writer: &mut Writer) {
+        let mut contents = vec![];
+        for line in self.lines() {
+            contents.push("// ");
+            contents.push(line.as_str());
+            contents.push("\n");
+        }
+        writer.write_contents(self, contents);
     }
 }

@@ -1,9 +1,9 @@
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_comment(pair: Pair<'_>, context: &mut ParserContext) -> Comment {
+pub(super) fn parse_comment(pair: Pair<'_>, context: &mut ParserContext) -> DocComment {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut name = None;
@@ -27,7 +27,7 @@ pub(super) fn parse_comment(pair: Pair<'_>, context: &mut ParserContext) -> Comm
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    Comment {
+    DocComment {
         span,
         path,
         name,

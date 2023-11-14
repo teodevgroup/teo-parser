@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use serde::Serialize;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedEnum {
@@ -24,7 +24,7 @@ impl SynthesizedEnum {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedEnumMember {
     pub name: String,
-    pub comment: Option<Comment>,
+    pub comment: Option<DocComment>,
 }
 
 impl Display for SynthesizedEnum {

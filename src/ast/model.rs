@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use indexmap::IndexMap;
 use serde::{Serialize, Serializer};
 use crate::availability::Availability;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
 use crate::ast::handler::HandlerDeclaration;
@@ -39,7 +39,7 @@ node_children_iter!(Model, HandlerDeclaration, HandlersIter, handlers);
 
 impl Model {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_child_fn!(identifier, Identifier);
 

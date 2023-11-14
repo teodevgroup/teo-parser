@@ -12,13 +12,13 @@ pub(super) struct BranchCommand<'a> {
 
 pub(super) struct LeafCommand<'a> {
     node: &'a dyn Write,
-    content: &'a str,
+    contents: Vec<&'a str>,
 }
 
 impl<'a> Command<'a> {
 
-    pub(super) fn leaf(node: &'a dyn Write, content: &'a str) -> Self {
-        Self::LeafCommand(LeafCommand { node, content })
+    pub(super) fn leaf(node: &'a dyn Write, contents: Vec<&'a str>) -> Self {
+        Self::LeafCommand(LeafCommand { node, contents })
     }
 
     pub(super) fn branch(node: &'a dyn Write, children: Vec<Command<'a>>) -> Self {

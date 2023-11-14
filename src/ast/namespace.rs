@@ -9,7 +9,7 @@ use crate::ast::data_set::DataSet;
 use crate::ast::model::Model;
 use crate::ast::r#enum::Enum;
 use crate::ast::identifier::Identifier;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::ast::node::Node;
 
@@ -25,7 +25,7 @@ impl Namespace {
 
     node_child_fn!(identifier, Identifier);
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     pub fn parent_str_path(&self) -> Vec<&str> {
         self.string_path.iter().rev().skip(1).rev().map(AsRef::as_ref).collect()

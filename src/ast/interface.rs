@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use indexmap::{IndexMap, indexmap};
 use serde::{Serialize, Serializer};
 use crate::availability::Availability;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::field::Field;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
@@ -34,7 +34,7 @@ node_children_iter!(InterfaceDeclaration, Field, FieldsIter, fields);
 
 impl InterfaceDeclaration {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_child_fn!(identifier, Identifier);
 

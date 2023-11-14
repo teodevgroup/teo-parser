@@ -1,7 +1,7 @@
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
@@ -26,7 +26,7 @@ node_children_iter!(DecoratorDeclaration, DecoratorDeclarationVariant, VariantsI
 
 impl DecoratorDeclaration {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_child_fn!(identifier, Identifier);
 
@@ -96,7 +96,7 @@ impl_container_node_defaults!(DecoratorDeclarationVariant);
 
 impl DecoratorDeclarationVariant {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
 
     node_optional_child_fn!(generics_declaration, GenericsDeclaration);
 

@@ -1,7 +1,7 @@
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
-use crate::ast::comment::Comment;
+use crate::ast::doc_comment::DocComment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
@@ -24,7 +24,7 @@ node_children_iter!(PipelineItemDeclaration, PipelineItemDeclarationVariant, Var
 
 impl PipelineItemDeclaration {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
     node_child_fn!(identifier, Identifier);
     node_optional_child_fn!(generics_declaration, GenericsDeclaration);
     node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
@@ -87,7 +87,7 @@ impl_container_node_defaults!(PipelineItemDeclarationVariant);
 
 impl PipelineItemDeclarationVariant {
 
-    node_optional_child_fn!(comment, Comment);
+    node_optional_child_fn!(comment, DocComment);
     node_optional_child_fn!(generics_declaration, GenericsDeclaration);
     node_optional_child_fn!(argument_list_declaration, ArgumentListDeclaration);
     node_optional_child_fn!(generics_constraint, GenericsConstraint);
