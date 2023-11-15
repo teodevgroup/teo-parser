@@ -1,13 +1,13 @@
-use std::fmt::{Display, Formatter};
 use crate::{declare_node, impl_node_defaults};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
-declare_node!(IntSubscript, pub index: usize);
+declare_node!(IntSubscript, pub index: usize, pub(crate) index_string: String);
 
 impl_node_defaults!(IntSubscript);
 
-impl Display for IntSubscript {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(".")?;
-        Display::fmt(&self.index, f)
+impl Write for IntSubscript {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_contents(self, vec![".", self.index_string.as_str()])
     }
 }

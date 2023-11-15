@@ -6,7 +6,9 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::traits::info_provider::InfoProvider;
+use crate::traits::write::Write;
 
 declare_container_node!(DecoratorDeclaration, named, availability,
     pub exclusive: bool,
@@ -104,4 +106,14 @@ impl DecoratorDeclarationVariant {
 
     node_optional_child_fn!(generics_constraint, GenericsConstraint);
 
+}
+
+impl Write for DecoratorDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
 }

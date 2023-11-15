@@ -1,13 +1,9 @@
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
-use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::identifier::Identifier;
-use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 
 declare_container_node!(MiddlewareDeclaration, named, availability,
     pub(crate) identifier: usize,

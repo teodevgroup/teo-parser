@@ -4,6 +4,9 @@ use crate::ast::argument::Argument;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::{declare_container_node, node_children_iter, node_children_iter_fn};
+use crate::format::Writer;
+use crate::traits::node_trait::NodeTrait;
+use crate::traits::write::Write;
 
 declare_container_node!(ArgumentList, pub(crate) arguments: Vec<usize>);
 
@@ -52,5 +55,11 @@ impl crate::traits::node_trait::NodeTrait for ArgumentList {
 
     fn children(&self) -> Option<&BTreeMap<usize, Node>> {
         Some(&self.children)
+    }
+}
+
+impl Write for ArgumentList {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }

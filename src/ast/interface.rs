@@ -1,20 +1,18 @@
 use std::cell::RefCell;
 use indexmap::{IndexMap, indexmap};
 use serde::{Serialize, Serializer};
-use crate::availability::Availability;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::field::Field;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
-use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 declare_container_node!(InterfaceDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
@@ -86,5 +84,15 @@ impl InterfaceDeclarationResolved {
         Self {
             map: indexmap! {}
         }
+    }
+}
+
+impl Write for InterfaceDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

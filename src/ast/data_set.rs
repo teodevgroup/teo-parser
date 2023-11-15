@@ -5,10 +5,12 @@ use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::DictionaryLiteral;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
+use crate::format::Writer;
 use crate::r#type::reference::Reference;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 declare_container_node!(DataSet, named, availability,
     pub(crate) identifier: usize,
@@ -87,5 +89,35 @@ impl InfoProvider for DataSetRecord {
 impl Resolve<Value> for DataSetRecord {
     fn resolved_ref_cell(&self) -> &RefCell<Option<Value>> {
         &self.resolved
+    }
+}
+
+impl Write for DataSet {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}
+
+impl Write for DataSetGroup {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}
+
+impl Write for DataSetRecord {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

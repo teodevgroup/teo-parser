@@ -1,6 +1,8 @@
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_container_node!(GenericsDeclaration,
     pub(crate) identifiers: Vec<usize>,
@@ -39,4 +41,22 @@ impl GenericsConstraintItem {
     node_child_fn!(identifier, Identifier);
 
     node_child_fn!(type_expr, TypeExpr);
+}
+
+impl Write for GenericsDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+}
+
+impl Write for GenericsConstraint {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+}
+
+impl Write for GenericsConstraintItem {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
 }

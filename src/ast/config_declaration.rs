@@ -45,3 +45,13 @@ impl Write for ConfigDeclaration {
         writer.write_children(self, self.children.values());
     }
 }
+
+impl Write for ConfigDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}

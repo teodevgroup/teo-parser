@@ -148,11 +148,7 @@ impl Write for Field {
         writer.write_children(self, self.children.values())
     }
 
-    fn always_start_on_new_line(&self) -> bool {
-        true
-    }
-
-    fn always_end_on_new_line(&self) -> bool {
+    fn is_block_level_element(&self) -> bool {
         true
     }
 }

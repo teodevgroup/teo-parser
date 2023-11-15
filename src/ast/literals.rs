@@ -1,31 +1,61 @@
-use std::fmt::{Display, Formatter};
 use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
-use crate::ast::span::Span;
 use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_children_pair_iter, node_optional_child_fn};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(NumericLiteral, pub(crate) value: Value, pub(crate) display: String);
 
 impl_node_defaults!(NumericLiteral);
 
+impl Write for NumericLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_content(self, self.display.as_str());
+    }
+}
+
 declare_node!(StringLiteral, pub(crate) value: String, pub(crate) display: String);
 
 impl_node_defaults!(StringLiteral);
+
+impl Write for StringLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_content(self, self.display.as_str());
+    }
+}
 
 declare_node!(RegexLiteral, pub(crate) value: Regex, pub(crate) display: String);
 
 impl_node_defaults!(RegexLiteral);
 
+impl Write for RegexLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_content(self, self.display.as_str());
+    }
+}
+
 declare_node!(BoolLiteral, pub(crate) value: bool);
 
 impl_node_defaults!(BoolLiteral);
 
+impl Write for BoolLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_content(self, if self.value { "true" } else { "false" });
+    }
+}
+
 declare_node!(NullLiteral);
 
 impl_node_defaults!(NullLiteral);
+
+impl Write for NullLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_content(self, "null")
+    }
+}
 
 declare_container_node!(EnumVariantLiteral,
     pub(crate) identifier: usize,
@@ -49,15 +79,9 @@ impl EnumVariantLiteral {
     }
 }
 
-impl Display for EnumVariantLiteral {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(".")?;
-        Display::fmt(&self.identifier, f)?;
-        if let Some(argument_list) = &self.argument_list {
-            Display::fmt(argument_list, f)?;
-        }
-        Ok(())
+impl Write for EnumVariantLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
@@ -72,20 +96,9 @@ impl TupleLiteral {
     node_children_iter_fn!(expressions, TupleLiteralExpressionsIter);
 }
 
-impl Display for TupleLiteral {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("(")?;
-        let len = self.expressions.len();
-        for (index, expression) in self.expressions.iter().enumerate() {
-            Display::fmt(expression, f)?;
-            if index != len - 1 {
-                f.write_str(", ")?;
-            }
-        }
-        if len == 1 {
-            f.write_str(",")?;
-        }
-        f.write_str(")")
+impl Write for TupleLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
@@ -118,17 +131,9 @@ impl ArrayLiteral {
     }
 }
 
-impl Display for ArrayLiteral {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("[")?;
-        let len = self.expressions.len();
-        for (index, expression) in self.expressions.iter().enumerate() {
-            Display::fmt(expression, f)?;
-            if index != len - 1 {
-                f.write_str(", ")?;
-            }
-        }
-        f.write_str("]")
+impl Write for ArrayLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
@@ -143,18 +148,8 @@ impl DictionaryLiteral {
     node_children_iter_fn!(expressions, DictionaryLiteralExpressionsIter);
 }
 
-impl Display for DictionaryLiteral {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("{")?;
-        let len = self.expressions.len();
-        for (index, (key, expression)) in self.expressions().enumerate() {
-            Display::fmt(key, f)?;
-            f.write_str(": ")?;
-            Display::fmt(expression, f)?;
-            if index != len - 1 {
-                f.write_str(", ")?;
-            }
-        }
-        f.write_str("}")
+impl Write for DictionaryLiteral {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }

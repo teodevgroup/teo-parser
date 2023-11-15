@@ -1,16 +1,14 @@
-use std::cell::RefCell;
 use serde::Serialize;
-use crate::availability::Availability;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
-use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
-use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::write::Write;
 
 declare_container_node!(HandlerGroupDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
@@ -88,5 +86,25 @@ impl HandlerInputFormat {
 impl InfoProvider for HandlerDeclaration {
     fn namespace_skip(&self) -> usize {
         2
+    }
+}
+
+impl Write for HandlerGroupDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}
+
+impl Write for HandlerDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

@@ -8,10 +8,12 @@ use crate::ast::decorator::Decorator;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 declare_container_node!(Enum, named, availability,
     pub interface: bool,
@@ -91,5 +93,15 @@ impl Resolve<Value> for EnumMember {
 
     fn resolved_ref_cell(&self) -> &RefCell<Option<Value>> {
         &self.resolved
+    }
+}
+
+impl Write for Enum {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

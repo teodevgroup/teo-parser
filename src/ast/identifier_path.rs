@@ -1,6 +1,7 @@
-use std::fmt::{Display, Formatter};
 use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn};
+use crate::format::Writer;
 use crate::traits::node_trait::NodeTrait;
+use crate::traits::write::Write;
 use super::identifier::Identifier;
 
 declare_container_node!(IdentifierPath, pub(crate) identifiers: Vec<usize>);
@@ -18,15 +19,8 @@ impl IdentifierPath {
     }
 }
 
-impl Display for IdentifierPath {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (i, id) in self.identifiers.enumerate() {
-            if i != 0 {
-                f.write_str(".")?;
-            }
-            Display::fmt(&id, f)?;
-        }
-        Ok(())
+impl Write for IdentifierPath {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }

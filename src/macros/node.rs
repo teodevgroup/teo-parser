@@ -275,21 +275,6 @@ macro_rules! impl_container_node_defaults {
 }
 
 #[macro_export]
-macro_rules! impl_container_node_defaults_with_display {
-    ($struct_name:ident) => {
-        crate::impl_container_node_defaults!($struct_name);
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                for child in self.children.values() {
-                    std::fmt::Display::fmt(child, f)?;
-                }
-                Ok(())
-            }
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! node_children_iter {
     ($struct_name:ident, $child_struct_name:ident, $iter_name:ident, $field_name:ident) => {
         pub struct $iter_name<'a> {
