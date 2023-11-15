@@ -54,7 +54,7 @@ impl Schema {
 
     pub fn find_config_declaration_by_name(&self, name: &str, availability: Availability) -> Option<&ConfigDeclaration> {
         for config_declaration in self.config_declarations() {
-            if config_declaration.identifier.name() == name && config_declaration.define_availability.contains(availability) {
+            if config_declaration.identifier().name() == name && config_declaration.define_availability.contains(availability) {
                 return Some(config_declaration)
             }
         }
@@ -208,17 +208,17 @@ impl SchemaReferences {
 
     pub fn add_config(&mut self, config: &Config) {
         self.configs.push(config.path().clone());
-        if config.keyword.is_client() {
+        if config.keyword().is_client() {
             self.clients.push(config.path().clone());
-        } else if config.keyword.is_connector() {
+        } else if config.keyword().is_connector() {
             self.connectors.push(config.path().clone());
-        } else if config.keyword.is_server() {
+        } else if config.keyword().is_server() {
             self.server = Some(config.path().clone());
-        } else if config.keyword.is_entity() {
+        } else if config.keyword().is_entity() {
             self.entities.push(config.path().clone());
-        } else if config.keyword.is_test() {
+        } else if config.keyword().is_test() {
             self.test = Some(config.path().clone());
-        } else if config.keyword.is_debug() {
+        } else if config.keyword().is_debug() {
             self.debug = Some(config.path().clone());
         }
     }

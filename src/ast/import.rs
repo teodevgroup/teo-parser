@@ -1,6 +1,8 @@
 use crate::ast::literals::StringLiteral;
 use crate::ast::span::Span;
 use crate::{declare_node, impl_node_defaults};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_node!(Import,
     pub source: StringLiteral,
@@ -18,5 +20,19 @@ impl Import {
             file_path,
             span,
         }
+    }
+}
+
+impl Write for Import {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_contents(self, vec!["import ", self.source.display.as_str()])
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        true
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        true
     }
 }

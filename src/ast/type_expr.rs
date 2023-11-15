@@ -342,3 +342,15 @@ impl Write for TypeExpr {
         self.kind.as_dyn_node_trait().wrap(content, available_length)
     }
 }
+
+impl Display for TypeExprKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self.as_dyn_node_trait(), f)
+    }
+}
+
+impl Display for TypeExpr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.kind, f)
+    }
+}
