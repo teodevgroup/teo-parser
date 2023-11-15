@@ -86,21 +86,36 @@ impl<'a> Flusher<'a> {
 
         // insert leading whitespace if needed
         if !command.node().prefer_always_no_whitespace_before() && !is_at_newline_after_indented && (self.file_state.previous_node_requires_whitespace_after || command.node().prefer_whitespace_before()) {
-            buffer.push(' ');
+            if let Some(char) = buffer.chars().last() {
+                if char != ' ' {
+                    buffer.push(' ');
+                }
+            }
         }
 
         // insert content
-        buffer.push_str(command.content());
+        let content = match command {
+            Command::LeafCommand(leaf_command) => {
+                let mut content = String::new();
+                leaf_command.contents().iter().for_each(|c| content.push_str(c));
+                content
+            }
+            Command::BranchCommand(branch_command) => {
+                let mut child_flusher = Flusher::new(branch_command.children(), self.file_state, self.preferences);
+                child_flusher.flush()
+            }
+        };
+        buffer.push_str(content.as_str());
 
         // figure out new line state
-        if let Some(index) = command.content().rfind("\n") {
-            if index == command.content().len() - 1 {
+        if let Some(index) = content.rfind("\n") {
+            if index == content.len() - 1 {
                 self.reset_state_to_newline();
             } else {
-                self.file_state.line_remaining_length = command.content().len() - 1 - index;
+                self.file_state.line_remaining_length = content.len() - 1 - index;
             }
         } else {
-            self.file_state.line_remaining_length -= command.content().len();
+            self.file_state.line_remaining_length -= content.len();
         }
 
         // open newline if last line exceed max line width
