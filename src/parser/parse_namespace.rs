@@ -4,7 +4,7 @@ use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
@@ -33,7 +33,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
     let mut tops = btreemap!{};
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => comment = Some(parse_comment(current, context)),
+            Rule::triple_comment_block => comment = Some(parse_doc_comment(current, context)),
             Rule::identifier => {
                 identifier = Some(parse_identifier(&current));
                 if context.current_availability_flag() != Availability::default() {

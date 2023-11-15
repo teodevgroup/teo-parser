@@ -2,7 +2,7 @@ use crate::{declare_node, impl_node_defaults};
 use crate::format::Writer;
 use crate::traits::write::Write;
 
-declare_node!(CodeComment, lines: Vec<String>);
+declare_node!(CodeComment, pub(crate) lines: Vec<String>);
 
 impl_node_defaults!(CodeComment);
 

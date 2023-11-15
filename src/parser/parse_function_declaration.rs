@@ -1,7 +1,7 @@
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::{parse_container_node_variables, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
@@ -27,7 +27,7 @@ pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserCon
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::FUNCTION_KEYWORD => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::STATIC_KEYWORD => r#static = true,
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),

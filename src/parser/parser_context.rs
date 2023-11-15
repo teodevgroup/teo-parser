@@ -152,6 +152,10 @@ impl<'a> ParserContext<'a> {
         self.diagnostics.insert(DiagnosticsError::new(span, message.into(), path.clone()));
     }
 
+    pub(super) fn insert_unattached_doc_comment(&mut self, span: Span) {
+        self.insert_warning(span, "unattached doc comment");
+    }
+
     pub(super) fn insert_warning(&mut self, span: Span, message: impl Into<String>) {
         let path = self.source_lookup.get(&self.current_source_id).unwrap();
         self.diagnostics.insert(DiagnosticsWarning::new(span, message.into(), path.clone()));

@@ -4,6 +4,8 @@ use crate::ast::keyword::Keyword;
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
+use crate::parser::parse_code_comment::parse_code_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
@@ -39,7 +41,8 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
                 parse_set!(parse_identifier(&current, context), children, identifier);
             },
             Rule::config_item => parse_insert!(parse_config_item(current, context), children, items),
-            Rule::comment_block => parse_append!(parse_code_comment(current, context), children),
+            Rule::triple_comment_block => parse_append!(parse_doc_comment(current, context), children),
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),

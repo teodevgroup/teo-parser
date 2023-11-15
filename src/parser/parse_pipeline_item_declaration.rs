@@ -1,7 +1,7 @@
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
@@ -29,7 +29,7 @@ pub(super) fn parse_pipeline_item_declaration(pair: Pair<'_>, context: &mut Pars
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
@@ -76,7 +76,7 @@ fn parse_pipeline_item_variant_declaration(pair: Pair<'_>, context: &mut ParserC
     let mut output_type = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),

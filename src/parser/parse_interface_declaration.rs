@@ -3,7 +3,7 @@ use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_span::parse_span;
@@ -28,7 +28,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut fields = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, extends),

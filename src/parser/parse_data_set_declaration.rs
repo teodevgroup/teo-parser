@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;
@@ -21,15 +21,25 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
     let mut auto_seed = false;
     let mut notrack = false;
     let mut groups = vec![];
+    let mut inside_block = false;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
-            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
+            Rule::BLOCK_OPEN => {
+                parse_insert_punctuation!(context, current, children, "{");
+                inside_block = true;
+            },
             Rule::AUTOSEED_KEYWORD => auto_seed = true,
             Rule::NOTRACK_KEYWORD => notrack = true,
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::dataset_group_declaration => parse_insert!(parse_data_set_group(current, context), children, groups),
-            Rule::comment_block => (),
+            Rule::triple_comment_block => if !inside_block {
+                parse_set_optional!(parse_doc_comment(current, context), children, comment)
+            } else {
+                context.insert_unattached_doc_comment(parse_span(&current));
+                parse_append!(parse_doc_comment(current, context), children);
+            },
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -45,6 +55,7 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
         auto_seed,
         notrack,
         groups,
+        comment,
     }
 }
 
@@ -59,6 +70,8 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut identifier_path: usize = 0;
     let mut records = vec![];
+    let mut inside_block = false;
+    let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
@@ -70,7 +83,13 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
                 children.insert(node.id(), node.into());
             },
             Rule::dataset_group_record_declaration => parse_insert!(parse_data_set_group_record(current, context), children, records),
-            Rule::comment_block => (),
+            Rule::triple_comment_block => if !inside_block {
+                parse_set_optional!(parse_doc_comment(current, context), children, comment)
+            } else {
+                context.insert_unattached_doc_comment(parse_span(&current));
+                parse_append!(parse_doc_comment(current, context), children);
+            },
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -84,6 +103,7 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
         actual_availability,
         identifier_path,
         records,
+        comment,
         resolved: RefCell::new(None),
     }
 }
@@ -97,12 +117,21 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> D
         define_availability,
         actual_availability
     ) = parse_container_node_variables!(pair, context, named, availability);
+    let mut inside_block = false;
     let mut identifier = 0;
     let mut dictionary = 0;
+    let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context), children, dictionary),
+            Rule::triple_comment_block => if !inside_block {
+                parse_set_optional!(parse_doc_comment(current, context), children, comment)
+            } else {
+                context.insert_unattached_doc_comment(parse_span(&current));
+                parse_append!(parse_doc_comment(current, context), children);
+            },
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             _ => (),
         }
     }
@@ -115,6 +144,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> D
         actual_availability,
         identifier,
         dictionary,
+        comment,
         resolved: RefCell::new(None),
     }
 }

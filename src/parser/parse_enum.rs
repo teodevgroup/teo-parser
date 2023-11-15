@@ -6,7 +6,7 @@ use crate::parser::parse_argument_list_declaration::parse_argument_list_declarat
 use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_literals::{parse_numeric_literal, parse_string_literal};
 use crate::parser::parse_span::parse_span;
@@ -37,7 +37,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
             Rule::INTERFACE_KEYWORD => interface = true,
             Rule::OPTION_KEYWORD => option = true,
             Rule::comment_block => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
             Rule::empty_decorator => (),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
@@ -83,7 +83,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
             Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
             Rule::empty_decorator => (),
             Rule::comment_block => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::enum_member_expression => parse_set_optional!(parse_enum_member_expression(current, context), children, expression),
             Rule::argument_list_declaration => {
                 if !interface {

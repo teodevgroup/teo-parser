@@ -3,7 +3,7 @@ use crate::ast::model::Model;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_handler_group::parse_handler_declaration;
@@ -36,7 +36,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
                 parse_insert_punctuation!(context, current, children, "{");
                 parsing_fields = true;
             },
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::decorator => if parsing_fields {
                 unattached_field_decorators.push(parse_decorator(current, context));
             } else {

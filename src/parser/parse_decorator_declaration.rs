@@ -1,9 +1,9 @@
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
-use crate::{parse_container_node_variables, parse_insert, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -34,23 +34,62 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     let mut argument_list_declaration = None;
     let mut generics_constraint = None;
     let mut variants = vec![];
+    let mut inside_block = false;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
+            Rule::BLOCK_OPEN => {
+                parse_insert_punctuation!(context, current, children, "{");
+                inside_block = true;
+            },
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
-            Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::comment_block => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
-            Rule::MODEL_KEYWORD => model = true,
-            Rule::ENUM_KEYWORD => r#enum = true,
-            Rule::INTERFACE_KEYWORD => interface = true,
-            Rule::HANDLER_KEYWORD => handler = true,
-            Rule::FIELD_KEYWORD => field = true,
-            Rule::RELATION_KEYWORD => relation = true,
-            Rule::PROPERTY_KEYWORD => property = true,
-            Rule::MEMBER_KEYWORD => member = true,
-            Rule::EXCLUSIVE_KEYWORD => exclusive = true,
-            Rule::UNIQUE_KEYWORD => unique = true,
+            Rule::triple_comment_block => if !inside_block {
+                parse_set_optional!(parse_doc_comment(current, context), children, comment)
+            } else {
+                context.insert_unattached_doc_comment(parse_span(&current));
+                parse_append!(parse_doc_comment(current, context), children);
+            },
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
+            Rule::MODEL_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "model");
+                model = true;
+            },
+            Rule::ENUM_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "enum");
+                r#enum = true;
+            },
+            Rule::INTERFACE_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "interface");
+                interface = true;
+            },
+            Rule::HANDLER_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "handler");
+                handler = true;
+            },
+            Rule::FIELD_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "field");
+                field = true;
+            },
+            Rule::RELATION_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "relation");
+                relation = true;
+            },
+            Rule::PROPERTY_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "property");
+                property = true;
+            },
+            Rule::MEMBER_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "member");
+                member = true;
+            },
+            Rule::EXCLUSIVE_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "exclusive");
+                exclusive = true;
+            },
+            Rule::UNIQUE_KEYWORD =>  {
+                parse_insert_keyword!(context, current, children, "unique");
+                unique = true;
+            },
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
@@ -90,7 +129,8 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserConte
     let mut generics_constraint = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::VARIANT_KEYWORD => parse_insert_keyword!(context, current, children, "variant"),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),

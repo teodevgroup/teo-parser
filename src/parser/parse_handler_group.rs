@@ -1,6 +1,6 @@
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
@@ -22,7 +22,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut Pars
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::HANDLER_KEYWORD => (),
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handler_declarations),
             _ => context.insert_unparsed(parse_span(&current)),
@@ -60,7 +60,7 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserCont
     let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::type_expression => if input_type != 0 {
                 parse_set!(parse_type_expression(current, context), children, output_type);

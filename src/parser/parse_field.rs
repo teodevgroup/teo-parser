@@ -4,7 +4,7 @@ use crate::ast::field::Field;
 use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
-use crate::parser::parse_comment::parse_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
@@ -30,7 +30,7 @@ pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field 
         match current.as_rule() {
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             Rule::EMPTY_LINES | Rule::comment_block | Rule::double_comment_block => {},
-            Rule::triple_comment_block => parse_set_optional!(parse_comment(current, context), children, comment),
+            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
             Rule::empty_decorator => empty_decorator_spans.push(parse_span(&current)),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
