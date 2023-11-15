@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeGenerics, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;

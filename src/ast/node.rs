@@ -32,6 +32,7 @@ use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVar
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
+use crate::ast::operators::Operator;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::punctuations::Punctuation;
@@ -114,6 +115,7 @@ pub enum Node {
     TypeSubscript(TypeSubscript),
     UseMiddlewareBlock(UseMiddlewaresBlock),
     Punctuation(Punctuation),
+    Operator(Operator),
 }
 
 impl Node {
@@ -800,6 +802,17 @@ impl Node {
         }
     }
 
+    pub fn is_operator(&self) -> bool {
+        self.as_operator().is_some()
+    }
+
+    pub fn as_operator(&self) -> Option<&Operator> {
+        match self {
+            Node::Operator(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -864,6 +877,7 @@ impl Node {
             Node::TypeSubscript(n) => n,
             Node::UseMiddlewareBlock(n) => n,
             Node::Punctuation(n) => n,
+            Node::Operator(n) => n,
         }
     }
 
