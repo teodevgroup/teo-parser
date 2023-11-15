@@ -4,20 +4,20 @@ use crate::ast::span::Span;
 use crate::format::Writer;
 use crate::traits::write::Write;
 
-declare_node!(Operator, content: &'static str);
+declare_node!(Operator, content: String);
 
 impl Operator {
 
-    pub(crate) fn new(content: &'static str, span: Span, path: Vec<usize>) -> Self {
+    pub(crate) fn new(content: &str, span: Span, path: Vec<usize>) -> Self {
         Self {
             span,
             path,
-            content
+            content: content.to_owned()
         }
     }
 
     pub fn content(&self) -> &str {
-        self.content
+        self.content.as_str()
     }
 }
 

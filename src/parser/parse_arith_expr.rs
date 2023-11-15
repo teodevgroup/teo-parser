@@ -1,5 +1,5 @@
-use crate::ast::arith_expr::{ArithExpr, BinaryOperation, Operator, UnaryOperation, UnaryPostfixOperation};
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup};
+use crate::ast::arith_expr::{ArithExpr, BinaryOperation, ArithExprOperator, UnaryOperation, UnaryPostfixOperation};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_operator};
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -17,13 +17,14 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             unreachable!()
         },
     }).map_prefix(|op, rhs| {
+        let (span, path, mut children) = parse_container_node_variables!(pair, context);
         let op = match op.as_rule() {
-            Rule::BI_NEG => Operator::BitNeg,
-            Rule::NEG => Operator::Neg,
-            Rule::NOT => Operator::Not,
+            Rule::BI_NEG => ArithExprOperator::BitNeg,
+            Rule::NEG => ArithExprOperator::Neg,
+            Rule::NOT => ArithExprOperator::Not,
             _ => unreachable!(),
         };
-        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        parse_insert_operator!(context, current, children, op.to_string().as_str());
         children.insert(rhs.id(), rhs.into());
         let operation = UnaryOperation {
             span,
@@ -36,31 +37,32 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         ArithExpr::UnaryOperation(operation)
     }).map_infix(|lhs, op, rhs| {
         let op = match op.as_rule() {
-            Rule::ADD => Operator::Add,
-            Rule::SUB => Operator::Sub,
-            Rule::MUL => Operator::Mul,
-            Rule::DIV => Operator::Div,
-            Rule::MOD => Operator::Mod,
-            Rule::BI_AND => Operator::BitAnd,
-            Rule::BI_XOR => Operator::BitXor,
-            Rule::BI_OR => Operator::BitOr,
-            Rule::NULLISH_COALESCING => Operator::NullishCoalescing,
-            Rule::BI_LS => Operator::BitLS,
-            Rule::BI_RS => Operator::BitRS,
-            Rule::AND => Operator::And,
-            Rule::OR => Operator::Or,
-            Rule::GT => Operator::Gt,
-            Rule::GTE => Operator::Gte,
-            Rule::LT => Operator::Lt,
-            Rule::LTE => Operator::Lte,
-            Rule::EQ => Operator::Eq,
-            Rule::NEQ => Operator::Neq,
-            Rule::RANGE_CLOSE => Operator::RangeClose,
-            Rule::RANGE_OPEN => Operator::RangeOpen,
+            Rule::ADD => ArithExprOperator::Add,
+            Rule::SUB => ArithExprOperator::Sub,
+            Rule::MUL => ArithExprOperator::Mul,
+            Rule::DIV => ArithExprOperator::Div,
+            Rule::MOD => ArithExprOperator::Mod,
+            Rule::BI_AND => ArithExprOperator::BitAnd,
+            Rule::BI_XOR => ArithExprOperator::BitXor,
+            Rule::BI_OR => ArithExprOperator::BitOr,
+            Rule::NULLISH_COALESCING => ArithExprOperator::NullishCoalescing,
+            Rule::BI_LS => ArithExprOperator::BitLS,
+            Rule::BI_RS => ArithExprOperator::BitRS,
+            Rule::AND => ArithExprOperator::And,
+            Rule::OR => ArithExprOperator::Or,
+            Rule::GT => ArithExprOperator::Gt,
+            Rule::GTE => ArithExprOperator::Gte,
+            Rule::LT => ArithExprOperator::Lt,
+            Rule::LTE => ArithExprOperator::Lte,
+            Rule::EQ => ArithExprOperator::Eq,
+            Rule::NEQ => ArithExprOperator::Neq,
+            Rule::RANGE_CLOSE => ArithExprOperator::RangeClose,
+            Rule::RANGE_OPEN => ArithExprOperator::RangeOpen,
             _ => unreachable!(),
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
+        parse_insert_operator!(context, current, children, op.to_string().as_str());
         children.insert(rhs.id(), rhs.into());
         let operation = BinaryOperation {
             span,
@@ -74,11 +76,12 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         ArithExpr::BinaryOperation(operation)
     }).map_postfix(|lhs, op| {
         let op = match op.as_rule() {
-            Rule::FORCE_UNWRAP => Operator::ForceUnwrap,
+            Rule::FORCE_UNWRAP => ArithExprOperator::ForceUnwrap,
             _ => unreachable!(),
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
+        parse_insert_operator!(context, current, children, op.to_string().as_str());
         let operation = UnaryPostfixOperation {
             span,
             path,

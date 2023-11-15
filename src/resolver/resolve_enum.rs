@@ -3,7 +3,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Mutex;
 use maplit::btreemap;
 use teo_teon::value::Value;
-use crate::ast::arith_expr::{ArithExpr, Operator};
+use crate::ast::arith_expr::{ArithExpr, ArithExprOperator};
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::reference_space::ReferenceSpace;
@@ -123,24 +123,24 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
             let lhs = resolve_enum_member_expr(bi_op.lhs.as_ref(), context, map);
             let rhs = resolve_enum_member_expr(bi_op.rhs.as_ref(), context, map);
             match bi_op.op {
-                Operator::Add => lhs + rhs,
-                Operator::Sub => lhs - rhs,
-                Operator::Mul => lhs * rhs,
-                Operator::Div => lhs / rhs,
-                Operator::Mod => lhs & rhs,
-                Operator::And => if lhs == 0 { lhs } else { rhs },
-                Operator::Or | Operator::NullishCoalescing => if lhs != 0 { lhs } else { rhs },
-                Operator::BitAnd => lhs & rhs,
-                Operator::BitXor => lhs ^ rhs,
-                Operator::BitOr => lhs | rhs,
-                Operator::BitLS => lhs << rhs,
-                Operator::BitRS => lhs >> rhs,
-                Operator::Gt => if lhs > rhs { 1 } else { 0 },
-                Operator::Gte => if lhs >= rhs { 1 } else { 0 },
-                Operator::Lt => if lhs < rhs { 1 } else { 0 },
-                Operator::Lte => if lhs <= rhs { 1 } else { 0 },
-                Operator::Eq => if lhs == rhs { 1 } else { 0 },
-                Operator::Neq => if lhs != rhs { 1 } else { 0 },
+                ArithExprOperator::Add => lhs + rhs,
+                ArithExprOperator::Sub => lhs - rhs,
+                ArithExprOperator::Mul => lhs * rhs,
+                ArithExprOperator::Div => lhs / rhs,
+                ArithExprOperator::Mod => lhs & rhs,
+                ArithExprOperator::And => if lhs == 0 { lhs } else { rhs },
+                ArithExprOperator::Or | ArithExprOperator::NullishCoalescing => if lhs != 0 { lhs } else { rhs },
+                ArithExprOperator::BitAnd => lhs & rhs,
+                ArithExprOperator::BitXor => lhs ^ rhs,
+                ArithExprOperator::BitOr => lhs | rhs,
+                ArithExprOperator::BitLS => lhs << rhs,
+                ArithExprOperator::BitRS => lhs >> rhs,
+                ArithExprOperator::Gt => if lhs > rhs { 1 } else { 0 },
+                ArithExprOperator::Gte => if lhs >= rhs { 1 } else { 0 },
+                ArithExprOperator::Lt => if lhs < rhs { 1 } else { 0 },
+                ArithExprOperator::Lte => if lhs <= rhs { 1 } else { 0 },
+                ArithExprOperator::Eq => if lhs == rhs { 1 } else { 0 },
+                ArithExprOperator::Neq => if lhs != rhs { 1 } else { 0 },
                 _ => {
                     context.insert_diagnostics_error(bi_op.span, "this binary operation is not allowed in enum member definition");
                     0
@@ -150,9 +150,9 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
         ArithExpr::UnaryOperation(u_op) => {
             let rhs = resolve_enum_member_expr(u_op.rhs.as_ref(), context, map);
             match u_op.op {
-                Operator::Neg => -rhs,
-                Operator::Not => if rhs == 0 { 1 } else { 0 }
-                Operator::BitNeg => !rhs,
+                ArithExprOperator::Neg => -rhs,
+                ArithExprOperator::Not => if rhs == 0 { 1 } else { 0 }
+                ArithExprOperator::BitNeg => !rhs,
                 _ => {
                     context.insert_diagnostics_error(u_op.span, "this unary operation is not allowed in enum member definition");
                     0

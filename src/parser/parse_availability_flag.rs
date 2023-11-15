@@ -1,12 +1,17 @@
+use crate::ast::availability_flag::AvailabilityFlag;
 use crate::availability::Availability;
+use crate::parse_node_variables;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContext) {
+pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContext) -> AvailabilityFlag {
+    let (span, path) = parse_node_variables!(pair, context);
+    let mut name = String::new();
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::identifier => {
+                name = current.as_str().to_owned();
                 match current.as_str() {
                     "noDatabase" => {
                         let flag = Availability::no_database();
@@ -65,5 +70,10 @@ pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContex
             }
             _ => (),
         }
+    }
+    AvailabilityFlag {
+        span,
+        path,
+        name,
     }
 }

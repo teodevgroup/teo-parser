@@ -10,7 +10,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::write::Write;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Operator {
+pub enum ArithExprOperator {
     Neg,
     Add,
     Sub,
@@ -38,39 +38,7 @@ pub enum Operator {
     ForceUnwrap,
 }
 
-impl Display for Operator {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Operator::Neg => f.write_str("-"),
-            Operator::Add => f.write_str("+"),
-            Operator::Sub => f.write_str("-"),
-            Operator::Mul => f.write_str("*"),
-            Operator::Div => f.write_str("/"),
-            Operator::Mod => f.write_str("%"),
-            Operator::BitAnd => f.write_str("&"),
-            Operator::BitXor => f.write_str("^"),
-            Operator::BitOr => f.write_str("|"),
-            Operator::BitNeg => f.write_str("~"),
-            Operator::NullishCoalescing => f.write_str("??"),
-            Operator::Not => f.write_str("!"),
-            Operator::And => f.write_str("&&"),
-            Operator::Or => f.write_str("||"),
-            Operator::BitLS => f.write_str("<<"),
-            Operator::BitRS => f.write_str(">>"),
-            Operator::Gt => f.write_str(">"),
-            Operator::Gte => f.write_str(">="),
-            Operator::Lt => f.write_str("<"),
-            Operator::Lte => f.write_str("<="),
-            Operator::Eq => f.write_str("=="),
-            Operator::Neq => f.write_str("!="),
-            Operator::RangeOpen => f.write_str(".."),
-            Operator::RangeClose => f.write_str("..."),
-            Operator::ForceUnwrap => f.write_str("!"),
-        }
-    }
-}
-
-declare_container_node!(UnaryOperation, pub(crate) op: Operator, pub(crate) rhs: usize);
+declare_container_node!(UnaryOperation, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
 
 impl UnaryOperation {
 
@@ -85,7 +53,7 @@ impl Display for UnaryOperation {
     }
 }
 
-declare_container_node!(UnaryPostfixOperation, pub(crate) op: Operator, pub(crate) lhs: usize);
+declare_container_node!(UnaryPostfixOperation, pub(crate) op: ArithExprOperator, pub(crate) lhs: usize);
 
 impl UnaryPostfixOperation {
 
@@ -100,7 +68,7 @@ impl Display for UnaryPostfixOperation {
     }
 }
 
-declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub(crate) op: Operator, pub(crate) rhs: usize);
+declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
 
 impl BinaryOperation {
 
