@@ -13,6 +13,7 @@ EMPTY_LINES = _{ (WHITESPACE* ~ NEWLINE)+ }
 // #############
 // keywords
 // #############
+LET_KEYWORD = { "let" }
 ENUM_KEYWORD = { "enum" }
 MODEL_KEYWORD = { "model" }
 STRUCT_KEYWORD = { "struct" }
@@ -54,6 +55,7 @@ FORM_KEYWORD = { "form" }
 INTERFACE_KEYWORD = { "interface" }
 OPTION_KEYWORD = { "option" }
 EXTENDS_KEYWORD = { "extends" }
+WHERE_KEYWORD = { "where" }
 
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
@@ -63,36 +65,47 @@ BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
 // #############
 COLON = @{ ":" }
 COMMA = @{ "," }
+DOT = @{ "." }
+ASSIGN = @{ "=" }
 BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
 BLOCK_CLOSE = { "}" }
 PAREN_OPEN = { "(" }
 PAREN_CLOSE = { ")" }
+CHEVRON_OPEN = { "<" }
+CHEVRON_CLOSE = { ">" }
+BRACKET_OPEN = { "[" }
+BRACKET_CLOSE = { "]" }
 OPTIONAL = { "?" }
 HASH_TAG = { "#" }
+AT = { "@" }
+DOLLAR = { "$" }
+ARITY_ARRAY = { "[]" }
+ARITY_DICTIONARY = { "{}" }
+ARROW = { "->" }
 
 // #############
 // identifier
 // #############
 identifier = @{ ("_" | ASCII_ALPHANUMERIC) ~ ( "_" | ASCII_ALPHANUMERIC)* }
-identifier_path = { identifier ~ ("." ~ identifier)* }
+identifier_path = { identifier ~ (DOT ~ identifier)* }
 
 // #############
 // type
 // #############
 type_expression = { (type_subscript | type_item | type_group | type_tuple | type_reference) ~ (BI_OR ~ (type_subscript | type_item | type_group | type_tuple | type_reference))* }
 type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
-type_generics = { "<" ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA? ~ ">" }
-arity = {"[]" | "{}" }
+type_generics = { CHEVRON_OPEN ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA? ~ CHEVRON_CLOSE }
+arity = { ARITY_ARRAY | ARITY_DICTIONARY }
 type_group = { PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_tuple = { PAREN_OPEN ~ type_expression ~ COMMA ~ type_expression? ~ (COMMA ~ type_expression)* ~ COMMA? ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
-type_subscript = { type_item ~ "[" ~ type_expression ~ "]" ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
+type_subscript = { type_item ~ BRACKET_OPEN ~ type_expression ~ BRACKET_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_reference = { enum_variant_literal }
 
 // #############
 // generics
 // #############
-generics_declaration = { "<" ~ identifier ~ (COMMA ~ identifier)* ~ COMMA? ~ ">" }
-generics_constraint = { "where" ~ generics_constraint_item ~ (COMMA ~ generics_constraint_item)* ~ COMMA? }
+generics_declaration = { CHEVRON_OPEN ~ identifier ~ (COMMA ~ identifier)* ~ COMMA? ~ CHEVRON_CLOSE }
+generics_constraint = { WHERE_KEYWORD ~ generics_constraint_item ~ (COMMA ~ generics_constraint_item)* ~ COMMA? }
 generics_constraint_item = { identifier ~ COLON ~ type_expression }
 
 // #############
@@ -106,7 +119,7 @@ import_statement = { IMPORT_KEYWORD ~ string_literal }
 // #############
 // numeric literals
 // #############
-numeric_literal = @{ ("-")? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+numeric_literal = @{ ("-")? ~ ASCII_DIGIT+ ~ (DOT ~ ASCII_DIGIT+)? }
 
 // #############
 // string literals
@@ -135,7 +148,7 @@ null_literal = { "null" }
 // #############
 // enum variant literals
 // #############
-enum_variant_literal = { "." ~ identifier ~ argument_list? }
+enum_variant_literal = { DOT ~ identifier ~ argument_list? }
 
 // #############
 // tuple literals
@@ -145,23 +158,23 @@ tuple_literal = { PAREN_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA
 // #############
 // array literals
 // #############
-array_literal = { "[" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (expression ~ (NEWLINE | comment_block)* ~ ( COMMA ~ (NEWLINE | comment_block)* ~ expression )* ~ (NEWLINE | comment_block)* ~ COMMA?)? ~ (NEWLINE | comment_block)* ~ "]" }
+array_literal = { BRACKET_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (expression ~ (NEWLINE | comment_block)* ~ ( COMMA ~ (NEWLINE | comment_block)* ~ expression )* ~ (NEWLINE | comment_block)* ~ COMMA?)? ~ (NEWLINE | comment_block)* ~ BRACKET_CLOSE }
 
 // #############
 // dict literals
 // #############
 named_expression = { expression ~ COLON ~ expression }
-dictionary_literal = { "{" ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (named_expression ~ ( (NEWLINE | comment_block)* ~ COMMA ~ (NEWLINE | comment_block)* ~ named_expression )* ~ (NEWLINE | comment_block)* ~ COMMA? ~ (NEWLINE | comment_block)*)? ~ BLOCK_CLOSE }
+dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (named_expression ~ ( (NEWLINE | comment_block)* ~ COMMA ~ (NEWLINE | comment_block)* ~ named_expression )* ~ (NEWLINE | comment_block)* ~ COMMA? ~ (NEWLINE | comment_block)*)? ~ BLOCK_CLOSE }
 
 // #############
 // subscript
 // #############
-subscript = { "[" ~ expression ~ "]" }
+subscript = { BRACKET_OPEN ~ expression ~ BRACKET_CLOSE }
 
 // #############
 // comments
 // #############
-comment_token = { "@" ~ (!(WHITESPACE | NEWLINE) ~ ANY)+ }
+comment_token = { AT ~ (!(WHITESPACE | NEWLINE) ~ ANY)+ }
 doc_content = @{ (!NEWLINE ~ ANY)* }
 triple_comment = { WHITESPACE* ~ "///" ~ comment_token? ~ doc_content }
 double_comment = { WHITESPACE* ~ (!"///") ~ "//" ~ doc_content }
@@ -223,14 +236,14 @@ unit = {
     array_literal |
     dictionary_literal |
     identifier
-    ~ (subscript | argument_list | "." ~ identifier | int_subscript)*
+    ~ (subscript | argument_list | DOT ~ (identifier | int_subscript))*
 }
 
 int_subscript = @{ ASCII_DIGIT+ }
 
 identifier_unit = {
     identifier
-    ~ (subscript | argument_list | (NEWLINE | WHITESPACE)* ~ "." ~ (NEWLINE | WHITESPACE)* ~ identifier)*
+    ~ (subscript | argument_list | (NEWLINE | WHITESPACE)* ~ DOT ~ (NEWLINE | WHITESPACE)* ~ identifier)*
 }
 
 operand = { unit | pipeline }
@@ -245,7 +258,7 @@ expression = {
 // variable & constant declaration
 // #############
 
-constant_statement = { "let" ~ identifier ~ (COLON ~ type_expression)? ~ "=" ~ expression }
+constant_statement = { LET_KEYWORD ~ identifier ~ (COLON ~ type_expression)? ~ ASSIGN ~ expression }
 
 // #############
 // arguments
@@ -257,9 +270,9 @@ argument = { (identifier ~ COLON)? ~ expression }
 // #############
 // decorator and pipeline
 // #############
-decorator = { "@" ~ identifier_path ~ argument_list? }
-empty_decorator = { "@" }
-pipeline = { "$" ~ identifier_unit }
+decorator = { AT ~ identifier_path ~ argument_list? }
+empty_decorator = { AT }
+pipeline = { DOLLAR ~ identifier_unit }
 
 // #############
 // arguments declaration
@@ -310,7 +323,7 @@ enum_declaration = {
 enum_member_declaration = {
     triple_comment_block? ~
     (decorator ~ double_comment_block? ~ (NEWLINE | WHITESPACE)*)* ~
-    identifier ~ (("=" ~ enum_member_expression) | argument_list_declaration)?
+    identifier ~ ((ASSIGN ~ enum_member_expression) | argument_list_declaration)?
 }
 
 enum_member_expression = { arith_expr | string_literal | numeric_literal }
@@ -388,7 +401,7 @@ pipeline_item_declaration = {
         argument_list_declaration? ~
         COLON ~
         type_expression ~
-        "->" ~
+        ARROW ~
         type_expression ~ generics_constraint?
       ) | (
         BLOCK_OPEN ~
@@ -404,7 +417,7 @@ pipeline_item_variant_declaration = {
     generics_declaration? ~ argument_list_declaration? ~
     COLON ~
     type_expression ~
-    "->" ~
+    ARROW ~
     type_expression ~ generics_constraint?
 }
 
