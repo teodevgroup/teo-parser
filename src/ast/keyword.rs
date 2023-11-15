@@ -13,7 +13,7 @@ impl Write for Keyword {
     }
 
     fn prefer_whitespace_after(&self) -> bool {
-        true
+        self.name() != "variant"
     }
 }
 

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::model::Model;
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_doc_comment::parse_doc_comment;
@@ -20,7 +20,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
         define_availability,
         actual_availability
     ) = parse_container_node_variables!(pair, context, named, availability);
-    let mut parsing_fields = false;
+    let mut inside_block = false;
     let mut comment = None;
     let mut decorators = vec![];
     let mut empty_decorator_spans = vec![];
@@ -31,18 +31,28 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
     let mut handlers = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::MODEL_KEYWORD | Rule::COLON | Rule::EMPTY_LINES | Rule::BLOCK_CLOSE | Rule::double_comment_block | Rule::comment_block => {},
+            Rule::MODEL_KEYWORD => parse_insert_keyword!(context, current, children, "model"),
+
+            Rule::BLOCK_CLOSE => {
+                parse_insert_punctuation!(context, current, children, "}");
+            }
             Rule::BLOCK_OPEN => {
                 parse_insert_punctuation!(context, current, children, "{");
-                parsing_fields = true;
+                inside_block = true;
             },
-            Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
-            Rule::decorator => if parsing_fields {
+            Rule::triple_comment_block => if !inside_block {
+                parse_set_optional!(parse_doc_comment(current, context), children, comment)
+            } else {
+                context.insert_unattached_doc_comment(parse_span(&current));
+                parse_append!(parse_doc_comment(current, context), children);
+            },
+            Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
+            Rule::decorator => if inside_block {
                 unattached_field_decorators.push(parse_decorator(current, context));
             } else {
                 parse_insert!(parse_decorator(current, context), children, decorators);
             },
-            Rule::empty_decorator => if parsing_fields {
+            Rule::empty_decorator => if inside_block {
                 empty_field_decorator_spans.push(parse_span(&current));
             } else {
                 empty_decorator_spans.push(parse_span(&current));
