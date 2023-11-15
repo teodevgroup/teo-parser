@@ -1,11 +1,12 @@
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
-use crate::availability::Availability;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_container_node!(PipelineItemDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
@@ -96,3 +97,20 @@ impl PipelineItemDeclarationVariant {
 }
 
 
+impl Write for PipelineItemDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}
+
+impl Write for PipelineItemDeclarationVariant {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}

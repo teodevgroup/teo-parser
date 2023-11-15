@@ -1,6 +1,8 @@
 use std::fmt::{Display, Formatter};
 use crate::ast::expression::Expression;
 use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_container_node!(Unit,
     pub(crate) expressions: Vec<usize>,
@@ -14,18 +16,9 @@ impl Unit {
     node_children_iter_fn!(expressions, ExpressionsIter);
 }
 
-impl Display for Unit {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (index, item) in self.expressions().enumerate() {
-            if index != 0 {
-                if item.kind.as_identifier().is_some() {
-                    f.write_str(".")?;
-                }
-            }
-            Display::fmt(&item, f)?;
-        }
-        Ok(())
+impl Write for Unit {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 

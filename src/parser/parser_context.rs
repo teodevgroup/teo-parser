@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use maplit::btreemap;
 use crate::availability::Availability;
 use crate::ast::schema::SchemaReferences;
@@ -10,7 +10,7 @@ pub(super) struct ParserContext<'a> {
     pub(super) diagnostics: &'a mut Diagnostics,
     pub(super) schema_references: &'a mut SchemaReferences,
     pub(crate) file_util: FileUtility,
-    pub(crate) unsaved_files: Option<HashMap<String, String>>,
+    pub(crate) unsaved_files: Option<BTreeMap<String, String>>,
     source_lookup: BTreeMap<usize, String>,
     current_source_id: usize,
     current_id: usize,
@@ -27,7 +27,7 @@ impl<'a> ParserContext<'a> {
         diagnostics: &'a mut Diagnostics,
         schema_references: &'a mut SchemaReferences,
         file_util: FileUtility,
-        unsaved_files: Option<HashMap<String, String>>,
+        unsaved_files: Option<BTreeMap<String, String>>,
     ) -> ParserContext<'a> {
         Self {
             diagnostics,

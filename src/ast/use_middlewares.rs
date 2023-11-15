@@ -1,7 +1,9 @@
 use std::fmt::Display;
 use crate::ast::literals::ArrayLiteral;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
+use crate::format::Writer;
 use crate::traits::info_provider::InfoProvider;
+use crate::traits::write::Write;
 
 declare_container_node!(UseMiddlewaresBlock, named, availability,
     pub(crate) array_literal: usize,
@@ -16,5 +18,11 @@ impl UseMiddlewaresBlock {
 impl InfoProvider for UseMiddlewaresBlock {
     fn namespace_skip(&self) -> usize {
         1
+    }
+}
+
+impl Write for UseMiddlewaresBlock {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }

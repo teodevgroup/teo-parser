@@ -14,6 +14,7 @@ pub(super) fn parse_pipeline(pair: Pair<'_>, context: &mut ParserContext) -> Pip
     let mut unit = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::DOLLAR => parse_insert_punctuation!(context, current, children, "$"),
             Rule::identifier_unit => parse_set!(parse_unit(current, context), children, unit),
             _ => context.insert_unparsed(parse_span(&current)),
         }

@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use indexmap::IndexMap;
 use serde::{Serialize, Serializer};
-use crate::availability::Availability;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;
@@ -9,6 +8,7 @@ use crate::ast::handler::HandlerDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
@@ -16,6 +16,7 @@ use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 declare_container_node!(Model, named, availability,
     pub(crate) comment: Option<usize>,
@@ -72,5 +73,15 @@ impl Resolve<ModelResolved> for Model {
 impl InfoProvider for Model {
     fn namespace_skip(&self) -> usize {
         1
+    }
+}
+
+impl Write for Model {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

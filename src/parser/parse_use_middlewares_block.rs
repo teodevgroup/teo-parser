@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
 use crate::availability::Availability;
-use crate::parse_set;
+use crate::{parse_insert_keyword, parse_set};
 use crate::parser::parse_literals::parse_array_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -16,7 +16,7 @@ pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &mut ParserCo
     let mut array_literal = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::MIDDLEWARES_KEYWORD => (),
+            Rule::MIDDLEWARES_KEYWORD => parse_insert_keyword!(context, current, children, "middlewares"),
             Rule::array_literal => parse_set!(parse_array_literal(current, context), children, array_literal),
             _ => context.insert_unparsed(parse_span(&current)),
         }

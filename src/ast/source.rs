@@ -6,6 +6,8 @@ use crate::ast::config::Config;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::node::Node;
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 #[derive(Debug)]
 pub struct Source {
@@ -173,5 +175,11 @@ impl SourceReferences {
             handler_groups: btreeset!{},
             use_middlewares_block: None,
         }
+    }
+}
+
+impl Write for Source {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }

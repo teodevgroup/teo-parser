@@ -1,12 +1,11 @@
-use std::cell::RefCell;
 use std::collections::BTreeMap;
 use maplit::btreemap;
-use crate::availability::Availability;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::format::Writer;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
@@ -14,6 +13,7 @@ use crate::r#type::Type::StructObject;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::write::Write;
 
 declare_container_node!(StructDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
@@ -57,5 +57,11 @@ impl StructDeclaration {
 impl InfoProvider for StructDeclaration {
     fn namespace_skip(&self) -> usize {
         1
+    }
+}
+
+impl Write for StructDeclaration {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }

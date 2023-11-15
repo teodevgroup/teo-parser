@@ -12,6 +12,8 @@ use crate::ast::identifier::Identifier;
 use crate::ast::doc_comment::DocComment;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::ast::node::Node;
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_container_node!(Namespace, named,
     pub(crate) comment: Option<usize>,
@@ -156,5 +158,14 @@ impl NamespaceReferences {
             struct_declarations: btreeset!{},
             use_middlewares_block: None,
         }
+    }
+}
+
+impl Write for Namespace {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+    fn is_block_level_element(&self) -> bool {
+        true
     }
 }

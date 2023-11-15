@@ -1,7 +1,8 @@
 use std::fmt::{Display, Formatter};
 use crate::ast::expression::Expression;
-use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
+use crate::format::Writer;
+use crate::traits::write::Write;
 
 declare_container_node!(Subscript,
     pub(crate) expression: usize,
@@ -19,5 +20,11 @@ impl Display for Subscript {
         f.write_str("[")?;
         Display::fmt(self.expression.as_ref(), f)?;
         f.write_str("]")
+    }
+}
+
+impl Write for Subscript {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
