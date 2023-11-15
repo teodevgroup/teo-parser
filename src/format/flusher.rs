@@ -1,8 +1,9 @@
-use crate::format::command::{BranchCommand, Command};
+use crate::format::command::Command;
 use crate::format::file_state::FileState;
 use crate::format::flusher_state::FlusherState;
-use crate::format::{Preferences, Writer};
+use crate::format::Preferences;
 
+#[derive(Debug, Clone)]
 pub(super) struct Flusher<'a> {
     commands: &'a Vec<Command<'a>>,
     file_state: FileState,
@@ -49,20 +50,68 @@ impl<'a> Flusher<'a> {
         self.file_state.line_remaining_length = self.preferences.maximum_line_width();
     }
 
+    fn restore_state<F>(&mut self, f: F) -> Option<String> where F: Fn() -> Option<String> {
+        let file_state = self.file_state;
+        let flusher_state = self.flusher_state;
+        if let Some(buffer) = f(self) {
+            Some(buffer)
+        } else {
+            self.file_state = file_state;
+            self.flusher_state = flusher_state;
+            None
+        }
+    }
+
+    fn try_write_block_with_instruction(&mut self, one_line: bool) -> Option<String> {
+        let mut buffer = String::new();
+        loop {
+            if self.is_finished() { break }
+            let command = self.commands.get(self.flusher_state.processing_index).unwrap();
+            let stop_and_return = command.node().is_block_end();
+            if command.node().is_block_end() {
+                if !one_line {
+                    buffer.push('\n');
+                    self.reset_state_to_newline();
+                }
+                self.file_state.indent_level -= 1;
+            }
+            self.write_next_command(&mut buffer);
+            if command.node().is_block_start() || command.node().is_block_element_delimiter() {
+                if !one_line {
+                    buffer.push('\n');
+                    self.reset_state_to_newline();
+                }
+            }
+            if command.node().is_block_start() {
+                self.file_state.indent_level += 1;
+            }
+            if one_line {
+                if buffer.contains("\n") || self.file_state.line_remaining_length <= 0 {
+                    return None
+                }
+            }
+            if stop_and_return {
+                break
+            }
+        }
+        Some(buffer)
+    }
+
     fn write_block(&mut self, buffer: &mut String) {
 
-        // retrieve command
-        let command = self.commands.get(self.flusher_state.processing_index).unwrap();
+        // try one line first
+        let mut one_line = true;
 
-        // figure out can we write in one line
-        let mut index = self.flusher_state.processing_index + 1;
-        let mut block_level = 0;
-        let mut captured_line_remaining_length = self.file_state.line_remaining_length;
+        // if one line cannot contain content, then do not write in one line
         loop {
-            if index >= self.commands.len() { break }
-            let command = self.commands.get(index).unwrap();
-
-            index += 1;
+            if let Some(output) = self.restore_state(|| {
+                self.try_write_block_with_instruction(one_line)
+            }) {
+                buffer.push_str(&output);
+                break
+            } else {
+                one_line = !one_line;
+            }
         }
     }
 
@@ -70,6 +119,12 @@ impl<'a> Flusher<'a> {
 
         // retrieve command
         let command = self.commands.get(self.flusher_state.processing_index).unwrap();
+
+        // handle new line open for block level elements
+        if !self.file_state.is_at_newline && command.node().always_start_on_new_line() {
+            buffer.push('\n');
+            self.reset_state_to_newline();
+        }
 
         // capture newline status
         let is_at_newline_after_indented = self.file_state.is_at_newline;
@@ -120,6 +175,12 @@ impl<'a> Flusher<'a> {
 
         // open newline if last line exceed max line width
         if self.file_state.line_remaining_length <= 0 {
+            buffer.push('\n');
+            self.reset_state_to_newline();
+        }
+
+        // handle new line close for block level elements
+        if !self.file_state.is_at_newline && command.node().always_end_on_new_line() {
             buffer.push('\n');
             self.reset_state_to_newline();
         }
