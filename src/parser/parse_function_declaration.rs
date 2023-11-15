@@ -1,5 +1,5 @@
 use crate::ast::function_declaration::FunctionDeclaration;
-use crate::{parse_container_node_variables, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_container_node_variables, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -26,9 +26,16 @@ pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserCon
     let mut return_type = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::COLON | Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::WHITESPACE | Rule::EMPTY_LINES | Rule::FUNCTION_KEYWORD => (),
+            Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
+            Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
+            Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
+            Rule::FUNCTION_KEYWORD => parse_insert_keyword!(context, current, children, "function"),
+            Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
-            Rule::STATIC_KEYWORD => r#static = true,
+            Rule::STATIC_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "static");
+                r#static = true;
+            },
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),

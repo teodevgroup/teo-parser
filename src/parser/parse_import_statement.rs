@@ -17,7 +17,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     let mut source: Option<StringLiteral> = None;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::string_literal => source = Some(parse_string_literal(&current)),
+            Rule::string_literal => source = Some(parse_string_literal(&current, context)),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

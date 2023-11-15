@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_doc_comment::parse_doc_comment;
