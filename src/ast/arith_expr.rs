@@ -4,8 +4,10 @@ use crate::ast::expression::Expression;
 use crate::ast::span::Span;
 use crate::{declare_container_node, node_child_fn};
 use crate::ast::node::Node;
+use crate::format::Writer;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
+use crate::traits::write::Write;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Operator {
@@ -167,13 +169,58 @@ impl NodeTrait for ArithExpr {
     }
 }
 
+impl Write for ArithExpr {
+    fn write(&self, writer: &mut Writer) {
+        self.as_dyn_node_trait().write(writer);
+    }
+
+    fn write_output_with_default_writer(&self) -> String {
+        self.as_dyn_node_trait().write_output_with_default_writer()
+    }
+
+    fn prefer_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_before()
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_after()
+    }
+
+    fn prefer_always_no_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_always_no_whitespace_before()
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_start_on_new_line()
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_end_on_new_line()
+    }
+
+    fn is_block_start(&self) -> bool {
+        self.as_dyn_node_trait().is_block_start()
+    }
+
+    fn is_block_end(&self) -> bool {
+        self.as_dyn_node_trait().is_block_end()
+    }
+
+    fn is_block_element_delimiter(&self) -> bool {
+        self.as_dyn_node_trait().is_block_element_delimiter()
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        self.as_dyn_node_trait().is_block_level_element()
+    }
+
+    fn wrap(&self, content: &str, available_length: usize) -> String {
+        self.as_dyn_node_trait().wrap(content, available_length)
+    }
+}
+
 impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ArithExpr::Expression(e) => Display::fmt(&e, f),
-            ArithExpr::UnaryOperation(u) => Display::fmt(&u, f),
-            ArithExpr::UnaryPostfixOperation(u) => Display::fmt(&u, f),
-            ArithExpr::BinaryOperation(b) => Display::fmt(&b, f),
-        }
+        Display::fmt(self.as_dyn_node_trait(), f)
     }
 }

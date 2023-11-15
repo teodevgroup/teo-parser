@@ -7,10 +7,12 @@ use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::node::Node;
+use crate::format::Writer;
 use crate::r#type::r#type::Type;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
+use crate::traits::write::Write;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TypeOperator {
@@ -41,15 +43,9 @@ impl TypeBinaryOperation {
     node_child_fn!(rhs, TypeExpr);
 }
 
-impl Display for TypeBinaryOperation {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.lhs, f)?;
-        f.write_str(" ")?;
-        Display::fmt(&self.op, f)?;
-        f.write_str(" ")?;
-        Display::fmt(&self.rhs, f)?;
-        Ok(())
+impl Write for TypeBinaryOperation {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -67,26 +63,9 @@ impl TypeGroup {
     node_child_fn!(type_expr, TypeExpr);
 }
 
-impl Display for TypeGroup {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("(")?;
-        Display::fmt(self.type_expr(), f)?;
-        f.write_str(")")?;
-        if self.item_optional {
-            f.write_str("?")?;
-        }
-        if !self.arity.is_scalar() {
-            match self.arity {
-                Arity::Array => f.write_str("[]")?,
-                Arity::Dictionary => f.write_str("{}")?,
-                _ => ()
-            };
-            if self.collection_optional {
-                f.write_str("?")?;
-            }
-        }
-        Ok(())
+impl Write for TypeGroup {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -106,35 +85,9 @@ impl TypeTuple {
     node_children_iter_fn!(items, ItemsIter);
 }
 
-
-impl Display for TypeTuple {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("(")?;
-        let len = self.items.len();
-        for (index, kind) in self.items.iter().enumerate() {
-            Display::fmt(kind, f)?;
-            if index != len - 1 {
-                f.write_str(", ")?;
-            } else if index == 0 {
-                f.write_str(",")?;
-            }
-        }
-        f.write_str(")")?;
-        if self.item_optional {
-            f.write_str("?")?;
-        }
-        if !self.arity.is_scalar() {
-            match self.arity {
-                Arity::Array => f.write_str("[]")?,
-                Arity::Dictionary => f.write_str("{}")?,
-                _ => ()
-            };
-            if self.collection_optional {
-                f.write_str("?")?;
-            }
-        }
-        Ok(())
+impl Write for TypeTuple {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -155,27 +108,9 @@ impl TypeSubscript {
     node_child_fn!(argument, TypeExpr);
 }
 
-impl Display for TypeSubscript {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(self.container(), f)?;
-        f.write_str("[")?;
-        Display::fmt(self.argument(), f)?;
-        f.write_str("]")?;
-        if self.item_optional {
-            f.write_str("?")?;
-        }
-        if !self.arity.is_scalar() {
-            match self.arity {
-                Arity::Array => f.write_str("[]")?,
-                Arity::Dictionary => f.write_str("{}")?,
-                _ => ()
-            };
-            if self.collection_optional {
-                f.write_str("?")?;
-            }
-        }
-        Ok(())
+impl Write for TypeSubscript {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -188,6 +123,7 @@ declare_container_node!(TypeItem,
 );
 
 impl_container_node_defaults!(TypeItem);
+
 impl TypeItem {
 
     node_child_fn!(identifier_path, IdentifierPath);
@@ -195,27 +131,9 @@ impl TypeItem {
     node_optional_child_fn!(generics, TypeGenerics);
 }
 
-impl Display for TypeItem {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.identifier_path, f)?;
-        if let Some(generics) = self.generics() {
-            Display::fmt(generics, f)?;
-        }
-        if self.item_optional {
-            f.write_str("?")?;
-        }
-        if self.arity != Arity::Scalar {
-            match self.arity {
-                Arity::Array => f.write_str("[]")?,
-                Arity::Dictionary => f.write_str("{}")?,
-                _ => ()
-            };
-            if self.collection_optional {
-                f.write_str("?")?;
-            }
-        }
-        Ok(())
+impl Write for TypeItem {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -231,21 +149,9 @@ impl TypeGenerics {
     node_children_iter_fn!(type_exprs, GenericsIter);
 }
 
-impl Display for TypeGenerics {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if self.type_exprs.len() > 0 {
-            f.write_str("<")?;
-        }
-        for (index, arg) in self.type_exprs().enumerate() {
-            Display::fmt(arg, f)?;
-            if index != self.type_exprs.len() - 1 {
-                f.write_str(", ")?;
-            }
-        }
-        if self.type_exprs.len() > 0 {
-            f.write_str(">")?;
-        }
-        Ok(())
+impl Write for TypeGenerics {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
     }
 }
 
@@ -303,13 +209,6 @@ impl NodeTrait for TypeExprKind {
     }
 }
 
-impl Display for TypeExprKind {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(self.as_dyn_node_trait(), f)
-    }
-}
-
 #[derive(Debug)]
 pub struct TypeExpr {
     pub kind: TypeExprKind,
@@ -344,8 +243,102 @@ impl Resolve<Type> for TypeExpr {
     }
 }
 
-impl Display for TypeExpr {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.kind, f)
+impl Write for TypeExprKind {
+    fn write(&self, writer: &mut Writer) {
+        self.as_dyn_node_trait().write(writer);
+    }
+
+    fn write_output_with_default_writer(&self) -> String {
+        self.as_dyn_node_trait().write_output_with_default_writer()
+    }
+
+    fn prefer_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_before()
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        self.as_dyn_node_trait().prefer_whitespace_after()
+    }
+
+    fn prefer_always_no_whitespace_before(&self) -> bool {
+        self.as_dyn_node_trait().prefer_always_no_whitespace_before()
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_start_on_new_line()
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        self.as_dyn_node_trait().always_end_on_new_line()
+    }
+
+    fn is_block_start(&self) -> bool {
+        self.as_dyn_node_trait().is_block_start()
+    }
+
+    fn is_block_end(&self) -> bool {
+        self.as_dyn_node_trait().is_block_end()
+    }
+
+    fn is_block_element_delimiter(&self) -> bool {
+        self.as_dyn_node_trait().is_block_element_delimiter()
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        self.as_dyn_node_trait().is_block_level_element()
+    }
+
+    fn wrap(&self, content: &str, available_length: usize) -> String {
+        self.as_dyn_node_trait().wrap(content, available_length)
+    }
+}
+
+impl Write for TypeExpr {
+    fn write(&self, writer: &mut Writer) {
+        self.kind.as_dyn_node_trait().write(writer);
+    }
+
+    fn write_output_with_default_writer(&self) -> String {
+        self.kind.as_dyn_node_trait().write_output_with_default_writer()
+    }
+
+    fn prefer_whitespace_before(&self) -> bool {
+        self.kind.as_dyn_node_trait().prefer_whitespace_before()
+    }
+
+    fn prefer_whitespace_after(&self) -> bool {
+        self.kind.as_dyn_node_trait().prefer_whitespace_after()
+    }
+
+    fn prefer_always_no_whitespace_before(&self) -> bool {
+        self.kind.as_dyn_node_trait().prefer_always_no_whitespace_before()
+    }
+
+    fn always_start_on_new_line(&self) -> bool {
+        self.kind.as_dyn_node_trait().always_start_on_new_line()
+    }
+
+    fn always_end_on_new_line(&self) -> bool {
+        self.kind.as_dyn_node_trait().always_end_on_new_line()
+    }
+
+    fn is_block_start(&self) -> bool {
+        self.kind.as_dyn_node_trait().is_block_start()
+    }
+
+    fn is_block_end(&self) -> bool {
+        self.kind.as_dyn_node_trait().is_block_end()
+    }
+
+    fn is_block_element_delimiter(&self) -> bool {
+        self.kind.as_dyn_node_trait().is_block_element_delimiter()
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        self.kind.as_dyn_node_trait().is_block_level_element()
+    }
+
+    fn wrap(&self, content: &str, available_length: usize) -> String {
+        self.kind.as_dyn_node_trait().wrap(content, available_length)
     }
 }

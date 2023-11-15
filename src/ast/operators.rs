@@ -21,7 +21,7 @@ impl Operator {
     }
 }
 
-impl_node_defaults!(Punctuation);
+impl_node_defaults!(Operator);
 
 impl Write for Operator {
 

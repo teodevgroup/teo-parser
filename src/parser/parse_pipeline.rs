@@ -1,5 +1,5 @@
 use crate::ast::pipeline::Pipeline;
-use crate::{parse_container_node_variables, parse_set};
+use crate::{parse_container_node_variables, parse_insert_punctuation, parse_set};
 use crate::parser::parse_expression::parse_unit;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;

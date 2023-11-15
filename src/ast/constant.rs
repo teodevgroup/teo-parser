@@ -33,16 +33,6 @@ impl Constant {
     node_child_fn!(expression, Expression);
 }
 
-impl Display for Constant {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("let ")?;
-        Display::fmt(&self.identifier, f)?;
-        f.write_str(" = ")?;
-        Display::fmt(&self.expression, f)
-    }
-}
-
 impl InfoProvider for Constant {
     fn namespace_skip(&self) -> usize {
         1

@@ -158,6 +158,11 @@ macro_rules! impl_container_node_defaults {
                 }
             }
         }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.write_output_with_default_writer())
+            }
+        }
     };
     ($struct_name:ident, named) => {
         impl crate::traits::identifiable::Identifiable for $struct_name {
@@ -190,6 +195,11 @@ macro_rules! impl_container_node_defaults {
         impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
             fn string_path(&self) -> &Vec<String> {
                 &self.string_path
+            }
+        }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.write_output_with_default_writer())
             }
         }
     };
@@ -227,6 +237,11 @@ macro_rules! impl_container_node_defaults {
             }
             fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
+            }
+        }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.write_output_with_default_writer())
             }
         }
     };
@@ -269,6 +284,11 @@ macro_rules! impl_container_node_defaults {
             }
             fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
+            }
+        }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(&self.write_output_with_default_writer())
             }
         }
     };

@@ -40,13 +40,6 @@ impl InfoProvider for ConfigDeclaration {
 }
 
 impl Write for ConfigDeclaration {
-
-    fn write(&self, writer: &mut Writer) {
-        writer.write_children(self, self.children.values());
-    }
-}
-
-impl Write for ConfigDeclaration {
     fn write(&self, writer: &mut Writer) {
         writer.write_children(self, self.children.values());
     }

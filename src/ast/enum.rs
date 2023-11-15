@@ -105,3 +105,13 @@ impl Write for Enum {
         true
     }
 }
+
+impl Write for EnumMember {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values());
+    }
+
+    fn is_block_level_element(&self) -> bool {
+        true
+    }
+}
