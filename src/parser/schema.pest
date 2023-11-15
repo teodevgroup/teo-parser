@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -153,18 +153,18 @@ enum_variant_literal = { DOT ~ identifier ~ argument_list? }
 // #############
 // tuple literals
 // #############
-tuple_literal = { PAREN_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA | (expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (COMMA ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ COMMA?)*)) ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ PAREN_CLOSE }
+tuple_literal = { PAREN_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (COMMA | (expression ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ ( expression ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (COMMA ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ expression)* ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA?)*)) ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ PAREN_CLOSE }
 
 // #############
 // array literals
 // #############
-array_literal = { BRACKET_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (expression ~ (NEWLINE | comment_block)* ~ ( COMMA ~ (NEWLINE | comment_block)* ~ expression )* ~ (NEWLINE | comment_block)* ~ COMMA?)? ~ (NEWLINE | comment_block)* ~ BRACKET_CLOSE }
+array_literal = { BRACKET_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (expression ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ ( COMMA ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ expression )* ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA?)? ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ BRACKET_CLOSE }
 
 // #############
 // dict literals
 // #############
 named_expression = { expression ~ COLON ~ expression }
-dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | comment_block)* ~ (named_expression ~ ( (NEWLINE | comment_block)* ~ COMMA ~ (NEWLINE | comment_block)* ~ named_expression )* ~ (NEWLINE | comment_block)* ~ COMMA? ~ (NEWLINE | comment_block)*)? ~ BLOCK_CLOSE }
+dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (named_expression ~ ( (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ named_expression )* ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA? ~ (NEWLINE | triple_comment_block | double_comment_block)*)? ~ BLOCK_CLOSE }
 
 // #############
 // subscript
@@ -180,7 +180,6 @@ triple_comment = { WHITESPACE* ~ "///" ~ comment_token? ~ doc_content }
 double_comment = { WHITESPACE* ~ (!"///") ~ "//" ~ doc_content }
 triple_comment_block = { (triple_comment ~ NEWLINE?)+ }
 double_comment_block = { (double_comment ~ NEWLINE?)+ }
-comment_block = { triple_comment_block | double_comment_block }
 
 // #############
 // operators
@@ -297,7 +296,7 @@ config_block = {
     config_keywords
     ~ identifier?
     ~ BLOCK_OPEN
-    ~ (config_item | identifier | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (config_item | identifier | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -316,7 +315,7 @@ enum_declaration = {
     ~ ENUM_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (enum_member_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (enum_member_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -337,7 +336,7 @@ model_declaration = {
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | handler_declaration | decorator | empty_decorator | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | handler_declaration | decorator | empty_decorator | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -358,13 +357,13 @@ field_declaration = {
 // dataset
 // #############
 dataset_declaration = {
-    (AUTOSEED_KEYWORD | NOTRACK_KEYWORD)? ~ DATASET_KEYWORD ~ identifier ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | availability_start | availability_end | dataset_group_declaration)* ~ BLOCK_CLOSE
+    triple_comment_block? ~ (AUTOSEED_KEYWORD | NOTRACK_KEYWORD)? ~ DATASET_KEYWORD ~ identifier ~ BLOCK_OPEN ~ (EMPTY_LINES | triple_comment_block | double_comment_block | availability_start | availability_end | dataset_group_declaration)* ~ BLOCK_CLOSE
 }
 dataset_group_declaration = {
-    GROUP_KEYWORD ~ identifier_path ~ BLOCK_OPEN ~ (EMPTY_LINES | comment_block | availability_start | availability_end | dataset_group_record_declaration)* ~ BLOCK_CLOSE
+    triple_comment_block? ~ GROUP_KEYWORD ~ identifier_path ~ BLOCK_OPEN ~ (EMPTY_LINES | triple_comment_block | double_comment_block | availability_start | availability_end | dataset_group_record_declaration)* ~ BLOCK_CLOSE
 }
 dataset_group_record_declaration = {
-    RECORD_KEYWORD ~ identifier ~ dictionary_literal
+    triple_comment_block? ~ RECORD_KEYWORD ~ identifier ~ dictionary_literal
 }
 
 // #############
@@ -381,7 +380,7 @@ decorator_declaration = {
     identifier ~
     (generics_declaration? ~ argument_list_declaration ~ generics_constraint?)? ~
     (BLOCK_OPEN ~
-    (comment_block | decorator_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+    (triple_comment_block | double_comment_block | decorator_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
     BLOCK_CLOSE)?
 }
 
@@ -405,7 +404,7 @@ pipeline_item_declaration = {
         type_expression ~ generics_constraint?
       ) | (
         BLOCK_OPEN ~
-        (comment_block | pipeline_item_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+        (triple_comment_block | double_comment_block | pipeline_item_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
         BLOCK_CLOSE
       )
     )
@@ -423,7 +422,7 @@ pipeline_item_variant_declaration = {
 
 handler_group_declaration = {
     triple_comment_block? ~ DECLARE_KEYWORD ~ HANDLER_KEYWORD ~ GROUP_KEYWORD ~ identifier ~ BLOCK_OPEN
-    ~ (comment_block | handler_declaration | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (triple_comment_block | double_comment_block | handler_declaration | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -448,7 +447,7 @@ config_declaration = {
   CONFIG_KEYWORD ~
   identifier ~
   BLOCK_OPEN ~
-  (field_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  (field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
   BLOCK_CLOSE
 }
 
@@ -458,7 +457,7 @@ config_declaration = {
 
 interface_declaration = {
     triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA?)? ~ generics_constraint? ~ BLOCK_OPEN
-    ~ (field_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -469,7 +468,7 @@ namespace = {
     triple_comment_block? ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -503,7 +502,7 @@ struct_declaration = {
   generics_declaration? ~
   generics_constraint? ~
   BLOCK_OPEN ~
-  (function_declaration | comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  (function_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
   BLOCK_CLOSE
 }
 

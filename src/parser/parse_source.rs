@@ -141,8 +141,8 @@ pub(super) fn parse_source(
                 context.schema_references.struct_declarations.push(struct_declaration.path.clone());
                 tops.insert(struct_declaration.id(), Top::StructDeclaration(struct_declaration));
             }
-            Rule::availability_start => parse_availability_flag(current, context),
-            Rule::availability_end => parse_availability_end(current, context),
+            Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }

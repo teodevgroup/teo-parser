@@ -1,9 +1,6 @@
-use std::cell::RefCell;
-use crate::availability::Availability;
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::keyword::Keyword;
-use crate::ast::identifier::Identifier;
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
@@ -34,7 +31,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
                 string_path = context.next_parent_string_path(if let Some(identifier) = identifier { children.get(&identifier).unwrap().as_identifier().unwrap().name() } else { children.get(&keyword).unwrap().as_keyword().unwrap().name() });
                 inside_block = true;
             },
-            Rule::BLOCK_CLOSE | Rule::EMPTY_LINES => (),
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::config_keywords => parse_set!(parse_config_keyword(current, context), children, keyword),
             Rule::identifier => if inside_block {
                 unattached_identifiers.push(parse_identifier(&current, context));
@@ -43,8 +40,8 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
             },
             Rule::config_item => parse_insert!(parse_config_item(current, context), children, items),
             Rule::comment_block => parse_append!(parse_code_comment(current, context), children),
-            Rule::availability_start => parse_availability_flag(current, context),
-            Rule::availability_end => parse_availability_end(current, context),
+            Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => context.insert_unparsed(parse_span(&current)),
         }

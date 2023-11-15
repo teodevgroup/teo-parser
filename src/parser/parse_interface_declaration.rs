@@ -35,8 +35,8 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::BLOCK_OPEN | Rule::COLON | Rule::BLOCK_CLOSE | Rule::EMPTY_LINES | Rule::WHITESPACE | Rule::INTERFACE_KEYWORD => (),
-            Rule::availability_start => parse_availability_flag(current, context),
-            Rule::availability_end => parse_availability_end(current, context),
+            Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
