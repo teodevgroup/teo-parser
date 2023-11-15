@@ -1,7 +1,6 @@
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::{parse_container_node_variables, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
-use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
