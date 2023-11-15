@@ -3,7 +3,7 @@ use crate::format::file_state::FileState;
 use crate::format::flusher_state::FlusherState;
 use crate::format::Preferences;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(super) struct Flusher<'a> {
     commands: &'a Vec<Command<'a>>,
     file_state: FileState,
