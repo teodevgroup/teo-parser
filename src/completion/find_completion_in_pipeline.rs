@@ -11,7 +11,7 @@ use crate::search::search_pipeline_unit_for_auto_completion::search_pipeline_uni
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub(super) fn find_completion_in_pipeline(schema: &Schema, source: &Source, pipeline: &Pipeline, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
-    find_completion_in_pipeline_unit(schema, source, pipeline.unit.as_ref(), line_col, namespace_path, availability)
+    find_completion_in_pipeline_unit(schema, source, pipeline.unit(), line_col, namespace_path, availability)
 }
 
 fn find_completion_in_pipeline_unit(schema: &Schema, source: &Source, unit: &Unit, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {

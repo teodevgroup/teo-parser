@@ -16,7 +16,7 @@ pub(super) fn jump_to_definition_in_argument_list<'a>(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    for argument in &argument_list.arguments {
+    for argument in argument_list.arguments() {
         if argument.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument(
                 schema,
@@ -41,7 +41,7 @@ pub(super) fn jump_to_definition_in_argument<'a>(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    if let Some(name) = &argument.name {
+    if let Some(name) = argument.name() {
         if name.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument_name(
                 schema,
@@ -57,7 +57,7 @@ pub(super) fn jump_to_definition_in_argument<'a>(
         return jump_to_definition_in_expression(
             schema,
             source,
-            &argument.value,
+            argument.value(),
             namespace_path,
             line_col,
             argument.value().resolved().r#type(),

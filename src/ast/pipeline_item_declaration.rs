@@ -6,6 +6,7 @@ use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::format::Writer;
+use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
@@ -113,5 +114,11 @@ impl Write for PipelineItemDeclarationVariant {
     }
     fn is_block_level_element(&self) -> bool {
         true
+    }
+}
+
+impl InfoProvider for PipelineItemDeclaration {
+    fn namespace_skip(&self) -> usize {
+        1
     }
 }

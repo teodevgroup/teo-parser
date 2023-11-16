@@ -9,7 +9,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
     let mut namespace_path: Vec<_> = pipeline_item_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = pipeline_item_declaration.define_availability;
-    if let Some(argument_list_declaration) = &pipeline_item_declaration.argument_list_declaration {
+    if let Some(argument_list_declaration) = pipeline_item_declaration.argument_list_declaration() {
         if argument_list_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument_list_declaration(
                 schema,
@@ -63,7 +63,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
             }
         }
 
-        if variant.input_type.span().contains_line_col(line_col) {
+        if variant.input_type().span().contains_line_col(line_col) {
             return jump_to_definition_in_type_expr_kind(
                 schema,
                 source,

@@ -16,7 +16,7 @@ pub(super) fn jump_to_definition_in_argument_list_declaration(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    for argument_declaration in &argument_list_declaration.argument_declarations {
+    for argument_declaration in argument_list_declaration.argument_declarations() {
         if argument_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_argument_declaration(
                 schema,

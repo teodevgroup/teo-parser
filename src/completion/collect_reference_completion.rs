@@ -25,7 +25,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     }
     for top in source.children() {
         if let Some(namespace) = top.as_namespace() {
-            if namespace.tops().iter().find(|t| filter(t)).is_some() {
+            if namespace.children.values().find(|t| filter(t)).is_some() {
                 result.push(namespace.path.clone());
             }
         } else if let Some(import) = top.as_import() {
@@ -55,7 +55,7 @@ fn collect_reference_completion_in_namespace(namespace: &Namespace, filter: &Arc
     let mut result = vec![];
     for top in namespace.tops() {
         if let Some(namespace) = top.as_namespace() {
-            if namespace.tops().iter().find(|t| filter(t)).is_some() {
+            if namespace.children.values().find(|t| filter(t)).is_some() {
                 result.push(namespace.path.clone());
             }
         } else {

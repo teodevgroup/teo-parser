@@ -10,7 +10,7 @@ pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source:
     namespace_path.pop();
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
-    if handler_declaration.input_type.span().contains_line_col(line_col) {
+    if handler_declaration.input_type().span().contains_line_col(line_col) {
         return jump_to_definition_in_type_expr_kind(
             schema,
             source,
@@ -36,7 +36,7 @@ pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source:
 }
 
 pub(super) fn jump_to_definition_in_handler_group_declaration(schema: &Schema, source: &Source, handler_group_declaration: &HandlerGroupDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
-    for handler_declaration in &handler_group_declaration.handler_declarations {
+    for handler_declaration in handler_group_declaration.handler_declarations() {
         if handler_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_handler_declaration(
                 schema,

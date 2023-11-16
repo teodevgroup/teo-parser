@@ -6,6 +6,7 @@ use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_decorator::jump_to_definition_in_decorator;
 use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_type_expr_kind;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -25,11 +26,11 @@ pub(super) fn jump_to_definition_in_field<'a>(
             return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(field.resolved().class.reference_type()), availability);
         }
     }
-    if field.type_expr.span().contains_line_col(line_col) {
+    if field.type_expr().span().contains_line_col(line_col) {
         return jump_to_definition_in_type_expr_kind(
             schema,
             source,
-            field.type_expr().kind,
+            &field.type_expr().kind,
             &namespace_path,
             line_col,
             generics_declarations,
