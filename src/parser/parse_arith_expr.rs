@@ -25,13 +25,14 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             _ => unreachable!(),
         };
         parse_insert_operator!(context, operator, children, operator.as_str());
-        children.insert(rhs.id(), rhs.into());
+        let rhs_id = rhs.id();
+        children.insert(rhs_id, rhs.into());
         let operation = UnaryOperation {
             span,
             path,
             children,
             op,
-            rhs: rhs.id(),
+            rhs: rhs_id,
         };
         parse_container_node_variables_cleanup!(context);
         ArithExpr::UnaryOperation(operation)
@@ -61,16 +62,18 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             _ => unreachable!(),
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
-        children.insert(lhs.id(), lhs.into());
+        let lhs_id = lhs.id();
+        let rhs_id = rhs.id();
+        children.insert(lhs_id, lhs.into());
         parse_insert_operator!(context, operator, children, operator.as_str());
-        children.insert(rhs.id(), rhs.into());
+        children.insert(rhs_id, rhs.into());
         let operation = BinaryOperation {
             span,
             path,
             children,
             op,
-            lhs: lhs.id(),
-            rhs: rhs.id(),
+            lhs: lhs_id,
+            rhs: rhs_id,
         };
         parse_container_node_variables_cleanup!(context);
         ArithExpr::BinaryOperation(operation)
@@ -80,14 +83,15 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             _ => unreachable!(),
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
-        children.insert(lhs.id(), lhs.into());
+        let lhs_id = lhs.id();
+        children.insert(lhs_id, lhs.into());
         parse_insert_operator!(context, operator, children, operator.as_str());
         let operation = UnaryPostfixOperation {
             span,
             path,
             children,
             op,
-            lhs: lhs.id(),
+            lhs: lhs_id,
         };
         parse_container_node_variables_cleanup!(context);
         ArithExpr::UnaryPostfixOperation(operation)

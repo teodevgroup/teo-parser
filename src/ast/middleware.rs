@@ -42,7 +42,7 @@ impl InfoProvider for MiddlewareDeclaration {
 }
 
 impl Write for MiddlewareDeclaration {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
     fn is_block_level_element(&self) -> bool {

@@ -3,7 +3,7 @@ use crate::format::Writer;
 
 pub trait Write: Debug {
 
-    fn write(&self, writer: &mut Writer);
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>);
 
     fn write_output_with_default_writer(&self) -> String {
         let mut writer = Writer::default();

@@ -59,7 +59,7 @@ pub struct ArgumentResolved {
 }
 
 impl Write for Argument {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }

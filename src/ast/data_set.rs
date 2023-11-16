@@ -103,7 +103,7 @@ impl Resolve<Value> for DataSetRecord {
 }
 
 impl Write for DataSet {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 
@@ -113,7 +113,7 @@ impl Write for DataSet {
 }
 
 impl Write for DataSetGroup {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 
@@ -123,7 +123,7 @@ impl Write for DataSetGroup {
 }
 
 impl Write for DataSetRecord {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 

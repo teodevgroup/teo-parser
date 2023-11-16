@@ -48,7 +48,7 @@ impl UnaryOperation {
 }
 
 impl Write for UnaryOperation {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -63,7 +63,7 @@ impl UnaryPostfixOperation {
 }
 
 impl Write for UnaryPostfixOperation {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -79,7 +79,7 @@ impl BinaryOperation {
 }
 
 impl Write for BinaryOperation {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -135,7 +135,7 @@ impl NodeTrait for ArithExpr {
 }
 
 impl Write for ArithExpr {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         self.as_dyn_node_trait().write(writer);
     }
 

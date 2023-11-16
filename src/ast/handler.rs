@@ -92,7 +92,7 @@ impl InfoProvider for HandlerDeclaration {
 }
 
 impl Write for HandlerGroupDeclaration {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 
@@ -102,7 +102,7 @@ impl Write for HandlerGroupDeclaration {
 }
 
 impl Write for HandlerDeclaration {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 

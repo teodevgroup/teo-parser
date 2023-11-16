@@ -44,19 +44,19 @@ impl GenericsConstraintItem {
 }
 
 impl Write for GenericsDeclaration {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
 
 impl Write for GenericsConstraint {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
 
 impl Write for GenericsConstraintItem {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }

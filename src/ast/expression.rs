@@ -300,7 +300,7 @@ impl Resolve<TypeAndValue> for Expression {
 }
 
 impl Write for ExpressionKind {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         self.as_dyn_node_trait().write(writer);
     }
 
@@ -350,7 +350,7 @@ impl Write for ExpressionKind {
 }
 
 impl Write for Expression {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         self.kind.as_dyn_node_trait().write(writer);
     }
 

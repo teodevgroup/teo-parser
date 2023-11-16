@@ -9,7 +9,7 @@ impl_node_defaults!(AvailabilityFlagEnd);
 
 impl Write for AvailabilityFlagEnd {
 
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, "#end\n");
     }
 

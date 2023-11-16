@@ -8,7 +8,7 @@ impl_node_defaults!(AvailabilityFlag);
 
 impl Write for AvailabilityFlag {
 
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_contents(self, vec!["#if available(", self.name.as_str(), ")\n"]);
     }
 

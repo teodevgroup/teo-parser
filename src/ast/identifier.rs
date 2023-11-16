@@ -14,7 +14,7 @@ impl Identifier {
 impl_node_defaults!(Identifier);
 
 impl Write for Identifier {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, self.name());
     }
 }

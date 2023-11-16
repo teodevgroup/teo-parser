@@ -131,7 +131,7 @@ fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> 
             Rule::arith_expr => return Expression::new(ExpressionKind::ArithExpr(parse_arith_expr(current, context))),
             Rule::string_literal => return Expression::new(ExpressionKind::StringLiteral(parse_string_literal(&current, context))),
             Rule::numeric_literal => return Expression::new(ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context))),
-            _ => context.insert_error(parse_span(&pair), "invalid enum member expression"),
+            _ => context.insert_error(parse_span(&current), "invalid enum member expression"),
         }
     }
     unreachable!()

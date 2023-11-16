@@ -97,7 +97,7 @@ impl Resolve<Value> for EnumMember {
 }
 
 impl Write for Enum {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 
@@ -107,7 +107,7 @@ impl Write for Enum {
 }
 
 impl Write for EnumMember {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 

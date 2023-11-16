@@ -253,8 +253,8 @@ fn type_item_builtin_match<'a>(
             if type_item.generic_items().len() != 2 {
                 return Some(Type::Undetermined);
             }
-            let t = type_item.generic_items().get(0).unwrap();
-            let f = type_item.generic_items().get(1).unwrap();
+            let t = *type_item.generic_items().get(0).unwrap();
+            let f = *type_item.generic_items().get(1).unwrap();
             let Some(field_ref) = f.kind.as_field_reference() else {
                 context.insert_diagnostics_error(f.span(), "type is not field reference");
                 return Some(Type::Undetermined);

@@ -100,7 +100,7 @@ impl PipelineItemDeclarationVariant {
 
 
 impl Write for PipelineItemDeclaration {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
     fn is_block_level_element(&self) -> bool {
@@ -109,7 +109,7 @@ impl Write for PipelineItemDeclaration {
 }
 
 impl Write for PipelineItemDeclarationVariant {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
     fn is_block_level_element(&self) -> bool {

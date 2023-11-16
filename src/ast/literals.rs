@@ -12,7 +12,7 @@ declare_node!(NumericLiteral, pub(crate) value: Value, pub(crate) display: Strin
 impl_node_defaults!(NumericLiteral);
 
 impl Write for NumericLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, self.display.as_str());
     }
 }
@@ -22,7 +22,7 @@ declare_node!(StringLiteral, pub(crate) value: String, pub(crate) display: Strin
 impl_node_defaults!(StringLiteral);
 
 impl Write for StringLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, self.display.as_str());
     }
 }
@@ -32,7 +32,7 @@ declare_node!(RegexLiteral, pub(crate) value: Regex, pub(crate) display: String)
 impl_node_defaults!(RegexLiteral);
 
 impl Write for RegexLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, self.display.as_str());
     }
 }
@@ -42,7 +42,7 @@ declare_node!(BoolLiteral, pub(crate) value: bool);
 impl_node_defaults!(BoolLiteral);
 
 impl Write for BoolLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, if self.value { "true" } else { "false" });
     }
 }
@@ -52,7 +52,7 @@ declare_node!(NullLiteral);
 impl_node_defaults!(NullLiteral);
 
 impl Write for NullLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_content(self, "null")
     }
 }
@@ -80,7 +80,7 @@ impl EnumVariantLiteral {
 }
 
 impl Write for EnumVariantLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -97,7 +97,7 @@ impl TupleLiteral {
 }
 
 impl Write for TupleLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -132,7 +132,7 @@ impl ArrayLiteral {
 }
 
 impl Write for ArrayLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }
@@ -149,7 +149,7 @@ impl DictionaryLiteral {
 }
 
 impl Write for DictionaryLiteral {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }

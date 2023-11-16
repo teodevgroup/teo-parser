@@ -34,6 +34,7 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
                 Node::DataSet(_) => vec![],
                 Node::Namespace(_) => vec![],
                 Node::UseMiddlewaresBlock(_) => vec![],
+                _ => vec![],
             };
         }
     }

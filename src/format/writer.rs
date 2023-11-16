@@ -56,7 +56,7 @@ impl<'a> Writer<'a> {
         self.can_write = false;
     }
 
-    pub fn flush(&self) -> String {
+    pub fn flush(&mut self) -> String {
         let mut flusher = Flusher::new_from_beginning(&self.commands, self.preferences);
         flusher.flush()
     }

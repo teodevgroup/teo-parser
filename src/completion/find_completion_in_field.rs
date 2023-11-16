@@ -19,7 +19,7 @@ pub(super) fn find_completion_in_field<'a>(schema: &Schema, source: &Source, fie
             return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, field.resolved().class.reference_type(), field.availability());
         }
     }
-    for empty_decorator_span in field.empty_decorator_spans {
+    for empty_decorator_span in &field.empty_decorator_spans {
         if empty_decorator_span.contains_line_col(line_col) {
             return find_completion_in_empty_decorator(schema, source, &namespace_path, field.resolved().class.reference_type(), field.availability());
         }

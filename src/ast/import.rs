@@ -24,7 +24,7 @@ impl Import {
 }
 
 impl Write for Import {
-    fn write(&self, writer: &mut Writer) {
+    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
         writer.write_contents(self, vec!["import ", self.source.display.as_str()])
     }
 
