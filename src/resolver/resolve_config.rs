@@ -16,7 +16,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
     }
     if let Some(config_declaration) = context.schema.find_config_declaration_by_name(config.keyword().name(), availability) {
         let exist_keys: HashSet<&str> = config.items.iter().map(|i| i.identifier().name()).collect();
-        let defined_keys: HashSet<&str> = config_declaration.fields.iter().map(|f| f.identifier().name()).collect();
+        let defined_keys: HashSet<&str> = config_declaration.fields().map(|f| f.identifier().name()).collect();
         let differences = exist_keys.difference(&defined_keys);
         // undefined items
         for item_name in differences {
@@ -36,7 +36,7 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
                 let r#type = item.expression.resolved().r#type();
                 if !r#type.is_undetermined() {
                     if !field.type_expr.resolved().test(r#type) {
-                        context.insert_diagnostics_error(item.expression.span(), format!("expect {}, found {}", field.type_expr.resolved(), r#type));
+                        context.insert_diagnostics_error(item.expression().span(), format!("expect {}, found {}", field.type_expr.resolved(), r#type));
                     }
                 }
             } else {

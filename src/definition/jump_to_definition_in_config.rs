@@ -27,7 +27,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
     for item in &config.items {
         if item.identifier().span.contains_line_col(line_col) {
             if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
-                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier().name() == item.identifier().name()) {
+                if let Some(field) = config_declaration.fields().find(|field| field.identifier().name() == item.identifier().name()) {
                     return vec![Definition {
                         path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
                         selection_span: item.identifier().span,
@@ -40,10 +40,10 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             } else {
                 return vec![];
             }
-        } else if item.expression.span().contains_line_col(line_col) {
+        } else if item.expression().span().contains_line_col(line_col) {
             let undetermined = Type::Undetermined;
             let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
-                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier().name() == item.identifier().name()) {
+                if let Some(field) = config_declaration.fields().find(|field| field.identifier().name() == item.identifier().name()) {
                     field.type_expr.resolved()
                 } else {
                     &undetermined

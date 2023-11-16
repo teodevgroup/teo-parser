@@ -111,7 +111,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                 ExpressionKind::Subscript(subscript) => {
                                     let struct_declaration = schema.find_top_by_path(reference.path()).unwrap().as_struct_declaration().unwrap();
                                     if subscript.span.contains_line_col(line_col) {
-                                        if subscript.expression.span().contains_line_col(line_col) {
+                                        if subscript.expression().span().contains_line_col(line_col) {
                                             return handle_subscript(&subscript);
                                         } else {
                                             return default;
@@ -120,7 +120,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                         if let Some(subscript_function) = struct_declaration.function_declarations().find(|f| {
                                             f.r#static == false && f.identifier().name() == "subscript"
                                         }) {
-                                            current = Some(UnitSearchResult::Type(subscript_function.return_type.resolved().clone()));
+                                            current = Some(UnitSearchResult::Type(subscript_function.return_type().resolved().clone()));
                                         } else {
                                             return default;
                                         }
@@ -141,7 +141,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             if argument_list.span.contains_line_col(line_col) {
                                                 return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier().name()));
                                             } else {
-                                                current = Some(UnitSearchResult::Type(new.return_type.resolved().clone()));
+                                                current = Some(UnitSearchResult::Type(new.return_type().resolved().clone()));
                                             }
                                         } else {
                                             return default;
@@ -181,7 +181,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                             Node::Enum(r#enum) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(i) => {
-                                        if let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == i.name()) {
+                                        if let Some(member) = r#enum.members().find(|m| m.identifier().name() == i.name()) {
                                             if i.span.contains_line_col(line_col) {
                                                 return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier().name()));
                                             } else {
@@ -203,7 +203,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                             Node::Model(model) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(field) = model.fields.iter().find(|f| f.name() == identifier.name()) {
+                                        if let Some(field) = model.fields().find(|f| f.name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, model.path.as_ref(), Some(field.name()));
                                             } else {
@@ -225,7 +225,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                             Node::InterfaceDeclaration(interface) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(field) = interface.fields.iter().find(|f| f.name() == identifier.name()) {
+                                        if let Some(field) = interface.fields().find(|f| f.name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, interface.path.as_ref(), Some(field.name()));
                                             } else {

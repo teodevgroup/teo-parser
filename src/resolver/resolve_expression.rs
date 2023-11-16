@@ -163,7 +163,7 @@ fn resolve_null_literal<'a>(n: &NullLiteral, context: &'a ResolverContext<'a>, e
 pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
     if let Some(enum_reference) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_reference.path()).unwrap().as_enum().unwrap();
-        let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == e.identifier().name()) else {
+        let Some(member) = r#enum.members().find(|m| m.identifier().name() == e.identifier().name()) else {
             context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", enum_reference.string_path().join("."), e.identifier().name()));
             return TypeAndValue {
                 r#type: Type::EnumVariant(enum_reference.clone()),
@@ -290,7 +290,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     let mut retval = hashset![];
     let mut unresolved = false;
     let mut retval_values = vec![];
-    for e in a.expressions.iter() {
+    for e in a.expressions() {
         let resolved = resolve_expression(e, context, r#type, keywords_map);
         retval.insert(resolved.r#type.clone());
         if let Some(value) = resolved.value {
@@ -323,7 +323,7 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     let mut retval = hashset![];
     let mut retval_values = IndexMap::new();
     let mut unresolved = false;
-    for (k, v) in a.expressions.iter() {
+    for (k, v) in a.expressions() {
         let k_value = resolve_expression(k, context, &Type::String, keywords_map);
         if !k_value.r#type.is_string() {
             context.insert_diagnostics_error(k.span(), "ValueError: dictionary key is not String");

@@ -20,7 +20,7 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
         match expect {
             Type::EnumVariant(reference) => {
                 let r#enum = schema.find_top_by_path(reference.path()).unwrap().as_enum().unwrap();
-                if let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == enum_variant_literal.identifier().name()) {
+                if let Some(member) = r#enum.members().find(|m| m.identifier().name() == enum_variant_literal.identifier().name()) {
                     vec![Definition {
                         path: schema.source(member.source_id()).unwrap().file_path.clone(),
                         selection_span: enum_variant_literal.identifier().span,
@@ -34,7 +34,7 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
             Type::SynthesizedEnumVariantReference(reference) => {
                 if let Some(reference) = reference.owner.as_model_reference() {
                     let model = schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                    if let Some(field) = model.fields.iter().find(|f| f.identifier().name() == enum_variant_literal.identifier().name()) {
+                    if let Some(field) = model.fields().find(|f| f.identifier().name() == enum_variant_literal.identifier().name()) {
                         vec![Definition {
                             path: schema.source(field.source_id()).unwrap().file_path.clone(),
                             selection_span: enum_variant_literal.identifier().span,

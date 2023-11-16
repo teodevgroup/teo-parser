@@ -68,7 +68,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                     context.insert_diagnostics_error(key_span, "duplicated record field");
                 }
                 used_keys.push(key.to_owned());
-                if let Some(field) = model.fields.iter().find(|f| f.name() == key) {
+                if let Some(field) = model.fields().find(|f| f.name() == key) {
                     if let Some(field_settings) = field.resolved().class.as_model_primitive_field() {
                         if field_settings.dropped {
                             context.insert_diagnostics_error(key_span, "field is dropped");

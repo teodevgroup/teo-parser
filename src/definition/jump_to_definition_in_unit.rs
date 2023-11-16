@@ -41,7 +41,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                 vec![]
             },
             |subscript| {
-                if subscript.expression.span().contains_line_col(line_col) {
+                if subscript.expression().span().contains_line_col(line_col) {
                     let exp = Type::Undetermined;
                     jump_to_definition_in_expression(
                         schema,
@@ -76,7 +76,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     },
                     Node::ConfigDeclaration(config_declaration) => if let Some(identifier) = identifier_name {
-                        let item = config_declaration.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
+                        let item = config_declaration.fields().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
@@ -98,7 +98,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         identifier_span: constant.identifier().span,
                     }],
                     Node::Enum(r#enum) => if let Some(identifier) = identifier_name {
-                        let member = r#enum.members.iter().find(|m| m.identifier().name() == identifier).unwrap();
+                        let member = r#enum.members().find(|m| m.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(member.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
@@ -114,7 +114,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     },
                     Node::Model(model) => if let Some(identifier) = identifier_name {
-                        let field = model.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
+                        let field = model.fields().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(field.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
@@ -130,7 +130,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     },
                     Node::InterfaceDeclaration(interface) => if let Some(identifier) = identifier_name {
-                        let field = interface.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
+                        let field = interface.fields().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(field.source_id()).unwrap().file_path.clone(),
                             selection_span: span,

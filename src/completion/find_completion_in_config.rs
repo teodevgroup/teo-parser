@@ -28,7 +28,7 @@ pub(super) fn find_completion_in_config(schema: &Schema, source: &Source, config
 fn find_completion_in_config_item(schema: &Schema, item: &ConfigItem, line_col: (usize, usize), used: &Vec<&str>) -> Vec<CompletionItem> {
     if item.identifier().span.contains_line_col(line_col) {
         collect_config_declaration_item_names(schema, item.identifier().name(), item.availability(), used)
-    } else if item.expression.span().contains_line_col(line_col) {
+    } else if item.expression().span().contains_line_col(line_col) {
         vec![]
     } else {
         vec![]

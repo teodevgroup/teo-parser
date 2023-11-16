@@ -299,12 +299,12 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
             match container {
                 Type::ModelReference(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                    let field = model.fields.iter().find(|f| f.identifier().name() == field_name).unwrap();
+                    let field = model.fields().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr.resolved().clone()
                 },
                 Type::InterfaceReference(reference, types) => {
                     let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                    let field = interface.fields.iter().find(|f| f.identifier().name() == field_name).unwrap();
+                    let field = interface.fields().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr.resolved().clone()
                 },
                 _ => Type::Undetermined

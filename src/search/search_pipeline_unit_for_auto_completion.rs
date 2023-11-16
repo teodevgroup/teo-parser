@@ -22,7 +22,7 @@ pub fn search_pipeline_unit_for_auto_completion<HAL, HI, OUTPUT>(
     HI: Fn(&Vec<&str>) -> OUTPUT,
 {
     let mut user_typed_prefix: Vec<&str> = vec![];
-    for expression in unit.expressions.iter() {
+    for expression in unit.expressions() {
         if let Some(identifier) = expression.kind.as_identifier() {
             if identifier.span.contains_line_col(line_col) {
                 return handle_identifier(&user_typed_prefix);

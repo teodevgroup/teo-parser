@@ -16,7 +16,7 @@ pub(super) fn jump_to_definition_in_constant<'a>(
     let mut namespace_path: Vec<&str> = constant.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
-    if constant.expression.span().contains_line_col(line_col) {
+    if constant.expression().span().contains_line_col(line_col) {
         let undetermined = Type::Undetermined;
         return jump_to_definition_in_expression(
             schema,

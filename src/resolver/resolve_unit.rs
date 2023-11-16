@@ -168,7 +168,7 @@ fn resolve_struct_instance_for_unit<'a>(
                     context.insert_diagnostics_error(subscript.expression().span(), format!("expect {}, found {}", expected_type, subscript.expression.resolved().r#type()));
                 }
             }
-            let return_type = subscript_function.return_type.resolved().replace_generics(&map);
+            let return_type = subscript_function.return_type().resolved().replace_generics(&map);
             TypeAndValue::type_only(return_type)
         },
         _ => {
@@ -218,7 +218,7 @@ fn resolve_enum_reference_for_unit<'a>(
     ).unwrap().as_enum().unwrap();
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(m) = enum_declaration.members.iter().find(|m| m.identifier().name() == identifier.name()) {
+            if let Some(m) = enum_declaration.members().find(|m| m.identifier().name() == identifier.name()) {
                 TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
                     Value::OptionVariant(OptionVariant {
                         value: m.resolved().value.as_int().unwrap(),
@@ -261,7 +261,7 @@ fn resolve_enum_variant_for_unit<'a>(
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
-    let member_declaration = enum_declaration.members.iter().find(|m| m.identifier().name() == value.value.as_str()).unwrap();
+    let member_declaration = enum_declaration.members().find(|m| m.identifier().name() == value.value.as_str()).unwrap();
     if let Some(_) = member_declaration.argument_list_declaration() {
         match &expression.kind {
             ExpressionKind::ArgumentList(argument_list) => {
@@ -498,7 +498,7 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
                     None
                 );
                 let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
-                TypeAndValue::type_only(function.return_type.resolved().replace_generics(&map))
+                TypeAndValue::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct static function not found");
                 TypeAndValue::undetermined()
@@ -535,7 +535,7 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
                     None
                 );
                 let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
-                TypeAndValue::type_only(function.return_type.resolved().replace_generics(&map))
+                TypeAndValue::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct instance function not found");
                 TypeAndValue::undetermined()
