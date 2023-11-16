@@ -3,9 +3,11 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::type_expr::{TypeExprKind, TypeItem};
+use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem};
 use crate::definition::definition::Definition;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
+use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_type_expr_kind(
@@ -27,21 +29,21 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             generics_declarations,
             availability
         ),
-        TypeExprKind::BinaryOp(b) => if b.lhs.span().contains_line_col(line_col) {
+        TypeExprKind::BinaryOp(b) => if b.lhs().span().contains_line_col(line_col) {
             jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                b.lhs(),
+                &b.lhs().kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
                 availability
             )
-        } else if b.rhs.span().contains_line_col(line_col) {
+        } else if b.rhs().span().contains_line_col(line_col) {
             jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                b.rhs(),
+                &b.rhs().kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
@@ -50,11 +52,11 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
         } else {
             vec![]
         }
-        TypeExprKind::TypeGroup(g) => if g.kind.span().contains_line_col(line_col) {
+        TypeExprKind::TypeGroup(g) => if g.type_expr().span().contains_line_col(line_col) {
             jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                g.kind.as_ref(),
+                &g.type_expr().kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
@@ -64,12 +66,12 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             vec![]
         }
         TypeExprKind::TypeTuple(type_tuple) => {
-            for t in &type_tuple.items {
+            for t in type_tuple.items() {
                 if t.span().contains_line_col(line_col) {
                     return jump_to_definition_in_type_expr_kind(
                         schema,
                         source,
-                        t,
+                        &t.kind,
                         namespace_path,
                         line_col,
                         generics_declarations,
@@ -79,21 +81,21 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             }
             vec![]
         }
-        TypeExprKind::TypeSubscript(type_subscript) => if type_subscript.type_expr.span().contains_line_col(line_col) {
+        TypeExprKind::TypeSubscript(type_subscript) => if type_subscript.argument().span().contains_line_col(line_col) {
             return jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                type_subscript.type_expr.as_ref(),
+                &type_subscript.argument().kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
                 availability
             );
-        } else if type_subscript.type_item.span.contains_line_col(line_col) {
-            jump_to_definition_in_type_item(
+        } else if type_subscript.container().span().contains_line_col(line_col) {
+            jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                &type_subscript.type_item,
+                &type_subscript.container().kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
@@ -124,12 +126,12 @@ fn jump_to_definition_in_type_item(
     generics_declarations: &Vec<&GenericsDeclaration>,
     availability: Availability,
 ) -> Vec<Definition> {
-    for gen in &type_item.generics {
+    for gen in type_item.generic_items() {
         if gen.span().contains_line_col(line_col) {
             return jump_to_definition_in_type_expr_kind(
                 schema, 
                 source,
-                gen,
+                &gen.kind,
                 namespace_path,
                 line_col,
                 generics_declarations,
@@ -137,9 +139,9 @@ fn jump_to_definition_in_type_item(
             );
         }
     }
-    if type_item.identifier_path.span.contains_line_col(line_col) {
-        if type_item.identifier_path.identifiers.len() == 1 {
-            let identifier = type_item.identifier_path.identifiers.get(0).unwrap();
+    if type_item.identifier_path().span.contains_line_col(line_col) {
+        if type_item.identifier_path().identifiers.len() == 1 {
+            let identifier = type_item.identifier_path().identifiers().next().unwrap();
             for generics_declaration in generics_declarations {
                 if let Some(i) = generics_declaration.identifiers().find(|i| i.name() == identifier.name()) {
                     return vec![Definition {
@@ -153,7 +155,7 @@ fn jump_to_definition_in_type_item(
         }
         let mut user_typed_spaces = vec![];
         let mut selector_span = None;
-        for identifier in type_item.identifier_path.identifiers() {
+        for identifier in type_item.identifier_path().identifiers() {
             if identifier.span.contains_line_col(line_col) {
                 user_typed_spaces.push(identifier.name());
                 selector_span = Some(identifier.span);

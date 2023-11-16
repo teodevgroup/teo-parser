@@ -152,7 +152,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                         Node::Config(config) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(identifier) => {
-    //                                     if let Some(item) = config.items.iter().find(|i| i.identifier().name() == identifier.name()) {
+    //                                     if let Some(item) = config.items().find(|i| i.identifier().name() == identifier.name()) {
     //                                         if identifier.span.contains_line_col(line_col) {
     //                                             return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier().name()));
     //                                         } else {

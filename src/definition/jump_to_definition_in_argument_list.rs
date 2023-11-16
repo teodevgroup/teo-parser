@@ -60,7 +60,7 @@ pub(super) fn jump_to_definition_in_argument<'a>(
             &argument.value,
             namespace_path,
             line_col,
-            argument.value.resolved().r#type(),
+            argument.value().resolved().r#type(),
             availability,
         );
     }

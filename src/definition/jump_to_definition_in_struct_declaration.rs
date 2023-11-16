@@ -12,7 +12,7 @@ pub(super) fn jump_to_definition_in_struct_declaration(schema: &Schema, source: 
     let mut namespace_path: Vec<_> = struct_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = struct_declaration.define_availability;
-    for function_declaration in &struct_declaration.function_declarations {
+    for function_declaration in struct_declaration.function_declarations() {
         if function_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_function_declaration(
                 schema,
@@ -38,13 +38,13 @@ pub(super) fn jump_to_definition_in_function_declaration(
     availability: Availability
 ) -> Vec<Definition> {
     let mut generics = vec![];
-    if let Some(gen) = &struct_declaration.generics_declaration {
+    if let Some(gen) = struct_declaration.generics_declaration() {
         generics.push(gen);
     }
-    if let Some(gen) = &function_declaration.generics_declaration {
+    if let Some(gen) = function_declaration.generics_declaration() {
         generics.push(gen);
     }
-    if let Some(argument_list_declaration) = &function_declaration.argument_list_declaration {
+    if let Some(argument_list_declaration) = function_declaration.argument_list_declaration() {
         return jump_to_definition_in_argument_list_declaration(
             schema,
             source,

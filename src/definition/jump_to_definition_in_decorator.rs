@@ -7,6 +7,7 @@ use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn jump_to_definition_in_decorator<'a>(
     schema: &'a Schema,
@@ -19,7 +20,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
 ) -> Vec<Definition> {
     let mut user_typed_spaces = vec![];
     let mut selector_span = None;
-    for identifier in decorator.identifier_path.identifiers() {
+    for identifier in decorator.identifier_path().identifiers() {
         if identifier.span.contains_line_col(line_col) {
             user_typed_spaces.push(identifier.name());
             selector_span = Some(identifier.span);
@@ -50,7 +51,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
     } else {
         let reference = search_identifier_path_names_with_filter_to_path(&user_typed_spaces, schema, source, namespace_path, filter, availability);
         // found in argument lists
-        if let Some(argument_list) = &decorator.argument_list {
+        if let Some(argument_list) = decorator.argument_list() {
             if let Some(reference) = reference {
                 jump_to_definition_in_argument_list(
                     schema,

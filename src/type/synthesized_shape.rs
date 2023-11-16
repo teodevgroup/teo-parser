@@ -116,7 +116,7 @@ impl Display for SynthesizedShape {
             f.write_str(">")?;
         }
         f.write_str("{")?;
-        f.write_str(&self.fields().map(|(k, t)| format!("{}: {}", k, t)).join(", "))?;
+        f.write_str(&self.fields.iter().map(|(k, t)| format!("{}: {}", k, t)).join(", "))?;
         f.write_str("}")
     }
 }

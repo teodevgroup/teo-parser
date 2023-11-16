@@ -35,15 +35,13 @@ pub(super) fn resolve_function_declaration<'a>(
     if let Some(generics_constraint) = function_declaration.generics_constraint() {
         generics_constraints.push(generics_constraint);
     }
-    if let Some(argument_list_declaration) = &function_declaration.argument_list_declaration {
-        resolve_argument_list_declaration(
-            argument_list_declaration,
-            &generics_declarations,
-            &generics_constraints,
-            context,
-            function_declaration.define_availability,
-        );
-    }
+    resolve_argument_list_declaration(
+        function_declaration.argument_list_declaration(),
+        &generics_declarations,
+        &generics_constraints,
+        context,
+        function_declaration.define_availability,
+    );
     resolve_type_expr(
         function_declaration.return_type(),
         &generics_declarations,

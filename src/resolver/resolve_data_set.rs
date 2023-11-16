@@ -17,7 +17,7 @@ pub(super) fn resolve_data_set<'a>(data_set: &'a DataSet, context: &'a ResolverC
         context.insert_duplicated_identifier(data_set.identifier().span);
     }
     *data_set.actual_availability.borrow_mut() = actual_availability;
-    for group in &data_set.groups {
+    for group in data_set.groups() {
         resolve_data_set_group(data_set, group, context);
     }
 }
@@ -45,14 +45,14 @@ fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, co
 }
 
 pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a ResolverContext<'a>) {
-    for group in &data_set.groups {
+    for group in data_set.groups() {
         if !group.is_resolved() {
             return;
         };
-        let model = context.schema.find_top_by_path(&group.resolved().model_path).unwrap().as_model().unwrap();
-        for record in &group.records {
+        let model = context.schema.find_top_by_path(group.resolved().path()).unwrap().as_model().unwrap();
+        for record in group.records() {
             let mut used_keys = vec![];
-            for (key_expression, value_expression) in &record.dictionary.expressions {
+            for (key_expression, value_expression) in record.dictionary().expressions() {
                 let key_span = key_expression.span();
                 let key_resolved = resolve_expression(key_expression, context, &Type::String, &btreemap! {});
                 if !key_resolved.r#type.is_string() {

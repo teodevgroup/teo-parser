@@ -136,7 +136,7 @@ fn resolve_struct_instance_for_unit<'a>(
         } else {
             expression.span()
         }, "undefined struct");
-        return expression.resolve_and_return_and_return(TypeAndValue::undetermined());
+        return expression.resolve_and_return(TypeAndValue::undetermined());
     };
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
@@ -151,7 +151,7 @@ fn resolve_struct_instance_for_unit<'a>(
                 context.insert_diagnostics_error(expression.span(), format!("{} is not subscriptable", current.r#type()));
                 return expression.resolve_and_return(TypeAndValue::undetermined());
             };
-            let Some(argument_list_declaration) = subscript_function.argument_list_declaration.as_ref() else {
+            let Some(argument_list_declaration) = subscript_function.argument_list_declaration() else {
                 return expression.resolve_and_return(TypeAndValue::undetermined());
             };
             if argument_list_declaration.argument_declarations.len() != 1 {
@@ -160,11 +160,11 @@ fn resolve_struct_instance_for_unit<'a>(
             let mut map = calculate_generics_map(struct_definition.generics_declaration(), &current.r#type.generic_types());
             let argument_declaration = argument_list_declaration.argument_declarations.first().unwrap();
             let expected_type = argument_declaration.type_expr().resolved().replace_generics(&map);
-            resolve_expression(subscript.expression.as_ref(), context, &Type::Undetermined, &btreemap! {});
+            resolve_expression(subscript.expression(), context, &Type::Undetermined, &btreemap! {});
             if expected_type.is_generic_item() {
-                map.insert(expected_type.as_generic_item().unwrap().to_string(), subscript.expression.resolved().r#type.clone());
+                map.insert(expected_type.as_generic_item().unwrap().to_string(), subscript.expression().resolved().r#type.clone());
             } else {
-                if !expected_type.test(subscript.expression.resolved().r#type()) {
+                if !expected_type.test(subscript.expression().resolved().r#type()) {
                     context.insert_diagnostics_error(subscript.expression().span(), format!("expect {}, found {}", expected_type, subscript.expression.resolved().r#type()));
                 }
             }
@@ -221,7 +221,7 @@ fn resolve_enum_reference_for_unit<'a>(
             if let Some(m) = enum_declaration.members().find(|m| m.identifier().name() == identifier.name()) {
                 TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
                     Value::OptionVariant(OptionVariant {
-                        value: m.resolved().value.as_int().unwrap(),
+                        value: m.resolved().as_int().unwrap(),
                         display: format!(".{}", identifier.name()),
                     })
                 } else {
@@ -273,8 +273,8 @@ fn resolve_enum_variant_for_unit<'a>(
                     context,
                     None
                 );
-                let args = argument_list.arguments().iter().map(|argument| {
-                    Some((argument.resolved_name()?.to_string(), argument.value.resolved().value.clone()?))
+                let args = argument_list.arguments().map(|argument| {
+                    Some((argument.resolved_name()?.to_string(), argument.value().resolved().value.clone()?))
                 }).collect::<Option<BTreeMap<String, Value>>>();
                 expression.resolve_and_return(TypeAndValue::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
                     value: value.value.clone(),

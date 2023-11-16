@@ -163,7 +163,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             if identifier.span.contains_line_col(line_col) {
                                                 return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier().name()));
                                             } else {
-                                                current = Some(UnitSearchResult::Type(item.expression.resolved().r#type.clone()));
+                                                current = Some(UnitSearchResult::Type(item.expression().resolved().r#type.clone()));
                                             }
                                         } else {
                                             return default;
