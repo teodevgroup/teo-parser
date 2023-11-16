@@ -179,6 +179,7 @@ fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> TypeGener
         match current.as_rule() {
             Rule::CHEVRON_OPEN => parse_insert_punctuation!(context, current, children, "<"),
             Rule::CHEVRON_CLOSE => parse_insert_punctuation!(context, current, children, ">"),
+            Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, type_exprs),
             _ => context.insert_unparsed(parse_span(&current)),
         }
