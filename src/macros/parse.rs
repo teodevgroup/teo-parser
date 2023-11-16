@@ -43,7 +43,7 @@ macro_rules! parse_insert {
     ($expr:expr, $children:ident, $dest:ident) => {
         {
             let node = $expr;
-            $dest.push(node.id());
+            $dest.push(crate::traits::identifiable::Identifiable::id(&node));
             $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
@@ -54,7 +54,7 @@ macro_rules! parse_set {
     ($expr:expr, $children:ident, $dest:ident) => {
         {
             let node = $expr;
-            $dest = node.id();
+            $dest = crate::traits::identifiable::Identifiable::id(&node);
             $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
@@ -65,7 +65,7 @@ macro_rules! parse_set_optional {
     ($expr:expr, $children:ident, $dest:ident) => {
         {
             let node = $expr;
-            $dest = Some(node.id());
+            $dest = Some(crate::traits::identifiable::Identifiable::id(&node));
             $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };

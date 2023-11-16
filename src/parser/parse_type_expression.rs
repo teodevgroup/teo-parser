@@ -29,7 +29,7 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
         let lhs_id = lhs.id();
         let rhs_id = rhs.id();
         children.insert(lhs_id, lhs.into());
-        parse_insert_operator!(context, current, children, operator.as_str());
+        parse_insert_operator!(context, operator, children, operator.as_str());
         children.insert(lhs_id, lhs.into());
         let operation = TypeBinaryOperation {
             span,

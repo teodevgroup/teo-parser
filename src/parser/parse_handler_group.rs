@@ -1,5 +1,6 @@
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_span::parse_span;
@@ -73,8 +74,14 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserCont
     let mut input_type = 0;
     let mut output_type = 0;
     let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
+    let mut inside_block = false;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::BLOCK_OPEN => {
+                parse_insert_punctuation!(context, current, children, "{");
+                inside_block = true;
+            },
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
             Rule::HANDLER_KEYWORD => parse_insert_keyword!(context, current, children, "handler"),
             Rule::triple_comment_block => if !inside_block {

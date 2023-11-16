@@ -4,6 +4,7 @@ use crate::ast::span::Span;
 use crate::{parse_append, parse_container_node_variables, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;

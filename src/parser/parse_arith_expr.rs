@@ -24,7 +24,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
             Rule::NOT => ArithExprOperator::Not,
             _ => unreachable!(),
         };
-        parse_insert_operator!(context, current, children, operator.as_str());
+        parse_insert_operator!(context, operator, children, operator.as_str());
         children.insert(rhs.id(), rhs.into());
         let operation = UnaryOperation {
             span,
@@ -62,7 +62,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
-        parse_insert_operator!(context, current, children, operator.as_str());
+        parse_insert_operator!(context, operator, children, operator.as_str());
         children.insert(rhs.id(), rhs.into());
         let operation = BinaryOperation {
             span,
@@ -81,7 +81,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> A
         };
         let (span, path, mut children) = parse_container_node_variables!(pair, context);
         children.insert(lhs.id(), lhs.into());
-        parse_insert_operator!(context, current, children, operator.as_str());
+        parse_insert_operator!(context, operator, children, operator.as_str());
         let operation = UnaryPostfixOperation {
             span,
             path,
