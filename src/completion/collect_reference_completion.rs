@@ -4,6 +4,7 @@ use crate::ast::namespace::Namespace;
 use crate::ast::node::Node;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn collect_reference_completion_in_source(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_prefix: &Vec<&str>, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Vec<Vec<usize>> {
     let mut examined_sources = vec![];
@@ -53,7 +54,7 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
 
 fn collect_reference_completion_in_namespace(namespace: &Namespace, filter: &Arc<dyn Fn(&Node) -> bool>) -> Vec<Vec<usize>> {
     let mut result = vec![];
-    for top in namespace.tops() {
+    for top in namespace.children.values() {
         if let Some(namespace) = top.as_namespace() {
             if namespace.children.values().find(|t| filter(t)).is_some() {
                 result.push(namespace.path.clone());

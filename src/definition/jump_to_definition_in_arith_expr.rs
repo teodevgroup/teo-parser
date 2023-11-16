@@ -5,6 +5,7 @@ use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_expression;
 use crate::r#type::r#type::Type;
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn jump_to_definition_in_arith_expr<'a>(
     schema: &'a Schema,
@@ -25,7 +26,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             expect,
             availability,
         ),
-        ArithExpr::UnaryPostfixOperation(u) => if u.lhs.span().contains_line_col(line_col) {
+        ArithExpr::UnaryPostfixOperation(u) => if u.lhs().span().contains_line_col(line_col) {
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
@@ -38,7 +39,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
         } else {
             vec![]
         }
-        ArithExpr::UnaryOperation(u) => if u.rhs.span().contains_line_col(line_col) {
+        ArithExpr::UnaryOperation(u) => if u.rhs().span().contains_line_col(line_col) {
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
@@ -51,7 +52,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
         } else {
             vec![]
         }
-        ArithExpr::BinaryOperation(b) => if b.lhs.span().contains_line_col(line_col) {
+        ArithExpr::BinaryOperation(b) => if b.lhs().span().contains_line_col(line_col) {
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
@@ -61,7 +62,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
                 expect,
                 availability,
             )
-        } else if b.rhs.span().contains_line_col(line_col) {
+        } else if b.rhs().span().contains_line_col(line_col) {
             jump_to_definition_in_arith_expr(
                 schema,
                 source,

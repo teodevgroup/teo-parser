@@ -6,6 +6,7 @@ use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_e
 use crate::r#type::r#type::Type;
 use crate::search::search_availability::search_availability;
 use crate::traits::resolved::Resolve;
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn jump_to_definition_in_constant<'a>(
     schema: &'a Schema,
@@ -21,11 +22,11 @@ pub(super) fn jump_to_definition_in_constant<'a>(
         return jump_to_definition_in_expression(
             schema,
             source,
-            &constant.expression,
+            constant.expression(),
             &namespace_path,
             line_col,
             if constant.is_resolved() {
-                constant.resolved().expression_resolved.r#type()
+                constant.resolved().r#type()
             } else {
                 &undetermined
             },

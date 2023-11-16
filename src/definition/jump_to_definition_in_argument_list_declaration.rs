@@ -6,6 +6,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_type_expr_kind;
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn jump_to_definition_in_argument_list_declaration(
     schema: &Schema,
@@ -41,11 +42,11 @@ pub(super) fn jump_to_definition_in_argument_declaration(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    if argument_declaration.type_expr.span().contains_line_col(line_col) {
+    if argument_declaration.type_expr().span().contains_line_col(line_col) {
         return jump_to_definition_in_type_expr_kind(
             schema,
             source,
-            &argument_declaration.type_expr.kind,
+            &argument_declaration.type_expr().kind,
             namespace_path,
             line_col,
             generics_declarations,

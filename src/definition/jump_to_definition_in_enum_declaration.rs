@@ -7,12 +7,13 @@ use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_
 use crate::definition::jump_to_definition_in_arith_expr::jump_to_definition_in_arith_expr;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn jump_to_definition_in_enum_declaration(schema: &Schema, source: &Source, enum_declaration: &Enum, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = enum_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = enum_declaration.define_availability;
-    for member in &enum_declaration.members {
+    for member in enum_declaration.members() {
         if member.span.contains_line_col(line_col) {
             return jump_to_definition_in_enum_member_declaration(
                 schema,
@@ -37,7 +38,7 @@ pub(super) fn jump_to_definition_in_enum_member_declaration(
     availability: Availability,
     line_col: (usize, usize),
 ) -> Vec<Definition> {
-    if let Some(argument_list_declaration) = &enum_member_declaration.argument_list_declaration {
+    if let Some(argument_list_declaration) = enum_member_declaration.argument_list_declaration() {
         return jump_to_definition_in_argument_list_declaration(
             schema,
             source,
@@ -48,7 +49,7 @@ pub(super) fn jump_to_definition_in_enum_member_declaration(
             availability,
         );
     }
-    if let Some(expression) = &enum_member_declaration.expression {
+    if let Some(expression) = enum_member_declaration.expression() {
         if expression.span().contains_line_col(line_col) {
             if let Some(arith_expr) = expression.as_arith_expr() {
                 return jump_to_definition_in_arith_expr(

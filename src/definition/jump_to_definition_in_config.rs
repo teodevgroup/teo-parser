@@ -7,6 +7,8 @@ use crate::r#type::r#type::Type;
 use crate::search::search_availability::search_availability;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = config.string_path.iter().map(|s| s.as_str()).collect();
@@ -24,7 +26,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             return vec![];
         }
     }
-    for item in &config.items {
+    for item in config.items() {
         if item.identifier().span.contains_line_col(line_col) {
             if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
                 if let Some(field) = config_declaration.fields().find(|field| field.identifier().name() == item.identifier().name()) {
@@ -54,7 +56,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             return jump_to_definition_in_expression(
                 schema,
                 source,
-                &item.expression,
+                item.expression(),
                 &namespace_path,
                 line_col,
                 expected_type,

@@ -17,7 +17,7 @@ pub(super) fn find_completion_in_argument_list_declaration(schema: &Schema, sour
 }
 
 pub(super) fn find_completion_in_argument_declaration(schema: &Schema, source: &Source, argument_declaration: &ArgumentDeclaration, line_col: (usize, usize), generics: &Vec<&GenericsDeclaration>, namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
-    if argument_declaration.type_expr.span().contains_line_col(line_col) {
+    if argument_declaration.type_expr().span().contains_line_col(line_col) {
         return find_completion_in_type_expr(schema, source, argument_declaration.type_expr(), line_col, namespace_path, generics, TypeExprFilter::None, availability);
     }
     vec![]

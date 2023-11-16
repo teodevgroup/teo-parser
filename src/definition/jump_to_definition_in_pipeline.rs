@@ -21,7 +21,7 @@ pub(super) fn jump_to_definition_in_pipeline<'a>(
         jump_to_definition_in_pipeline_unit(
             schema,
             source,
-            pipeline.unit.as_ref(),
+            pipeline.unit(),
             namespace_path,
             line_col,
             availability

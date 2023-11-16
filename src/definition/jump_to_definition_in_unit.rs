@@ -9,6 +9,7 @@ use crate::definition::jump_to_definition_in_expression::jump_to_definition_in_e
 use crate::r#type::r#type::Type;
 use crate::search::search_unit_for_definition::search_unit_for_definition;
 use crate::traits::identifiable::Identifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn jump_to_definition_in_unit<'a>(
@@ -162,7 +163,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                         }]
                     }
                     Node::StructDeclaration(struct_declaration) => if let Some(identifier) = identifier_name {
-                        let method = struct_declaration.function_declarations.iter().find(|f| f.identifier().name() == identifier).unwrap();
+                        let method = struct_declaration.function_declarations().find(|f| f.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(method.source_id()).unwrap().file_path.clone(),
                             selection_span: span,

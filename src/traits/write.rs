@@ -1,6 +1,7 @@
+use std::fmt::Debug;
 use crate::format::Writer;
 
-pub trait Write {
+pub trait Write: Debug {
 
     fn write(&self, writer: &mut Writer);
 

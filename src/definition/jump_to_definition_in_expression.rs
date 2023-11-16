@@ -26,7 +26,7 @@ pub(super) fn jump_to_definition_in_expression<'a>(
         ExpressionKind::Group(group) => jump_to_definition_in_expression(
             schema,
             source,
-            group.expression.as_ref(),
+            group.expression(),
             namespace_path,
             line_col,
             expect,

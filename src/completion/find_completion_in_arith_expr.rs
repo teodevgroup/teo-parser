@@ -16,7 +16,7 @@ pub(super) fn find_completion_in_arith_expr(schema: &Schema, source: &Source, ar
         }
         ArithExpr::BinaryOperation(b) => if b.lhs().span().contains_line_col(line_col) {
             find_completion_in_arith_expr(schema, source, b.lhs(), line_col, namespace_path, availability)
-        } else if b.rhs.span().contains_line_col(line_col) {
+        } else if b.rhs().span().contains_line_col(line_col) {
             find_completion_in_arith_expr(schema, source, b.rhs(), line_col, namespace_path, availability)
         } else {
             vec![]
