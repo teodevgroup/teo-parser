@@ -7,10 +7,10 @@ use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
-use crate::r#type::reference::Reference;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_type_expr<'a>(
     type_expr: &'a TypeExpr,
@@ -52,14 +52,14 @@ fn resolve_type_expr_kind<'a>(
             match binary_op.op {
                 TypeOperator::BitOr => {
                     let lhs = resolve_type_expr_kind(
-                        binary_op.lhs.as_ref(),
+                        binary_op.lhs().kind,
                         generics_declaration,
                         generics_constraint,
                         context,
                         availability,
                     );
                     let rhs = resolve_type_expr_kind(
-                        binary_op.rhs.as_ref(),
+                        binary_op.rhs(),
                         generics_declaration,
                         generics_constraint,
                         context,
@@ -81,7 +81,7 @@ fn resolve_type_expr_kind<'a>(
         }
         TypeExprKind::TypeGroup(g) => {
             let mut resolved = resolve_type_expr_kind(
-                g.kind.as_ref(),
+                g.kind(),
                 generics_declaration,
                 generics_constraint,
                 context,
@@ -103,8 +103,8 @@ fn resolve_type_expr_kind<'a>(
             resolved
         }
         TypeExprKind::TypeTuple(t) => {
-            let mut resolved = Type::Tuple(t.items.iter().map(|k| resolve_type_expr_kind(
-                k,
+            let mut resolved = Type::Tuple(t.items().map(|k| resolve_type_expr_kind(
+                &k.kind,
                 generics_declaration,
                 generics_constraint,
                 context,
@@ -127,8 +127,8 @@ fn resolve_type_expr_kind<'a>(
         }
         TypeExprKind::TypeSubscript(subscript) => {
             let mut resolved = Type::FieldType(
-                Box::new(resolve_type_item(&subscript.type_item, generics_declaration, generics_constraint, context, availability)),
-                Box::new(resolve_type_expr_kind(&subscript.type_expr, generics_declaration, generics_constraint, context, availability)),
+                Box::new(resolve_type_item(subscript.type_item(), generics_declaration, generics_constraint, context, availability)),
+                Box::new(resolve_type_expr_kind(subscript.type_expr(), generics_declaration, generics_constraint, context, availability)),
             );
             if !resolved.is_optional() && subscript.item_optional {
                 resolved = Type::Optional(Box::new(resolved));
@@ -166,12 +166,12 @@ fn resolve_type_item<'a>(
         None
     };
     if base.is_none() {
-        if let Some(resolved) = resolve_identifier_path(&type_item.identifier_path, context, ReferenceSpace::Default, availability) {
+        if let Some(resolved) = resolve_identifier_path(type_item.identifier_path(), context, ReferenceSpace::Default, availability) {
             base = match resolved.r#type() {
                 Type::ModelReference(r) => Some(Type::ModelObject(r.clone())),
                 Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
-                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
-                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
+                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), type_item.generics().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
+                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), type_item.generics().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
                 _ => None,
             };
         }

@@ -13,7 +13,7 @@ pub(super) fn resolve_argument_list_declaration<'a>(
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {
-    for argument_declaration in &argument_list_declaration.argument_declarations {
+    for argument_declaration in argument_list_declaration.argument_declarations() {
         resolve_argument_declaration(argument_declaration, generics_declaration, generics_constraint, context, availability)
     }
 }
@@ -25,5 +25,5 @@ fn resolve_argument_declaration<'a>(
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {
-    resolve_type_expr(&argument_declaration.type_expr, generics_declaration, generics_constraint, &btreemap! {}, context, availability)
+    resolve_type_expr(argument_declaration.type_expr(), generics_declaration, generics_constraint, &btreemap! {}, context, availability)
 }

@@ -5,21 +5,21 @@ use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_gen
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a DecoratorDeclaration, context: &'a ResolverContext<'a>) {
-    if let Some(generics_declaration) = &decorator_declaration.generics_declaration {
+    if let Some(generics_declaration) = decorator_declaration.generics_declaration() {
         resolve_generics_declaration(generics_declaration, &vec![], context);
-        if let Some(generics_constraint) = &decorator_declaration.generics_constraint {
+        if let Some(generics_constraint) = &decorator_declaration.generics_constraint() {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, decorator_declaration.define_availability);
         }
     }
-    if let Some(argument_list_declaration) = &decorator_declaration.argument_list_declaration {
+    if let Some(argument_list_declaration) = decorator_declaration.argument_list_declaration() {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            &if let Some(generics_declaration) = decorator_declaration.generics_declaration.as_ref() {
+            &if let Some(generics_declaration) = decorator_declaration.generics_declaration() {
                 vec![generics_declaration]
             } else {
                 vec![]
             },
-            &if let Some(generics_constraint) = decorator_declaration.generics_constraint.as_ref() {
+            &if let Some(generics_constraint) = decorator_declaration.generics_constraint() {
                 vec![generics_constraint]
             } else {
                 vec![]
@@ -28,7 +28,7 @@ pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a Decor
             decorator_declaration.define_availability
         )
     }
-    for variant in &decorator_declaration.variants {
+    for variant in decorator_declaration.variants() {
         resolve_decorator_declaration_variant(variant, context, decorator_declaration.define_availability);
     }
 }
@@ -38,21 +38,21 @@ fn resolve_decorator_declaration_variant<'a>(
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {
-    if let Some(generics_declaration) = &decorator_declaration_variant.generics_declaration {
+    if let Some(generics_declaration) = decorator_declaration_variant.generics_declaration() {
         resolve_generics_declaration(generics_declaration, &vec![], context);
-        if let Some(generics_constraint) = &decorator_declaration_variant.generics_constraint {
+        if let Some(generics_constraint) = decorator_declaration_variant.generics_constraint() {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, availability);
         }
     }
-    if let Some(argument_list_declaration) = &decorator_declaration_variant.argument_list_declaration {
+    if let Some(argument_list_declaration) = decorator_declaration_variant.argument_list_declaration() {
         resolve_argument_list_declaration(
             argument_list_declaration,
-            &if let Some(generics_declaration) = decorator_declaration_variant.generics_declaration.as_ref() {
+            &if let Some(generics_declaration) = decorator_declaration_variant.generics_declaration() {
                 vec![generics_declaration]
             } else {
                 vec![]
             },
-            &if let Some(generics_constraint) = decorator_declaration_variant.generics_constraint.as_ref() {
+            &if let Some(generics_constraint) = decorator_declaration_variant.generics_constraint() {
                 vec![generics_constraint]
             } else {
                 vec![]
