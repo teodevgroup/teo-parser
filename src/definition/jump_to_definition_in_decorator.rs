@@ -39,8 +39,8 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
                     selection_span: selector_span,
                     target_span: top.span(),
                     identifier_span: match top {
-                        Top::DecoratorDeclaration(d) => d.identifier.span,
-                        Top::Namespace(n) => n.span,
+                        Node::DecoratorDeclaration(d) => d.identifier().span,
+                        Node::Namespace(n) => n.span,
                         _ => unreachable!()
                     }
                 }]

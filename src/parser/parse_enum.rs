@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::expression::Expression;
+use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
@@ -128,9 +128,9 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
 fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> Expression {
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::arith_expr => return Expression::ArithExpr(parse_arith_expr(current, context)),
-            Rule::string_literal => return Expression::StringLiteral(parse_string_literal(&current)),
-            Rule::numeric_literal => return Expression::NumericLiteral(parse_numeric_literal(&current, context)),
+            Rule::arith_expr => return Expression::new(ExpressionKind::ArithExpr(parse_arith_expr(current, context))),
+            Rule::string_literal => return Expression::new(ExpressionKind::StringLiteral(parse_string_literal(&current, context))),
+            Rule::numeric_literal => return Expression::new(ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context))),
             _ => context.insert_error(parse_span(&pair), "invalid enum member expression"),
         }
     }

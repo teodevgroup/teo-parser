@@ -16,7 +16,7 @@ use crate::ast::keyword::Keyword;
 use crate::ast::constant::Constant;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
-use crate::ast::decorator_declaration::DecoratorDeclaration;
+use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::ast::expression::Expression;
 use crate::ast::field::Field;
 use crate::ast::function_declaration::FunctionDeclaration;
@@ -34,13 +34,13 @@ use crate::ast::model::Model;
 use crate::ast::namespace::Namespace;
 use crate::ast::operators::Operator;
 use crate::ast::pipeline::Pipeline;
-use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
+use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::ast::punctuations::Punctuation;
 use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::subscript::Subscript;
-use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGroup, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGenerics, TypeGroup, TypeItem, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
 use crate::availability::Availability;
@@ -75,6 +75,7 @@ pub enum Node {
     DataSetRecord(DataSetRecord),
     Decorator(Decorator),
     DecoratorDeclaration(DecoratorDeclaration),
+    DecoratorDeclarationVariant(DecoratorDeclarationVariant),
     Enum(Enum),
     EnumMember(EnumMember),
     Expression(Expression),
@@ -107,13 +108,16 @@ pub enum Node {
     Model(Model),
     Namespace(Namespace),
     PipelineItemDeclaration(PipelineItemDeclaration),
+    PipelineItemDeclarationVariant(PipelineItemDeclarationVariant),
     StructDeclaration(StructDeclaration),
     TypeExpr(TypeExpr),
     TypeBinaryOperation(TypeBinaryOperation),
     TypeGroup(TypeGroup),
     TypeTuple(TypeTuple),
     TypeSubscript(TypeSubscript),
-    UseMiddlewareBlock(UseMiddlewaresBlock),
+    TypeItem(TypeItem),
+    TypeGenerics(TypeGenerics),
+    UseMiddlewaresBlock(UseMiddlewaresBlock),
     Punctuation(Punctuation),
     Operator(Operator),
 }
@@ -358,6 +362,17 @@ impl Node {
     pub fn as_decorator_declaration(&self) -> Option<&DecoratorDeclaration> {
         match self {
             Node::DecoratorDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_decorator_declaration_variant(&self) -> bool {
+        self.as_decorator_declaration_variant().is_some()
+    }
+
+    pub fn as_decorator_declaration_variant(&self) -> Option<&DecoratorDeclarationVariant> {
+        match self {
+            Node::DecoratorDeclarationVariant(c) => Some(c),
             _ => None,
         }
     }
@@ -714,6 +729,17 @@ impl Node {
         }
     }
 
+    pub fn is_pipeline_item_declaration_variant(&self) -> bool {
+        self.as_pipeline_item_declaration_variant().is_some()
+    }
+
+    pub fn as_pipeline_item_declaration_variant(&self) -> Option<&PipelineItemDeclarationVariant> {
+        match self {
+            Node::PipelineItemDeclarationVariant(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn is_struct_declaration(&self) -> bool {
         self.as_struct_declaration().is_some()
     }
@@ -780,13 +806,35 @@ impl Node {
         }
     }
 
-    pub fn is_use_middleware_block(&self) -> bool {
-        self.as_use_middleware_block().is_some()
+    pub fn is_type_item(&self) -> bool {
+        self.as_type_item().is_some()
     }
 
-    pub fn as_use_middleware_block(&self) -> Option<&UseMiddlewaresBlock> {
+    pub fn as_type_item(&self) -> Option<&TypeItem> {
         match self {
-            Node::UseMiddlewareBlock(c) => Some(c),
+            Node::TypeItem(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_type_generics(&self) -> bool {
+        self.as_type_generics().is_some()
+    }
+
+    pub fn as_type_generics(&self) -> Option<&TypeGenerics> {
+        match self {
+            Node::TypeGenerics(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_use_middlewares_block(&self) -> bool {
+        self.as_use_middlewares_block().is_some()
+    }
+
+    pub fn as_use_middlewares_block(&self) -> Option<&UseMiddlewaresBlock> {
+        match self {
+            Node::UseMiddlewaresBlock(c) => Some(c),
            _ => None,
         }
     }
@@ -837,6 +885,7 @@ impl Node {
             Node::DataSetRecord(n) => n,
             Node::Decorator(n) => n,
             Node::DecoratorDeclaration(n) => n,
+            Node::DecoratorDeclarationVariant(n) => n,
             Node::Enum(n) => n,
             Node::EnumMember(n) => n,
             Node::Expression(n) => n,
@@ -869,13 +918,16 @@ impl Node {
             Node::Model(n) => n,
             Node::Namespace(n) => n,
             Node::PipelineItemDeclaration(n) => n,
+            Node::PipelineItemDeclarationVariant(n) => n,
             Node::StructDeclaration(n) => n,
             Node::TypeExpr(n) => n,
             Node::TypeBinaryOperation(n) => n,
             Node::TypeGroup(n) => n,
             Node::TypeTuple(n) => n,
             Node::TypeSubscript(n) => n,
-            Node::UseMiddlewareBlock(n) => n,
+            Node::TypeItem(n) => n,
+            Node::TypeGenerics(n) => n,
+            Node::UseMiddlewaresBlock(n) => n,
             Node::Punctuation(n) => n,
             Node::Operator(n) => n,
         }

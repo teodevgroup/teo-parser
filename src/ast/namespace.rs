@@ -13,6 +13,7 @@ use crate::ast::doc_comment::DocComment;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
 use crate::ast::node::Node;
 use crate::format::Writer;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::write::Write;
 
 declare_container_node!(Namespace, named,
@@ -78,13 +79,13 @@ impl Namespace {
     }
 
     pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
-        self.tops().iter().find(|t| {
+        self.children.values().find(|t| {
             if let Some(n) = t.name() {
-                (n == name) && filter(t) && t.available_test(availability)
+                (n == name) && filter(*t) && t.available_test(availability)
             } else {
                 false
             }
-        }).map(|t| *t)
+        }).map(|t| t)
     }
 
     pub fn find_top_by_id(&self, id: usize) -> Option<&Node> {
@@ -109,7 +110,7 @@ impl Namespace {
     pub fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
         let mut retval = self;
         for name in path {
-            if let Some(child) = retval.namespaces().iter().find(|n| n.identifier.name() == *name) {
+            if let Some(child) = retval.namespaces().iter().find(|n| n.identifier().name() == *name) {
                 retval = child
             } else {
                 return None

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::expression::Expression;
 use crate::ast::span::Span;
-use crate::{declare_container_node, node_child_fn};
+use crate::{declare_container_node, impl_container_node_defaults, node_child_fn};
 use crate::ast::node::Node;
 use crate::format::Writer;
 use crate::traits::identifiable::Identifiable;
@@ -40,35 +40,37 @@ pub enum ArithExprOperator {
 
 declare_container_node!(UnaryOperation, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
 
+impl_container_node_defaults!(UnaryOperation);
+
 impl UnaryOperation {
 
     node_child_fn!(rhs, ArithExpr);
 }
 
-impl Display for UnaryOperation {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.op, f)?;
-        Display::fmt(&self.rhs, f)
+impl Write for UnaryOperation {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
 declare_container_node!(UnaryPostfixOperation, pub(crate) op: ArithExprOperator, pub(crate) lhs: usize);
+
+impl_container_node_defaults!(UnaryPostfixOperation);
 
 impl UnaryPostfixOperation {
 
     node_child_fn!(lhs, ArithExpr);
 }
 
-impl Display for UnaryPostfixOperation {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.lhs, f)?;
-        Display::fmt(&self.op, f)
+impl Write for UnaryPostfixOperation {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
 declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
+
+impl_container_node_defaults!(BinaryOperation);
 
 impl BinaryOperation {
 
@@ -76,14 +78,9 @@ impl BinaryOperation {
     node_child_fn!(rhs, ArithExpr);
 }
 
-impl Display for BinaryOperation {
-
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.lhs, f)?;
-        f.write_str(" ")?;
-        Display::fmt(&self.op, f)?;
-        f.write_str(" ")?;
-        Display::fmt(&self.rhs, f)
+impl Write for BinaryOperation {
+    fn write(&self, writer: &mut Writer) {
+        writer.write_children(self, self.children.values())
     }
 }
 
@@ -190,5 +187,22 @@ impl Write for ArithExpr {
 impl Display for ArithExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(self.as_dyn_node_trait(), f)
+    }
+}
+
+impl<'a> TryFrom<&'a Node> for &'a ArithExpr {
+    type Error = &'static str;
+
+    fn try_from(value: &'a Node) -> Result<Self, Self::Error> {
+        match value {
+            Node::ArithExpr(n) => Ok(n),
+            _ => Err("convert failed"),
+        }
+    }
+}
+
+impl From<ArithExpr> for Node {
+    fn from(value: ArithExpr) -> Self {
+        Self::ArithExpr(value)
     }
 }

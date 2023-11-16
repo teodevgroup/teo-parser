@@ -29,7 +29,7 @@ pub(super) fn resolve_unit<'a>(
         return resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map);
     }
     let mut current: Option<TypeAndValue> = None;
-    for (index, expression) in unit.expressions.iter().enumerate() {
+    for (index, expression) in unit.expressions().enumerate() {
         current = Some(resolve_current_item_for_unit(
             if index == 0 { None } else { Some(unit.expressions.get(index - 1).unwrap().span()) },
             current.as_ref(),
@@ -216,7 +216,7 @@ fn resolve_enum_reference_for_unit<'a>(
     ).unwrap().as_enum().unwrap();
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(m) = enum_declaration.members.iter().find(|m| m.identifier.name() == identifier.name()) {
+            if let Some(m) = enum_declaration.members.iter().find(|m| m.identifier().name() == identifier.name()) {
                 TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
                     Value::OptionVariant(OptionVariant {
                         value: m.resolved().value.as_int().unwrap(),
@@ -259,7 +259,7 @@ fn resolve_enum_variant_for_unit<'a>(
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
-    let member_declaration = enum_declaration.members.iter().find(|m| m.identifier.name() == value.value.as_str()).unwrap();
+    let member_declaration = enum_declaration.members.iter().find(|m| m.identifier().name() == value.value.as_str()).unwrap();
     if let Some(_) = member_declaration.argument_list_declaration.as_ref() {
         match &expression.kind {
             ExpressionKind::ArgumentList(argument_list) => {
@@ -302,7 +302,7 @@ fn resolve_config_reference_for_unit<'a>(
     ).unwrap().as_config().unwrap();
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = config.items.iter().find(|item| item.identifier.name() == identifier.name()) {
+            if let Some(item) = config.items.iter().find(|item| item.identifier().name() == identifier.name()) {
                 item.expression.resolved().clone()
             } else {
                 context.insert_diagnostics_error(expression.span(), "config item not found");
@@ -328,7 +328,7 @@ fn resolve_model_reference_for_unit<'a>(
     ).unwrap().as_model().unwrap();
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = model.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+            if let Some(item) = model.fields.iter().find(|item| item.identifier().name() == identifier.name()) {
                 TypeAndValue::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
             } else {
                 context.insert_diagnostics_error(expression.span(), "model field not found");
@@ -355,7 +355,7 @@ fn resolve_interface_reference_for_unit<'a>(
     ).unwrap().as_interface_declaration().unwrap();
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+            if let Some(item) = interface.fields.iter().find(|item| item.identifier().name() == identifier.name()) {
                 TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
@@ -383,7 +383,7 @@ fn resolve_interface_object_for_unit<'a>(
     ).unwrap().as_interface_declaration().unwrap();
     expression.resolve(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = interface.fields.iter().find(|item| item.identifier.name() == identifier.name()) {
+            if let Some(item) = interface.fields.iter().find(|item| item.identifier().name() == identifier.name()) {
                 let map = calculate_generics_map(interface.generics_declaration.as_ref(), types);
                 TypeAndValue::new(
                     item.type_expr.resolved().replace_generics(&map),

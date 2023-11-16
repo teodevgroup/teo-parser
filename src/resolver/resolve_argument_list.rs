@@ -261,7 +261,7 @@ fn validate_generics_map_with_constraint_info<'a>(
     for (name, t) in generics_map {
         for constraint in generics_constraints {
             for item in &constraint.items {
-                if item.identifier.name() == name {
+                if item.identifier().name() == name {
                     let mut generics_map_without_name = generics_map.clone();
                     generics_map_without_name.remove(name);
                     if !t.constraint_test(&item.type_expr.resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)) {
@@ -282,7 +282,7 @@ fn guess_generics_by_constraints<'a>(
     let mut retval = btreemap! {};
     for constraint in generics_constraints {
         for item in &constraint.items {
-            if !generics_map.contains_key(item.identifier.name()) {
+            if !generics_map.contains_key(item.identifier().name()) {
                 let new_type = item.type_expr.resolved().replace_keywords(keywords_map).replace_generics(generics_map).flatten();
                 if !new_type.contains_generics() {
                     retval.insert(item.identifier.name.clone(), new_type);
@@ -299,12 +299,12 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
             match container {
                 Type::ModelReference(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                    let field = model.fields.iter().find(|f| f.identifier.name() == field_name).unwrap();
+                    let field = model.fields.iter().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr.resolved().clone()
                 },
                 Type::InterfaceReference(reference, types) => {
                     let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                    let field = interface.fields.iter().find(|f| f.identifier.name() == field_name).unwrap();
+                    let field = interface.fields.iter().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr.resolved().clone()
                 },
                 _ => Type::Undetermined

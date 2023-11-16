@@ -83,7 +83,7 @@ pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserCon
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::DOT => parse_insert_punctuation!(context, current, children, "."),
-            Rule::identifier => parse_set!(parse_identifier(&current), children, identifier),
+            Rule::identifier => parse_set!(parse_identifier(&current, context), children, identifier),
             Rule::argument_list => parse_set_optional!(parse_argument_list(current, context), children, argument_list),
             _ => context.insert_unparsed(parse_span(&current)),
         }
@@ -157,7 +157,6 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserConte
                 children.insert(colon.id(), colon.into());
                 children.insert(value.id(), value.into());
             },
-            Rule::BLOCK_OPEN | Rule::BLOCK_CLOSE | Rule::comment_block => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

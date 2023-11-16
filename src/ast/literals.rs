@@ -71,11 +71,11 @@ impl EnumVariantLiteral {
     node_optional_child_fn!(argument_list, ArgumentList);
 
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
-        Some(vec![self.identifier.name()])
+        Some(vec![self.identifier().name()])
     }
 
     pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
-        Some(self.identifier.name())
+        Some(self.identifier().name())
     }
 }
 
@@ -114,7 +114,7 @@ impl ArrayLiteral {
 
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
         let mut result = vec![];
-        for expression in &self.expressions {
+        for expression in self.expressions() {
             if let Some(r) = expression.unwrap_enumerable_enum_member_string() {
                 result.push(r);
             }
@@ -126,7 +126,7 @@ impl ArrayLiteral {
         if self.expressions.len() < 1 {
             None
         } else {
-            self.expressions.first().unwrap().unwrap_enumerable_enum_member_string()
+            self.expressions().next().unwrap().unwrap_enumerable_enum_member_string()
         }
     }
 }

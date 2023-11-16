@@ -398,3 +398,20 @@ impl Write for Expression {
         self.kind.as_dyn_node_trait().wrap(content, available_length)
     }
 }
+
+impl<'a> TryFrom<&'a Node> for &'a Expression {
+    type Error = &'static str;
+
+    fn try_from(value: &'a Node) -> Result<Self, Self::Error> {
+        match value {
+            Node::Expression(n) => Ok(n),
+            _ => Err("convert failed"),
+        }
+    }
+}
+
+impl From<Expression> for Node {
+    fn from(value: Expression) -> Self {
+        Self::Expression(value)
+    }
+}

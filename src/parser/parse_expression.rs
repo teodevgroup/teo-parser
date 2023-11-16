@@ -36,7 +36,7 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
             Rule::DOT => parse_insert_punctuation!(context, current, children, "."),
             Rule::group => parse_insert!(Expression::new(ExpressionKind::Group(parse_group(current, context))), children, expressions),
             Rule::null_literal => parse_insert!(Expression::new(ExpressionKind::NullLiteral(parse_null_literal(&current, context))), children, expressions),
-            Rule::bool_literal => parse_insert!(Expression::new(ExpressionKind::BoolLiteral(parse_bool_literal(&current))), children, expressions),
+            Rule::bool_literal => parse_insert!(Expression::new(ExpressionKind::BoolLiteral(parse_bool_literal(&current, context))), children, expressions),
             Rule::numeric_literal => parse_insert!(Expression::new(ExpressionKind::NumericLiteral(parse_numeric_literal(&current, context))), children, expressions),
             Rule::string_literal => parse_insert!(Expression::new(ExpressionKind::StringLiteral(parse_string_literal(&current, context))), children, expressions),
             Rule::regex_literal => parse_insert!(Expression::new(ExpressionKind::RegexLiteral(parse_regex_literal(current, context))), children, expressions),

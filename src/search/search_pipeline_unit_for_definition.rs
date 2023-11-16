@@ -1,6 +1,7 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::availability::Availability;
 use crate::ast::namespace::Namespace;
+use crate::ast::node::Node;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -42,8 +43,8 @@ pub fn search_pipeline_unit_for_definition<HAL, HI, OUTPUT>(
                 None
             } {
                 match this_top {
-                    Top::Namespace(namespace) => current_namespace = Some(namespace),
-                    Top::PipelineItemDeclaration(pipeline_item_declaration) => current_pipeline_item = Some(pipeline_item_declaration),
+                    Node::Namespace(namespace) => current_namespace = Some(namespace),
+                    Node::PipelineItemDeclaration(pipeline_item_declaration) => current_pipeline_item = Some(pipeline_item_declaration),
                     _ => unreachable!(),
                 }
                 if identifier.span.contains_line_col(line_col) {

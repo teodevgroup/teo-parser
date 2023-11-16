@@ -128,29 +128,29 @@ fn search_identifier_path_names_in_source_to_top<'a>(
 fn top_to_reference_type_and_value(top: &Node) -> TypeAndValue {
     TypeAndValue {
         r#type: match top {
-            Top::Import(_) => Type::Undetermined,
-            Top::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
-            Top::ConfigDeclaration(_) => Type::Undetermined,
-            Top::Constant(c) => return c.resolved().expression_resolved.clone(),
-            Top::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
-            Top::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
-            Top::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
-            Top::Middleware(m) => Type::MiddlewareReference(Reference::new(m.path.clone(), m.string_path.clone())),
-            Top::HandlerGroup(_) => Type::Undetermined,
-            Top::Interface(i) => if i.generics_declaration.is_none() {
+            Node::Import(_) => Type::Undetermined,
+            Node::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
+            Node::ConfigDeclaration(_) => Type::Undetermined,
+            Node::Constant(c) => return c.resolved().expression_resolved.clone(),
+            Node::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
+            Node::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
+            Node::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
+            Node::MiddlewareDeclaration(m) => Type::MiddlewareReference(Reference::new(m.path.clone(), m.string_path.clone())),
+            Node::HandlerGroupDeclaration(_) => Type::Undetermined,
+            Node::InterfaceDeclaration(i) => if i.generics_declaration.is_none() {
                 Type::InterfaceReference(Reference::new(i.path.clone(), i.string_path.clone()), vec![])
             } else {
                 Type::Undetermined
             },
-            Top::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
-            Top::DecoratorDeclaration(d) => Type::DecoratorReference(Reference::new(d.path.clone(), d.string_path.clone())),
-            Top::PipelineItemDeclaration(p) => Type::PipelineItemReference(Reference::new(p.path.clone(), p.string_path.clone())),
-            Top::StructDeclaration(s) => if s.generics_declaration.is_none() {
+            Node::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
+            Node::DecoratorDeclaration(d) => Type::DecoratorReference(Reference::new(d.path.clone(), d.string_path.clone())),
+            Node::PipelineItemDeclaration(p) => Type::PipelineItemReference(Reference::new(p.path.clone(), p.string_path.clone())),
+            Node::StructDeclaration(s) => if s.generics_declaration.is_none() {
                 Type::StructReference(Reference::new(s.path.clone(), s.string_path.clone()), vec![])
             } else {
                 Type::Undetermined
             }
-            Top::UseMiddlewareBlock(_) => Type::Undetermined,
+            Node::UseMiddlewaresBlock(_) => Type::Undetermined,
         },
         value: None,
     }

@@ -9,7 +9,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&struct_declaration.string_path, struct_declaration.define_availability) {
-        context.insert_duplicated_identifier(struct_declaration.identifier.span);
+        context.insert_duplicated_identifier(struct_declaration.identifier().span);
     }
     if let Some(generics_declaration) = &struct_declaration.generics_declaration {
         resolve_generics_declaration(generics_declaration, &vec![], context);

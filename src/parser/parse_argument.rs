@@ -41,7 +41,7 @@ pub(super) fn parse_argument(pair: Pair<'_>, context: &mut ParserContext) -> Arg
     let mut value: usize = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => parse_set_optional!(parse_identifier(&current), children, name),
+            Rule::identifier => parse_set_optional!(parse_identifier(&current, context), children, name),
             Rule::expression => parse_set!(parse_expression(current, context), children, value),
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             _ => context.insert_unparsed(parse_span(&current)),

@@ -28,12 +28,12 @@ pub(super) fn resolve_generics_constraint<'a>(
     generics_declaration: &'a GenericsDeclaration,
     availability: Availability,
 ) {
-    generics_constraint.items.iter().duplicates_by(|i| i.identifier.name()).for_each(|i| {
+    generics_constraint.items.iter().duplicates_by(|i| i.identifier().name()).for_each(|i| {
         context.insert_diagnostics_error(i.span, "duplicated generics constraint")
     });
     for item in &generics_constraint.items {
-        if generics_declaration.identifiers.iter().find(|i| i.name() == item.identifier.name()).is_none() {
-            context.insert_diagnostics_error(item.identifier.span, "undefined generics identifier")
+        if generics_declaration.identifiers.iter().find(|i| i.name() == item.identifier().name()).is_none() {
+            context.insert_diagnostics_error(item.identifier().span, "undefined generics identifier")
         }
         resolve_type_expr(
             &item.type_expr,

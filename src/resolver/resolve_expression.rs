@@ -163,8 +163,8 @@ fn resolve_null_literal<'a>(n: &NullLiteral, context: &'a ResolverContext<'a>, e
 pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
     if let Some(enum_reference) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_reference.path()).unwrap().as_enum().unwrap();
-        let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == e.identifier.name()) else {
-            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", enum_reference.string_path().join("."), e.identifier.name()));
+        let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == e.identifier().name()) else {
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", enum_reference.string_path().join("."), e.identifier().name()));
             return TypeAndValue {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: None,
@@ -173,7 +173,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         if let Some(argument_list_declaration) = &member.argument_list_declaration {
             if let Some(argument_list) = &e.argument_list {
                 resolve_argument_list(
-                    e.identifier.span,
+                    e.identifier().span,
                     Some(argument_list),
                     vec![CallableVariant {
                         generics_declarations: vec![],
@@ -199,7 +199,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::OptionVariant(OptionVariant {
                     value: member.resolved().value.as_int().unwrap(),
-                    display: format!(".{}", member.identifier.name()),
+                    display: format!(".{}", member.identifier().name()),
                 }))
             }
         } else {
@@ -217,14 +217,14 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
             resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
         } else {
-            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier.name()));
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier().name()));
             TypeAndValue {
                 r#type: Type::SynthesizedEnumReference(reference.clone()),
                 value: None
             }
         }
     } else {
-        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier.name()));
+        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
         TypeAndValue {
             r#type: expected.clone(),
             value: None
@@ -242,7 +242,7 @@ fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral
             }))
         }
     } else {
-        context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier.name()));
+        context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier().name()));
         TypeAndValue {
             r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
             value: None
@@ -256,7 +256,7 @@ fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'
     let mut retval_type = vec![];
     let mut unresolved = false;
     let undetermined = Type::Undetermined;
-    for (i, e) in t.expressions.iter().enumerate() {
+    for (i, e) in t.expressions().enumerate() {
         let resolved = resolve_expression(e, context, types.map(|t| t.get(i)).flatten().unwrap_or(&undetermined), keywords_map);
         if resolved.value.is_none() {
             unresolved = true;

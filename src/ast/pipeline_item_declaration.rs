@@ -6,6 +6,7 @@ use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::format::Writer;
+use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
 declare_container_node!(PipelineItemDeclaration, named, availability,
@@ -40,7 +41,7 @@ impl PipelineItemDeclaration {
 
     pub fn callable_variants(&self) -> Vec<CallableVariant> {
         if self.has_variants() {
-            self.variants.iter().map(|v| CallableVariant {
+            self.variants().map(|v| CallableVariant {
                 generics_declarations: if let Some(generics_declaration) = v.generics_declaration() {
                     vec![generics_declaration]
                 } else {

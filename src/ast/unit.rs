@@ -14,6 +14,10 @@ node_children_iter!(Unit, Expression, ExpressionsIter, expressions);
 
 impl Unit {
     node_children_iter_fn!(expressions, ExpressionsIter);
+
+    pub fn expression_at(&self, idx: usize) -> Option<&Expression> {
+        self.expressions.get(idx).map(|idx| self.children.get(idx)).flatten().map(|n| n.as_expression()).flatten()
+    }
 }
 
 impl Write for Unit {
@@ -28,7 +32,7 @@ impl Unit {
         if self.expressions.len() != 1 {
             None
         } else {
-            self.expressions().first().unwrap().unwrap_enumerable_enum_member_strings()
+            self.expressions().next().unwrap().unwrap_enumerable_enum_member_strings()
         }
     }
 
@@ -36,7 +40,7 @@ impl Unit {
         if self.expressions.len() != 1 {
             None
         } else {
-            self.expressions().first().unwrap().unwrap_enumerable_enum_member_string()
+            self.expressions().next().unwrap().unwrap_enumerable_enum_member_string()
         }
     }
 }

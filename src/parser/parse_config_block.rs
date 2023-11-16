@@ -1,7 +1,7 @@
 use crate::ast::config::Config;
 use crate::ast::config_item::ConfigItem;
 use crate::ast::keyword::Keyword;
-use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_identifier_and_string_path};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -38,7 +38,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
             Rule::identifier => if inside_block {
                 unattached_identifiers.push(parse_identifier(&current, context));
             } else {
-                parse_set!(parse_identifier(&current, context), children, identifier);
+                parse_set_optional!(parse_identifier(&current, context), children, identifier);
             },
             Rule::config_item => parse_insert!(parse_config_item(current, context), children, items),
             Rule::triple_comment_block => parse_append!(parse_doc_comment(current, context), children),

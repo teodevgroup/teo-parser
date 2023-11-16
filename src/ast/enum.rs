@@ -79,7 +79,7 @@ impl EnumMember {
             generics_constraints: vec![],
             pipeline_input: None,
             pipeline_output: None,
-        }).collect()
+        }).into_iter().collect()
     }
 }
 

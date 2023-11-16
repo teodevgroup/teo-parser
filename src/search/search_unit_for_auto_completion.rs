@@ -28,7 +28,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     HI: Fn(&Vec<&str>, Option<&Vec<usize>>) -> OUTPUT,
 {
     // let mut current: Option<UnitSearchResult> = None;
-    // for (index, expression) in unit.expressions.iter().enumerate() {
+    // for (index, expression) in unit.expressions().enumerate() {
     //     if index == 0 {
     //         current = Some(if let Some(identifier) = expression.kind.as_identifier() {
     //             if expression.span().contains_line_col(line_col) {
@@ -74,12 +74,12 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                             ExpressionKind::Call(call) => {
     //                                 let struct_declaration = schema.find_top_by_path(path).unwrap().as_struct_declaration().unwrap();
     //                                 if let Some(function_declaration) = struct_declaration.function_declarations.iter().find(|f| {
-    //                                     f.r#static == false && f.identifier.name() == call.identifier.name()
+    //                                     f.r#static == false && f.identifier().name() == call.identifier().name()
     //                                 }) {
-    //                                     if call.identifier.span.contains_line_col(line_col) {
+    //                                     if call.identifier().span.contains_line_col(line_col) {
     //                                         return handle_identifier(&vec![], Some(path));
     //                                     } else if call.argument_list.span.contains_line_col(line_col) {
-    //                                         return handle_argument_list(&call.argument_list, &struct_declaration.path, Some(call.identifier.name()));
+    //                                         return handle_argument_list(&call.argument_list, &struct_declaration.path, Some(call.identifier().name()));
     //                                     } else {
     //                                         // going next
     //                                         current = Some(UnitSearchResult::Type(function_declaration.return_type.resolved().clone()));
@@ -98,7 +98,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                     }
     //                                 } else {
     //                                     if let Some(subscript_function) = struct_declaration.function_declarations.iter().find(|f| {
-    //                                         f.r#static == false && f.identifier.name() == "subscript"
+    //                                         f.r#static == false && f.identifier().name() == "subscript"
     //                                     }) {
     //                                         current = Some(UnitSearchResult::Type(subscript_function.return_type.resolved().clone()));
     //                                     } else {
@@ -114,25 +114,25 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                 }
     //                 UnitSearchResult::Reference(current_reference) => {
     //                     match schema.find_top_by_path(&current_reference).unwrap() {
-    //                         Top::StructDeclaration(struct_declaration) => {
+    //                         Node::StructDeclaration(struct_declaration) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::ArgumentList(argument_list) => {
-    //                                     if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
+    //                                     if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier().name() == "new") {
     //                                         if argument_list.span.contains_line_col(line_col) {
-    //                                             return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier.name()));
+    //                                             return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier().name()));
     //                                         } else {
     //                                             current = Some(UnitSearchResult::Type(new.return_type.resolved().clone()));
     //                                         }
     //                                     } else {
-    //                                         return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier.name()));
+    //                                         return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier().name()));
     //                                     }
     //                                 }
     //                                 ExpressionKind::Call(call) => {
-    //                                     if let Some(function) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == call.identifier.name()) {
+    //                                     if let Some(function) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier().name() == call.identifier().name()) {
     //                                         if call.span.contains_line_col(line_col) {
-    //                                             return handle_identifier(call.identifier.span, struct_declaration.path.as_ref(), Some(function.identifier.name()));
+    //                                             return handle_identifier(call.identifier().span, struct_declaration.path.as_ref(), Some(function.identifier().name()));
     //                                         } else if call.argument_list.span.contains_line_col(line_col) {
-    //                                             return handle_argument_list(&call.argument_list, struct_declaration.path.as_ref(), Some(function.identifier.name()));
+    //                                             return handle_argument_list(&call.argument_list, struct_declaration.path.as_ref(), Some(function.identifier().name()));
     //                                         } else {
     //                                             return default;
     //                                         }
@@ -149,12 +149,12 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 _ => unreachable!()
     //                             }
     //                         },
-    //                         Top::Config(config) => {
+    //                         Node::Config(config) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(identifier) => {
-    //                                     if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
+    //                                     if let Some(item) = config.items.iter().find(|i| i.identifier().name() == identifier.name()) {
     //                                         if identifier.span.contains_line_col(line_col) {
-    //                                             return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier.name()));
+    //                                             return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier().name()));
     //                                         } else {
     //                                             current = Some(UnitSearchResult::Type(item.expression.resolved().r#type.clone()));
     //                                         }
@@ -174,12 +174,12 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 _ => unreachable!()
     //                             }
     //                         }
-    //                         Top::Enum(r#enum) => {
+    //                         Node::Enum(r#enum) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(i) => {
-    //                                     if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
+    //                                     if let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == i.name()) {
     //                                         if i.span.contains_line_col(line_col) {
-    //                                             return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier.name()));
+    //                                             return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier().name()));
     //                                         } else {
     //                                             return default;
     //                                         }
@@ -189,11 +189,11 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 }
     //                                 ExpressionKind::Call(c) => {
     //                                     if c.span.contains_line_col(line_col) {
-    //                                         if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == c.identifier.name()) {
-    //                                             if c.identifier.span.contains_line_col(line_col) {
-    //                                                 return handle_identifier(c.identifier.span, r#enum.path.as_ref(), Some(member.identifier.name()));
+    //                                         if let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == c.identifier().name()) {
+    //                                             if c.identifier().span.contains_line_col(line_col) {
+    //                                                 return handle_identifier(c.identifier().span, r#enum.path.as_ref(), Some(member.identifier().name()));
     //                                             } else if c.argument_list.span.contains_line_col(line_col) {
-    //                                                 return handle_argument_list(&c.argument_list, r#enum.path.as_ref(), Some(member.identifier.name()));
+    //                                                 return handle_argument_list(&c.argument_list, r#enum.path.as_ref(), Some(member.identifier().name()));
     //                                             } else {
     //                                                 return default;
     //                                             }
@@ -213,7 +213,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 _ => unreachable!()
     //                             }
     //                         }
-    //                         Top::Model(model) => {
+    //                         Node::Model(model) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(identifier) => {
     //                                     if let Some(field) = model.fields.iter().find(|f| f.name() == identifier.name()) {
@@ -238,7 +238,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 _ => unreachable!()
     //                             }
     //                         }
-    //                         Top::Interface(interface) => {
+    //                         Node::InterfaceDeclaration(interface) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(identifier) => {
     //                                     if let Some(field) = interface.fields.iter().find(|f| f.name() == identifier.name()) {
@@ -263,7 +263,7 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                 _ => unreachable!()
     //                             }
     //                         }
-    //                         Top::Namespace(namespace) => {
+    //                         Node::Namespace(namespace) => {
     //                             match &expression.kind {
     //                                 ExpressionKind::Identifier(identifier) => {
     //                                     if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
@@ -277,15 +277,15 @@ pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     //                                     }
     //                                 },
     //                                 ExpressionKind::Call(c) => {
-    //                                     if let Some(top) = namespace.find_top_by_name(c.identifier.name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
+    //                                     if let Some(top) = namespace.find_top_by_name(c.identifier().name(), &top_filter_for_reference_type(ReferenceType::Default), availability) {
     //                                         match top {
-    //                                             Top::StructDeclaration(struct_declaration) => {
+    //                                             Node::StructDeclaration(struct_declaration) => {
     //                                                 if let Some(new) = struct_declaration.function_declarations.iter().find(|f| {
-    //                                                     f.identifier.name() == "new"
+    //                                                     f.identifier().name() == "new"
     //                                                 }) {
     //                                                     if c.span.contains_line_col(line_col) {
-    //                                                         if c.identifier.span.contains_line_col(line_col) {
-    //                                                             return handle_identifier(c.identifier.span, struct_declaration.path.as_ref(), Some("new"));
+    //                                                         if c.identifier().span.contains_line_col(line_col) {
+    //                                                             return handle_identifier(c.identifier().span, struct_declaration.path.as_ref(), Some("new"));
     //                                                         } else if c.argument_list.span.contains_line_col(line_col) {
     //                                                             return handle_argument_list(&c.argument_list, struct_declaration.path.as_ref(), Some("new"));
     //                                                         } else {

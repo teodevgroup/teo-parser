@@ -1,3 +1,4 @@
+use crate::ast::node::Node;
 use crate::availability::Availability;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::schema::Schema;
@@ -6,6 +7,7 @@ use crate::ast::unit::Unit;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list::jump_to_definition_in_argument_list;
 use crate::search::search_pipeline_unit_for_definition::search_pipeline_unit_for_definition;
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn jump_to_definition_in_pipeline<'a>(
     schema: &'a Schema,
@@ -15,7 +17,7 @@ pub(super) fn jump_to_definition_in_pipeline<'a>(
     line_col: (usize, usize),
     availability: Availability,
 ) -> Vec<Definition> {
-    if pipeline.unit.span.contains_line_col(line_col) {
+    if pipeline.unit().span.contains_line_col(line_col) {
         jump_to_definition_in_pipeline_unit(
             schema,
             source,
@@ -57,17 +59,17 @@ pub(super) fn jump_to_definition_in_pipeline_unit<'a>(
         |span ,path| {
             let top = schema.find_top_by_path(path).unwrap();
             match top {
-                Top::Namespace(namespace) => vec![Definition {
+                Node::Namespace(namespace) => vec![Definition {
                     path: schema.source(namespace.source_id()).unwrap().file_path.clone(),
                     selection_span: span,
                     target_span: namespace.span,
-                    identifier_span: namespace.identifier.span,
+                    identifier_span: namespace.identifier().span,
                 }],
-                Top::PipelineItemDeclaration(pipeline_item_declaration) => vec![Definition {
+                Node::PipelineItemDeclaration(pipeline_item_declaration) => vec![Definition {
                     path: schema.source(pipeline_item_declaration.source_id()).unwrap().file_path.clone(),
                     selection_span: span,
                     target_span: pipeline_item_declaration.span,
-                    identifier_span: pipeline_item_declaration.identifier.span,
+                    identifier_span: pipeline_item_declaration.identifier().span,
                 }],
                 _ => unreachable!(),
             }

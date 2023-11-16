@@ -53,16 +53,16 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 let node = parse_identifier(&current, context);
                 identifier = node.id();
                 if context.current_availability_flag() != Availability::default() {
-                    context.insert_error(node.as_ref().unwrap().span, "namespace shouldn't be placed under availability flags")
+                    context.insert_error(node.span, "namespace shouldn't be placed under availability flags")
                 }
-                if node.as_ref().unwrap().name() == "main" {
-                    context.insert_error(node.as_ref().unwrap().span, "'main' is reserved for main namespace");
-                } else if node.as_ref().unwrap().name() == "std" {
+                if node.name() == "main" {
+                    context.insert_error(node.span, "'main' is reserved for main namespace");
+                } else if node.name() == "std" {
                     if !context.is_builtin_source() {
-                        context.insert_error(node.as_ref().unwrap().span, "'std' is reserved for standard library");
+                        context.insert_error(node.span, "'std' is reserved for standard library");
                     }
                 }
-                string_path = context.next_parent_string_path(node.as_ref().unwrap().name());
+                string_path = context.next_parent_string_path(node.name());
                 children.insert(node.id(), node.into());
             },
             Rule::constant_statement => { // let a = 5
@@ -74,7 +74,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 let config = parse_config_block(current, context);
                 references.configs.insert(config.id());
                 context.schema_references.add_config(&config);
-                if config.keyword.is_connector() {
+                if config.keyword().is_connector() {
                     references.connector = Some(config.id());
                 }
                 children.insert(config.id(), Node::Config(config));
@@ -83,7 +83,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 let middlewares = parse_use_middlewares_block(current, context);
                 references.use_middlewares_block = Some(middlewares.id());
                 context.schema_references.use_middlewares_blocks.push(middlewares.path.clone());
-                children.insert(middlewares.id(), Node::UseMiddlewareBlock(middlewares));
+                children.insert(middlewares.id(), Node::UseMiddlewaresBlock(middlewares));
             },
             Rule::model_declaration => { // model A { ... }
                 let model = parse_model_declaration(current, context);

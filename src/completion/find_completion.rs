@@ -1,3 +1,4 @@
+use crate::ast::node::Node;
 use crate::ast::schema::Schema;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_config::find_completion_in_config;
@@ -19,43 +20,43 @@ pub fn find_completion(schema: &Schema, file_path: &str, line_col: (usize, usize
     if let Some(source) = schema.source_at_path(file_path) {
         if let Some(top) = search_top(schema, file_path, line_col) {
             match top {
-                Top::Model(m) => {
+                Node::Model(m) => {
                     return find_completion_in_model(schema, source, m, line_col);
                 }
-                Top::Interface(i) => {
+                Node::InterfaceDeclaration(i) => {
                     return find_completion_in_interface(schema, source, i, line_col);
                 }
-                Top::StructDeclaration(s) => {
+                Node::StructDeclaration(s) => {
                     return find_completion_in_struct_declaration(schema, source, s, line_col);
                 }
-                Top::ConfigDeclaration(c) => {
+                Node::ConfigDeclaration(c) => {
                     return find_completion_in_config_declaration(schema, source, c, line_col);
                 }
-                Top::Config(c) => {
+                Node::Config(c) => {
                     return find_completion_in_config(schema, source, c, line_col);
                 }
-                Top::Enum(e) => {
+                Node::Enum(e) => {
                     return find_completion_in_enum_declaration(schema, source, e, line_col);
                 }
-                Top::Constant(c) => {
+                Node::Constant(c) => {
                     return find_completion_in_constant_declaration(schema, source, c, line_col);
                 }
-                Top::DataSet(d) => {
+                Node::DataSet(d) => {
                     return find_completion_in_data_set_declaration(schema, source, d, line_col);
                 }
-                Top::Middleware(m) => {
+                Node::MiddlewareDeclaration(m) => {
                     return find_completion_in_middleware_declaration(schema, source, m, line_col);
                 }
-                Top::HandlerGroup(h) => {
+                Node::HandlerGroupDeclaration(h) => {
                     return find_completion_in_handler_group_declaration(schema, source, h, line_col);
                 }
-                Top::DecoratorDeclaration(d) => {
+                Node::DecoratorDeclaration(d) => {
                     return find_completion_in_decorator_declaration(schema, source, d, line_col);
                 }
-                Top::PipelineItemDeclaration(p) => {
+                Node::PipelineItemDeclaration(p) => {
                     return find_completion_in_pipeline_item_declaration(schema, source, p, line_col);
                 }
-                Top::UseMiddlewareBlock(u) => {
+                Node::UseMiddlewaresBlock(u) => {
                     return find_completion_in_use_middleware_block(schema, source, u, line_col);
                 }
                 _ => ()

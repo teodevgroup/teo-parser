@@ -5,6 +5,7 @@ use crate::{declare_container_node, impl_container_node_defaults, node_child_fn,
 use crate::format::Writer;
 use crate::r#type::r#type::Type;
 use crate::traits::node_trait::NodeTrait;
+use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
 declare_container_node!(

@@ -16,16 +16,16 @@ pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverCont
     let actual_availability = context.current_availability();
     *model.actual_availability.borrow_mut() = actual_availability;
     if context.has_examined_default_path(&model.string_path, model.define_availability) {
-        context.insert_duplicated_identifier(model.identifier.span);
+        context.insert_duplicated_identifier(model.identifier().span);
     }
     context.clear_examined_fields();
 
     // fields
-    for field in &model.fields {
+    for field in model.fields() {
         resolve_field_class(field, FieldParentType::Model, None, None, context);
     }
     // handlers
-    for handler in &model.handlers {
+    for handler in model.handlers() {
         resolve_handler_declaration_types(handler, context);
     }
     model.resolve(ModelResolved {
@@ -39,17 +39,17 @@ pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a Resolv
     resolve_model_shapes(model, context);
     // decorators
     let model_type = Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone()));
-    for decorator in &model.decorators {
+    for decorator in model.decorators() {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => model_type.clone()
         }, ReferenceSpace::ModelDecorator);
     }
     // fields
-    for field in &model.fields {
+    for field in model.fields() {
         resolve_field_decorators(model, field, context);
     }
     // handlers
-    for handler in &model.handlers {
+    for handler in model.handlers() {
         resolve_handler_declaration_decorators(handler, context);
     }
 }

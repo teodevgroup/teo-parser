@@ -157,7 +157,7 @@ impl<'a> ResolverContext<'a> {
 
     pub(super) fn insert_duplicated_model_field_error(&'a self, field: &Field) {
         self.diagnostics().insert(DiagnosticsError::new(
-            field.identifier.span,
+            field.identifier().span,
             "Duplicated model field definition",
             self.source().file_path.clone()
         ))
@@ -201,7 +201,7 @@ impl<'a> ResolverContext<'a> {
 
     pub(super) fn insert_duplicated_enum_member_error(&self, enum_member: &EnumMember) {
         self.diagnostics().insert(DiagnosticsError::new(
-            enum_member.identifier.span,
+            enum_member.identifier().span,
             "Duplicated enum member definition",
             self.source().file_path.clone()
         ))
@@ -209,7 +209,7 @@ impl<'a> ResolverContext<'a> {
 
     pub(super) fn insert_duplicated_data_set_record_error(&self, record: &DataSetRecord) {
         self.diagnostics().insert(DiagnosticsError::new(
-            record.identifier.span,
+            record.identifier().span,
             "Duplicated data set record",
             self.source().file_path.clone()
         ))

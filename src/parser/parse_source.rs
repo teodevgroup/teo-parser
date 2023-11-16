@@ -72,7 +72,7 @@ pub(super) fn parse_source(
                 let config = parse_config_block(current, context);
                 references.configs.insert(config.id());
                 context.schema_references.add_config(&config);
-                if config.keyword.is_connector() {
+                if config.keyword().is_connector() {
                     references.connector = Some(config.id());
                 }
                 children.insert(config.id(), Node::Config(config));
@@ -81,7 +81,7 @@ pub(super) fn parse_source(
                 let middlewares = parse_use_middlewares_block(current, context);
                 references.use_middlewares_block = Some(middlewares.id());
                 context.schema_references.use_middlewares_blocks.push(middlewares.path.clone());
-                children.insert(middlewares.id(), Node::UseMiddlewareBlock(middlewares));
+                children.insert(middlewares.id(), Node::UseMiddlewaresBlock(middlewares));
             },
             Rule::model_declaration => { // model A { ... }
                 let model = parse_model_declaration(current, context);

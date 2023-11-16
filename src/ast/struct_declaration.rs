@@ -36,17 +36,17 @@ impl StructDeclaration {
     node_children_iter_fn!(function_declarations, FunctionsIter);
 
     pub fn instance_function(&self, name: &str) -> Option<&FunctionDeclaration> {
-        self.function_declarations().find(|f| !f.r#static && f.identifier.name() == name)
+        self.function_declarations().find(|f| !f.r#static && f.identifier().name() == name)
     }
 
     pub fn static_function(&self, name: &str) -> Option<&FunctionDeclaration> {
-        self.function_declarations().find(|f| f.r#static && f.identifier.name() == name)
+        self.function_declarations().find(|f| f.r#static && f.identifier().name() == name)
     }
 
     pub fn keywords_map(&self) -> BTreeMap<Keyword, Type> {
         btreemap! {
-            Keyword::SelfIdentifier => StructObject(Reference::new(self.path.clone(), self.string_path.clone()), if let Some(generics_declaration) = self.generics_declaration.as_ref() {
-                generics_declaration.identifiers.iter().map(|i| Type::GenericItem(i.name.clone())).collect()
+            Keyword::SelfIdentifier => StructObject(Reference::new(self.path.clone(), self.string_path.clone()), if let Some(generics_declaration) = self.generics_declaration() {
+                generics_declaration.identifiers().map(|i| Type::GenericItem(i.name.clone())).collect()
             } else {
                 vec![]
             })

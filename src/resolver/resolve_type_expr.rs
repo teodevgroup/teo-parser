@@ -146,7 +146,7 @@ fn resolve_type_expr_kind<'a>(
             resolved
         }
         TypeExprKind::FieldName(r) => {
-            Type::FieldName(r.identifier.name().to_string())
+            Type::FieldName(r.identifier().name().to_string())
         }
     }
 }
@@ -243,7 +243,7 @@ fn type_item_builtin_match<'a>(
             let inner_type = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
             if let Some(reference) = inner_type.as_model_object() {
                 let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
+                if let Some(field) = model.fields.iter().find(|f| f.identifier().name() == field_ref.identifier().name()) {
                     Some(field.type_expr.resolved().clone())
                 } else {
                     context.insert_diagnostics_error(f.span(), "field not found");
@@ -252,7 +252,7 @@ fn type_item_builtin_match<'a>(
             } else if let Some((reference, interface_generics)) = inner_type.as_interface_object() {
                 let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
                 let map = calculate_generics_map(interface.generics_declaration.as_ref(), interface_generics);
-                if let Some(field) = interface.fields.iter().find(|f| f.identifier.name() == field_ref.identifier.name()) {
+                if let Some(field) = interface.fields.iter().find(|f| f.identifier().name() == field_ref.identifier().name()) {
                     Some(field.type_expr.resolved().replace_generics(&map))
                 } else {
                     context.insert_diagnostics_error(f.span(), "field not found");

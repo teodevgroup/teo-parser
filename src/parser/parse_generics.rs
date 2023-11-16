@@ -40,7 +40,7 @@ pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &mut ParserCont
     let mut items = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::WHERE => parse_insert_keyword!(context, current, children, "where"),
+            Rule::WHERE_KEYWORD => parse_insert_keyword!(context, current, children, "where"),
             Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::generics_constraint_item => parse_insert!(parse_generics_constraint_item(current, context), children, items),
             _ => context.insert_unparsed(parse_span(&current)),
@@ -66,7 +66,7 @@ fn parse_generics_constraint_item(pair: Pair<'_>, context: &mut ParserContext) -
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
-            Rule::identifier => parse_set!(parse_identifier(&current), children, identifier),
+            Rule::identifier => parse_set!(parse_identifier(&current, context), children, identifier),
             Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),
             _ => context.insert_unparsed(parse_span(&current)),
         }

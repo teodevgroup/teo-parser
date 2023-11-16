@@ -34,7 +34,7 @@ pub(super) fn completion_item_from_top(top: &Node) -> CompletionItem {
         Node::DecoratorDeclaration(decorator_declaration) => completion_item_from_decorator_declaration(decorator_declaration),
         Node::PipelineItemDeclaration(p) => completion_item_from_pipeline_item_declaration(p),
         Node::StructDeclaration(s) => completion_item_from_struct_declaration(s),
-        Node::UseMiddlewareBlock(_) => unreachable!(),
+        Node::UseMiddlewaresBlock(_) => unreachable!(),
     }
 }
 

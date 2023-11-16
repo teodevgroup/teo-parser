@@ -12,27 +12,27 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
     let mut namespace_path: Vec<_> = config.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
-    if config.keyword.span.contains_line_col(line_col) {
-        if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
+    if config.keyword().span.contains_line_col(line_col) {
+        if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
             return vec![Definition {
                 path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
-                selection_span: config.keyword.span,
+                selection_span: config.keyword().span,
                 target_span: config_declaration.span,
-                identifier_span: config_declaration.identifier.span,
+                identifier_span: config_declaration.identifier().span,
             }];
         } else {
             return vec![];
         }
     }
     for item in &config.items {
-        if item.identifier.span.contains_line_col(line_col) {
-            if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
-                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier.name() == item.identifier.name()) {
+        if item.identifier().span.contains_line_col(line_col) {
+            if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
+                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier().name() == item.identifier().name()) {
                     return vec![Definition {
                         path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
-                        selection_span: item.identifier.span,
+                        selection_span: item.identifier().span,
                         target_span: field.span,
-                        identifier_span: field.identifier.span,
+                        identifier_span: field.identifier().span,
                     }];
                 } else {
                     return vec![];
@@ -42,8 +42,8 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             }
         } else if item.expression.span().contains_line_col(line_col) {
             let undetermined = Type::Undetermined;
-            let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword.name(), config.availability()) {
-                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier.name() == item.identifier.name()) {
+            let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
+                if let Some(field) = config_declaration.fields.iter().find(|field| field.identifier().name() == item.identifier().name()) {
                     field.type_expr.resolved()
                 } else {
                     &undetermined

@@ -372,8 +372,8 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
                         let mut map = indexmap! {};
                         for expression in &array_literal.expressions {
                             if let Some(enum_variant_literal) = expression.kind.as_enum_variant_literal() {
-                                let name = enum_variant_literal.identifier.name();
-                                if let Some(field) = model.fields.iter().find(|f| f.identifier.name() == name) {
+                                let name = enum_variant_literal.identifier().name();
+                                if let Some(field) = model.fields.iter().find(|f| f.identifier().name() == name) {
                                     map.insert(field.name().to_owned(), field.type_expr.resolved().clone());
                                 }
                             }

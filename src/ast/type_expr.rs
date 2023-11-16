@@ -170,7 +170,7 @@ impl TypeExprKind {
 
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
-            TypeExprKind::Expr(n) => n,
+            TypeExprKind::Expr(n) => n.as_ref(),
             TypeExprKind::BinaryOp(n) => n,
             TypeExprKind::TypeItem(n) => n,
             TypeExprKind::TypeGroup(n) => n,
@@ -352,5 +352,22 @@ impl Display for TypeExprKind {
 impl Display for TypeExpr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.kind, f)
+    }
+}
+
+impl<'a> TryFrom<&'a Node> for &'a TypeExpr {
+    type Error = &'static str;
+
+    fn try_from(value: &'a Node) -> Result<Self, Self::Error> {
+        match value {
+            Node::TypeExpr(n) => Ok(n),
+            _ => Err("convert failed"),
+        }
+    }
+}
+
+impl From<TypeExpr> for Node {
+    fn from(value: TypeExpr) -> Self {
+        Self::TypeExpr(value)
     }
 }

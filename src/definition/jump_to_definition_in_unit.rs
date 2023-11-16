@@ -1,3 +1,4 @@
+use crate::ast::node::Node;
 use crate::availability::Availability;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
@@ -23,7 +24,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
         jump_to_definition_in_expression(
             schema,
             source,
-            unit.expressions.get(0).unwrap(),
+            unit.expressions().next().unwrap(),
             namespace_path,
             line_col,
             expect,
@@ -58,93 +59,93 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             |span, identifier_container_path, identifier_name| {
                 let top = schema.find_top_by_path(identifier_container_path).unwrap();
                 match top {
-                    Top::Config(config) => if let Some(identifier) = identifier_name {
-                        let item = config.items.iter().find(|i| i.identifier.name() == identifier).unwrap();
+                    Node::Config(config) => if let Some(identifier) = identifier_name {
+                        let item = config.items.iter().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(config.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: item.span,
-                            identifier_span: item.identifier.span,
+                            identifier_span: item.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(config.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: config.span,
-                            identifier_span: config.identifier.as_ref().map_or(config.keyword.span, |i| i.span),
+                            identifier_span: config.identifier.as_ref().map_or(config.keyword().span, |i| i.span),
                         }]
                     },
-                    Top::ConfigDeclaration(config_declaration) => if let Some(identifier) = identifier_name {
-                        let item = config_declaration.fields.iter().find(|i| i.identifier.name() == identifier).unwrap();
+                    Node::ConfigDeclaration(config_declaration) => if let Some(identifier) = identifier_name {
+                        let item = config_declaration.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: item.span,
-                            identifier_span: item.identifier.span,
+                            identifier_span: item.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(config_declaration.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: config_declaration.span,
-                            identifier_span: config_declaration.identifier.span,
+                            identifier_span: config_declaration.identifier().span,
                         }]
                     },
-                    Top::Constant(constant) => vec![Definition {
+                    Node::Constant(constant) => vec![Definition {
                         path: schema.source(constant.source_id()).unwrap().file_path.clone(),
                         selection_span: span,
                         target_span: constant.span,
-                        identifier_span: constant.identifier.span,
+                        identifier_span: constant.identifier().span,
                     }],
-                    Top::Enum(r#enum) => if let Some(identifier) = identifier_name {
-                        let member = r#enum.members.iter().find(|m| m.identifier.name() == identifier).unwrap();
+                    Node::Enum(r#enum) => if let Some(identifier) = identifier_name {
+                        let member = r#enum.members.iter().find(|m| m.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(member.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: member.span,
-                            identifier_span: member.identifier.span,
+                            identifier_span: member.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(r#enum.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: r#enum.span,
-                            identifier_span: r#enum.identifier.span,
+                            identifier_span: r#enum.identifier().span,
                         }]
                     },
-                    Top::Model(model) => if let Some(identifier) = identifier_name {
-                        let field = model.fields.iter().find(|i| i.identifier.name() == identifier).unwrap();
+                    Node::Model(model) => if let Some(identifier) = identifier_name {
+                        let field = model.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(field.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: field.span,
-                            identifier_span: field.identifier.span,
+                            identifier_span: field.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(model.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: model.span,
-                            identifier_span: model.identifier.span,
+                            identifier_span: model.identifier().span,
                         }]
                     },
-                    Top::Interface(interface) => if let Some(identifier) = identifier_name {
-                        let field = interface.fields.iter().find(|i| i.identifier.name() == identifier).unwrap();
+                    Node::InterfaceDeclaration(interface) => if let Some(identifier) = identifier_name {
+                        let field = interface.fields.iter().find(|i| i.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(field.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: field.span,
-                            identifier_span: field.identifier.span,
+                            identifier_span: field.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(interface.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: interface.span,
-                            identifier_span: interface.identifier.span,
+                            identifier_span: interface.identifier().span,
                         }]
                     }
-                    Top::Namespace(namespace) => if let Some(identifier) = identifier_name {
+                    Node::Namespace(namespace) => if let Some(identifier) = identifier_name {
                         let top = namespace.find_top_by_name(identifier, &top_filter_for_reference_type(ReferenceSpace::Default), availability).unwrap();
                         vec![Definition {
                             path: schema.source(top.source_id()).unwrap().file_path.clone(),
@@ -157,23 +158,23 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                             path: schema.source(namespace.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: namespace.span,
-                            identifier_span: namespace.identifier.span,
+                            identifier_span: namespace.identifier().span,
                         }]
                     }
-                    Top::StructDeclaration(struct_declaration) => if let Some(identifier) = identifier_name {
-                        let method = struct_declaration.function_declarations.iter().find(|f| f.identifier.name() == identifier).unwrap();
+                    Node::StructDeclaration(struct_declaration) => if let Some(identifier) = identifier_name {
+                        let method = struct_declaration.function_declarations.iter().find(|f| f.identifier().name() == identifier).unwrap();
                         vec![Definition {
                             path: schema.source(method.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: method.span,
-                            identifier_span: method.identifier.span,
+                            identifier_span: method.identifier().span,
                         }]
                     } else {
                         vec![Definition {
                             path: schema.source(struct_declaration.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: struct_declaration.span,
-                            identifier_span: struct_declaration.identifier.span,
+                            identifier_span: struct_declaration.identifier().span,
                         }]
                     },
                     _ => vec![]

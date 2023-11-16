@@ -44,7 +44,7 @@ pub(crate) fn find_source_connector<'a>(schema: &'a Schema, source: &'a Source) 
 pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Availability {
     if let Some(connector) = connector {
         if let Some(provider) = connector.items.iter().find(|item| {
-            item.identifier.name() == "provider"
+            item.identifier().name() == "provider"
         }) {
             if let Some(enum_variant_literal) = provider.expression.kind.as_enum_variant_literal() {
                 availability_from_enum_variant_literal(enum_variant_literal)
@@ -145,7 +145,7 @@ pub(crate) fn find_namespace_connector<'a>(namespace: &'a Namespace, schema: &'a
 }
 
 fn availability_from_enum_variant_literal(e: &EnumVariantLiteral) -> Availability {
-    match e.identifier.name() {
+    match e.identifier().name() {
         "mongo" => Availability::mongo(),
         "mysql" => Availability::mysql(),
         "postgres" => Availability::postgres(),

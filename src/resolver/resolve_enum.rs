@@ -46,28 +46,28 @@ pub(super) fn resolve_enum_member<'a>(
     // expression
     if let Some(member_expression) = member.expression() {
         if option {
-            match member_expression {
-                Expression::StringLiteral(s) => {
+            match &member_expression.kind {
+                ExpressionKind::StringLiteral(s) => {
                     member.resolve(Value::Int(1 << index));
                     context.insert_diagnostics_error(
                         member_expression.span(),
                         "EnumMemberError: Option value expression should be numeric or defined member expression"
                     )
                 },
-                Expression::NumericLiteral(n) => {
+                ExpressionKind::NumericLiteral(n) => {
                     let value = n.value.as_int().unwrap();
                     member.resolve(Value::Int(value));
-                    map.lock().unwrap().insert(member.identifier.name(), value);
+                    map.lock().unwrap().insert(member.identifier().name(), value);
                 },
-                Expression::ArithExpr(expr) => {
+                ExpressionKind::ArithExpr(expr) => {
                     let value = resolve_enum_member_expr(expr, context, map);
                     member.resolve(Value::Int(value));
-                    map.lock().unwrap().insert(member.identifier.name(), value);
+                    map.lock().unwrap().insert(member.identifier().name(), value);
                 }
                 _ => unreachable!()
             }
         } else {
-            match member_expression.as_string_literal() {
+            match member_expression.kind.as_string_literal() {
                 Some(s) => member.resolve(Value::String(s.value.clone())),
                 None => {
                     member.resolve(Value::String(member.identifier().name().to_owned()));
@@ -94,14 +94,14 @@ pub(super) fn resolve_enum_member<'a>(
 fn resolve_enum_member_expression<'a>(expression: &Expression, context: &ResolverContext<'a>, map: &Mutex<BTreeMap<&'a str, i32>>) -> i32 {
     match &expression.kind {
         ExpressionKind::Unit(u) => if u.expressions.len() == 1 {
-            resolve_enum_member_expression(u.expressions().get(0).unwrap(), context, map)
+            resolve_enum_member_expression(u.expressions().next().unwrap(), context, map)
         } else {
             context.insert_diagnostics_error(expression.span(), "EnumMemberError: Only number literals and enum variant literals are allowed");
             0
         },
         ExpressionKind::NumericLiteral(n) => n.value.as_int().unwrap(),
-        ExpressionKind::Group(g) => resolve_enum_member_expression(g.expression.as_ref(), context, map),
-        ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.identifier.name()) {
+        ExpressionKind::Group(g) => resolve_enum_member_expression(g.expression(), context, map),
+        ExpressionKind::EnumVariantLiteral(e) => if let Some(v) = map.lock().unwrap().get(e.identifier().name()) {
             *v
         } else {
             context.insert_diagnostics_error(e.span, "EnumMemberError: Enum member is not defined");
@@ -120,8 +120,8 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
             resolve_enum_member_expression(expression, context, map)
         },
         ArithExpr::BinaryOperation(bi_op) => {
-            let lhs = resolve_enum_member_expr(bi_op.lhs.as_ref(), context, map);
-            let rhs = resolve_enum_member_expr(bi_op.rhs.as_ref(), context, map);
+            let lhs = resolve_enum_member_expr(bi_op.lhs(), context, map);
+            let rhs = resolve_enum_member_expr(bi_op.rhs(), context, map);
             match bi_op.op {
                 ArithExprOperator::Add => lhs + rhs,
                 ArithExprOperator::Sub => lhs - rhs,
@@ -148,7 +148,7 @@ fn resolve_enum_member_expr<'a>(expr: &'a ArithExpr, context: &ResolverContext<'
             }
         }
         ArithExpr::UnaryOperation(u_op) => {
-            let rhs = resolve_enum_member_expr(u_op.rhs.as_ref(), context, map);
+            let rhs = resolve_enum_member_expr(u_op.rhs(), context, map);
             match u_op.op {
                 ArithExprOperator::Neg => -rhs,
                 ArithExprOperator::Not => if rhs == 0 { 1 } else { 0 }

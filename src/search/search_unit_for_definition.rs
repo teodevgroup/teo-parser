@@ -1,6 +1,7 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::availability::Availability;
 use crate::ast::expression::ExpressionKind;
+use crate::ast::node::Node;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -9,7 +10,9 @@ use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
+use crate::traits::identifiable::Identifiable;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -61,7 +64,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
     HI: Fn(Span, &Vec<usize>, Option<&str>) -> OUTPUT,
 {
     let mut current: Option<UnitSearchResult> = None;
-    for (index, expression) in unit.expressions.iter().enumerate() {
+    for (index, expression) in unit.expressions().enumerate() {
         if index == 0 {
             let mut identifier_span = None;
             current = Some(if let Some(identifier) = expression.kind.as_identifier() {
@@ -93,7 +96,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
             if current.is_some() && current.as_ref().unwrap().is_reference() {
                 let top = schema.find_top_by_path(current.as_ref().unwrap().as_reference().unwrap()).unwrap();
                 if top.is_constant() {
-                    current = Some(UnitSearchResult::Type(top.as_constant().unwrap().resolved().expression_resolved.r#type.clone()));
+                    current = Some(UnitSearchResult::Type(top.as_constant().unwrap().resolved().r#type.clone()));
                 }
             }
         } else {
@@ -114,8 +117,8 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     } else {
-                                        if let Some(subscript_function) = struct_declaration.function_declarations.iter().find(|f| {
-                                            f.r#static == false && f.identifier.name() == "subscript"
+                                        if let Some(subscript_function) = struct_declaration.function_declarations().find(|f| {
+                                            f.r#static == false && f.identifier().name() == "subscript"
                                         }) {
                                             current = Some(UnitSearchResult::Type(subscript_function.return_type.resolved().clone()));
                                         } else {
@@ -131,12 +134,12 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                     }
                     UnitSearchResult::Reference(current_reference) => {
                         match schema.find_top_by_path(&current_reference).unwrap() {
-                            Top::StructDeclaration(struct_declaration) => {
+                            Node::StructDeclaration(struct_declaration) => {
                                 match &expression.kind {
                                     ExpressionKind::ArgumentList(argument_list) => {
-                                        if let Some(new) = struct_declaration.function_declarations.iter().find(|f| f.r#static && f.identifier.name() == "new") {
+                                        if let Some(new) = struct_declaration.function_declarations().find(|f| f.r#static && f.identifier().name() == "new") {
                                             if argument_list.span.contains_line_col(line_col) {
-                                                return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier.name()));
+                                                return handle_argument_list(argument_list, &struct_declaration.path, Some(new.identifier().name()));
                                             } else {
                                                 current = Some(UnitSearchResult::Type(new.return_type.resolved().clone()));
                                             }
@@ -153,12 +156,12 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     _ => unreachable!()
                                 }
                             },
-                            Top::Config(config) => {
+                            Node::Config(config) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(item) = config.items.iter().find(|i| i.identifier.name() == identifier.name()) {
+                                        if let Some(item) = config.items().find(|i| i.identifier().name() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier.name()));
+                                                return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier().name()));
                                             } else {
                                                 current = Some(UnitSearchResult::Type(item.expression.resolved().r#type.clone()));
                                             }
@@ -175,12 +178,12 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     _ => unreachable!()
                                 }
                             }
-                            Top::Enum(r#enum) => {
+                            Node::Enum(r#enum) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(i) => {
-                                        if let Some(member) = r#enum.members.iter().find(|m| m.identifier.name() == i.name()) {
+                                        if let Some(member) = r#enum.members.iter().find(|m| m.identifier().name() == i.name()) {
                                             if i.span.contains_line_col(line_col) {
-                                                return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier.name()));
+                                                return handle_identifier(i.span, r#enum.path.as_ref(), Some(member.identifier().name()));
                                             } else {
                                                 return default;
                                             }
@@ -197,7 +200,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     _ => unreachable!()
                                 }
                             }
-                            Top::Model(model) => {
+                            Node::Model(model) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(field) = model.fields.iter().find(|f| f.name() == identifier.name()) {
@@ -219,7 +222,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     _ => unreachable!()
                                 }
                             }
-                            Top::Interface(interface) => {
+                            Node::InterfaceDeclaration(interface) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(field) = interface.fields.iter().find(|f| f.name() == identifier.name()) {
@@ -241,7 +244,7 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                     _ => unreachable!()
                                 }
                             }
-                            Top::Namespace(namespace) => {
+                            Node::Namespace(namespace) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
                                         if let Some(top) = namespace.find_top_by_name(identifier.name(), &top_filter_for_reference_type(ReferenceSpace::Default), availability) {

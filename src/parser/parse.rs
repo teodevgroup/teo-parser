@@ -12,7 +12,7 @@ use crate::utils::path::FileUtility;
 pub fn parse(
     main: impl AsRef<str>,
     file_util: FileUtility,
-    unsaved_files: Option<HashMap<String, String>>
+    unsaved_files: Option<BTreeMap<String, String>>
 ) -> (Schema, Diagnostics) {
     let mut diagnostics = Diagnostics::new();
     let mut references = SchemaReferences::new();

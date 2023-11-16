@@ -35,7 +35,7 @@ fn parse_argument_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Ar
     let mut type_expr = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::identifier => parse_set!(parse_identifier(&current), children, name),
+            Rule::identifier => parse_set!(parse_identifier(&current, context), children, name),
             Rule::OPTIONAL => name_optional = true,
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),

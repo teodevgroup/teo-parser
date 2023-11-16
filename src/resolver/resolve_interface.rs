@@ -7,7 +7,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_interface_declaration<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&interface_declaration.string_path, interface_declaration.define_availability) {
-        context.insert_duplicated_identifier(interface_declaration.identifier.span);
+        context.insert_duplicated_identifier(interface_declaration.identifier().span);
     }
     *interface_declaration.actual_availability.borrow_mut() = context.current_availability();
     if let Some(generics_declaration) = &interface_declaration.generics_declaration {

@@ -4,7 +4,7 @@ use crate::resolver::resolver_context::ResolverContext;
 
 pub(super) fn resolve_middleware<'a>(middleware: &'a MiddlewareDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_middleware_path(&middleware.string_path) {
-        context.insert_diagnostics_error(middleware.identifier.span, "DefinitionError: duplicated definition of middleware");
+        context.insert_diagnostics_error(middleware.identifier().span, "DefinitionError: duplicated definition of middleware");
     } else {
         context.add_examined_middleware_path(middleware.string_path.clone());
     }

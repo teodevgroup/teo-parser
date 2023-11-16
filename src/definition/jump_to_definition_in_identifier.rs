@@ -1,5 +1,6 @@
 use crate::availability::Availability;
 use crate::ast::identifier::Identifier;
+use crate::ast::node::Node;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
@@ -24,43 +25,43 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
         availability,
     ) {
         match schema.find_top_by_path(&reference).unwrap() {
-            Top::Constant(c) => vec![Definition {
+            Node::Constant(c) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: c.span,
-                identifier_span: c.identifier.span,
+                identifier_span: c.identifier().span,
             }],
-            Top::Namespace(n) => vec![Definition {
+            Node::Namespace(n) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: n.span,
-                identifier_span: n.identifier.span,
+                identifier_span: n.identifier().span,
             }],
-            Top::Model(m) => vec![Definition {
+            Node::Model(m) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: m.span,
-                identifier_span: m.identifier.span,
+                identifier_span: m.identifier().span,
             }],
-            Top::Enum(e) => vec![Definition {
+            Node::Enum(e) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: e.span,
-                identifier_span: e.identifier.span,
+                identifier_span: e.identifier().span,
             }],
-            Top::StructDeclaration(s) => vec![Definition {
+            Node::StructDeclaration(s) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: s.span,
-                identifier_span: s.identifier.span,
+                identifier_span: s.identifier().span,
             }],
-            Top::Interface(i) => vec![Definition {
+            Node::InterfaceDeclaration(i) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: i.span,
-                identifier_span: i.identifier.span,
+                identifier_span: i.identifier().span,
             }],
-            Top::Config(c) => vec![Definition {
+            Node::Config(c) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: c.span,

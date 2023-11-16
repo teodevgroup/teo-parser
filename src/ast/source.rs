@@ -122,11 +122,11 @@ impl Source {
 
     pub fn find_child_namespace_by_string_path(&self, path: &Vec<&str>) -> Option<&Namespace> {
         if path.len() == 0 { return None }
-        let mut ns = self.namespaces().iter().find(|n| n.identifier.name() == *path.get(0).unwrap()).map(|r| *r);
+        let mut ns = self.namespaces().iter().find(|n| n.identifier().name() == *path.get(0).unwrap()).map(|r| *r);
         for (index, item) in path.iter().enumerate() {
             if index > 0 {
                 if let Some(ns_ref) = ns {
-                    ns = ns_ref.namespaces().iter().find(|n| n.identifier.name() == *item).map(|r| *r);
+                    ns = ns_ref.namespaces().iter().find(|n| n.identifier().name() == *item).map(|r| *r);
                 } else {
                     return None;
                 }

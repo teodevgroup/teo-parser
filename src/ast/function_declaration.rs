@@ -36,7 +36,7 @@ impl FunctionDeclaration {
 
     node_optional_child_fn!(generics_constraint, GenericsConstraint);
 
-    node_optional_child_fn!(return_type, TypeExpr);
+    node_child_fn!(return_type, TypeExpr);
 
     pub fn callable_variants<'a>(&'a self, struct_declaration: &'a StructDeclaration) -> Vec<CallableVariant<'a>> {
         let mut generics_declaration = vec![];
