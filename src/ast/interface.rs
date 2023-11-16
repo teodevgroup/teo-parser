@@ -43,6 +43,14 @@ impl InterfaceDeclaration {
     node_children_iter_fn!(extends, ExtendsIter);
 
     node_children_iter_fn!(fields, FieldsIter);
+
+    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
+        self.resolved().map.get(generics)
+    }
+
+    pub fn set_shape(&self, generics: Vec<Type>, input: Type) {
+        self.resolved_mut().map.insert(generics, input);
+    }
 }
 
 impl InfoProvider for InterfaceDeclaration {

@@ -50,17 +50,17 @@ pub(super) fn resolve_handler_declaration_types<'a>(
             interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
         }
     }
-    if let Some((reference, generics)) = handler_declaration.output_type.resolved().as_interface_object() {
+    if let Some((reference, generics)) = handler_declaration.output_type().resolved().as_interface_object() {
         let interface_declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
         if interface_declaration.shape(generics).is_none() {
             interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
         }
     }
     match handler_declaration.input_format {
-        HandlerInputFormat::Form => validate_form_type(&handler_declaration.input_type.resolved(), handler_declaration.input_type().span(), context, is_valid_form_input_type),
-        HandlerInputFormat::Json => validate_form_type(&handler_declaration.input_type.resolved(), handler_declaration.input_type().span(), context, is_valid_json_input_type),
+        HandlerInputFormat::Form => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_form_input_type),
+        HandlerInputFormat::Json => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_json_input_type),
     }
-    validate_form_type(&handler_declaration.output_type.resolved(), handler_declaration.output_type().span(), context, is_valid_json_output_type);
+    validate_form_type(&handler_declaration.output_type().resolved(), handler_declaration.output_type().span(), context, is_valid_json_output_type);
 }
 
 pub(super) fn resolve_handler_declaration_decorators<'a>(

@@ -7,6 +7,7 @@ use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     interface_declaration: &'a InterfaceDeclaration,
@@ -14,8 +15,8 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     context: &'a ResolverContext<'a>,
 ) -> Type {
     let mut map = indexmap! {};
-    let generics_map = calculate_generics_map(interface_declaration.generics_declaration.as_ref(), generics);
-    for field in &interface_declaration.fields {
+    let generics_map = calculate_generics_map(interface_declaration.generics_declaration(), generics);
+    for field in interface_declaration.fields() {
         let t = field.type_expr().resolved().replace_generics(&generics_map);
         map.insert(field.name().to_owned(), t.clone());
         if let Some((reference, gen)) = t.as_interface_object() {
@@ -50,7 +51,7 @@ pub(super) fn calculate_generics_map<'a>(
 
 pub(super) fn collect_inputs_from_interface_declaration_shape_cache<'a>(interface: &'a InterfaceDeclaration, gens: &Vec<Type>, context: &'a ResolverContext<'a>) -> Vec<SynthesizedShape> {
     let mut input = vec![interface.shape(gens).unwrap().as_synthesized_shape().unwrap().clone()];
-    let generics_map = calculate_generics_map(interface.generics_declaration.as_ref(), gens);
+    let generics_map = calculate_generics_map(interface.generics_declaration(), gens);
     for extend in interface.extends() {
         if let Some((reference, gen)) = extend.resolved().replace_generics(&generics_map).as_interface_object() {
             let declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
