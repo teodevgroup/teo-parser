@@ -77,7 +77,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                             context.insert_diagnostics_error(key_span, "field is readonly");
                         }
                         let value_span = value_expression.span();
-                        let value_resolved = resolve_expression(value_expression, context, &field.type_expr.resolved(), &btreemap! {});
+                        let value_resolved = resolve_expression(value_expression, context, field.type_expr().resolved(), &btreemap! {});
                         if !field.type_expr.resolved().test(value_resolved.r#type()) {
                             context.insert_diagnostics_error(value_span, format!("expect {}, found {}", field.type_expr.resolved(), value_resolved.r#type()));
                         }
@@ -110,7 +110,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                             context.insert_diagnostics_error(key_span, "property is readonly")
                         }
                         let value_span = value_expression.span();
-                        let value_resolved = resolve_expression(value_expression, context, &field.type_expr.resolved(), &btreemap! {});
+                        let value_resolved = resolve_expression(value_expression, context, field.type_expr().resolved(), &btreemap! {});
                         if !field.type_expr.resolved().test(value_resolved.r#type()) {
                             context.insert_diagnostics_error(value_span, format!("expect {}, found {}", field.type_expr.resolved(), value_resolved.r#type()));
                         }

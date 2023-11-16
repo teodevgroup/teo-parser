@@ -30,14 +30,14 @@ pub(super) fn resolve_field_class<'a>(
             });
         }
         FieldParentType::Model => {
-            let r#virtual = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "virtual"] || d.identifier_path.names() == ["virtual"]).is_some();
-            let dropped = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "dropped"] || d.identifier_path.names() == ["dropped"]).is_some();
-            let cached = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "cached"] || d.identifier_path.names() == ["cached"]).is_some();
-            let field_class = if let Some(decorator) = field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "relation"] || d.identifier_path.names() == ["relation"]) {
+            let r#virtual = field.decorators().find(|d| d.identifier_path().names() == ["std", "virtual"] || d.identifier_path().names() == ["virtual"]).is_some();
+            let dropped = field.decorators().find(|d| d.identifier_path().names() == ["std", "dropped"] || d.identifier_path().names() == ["dropped"]).is_some();
+            let cached = field.decorators().find(|d| d.identifier_path().names() == ["std", "cached"] || d.identifier_path().names() == ["cached"]).is_some();
+            let field_class = if let Some(decorator) = field.decorators().find(|d| d.identifier_path().names() == ["std", "relation"] || d.identifier_path().names() == ["relation"]) {
                 FieldClass::ModelRelation(ModelRelationSettings {
-                    direct: decorator.argument_list.as_ref().map_or(false, |list| list.arguments.iter().find(|argument| argument.name.as_ref().map_or(false, |name| name.name() == "fields")).is_some()),
+                    direct: decorator.argument_list().map_or(false, |list| list.arguments().find(|argument| argument.name().map_or(false, |name| name.name() == "fields")).is_some()),
                 })
-            } else if field.decorators.iter().find(|d| d.identifier_path.names() == ["std", "getter"] || d.identifier_path.names() == ["getter"] || d.identifier_path.names() == ["std", "setter"] || d.identifier_path.names() == ["setter"]).is_some() {
+            } else if field.decorators().find(|d| d.identifier_path().names() == ["std", "getter"] || d.identifier_path().names() == ["getter"] || d.identifier_path().names() == ["std", "setter"] || d.identifier_path().names() == ["setter"]).is_some() {
                 FieldClass::ModelProperty(ModelPropertyFieldSettings {
                     cached
                 })
@@ -53,7 +53,7 @@ pub(super) fn resolve_field_class<'a>(
         }
     }
     resolve_type_expr(
-        &field.type_expr,
+        field.type_expr(),
         &if let Some(generics_declaration) = generics_declaration {
             vec![generics_declaration]
         } else {
@@ -77,7 +77,7 @@ pub(super) fn resolve_field_decorators<'a>(
 ) {
     let model_type = Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone()));
 
-    for decorator in &field.decorators {
+    for decorator in field.decorators() {
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => model_type.clone(),
             Keyword::ThisFieldType => if field.resolved().class.is_model_relation() {

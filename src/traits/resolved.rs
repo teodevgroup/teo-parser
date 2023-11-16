@@ -20,3 +20,10 @@ pub trait Resolve<T> {
         self.resolved_ref_cell().borrow().is_some()
     }
 }
+
+pub trait ResolveAndClone<T>: Resolve<T> where T: Clone {
+    fn resolve_and_return(&self, resolved: T) -> T {
+        self.resolve(resolved.clone());
+        resolved
+    }
+}

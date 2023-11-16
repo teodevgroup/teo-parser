@@ -15,7 +15,7 @@ use crate::ast::unit::Unit;
 use crate::format::Writer;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
-use crate::traits::resolved::Resolve;
+use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::traits::write::Write;
 use crate::value::TypeAndValue;
 
@@ -415,3 +415,5 @@ impl From<Expression> for Node {
         Self::Expression(value)
     }
 }
+
+impl ResolveAndClone<TypeAndValue> for Expression { }

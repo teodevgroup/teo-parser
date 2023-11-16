@@ -387,7 +387,7 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
         }
     }
     for field in &model.fields {
-        for decorator in &field.decorators {
+        for decorator in field.decorators() {
             if decorator_has_any_name(decorator, vec!["id", "unique"]) {
                 inputs.push(Type::SynthesizedShape(SynthesizedShape::new(indexmap! {
                     field.name().to_owned() => field.type_expr.resolved().clone()
@@ -1334,13 +1334,13 @@ pub(super) fn field_has_decorator_name(field: &Field, name: &str) -> bool {
 }
 
 pub(super) fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) -> bool {
-    for decorator in &field.decorators {
-        let names = if *decorator.identifier_path.names().first().unwrap() == "std" {
-            let mut result = decorator.identifier_path.names();
+    for decorator in field.decorators() {
+        let names = if *decorator.identifier_path().names().first().unwrap() == "std" {
+            let mut result = decorator.identifier_path().names();
             result.shift();
             result
         } else {
-            decorator.identifier_path.names()
+            decorator.identifier_path().names()
         };
         if f(names) {
             return true
@@ -1350,7 +1350,7 @@ pub(super) fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Ve
 }
 
 fn decorator_has_any_name(decorator: &Decorator, names: Vec<&str>) -> bool {
-    let mut decorator_names = decorator.identifier_path.names();
+    let mut decorator_names = decorator.identifier_path().names();
     if *decorator_names.first().unwrap() == "std" {
         decorator_names.shift();
     }
@@ -1378,16 +1378,16 @@ pub(super) fn field_has_on_save(field: &Field) -> bool {
 }
 
 pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
-    let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
-    let argument_list = relation_decorator.argument_list.as_ref()?;
+    let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
+    let argument_list = relation_decorator.argument_list()?;
     let that_model_ref = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
     let that_model = context.schema.find_top_by_path(that_model_ref.path())?.as_model()?;
 
-    let fields = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields");
-    let references = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references");
-    let local = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local");
-    let foreign = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign");
-    let through = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "through");
+    let fields = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields");
+    let references = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references");
+    let local = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local");
+    let foreign = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign");
+    let through = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "through");
     if fields.is_some() && references.is_some() {
         let fields = fields.unwrap();
         let references = references.unwrap();
@@ -1418,10 +1418,10 @@ pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a Res
 pub(super) fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, references: Vec<&str>) -> Option<&'a Field> {
     for field in &model.fields {
         if field.resolved().class.is_model_relation() {
-            let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
-            let argument_list = relation_decorator.argument_list.as_ref()?;
-            let fields_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields")?;
-            let references_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references")?;
+            let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
+            let argument_list = relation_decorator.argument_list()?;
+            let fields_arg = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields")?;
+            let references_arg = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "references")?;
             let fields_ref = fields_arg.value.unwrap_enumerable_enum_member_strings()?;
             let references_ref = references_arg.value.unwrap_enumerable_enum_member_strings()?;
             if fields_ref == fields && references_ref == references {
@@ -1435,11 +1435,11 @@ pub(super) fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&st
 pub(super) fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, local: &str, foreign: &str, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
     for field in &model.fields {
         if field.resolved().class.is_model_relation() {
-            let relation_decorator = field.decorators.iter().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
-            let argument_list = relation_decorator.argument_list.as_ref()?;
-            let through = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "through")?;
-            let local_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local")?;
-            let foreign_arg = argument_list.arguments.iter().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign")?;
+            let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
+            let argument_list = relation_decorator.argument_list()?;
+            let through = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "through")?;
+            let local_arg = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "local")?;
+            let foreign_arg = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "foreign")?;
             let local_value = local_arg.value.unwrap_enumerable_enum_member_string()?;
             let foreign_value = foreign_arg.value.unwrap_enumerable_enum_member_string()?;
             if let Some(path) = unwrap_model_path_in_expression_kind(&through.value.kind, model, context) {

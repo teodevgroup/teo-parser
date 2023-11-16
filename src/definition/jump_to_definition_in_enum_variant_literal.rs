@@ -50,7 +50,7 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
             }
             _ => vec![]
         }
-    } else if let Some(argument_list) = enum_variant_literal.argument_list.as_ref() {
+    } else if let Some(argument_list) = enum_variant_literal.argument_list() {
         if argument_list.span.contains_line_col(line_col) {
             jump_to_definition_in_argument_list(
                 schema,

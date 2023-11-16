@@ -20,7 +20,7 @@ pub(super) fn jump_to_definition_in_field<'a>(
     let mut namespace_path: Vec<_> = field.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     namespace_path.pop();
-    for decorator in &field.decorators {
+    for decorator in field.decorators() {
         if decorator.span.contains_line_col(line_col) {
             return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(field.resolved().class.reference_type()), availability);
         }
@@ -29,7 +29,7 @@ pub(super) fn jump_to_definition_in_field<'a>(
         return jump_to_definition_in_type_expr_kind(
             schema,
             source,
-            &field.type_expr.kind,
+            field.type_expr().kind,
             &namespace_path,
             line_col,
             generics_declarations,

@@ -13,7 +13,7 @@ pub(super) fn find_completion_in_field<'a>(schema: &Schema, source: &Source, fie
     let mut namespace_path: Vec<_> = field.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     namespace_path.pop();
-    for decorator in &field.decorators {
+    for decorator in field.decorators() {
         if decorator.span.contains_line_col(line_col) {
             return find_completion_in_decorator(schema, source, decorator, &namespace_path, line_col, field.resolved().class.reference_type(), field.availability());
         }
@@ -24,7 +24,7 @@ pub(super) fn find_completion_in_field<'a>(schema: &Schema, source: &Source, fie
         }
     }
     if field.type_expr.span().contains_line_col(line_col) {
-        return find_completion_in_type_expr(schema, source, &field.type_expr, line_col, &field.namespace_str_path(), generics, field_class_to_type_expr_filter(field.resolved().class), field.availability());
+        return find_completion_in_type_expr(schema, source, field.type_expr(), line_col, &field.namespace_str_path(), generics, field_class_to_type_expr_filter(field.resolved().class), field.availability());
     }
     vec![]
 }

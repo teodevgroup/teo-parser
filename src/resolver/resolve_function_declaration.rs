@@ -15,9 +15,9 @@ pub(super) fn resolve_function_declaration<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
 ) {
-    if let Some(generics_declaration) = &function_declaration.generics_declaration {
+    if let Some(generics_declaration) = function_declaration.generics_declaration() {
         resolve_generics_declaration(generics_declaration, &struct_generics_declaration.iter().map(|i| *i).collect(), context);
-        if let Some(generics_constraint) = &function_declaration.generics_constraint {
+        if let Some(generics_constraint) = function_declaration.generics_constraint() {
             resolve_generics_constraint(generics_constraint, context, generics_declaration, function_declaration.define_availability);
         }
     }
@@ -29,10 +29,10 @@ pub(super) fn resolve_function_declaration<'a>(
     if let Some(generics_constraint) = struct_generics_constraint {
         generics_constraints.push(generics_constraint);
     }
-    if let Some(generics_declaration) = &function_declaration.generics_declaration {
+    if let Some(generics_declaration) = function_declaration.generics_declaration() {
         generics_declarations.push(generics_declaration);
     }
-    if let Some(generics_constraint) = &function_declaration.generics_constraint {
+    if let Some(generics_constraint) = function_declaration.generics_constraint() {
         generics_constraints.push(generics_constraint);
     }
     if let Some(argument_list_declaration) = &function_declaration.argument_list_declaration {
@@ -45,7 +45,7 @@ pub(super) fn resolve_function_declaration<'a>(
         );
     }
     resolve_type_expr(
-        &function_declaration.return_type,
+        function_declaration.return_type(),
         &generics_declarations,
         &generics_constraints,
         keywords_map,
