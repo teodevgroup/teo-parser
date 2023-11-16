@@ -22,7 +22,7 @@ pub(super) fn find_completion_in_handler_declaration(schema: &Schema, source: &S
     if handler_declaration.input_type().span().contains_line_col(line_col) {
         return find_completion_in_type_expr(schema, source, handler_declaration.input_type(), line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput, handler_declaration.availability());
     }
-    if handler_declaration.output_type.span().contains_line_col(line_col) {
+    if handler_declaration.output_type().span().contains_line_col(line_col) {
         return find_completion_in_type_expr(schema, source, handler_declaration.output_type(), line_col, &handler_declaration.namespace_str_path(), &vec![], TypeExprFilter::ActionInput, handler_declaration.availability());
     }
     for decorator in handler_declaration.decorators() {

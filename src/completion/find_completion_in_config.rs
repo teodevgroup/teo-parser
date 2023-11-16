@@ -11,7 +11,7 @@ use crate::traits::node_trait::NodeTrait;
 pub(super) fn find_completion_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<CompletionItem> {
     let mut used: Vec<&str> = vec![];
     used.extend(config.items().map(|i| i.identifier().name()));
-    used.extend(config.unattached_identifiers.as_ref().map(|i| i.name()));
+    used.extend(config.unattached_identifiers.iter().map(|i| i.name()));
     for item in config.items() {
         if item.span().contains_line_col(line_col) {
             return find_completion_in_config_item(schema, item, line_col, &used);

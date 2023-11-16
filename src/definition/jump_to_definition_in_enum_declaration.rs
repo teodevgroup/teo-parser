@@ -51,7 +51,7 @@ pub(super) fn jump_to_definition_in_enum_member_declaration(
     }
     if let Some(expression) = enum_member_declaration.expression() {
         if expression.span().contains_line_col(line_col) {
-            if let Some(arith_expr) = expression.as_arith_expr() {
+            if let Some(arith_expr) = expression.kind.as_arith_expr() {
                 return jump_to_definition_in_arith_expr(
                     schema,
                     source,

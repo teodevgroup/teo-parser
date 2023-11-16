@@ -6,6 +6,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_type_expr::{find_completion_in_type_expr, TypeExprFilter};
+use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn find_completion_in_argument_list_declaration(schema: &Schema, source: &Source, argument_list_declaration: &ArgumentListDeclaration, line_col: (usize, usize), generics: &Vec<&GenericsDeclaration>, namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
     for argument_declaration in argument_list_declaration.argument_declarations() {

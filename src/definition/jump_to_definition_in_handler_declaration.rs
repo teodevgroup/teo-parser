@@ -22,7 +22,7 @@ pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source:
             availability
         );
     }
-    if handler_declaration.output_type.span().contains_line_col(line_col) {
+    if handler_declaration.output_type().span().contains_line_col(line_col) {
         return jump_to_definition_in_type_expr_kind(
             schema,
             source,

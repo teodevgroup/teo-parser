@@ -47,7 +47,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                     jump_to_definition_in_expression(
                         schema,
                         source,
-                        subscript.expression.as_ref(),
+                        subscript.expression(),
                         namespace_path,
                         line_col,
                         &exp,

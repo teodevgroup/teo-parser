@@ -31,7 +31,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
                 &input_type.kind,
                 &namespace_path,
                 line_col,
-                &pipeline_item_declaration.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                &pipeline_item_declaration.generics_declaration().iter().map(|r| *r).collect(),
                 availability
             );
         }
@@ -44,7 +44,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
                 &output_type.kind,
                 &namespace_path,
                 line_col,
-                &pipeline_item_declaration.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                &pipeline_item_declaration.generics_declaration().iter().map(|r| *r).collect(),
                 availability
             );
         }
@@ -71,7 +71,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
                 &variant.input_type().kind,
                 &namespace_path,
                 line_col,
-                &variant.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                &variant.generics_declaration().iter().map(|r| *r).collect(),
                 availability
             );
         }
@@ -82,7 +82,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
                 &variant.output_type().kind,
                 &namespace_path,
                 line_col,
-                &variant.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                &variant.generics_declaration().iter().map(|r| *r).collect(),
                 availability
             );
         }

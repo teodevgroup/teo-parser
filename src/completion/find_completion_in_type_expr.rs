@@ -122,7 +122,7 @@ fn find_completion_for_referenced_types_with_filter(schema: &Schema, source: &So
 fn completion_items_from_generics(generics: &Vec<&GenericsDeclaration>) -> Vec<CompletionItem> {
     let mut result = vec![];
     for gen in generics {
-        for i in &gen.identifiers {
+        for i in gen.identifiers() {
             result.push(CompletionItem {
                 label: i.name().to_owned(),
                 namespace_path: None,

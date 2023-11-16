@@ -14,21 +14,21 @@ pub(super) fn jump_to_definition_in_decorator_declaration(schema: &Schema, sourc
                 schema,
                 source,
                 argument_list_declaration,
-                &decorator_declaration.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                &decorator_declaration.generics_declaration().iter().map(|r| *r).collect(),
                 &namespace_path,
                 line_col,
                 availability
             );
         }
     }
-    for variant in &decorator_declaration.variants {
+    for variant in decorator_declaration.variants() {
         if let Some(argument_list_declaration) = variant.argument_list_declaration() {
             if argument_list_declaration.span.contains_line_col(line_col) {
                 return jump_to_definition_in_argument_list_declaration(
                     schema,
                     source,
                     argument_list_declaration,
-                    &variant.generics_declaration.as_ref().iter().map(|r| *r).collect(),
+                    &variant.generics_declaration().iter().map(|r| *r).collect(),
                     &namespace_path,
                     line_col,
                     availability
