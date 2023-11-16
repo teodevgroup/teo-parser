@@ -151,21 +151,19 @@ fn resolve_struct_instance_for_unit<'a>(
                 context.insert_diagnostics_error(expression.span(), format!("{} is not subscriptable", current.r#type()));
                 return expression.resolve_and_return(TypeAndValue::undetermined());
             };
-            let Some(argument_list_declaration) = subscript_function.argument_list_declaration() else {
-                return expression.resolve_and_return(TypeAndValue::undetermined());
-            };
+            let argument_list_declaration = subscript_function.argument_list_declaration();
             if argument_list_declaration.argument_declarations.len() != 1 {
                 return expression.resolve_and_return(TypeAndValue::undetermined());
             }
             let mut map = calculate_generics_map(struct_definition.generics_declaration(), &current.r#type.generic_types());
-            let argument_declaration = argument_list_declaration.argument_declarations.first().unwrap();
+            let argument_declaration = argument_list_declaration.argument_declarations().next().unwrap();
             let expected_type = argument_declaration.type_expr().resolved().replace_generics(&map);
             resolve_expression(subscript.expression(), context, &Type::Undetermined, &btreemap! {});
             if expected_type.is_generic_item() {
                 map.insert(expected_type.as_generic_item().unwrap().to_string(), subscript.expression().resolved().r#type.clone());
             } else {
                 if !expected_type.test(subscript.expression().resolved().r#type()) {
-                    context.insert_diagnostics_error(subscript.expression().span(), format!("expect {}, found {}", expected_type, subscript.expression.resolved().r#type()));
+                    context.insert_diagnostics_error(subscript.expression().span(), format!("expect {}, found {}", expected_type, subscript.expression().resolved().r#type()));
                 }
             }
             let return_type = subscript_function.return_type().resolved().replace_generics(&map);

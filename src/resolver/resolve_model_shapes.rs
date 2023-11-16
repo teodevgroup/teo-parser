@@ -120,7 +120,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     if let Some(input) = resolve_create_input_type(model, None, context) {
         shapes.insert((SynthesizedShapeReferenceKind::CreateInput, None), input);
     }
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
                 shapes.insert((SynthesizedShapeReferenceKind::CreateInput, Some(field.name().to_owned())), input);
@@ -131,7 +131,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     if let Some(input) = resolve_update_input_type(model, None, context) {
         shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, None), input);
     }
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
                 shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, Some(field.name().to_owned())), input);
@@ -140,56 +140,56 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     }
     // create nested one input
     shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, None), resolve_create_nested_one_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
         }
     }
     // create nested many input
     shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, None), resolve_create_nested_many_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
         }
     }
     // update nested one input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, None), resolve_update_nested_one_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
         }
     }
     // update nested many input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, None), resolve_update_nested_many_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
     // connect or create input
     shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, None), resolve_connect_or_create_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
         }
     }
     // update with where unique input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, None), resolve_update_with_where_unique_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // upsert with where unique input
     shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, None), resolve_upsert_with_where_unique_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // update many with where input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, None), resolve_update_many_with_where_input_type(model, None));
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
             shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
@@ -259,7 +259,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
 
 fn resolve_model_select_shape(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(field_settings) = field.resolved().class.as_model_primitive_field() {
             if !field_settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -279,7 +279,7 @@ fn resolve_model_select_shape(model: &Model) -> Option<Type> {
 
 fn resolve_model_include_shape(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(_) = field.resolved().class.as_model_relation() {
             if let Some(related_reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().as_model_object() {
                 if relation_is_many(field) {
@@ -307,7 +307,7 @@ fn resolve_model_include_shape(model: &Model) -> Option<Type> {
 
 fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, with_aggregates: bool, context: &'a ResolverContext<'a>) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_queryable(field) && !is_field_writeonly(field) {
                 if with_aggregates {
@@ -364,7 +364,7 @@ fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, w
 
 fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
     let mut inputs = vec![];
-    for decorator in &model.decorators {
+    for decorator in model.decorators() {
         if decorator_has_any_name(decorator, vec!["id", "unique"]) {
             if let Some(argument_list) = &decorator.argument_list {
                 if let Some(argument) = argument_list.arguments.first() {
@@ -386,7 +386,7 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
             }
         }
     }
-    for field in &model.fields {
+    for field in model.fields() {
         for decorator in field.decorators() {
             if decorator_has_any_name(decorator, vec!["id", "unique"]) {
                 inputs.push(Type::SynthesizedShape(SynthesizedShape::new(indexmap! {
@@ -420,7 +420,7 @@ fn resolve_model_list_relation_filter(model: &Model) -> Type {
 fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Type> {
     let sort = context.schema.std_source().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_sortable(field) && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())));
@@ -440,7 +440,7 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
 
 fn resolve_model_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 members.push(SynthesizedEnumMember {
@@ -459,7 +459,7 @@ fn resolve_model_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
 
 fn resolve_model_relations(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(_) = field.resolved().class.as_model_relation() {
             members.push(SynthesizedEnumMember {
                 name: field.name().to_owned(),
@@ -476,7 +476,7 @@ fn resolve_model_relations(model: &Model) -> Option<SynthesizedEnum> {
 
 fn resolve_model_direct_relations(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_relation() {
             if settings.direct {
                 members.push(SynthesizedEnumMember {
@@ -495,7 +495,7 @@ fn resolve_model_direct_relations(model: &Model) -> Option<SynthesizedEnum> {
 
 fn resolve_model_indirect_relations(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_relation() {
             if !settings.direct {
                 members.push(SynthesizedEnumMember {
@@ -514,7 +514,7 @@ fn resolve_model_indirect_relations(model: &Model) -> Option<SynthesizedEnum> {
 
 fn resolve_model_serializable_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
     let mut members = vec![];
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) && !is_field_virtual(field) {
                 members.push(SynthesizedEnumMember {
@@ -540,7 +540,7 @@ fn resolve_model_serializable_scalar_fields(model: &Model) -> Option<Synthesized
 
 fn resolve_count_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -561,7 +561,7 @@ fn resolve_count_aggregate_input_type(model: &Model) -> Option<Type> {
 
 fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -581,7 +581,7 @@ fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Type> {
 
 fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -601,7 +601,7 @@ fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Type> {
 
 fn resolve_min_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -621,7 +621,7 @@ fn resolve_min_aggregate_input_type(model: &Model) -> Option<Type> {
 
 fn resolve_max_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
@@ -641,7 +641,7 @@ fn resolve_max_aggregate_input_type(model: &Model) -> Option<Type> {
 
 fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
                 let optional = is_field_input_omissible(field) || field_has_on_save(field) || field_has_default(field);
@@ -695,7 +695,7 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
 
 fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
                 map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), is_field_atomic(field), context));
@@ -883,7 +883,7 @@ fn resolve_update_many_with_where_input_type(model: &Model, without: Option<&str
 
 fn resolve_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), if is_field_output_omissible(field) {
@@ -913,7 +913,7 @@ fn resolve_result_type(model: &Model) -> Type {
 
 fn resolve_count_aggregate_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Int64.wrap_in_optional());
@@ -930,7 +930,7 @@ fn resolve_count_aggregate_result_type(model: &Model) -> Type {
 
 fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 if field.type_expr().resolved().is_int_32_or_64() {
@@ -962,7 +962,7 @@ fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Type> {
 
 fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 if field.type_expr().resolved().is_decimal() {
@@ -990,7 +990,7 @@ fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Type> {
 
 fn resolve_min_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
@@ -1010,7 +1010,7 @@ fn resolve_min_aggregate_result_type(model: &Model) -> Option<Type> {
 
 fn resolve_max_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
@@ -1048,7 +1048,7 @@ fn resolve_aggregate_result_type(model: &Model, availability: &ShapeAvailableCon
 
 fn resolve_group_by_result_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
-    for field in &model.fields {
+    for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
@@ -1416,7 +1416,7 @@ pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a Res
 }
 
 pub(super) fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&str>, references: Vec<&str>) -> Option<&'a Field> {
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.is_model_relation() {
             let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
             let argument_list = relation_decorator.argument_list()?;
@@ -1433,7 +1433,7 @@ pub(super) fn find_relation_field_in_model<'a>(model: &'a Model, fields: Vec<&st
 }
 
 pub(super) fn find_indirect_relation_field_in_model<'a>(model: &'a Model, through_path: Vec<usize>, local: &str, foreign: &str, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
-    for field in &model.fields {
+    for field in model.fields() {
         if field.resolved().class.is_model_relation() {
             let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
             let argument_list = relation_decorator.argument_list()?;

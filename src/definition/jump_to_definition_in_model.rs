@@ -13,12 +13,12 @@ pub(super) fn jump_to_definition_in_model(schema: &Schema, source: &Source, mode
     let mut namespace_path: Vec<_> = model.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
-    for field in &model.fields {
+    for field in model.fields() {
         if field.span.contains_line_col(line_col) {
             return jump_to_definition_in_field(schema, source, field, line_col, &vec![], availability);
         }
     }
-    for decorator in &model.decorators {
+    for decorator in model.decorators() {
         if decorator.span.contains_line_col(line_col) {
             return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_reference_type(ReferenceSpace::ModelDecorator), availability);
         }
@@ -28,7 +28,7 @@ pub(super) fn jump_to_definition_in_model(schema: &Schema, source: &Source, mode
             return jump_to_definition_in_decorator(schema, source, decorator, &namespace_path, line_col, &top_filter_for_any_model_field_decorators(), availability);
         }
     }
-    for handler_declaration in &model.handlers {
+    for handler_declaration in model.handlers() {
         if handler_declaration.span.contains_line_col(line_col) {
             return jump_to_definition_in_handler_declaration(
                 schema,

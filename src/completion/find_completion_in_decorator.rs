@@ -37,7 +37,7 @@ pub(super) fn find_completion_in_decorator_with_filter<'a>(
     if let Some(argument_list) = decorator.argument_list() {
         if argument_list.span().contains_line_col(line_col) {
             let names = if decorator.is_resolved() {
-                collect_argument_list_names_from_decorator_declaration(schema.find_top_by_path(&decorator.resolved().path).unwrap().as_decorator_declaration().unwrap())
+                collect_argument_list_names_from_decorator_declaration(schema.find_top_by_path(&decorator.resolved()).unwrap().as_decorator_declaration().unwrap())
             } else {
                 vec![]
             };

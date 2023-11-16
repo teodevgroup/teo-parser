@@ -22,6 +22,8 @@ node_children_iter!(HandlerGroupDeclaration, HandlerDeclaration, HandlerDeclarat
 
 impl HandlerGroupDeclaration {
 
+    node_optional_child_fn!(comment, DocComment);
+
     node_child_fn!(identifier, Identifier);
 
     node_children_iter_fn!(handler_declarations, HandlerDeclarationsIter);

@@ -8,7 +8,7 @@ pub(super) fn collect_argument_list_names_from_pipeline_item_declaration(pipelin
         result.push(collect_argument_list_names_from_argument_list_declaration(argument_list_declaration));
     }
     for variant in &pipeline_item_declaration.variants {
-        if let Some(argument_list_declaration) = &variant.argument_list_declaration {
+        if let Some(argument_list_declaration) = variant.argument_list_declaration() {
             result.push(collect_argument_list_names_from_argument_list_declaration(argument_list_declaration));
         }
     }
@@ -17,11 +17,11 @@ pub(super) fn collect_argument_list_names_from_pipeline_item_declaration(pipelin
 
 pub(super) fn collect_argument_list_names_from_decorator_declaration(decorator_declaration: &DecoratorDeclaration) -> Vec<Vec<&str>> {
     let mut result = vec![];
-    if let Some(argument_list_declaration) = &decorator_declaration.argument_list_declaration {
+    if let Some(argument_list_declaration) = decorator_declaration.argument_list_declaration() {
         result.push(collect_argument_list_names_from_argument_list_declaration(argument_list_declaration));
     }
     for variant in &decorator_declaration.variants {
-        if let Some(argument_list_declaration) = &variant.argument_list_declaration {
+        if let Some(argument_list_declaration) = variant.argument_list_declaration() {
             result.push(collect_argument_list_names_from_argument_list_declaration(argument_list_declaration));
         }
     }

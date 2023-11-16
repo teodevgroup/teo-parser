@@ -49,7 +49,7 @@ pub(super) fn jump_to_definition_in_pipeline_item_declaration(schema: &Schema, s
         }
     }
     for variant in &pipeline_item_declaration.variants {
-        if let Some(argument_list_declaration) = &variant.argument_list_declaration {
+        if let Some(argument_list_declaration) = variant.argument_list_declaration() {
             if argument_list_declaration.span.contains_line_col(line_col) {
                 return jump_to_definition_in_argument_list_declaration(
                     schema,

@@ -44,11 +44,11 @@ pub(super) fn jump_to_definition_in_function_declaration(
     if let Some(gen) = function_declaration.generics_declaration() {
         generics.push(gen);
     }
-    if let Some(argument_list_declaration) = function_declaration.argument_list_declaration() {
+    if function_declaration.argument_list_declaration().span.contains_line_col(line_col) {
         return jump_to_definition_in_argument_list_declaration(
             schema,
             source,
-            argument_list_declaration,
+            function_declaration.argument_list_declaration(),
             &generics,
             namespace_path,
             line_col,
