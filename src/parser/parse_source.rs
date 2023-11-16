@@ -5,12 +5,14 @@ use crate::ast::source::{Source, SourceReferences};
 use crate::parse_append;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
 use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
@@ -149,7 +151,7 @@ pub(super) fn parse_source(
                 children.insert(struct_declaration.id(), Node::StructDeclaration(struct_declaration));
             }
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
-            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => context.insert_unparsed(parse_span(&current)),
         }

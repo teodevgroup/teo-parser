@@ -3,6 +3,7 @@ use crate::ast::model::Model;
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
@@ -61,7 +62,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &mut ParserContex
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handlers),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
-            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

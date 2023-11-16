@@ -27,7 +27,7 @@ fn parse_comment_line(pair: Pair<'_>, context: &mut ParserContext) -> String {
     let mut content = "".to_owned();
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::doc_content => cotent = current.as_str().to_string(),
+            Rule::doc_content => content = current.as_str().to_string(),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

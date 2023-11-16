@@ -3,6 +3,7 @@ use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -49,7 +50,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &mut ParserCo
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
-            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

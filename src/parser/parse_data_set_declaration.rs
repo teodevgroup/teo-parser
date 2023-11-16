@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::parser::parse_code_comment::parse_code_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;
@@ -22,6 +24,7 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
     let mut notrack = false;
     let mut groups = vec![];
     let mut inside_block = false;
+    let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),

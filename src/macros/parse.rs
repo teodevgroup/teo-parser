@@ -3,7 +3,7 @@ macro_rules! parse_insert_punctuation {
     ($context:ident, $current:ident, $children:ident, $content:expr) => {
         {
             let punc = crate::ast::punctuations::Punctuation::new($content, parse_span(&$current), $context.next_path());
-            $children.insert(punc.id(), punc.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&punc), punc.into());
         }
     };
 }
@@ -13,7 +13,7 @@ macro_rules! parse_insert_operator {
     ($context:ident, $current:ident, $children:ident, $content:expr) => {
         {
             let op = crate::ast::operators::Operator::new($content, parse_span(&$current), $context.next_path());
-            $children.insert(op.id(), op.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&op), op.into());
         }
     };
 }
@@ -23,7 +23,7 @@ macro_rules! parse_insert_keyword {
     ($context:ident, $current:ident, $children:ident, $content:expr) => {
         {
             let keyword = crate::ast::keyword::Keyword::new($content, parse_span(&$current), $context.next_path());
-            $children.insert(keyword.id(), keyword.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&keyword), keyword.into());
         }
     };
 }
@@ -33,7 +33,7 @@ macro_rules! parse_append {
     ($expr:expr, $children:ident) => {
         {
             let node = $expr;
-            $children.insert(node.id(), node.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
 }
@@ -44,7 +44,7 @@ macro_rules! parse_insert {
         {
             let node = $expr;
             $dest.push(node.id());
-            $children.insert(node.id(), node.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
 }
@@ -55,7 +55,7 @@ macro_rules! parse_set {
         {
             let node = $expr;
             $dest = node.id();
-            $children.insert(node.id(), node.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
 }
@@ -66,7 +66,7 @@ macro_rules! parse_set_optional {
         {
             let node = $expr;
             $dest = Some(node.id());
-            $children.insert(node.id(), node.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
 }
@@ -76,9 +76,9 @@ macro_rules! parse_set_identifier_and_string_path {
     ($context: ident, $current: ident, $children: ident, $identifier: ident, $string_path: ident) => {
         {
             let node = crate::parser::parse_identifier::parse_identifier(&$current, $context);
-            $identifier = node.id();
+            $identifier = crate::traits::identifiable::Identifiable::id(&node);
             $string_path = Some($context.next_parent_string_path(node.name()));
-            $children.insert(node.id(), node.into());
+            $children.insert(crate::traits::identifiable::Identifiable::id(&node), node.into());
         }
     };
 }

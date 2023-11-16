@@ -4,6 +4,7 @@ use crate::ast::r#enum::{Enum, EnumMember};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_arith_expr::parse_arith_expr;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_literals::{parse_numeric_literal, parse_string_literal};

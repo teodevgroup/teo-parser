@@ -5,6 +5,7 @@ use crate::ast::node::Node;
 use crate::{parse_append, parse_insert_punctuation, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
+use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_handler_group::parse_handler_group_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_config_block::parse_config_block;
@@ -151,7 +152,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &mut ParserContext) -> Na
                 children.insert(struct_declaration.id(), Node::StructDeclaration(struct_declaration));
             },
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
-            Rule::availability_end => parse_append!(parse_availability_end(current, context), chilren),
+            Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }
