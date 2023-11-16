@@ -31,7 +31,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                b.lhs.as_ref(),
+                b.lhs(),
                 namespace_path,
                 line_col,
                 generics_declarations,
@@ -41,7 +41,7 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
-                b.rhs.as_ref(),
+                b.rhs(),
                 namespace_path,
                 line_col,
                 generics_declarations,

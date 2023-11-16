@@ -281,7 +281,7 @@ fn resolve_model_include_shape(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(_) = field.resolved().class.as_model_relation() {
-            if let Some(related_reference) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
+            if let Some(related_reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().as_model_object() {
                 if relation_is_many(field) {
                     // many
                     map.insert(
@@ -311,23 +311,23 @@ fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, w
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_queryable(field) && !is_field_writeonly(field) {
                 if with_aggregates {
-                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context));
+                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr().resolved(), context));
                 } else {
-                    map.insert(field.name().to_owned(), resolve_static_where_input_for_type(field.type_expr.resolved(), context).clone());
+                    map.insert(field.name().to_owned(), resolve_static_where_input_for_type(field.type_expr().resolved(), context).clone());
 
                 }
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_queryable(field) {
                 if with_aggregates {
-                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context));
+                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr().resolved(), context));
                 } else {
-                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr.resolved(), context));
+                    map.insert(field.name().to_owned(), resolve_static_where_with_aggregates_input_for_type(field.type_expr().resolved(), context));
                 }
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             if include_relations {
-                if let Some(related_reference) = field.type_expr.resolved().unwrap_optional().unwrap_array().as_model_object() {
+                if let Some(related_reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().as_model_object() {
                     if relation_is_many(field) {
                         // many
                         map.insert(
@@ -374,7 +374,7 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
                             if let Some(enum_variant_literal) = expression.kind.as_enum_variant_literal() {
                                 let name = enum_variant_literal.identifier().name();
                                 if let Some(field) = model.fields().find(|f| f.identifier().name() == name) {
-                                    map.insert(field.name().to_owned(), field.type_expr.resolved().clone());
+                                    map.insert(field.name().to_owned(), field.type_expr().resolved().clone());
                                 }
                             }
                         }
@@ -390,7 +390,7 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
         for decorator in field.decorators() {
             if decorator_has_any_name(decorator, vec!["id", "unique"]) {
                 inputs.push(Type::SynthesizedShape(SynthesizedShape::new(indexmap! {
-                    field.name().to_owned() => field.type_expr.resolved().clone()
+                    field.name().to_owned() => field.type_expr().resolved().clone()
                 })));
             }
         }
@@ -563,11 +563,11 @@ fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
-            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+            if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
-            if field.type_expr.resolved().is_any_number() && settings.cached {
+            if field.type_expr().resolved().is_any_number() && settings.cached {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
             }
         }
@@ -583,11 +583,11 @@ fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
-            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+            if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
-            if field.type_expr.resolved().is_any_number() && settings.cached {
+            if field.type_expr().resolved().is_any_number() && settings.cached {
                 map.insert(field.name().to_owned(), Type::Bool.wrap_in_optional());
             }
         }
@@ -645,7 +645,7 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
                 let optional = is_field_input_omissible(field) || field_has_on_save(field) || field_has_default(field);
-                let mut t = field.type_expr.resolved().clone();
+                let mut t = field.type_expr().resolved().clone();
                 if optional {
                     t = t.wrap_in_optional();
                 }
@@ -654,7 +654,7 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_setter(field) {
                 let optional = is_field_input_omissible(field);
-                let mut t = field.type_expr.resolved().clone();
+                let mut t = field.type_expr().resolved().clone();
                 if optional {
                     t = t.wrap_in_optional();
                 }
@@ -666,7 +666,7 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
                     continue
                 }
             }
-            let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+            let that_model = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
             if relation_is_many(field) {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
                     let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
@@ -698,11 +698,11 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
-                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr.resolved(), is_field_atomic(field), context));
+                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), is_field_atomic(field), context));
             }
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_setter(field) {
-                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr.resolved(), false, context));
+                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), false, context));
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             if let Some(without) = without {
@@ -710,7 +710,7 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
                     continue
                 }
             }
-            let that_model = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+            let that_model = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
             if relation_is_many(field) {
                 if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
                     let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
@@ -887,24 +887,24 @@ fn resolve_result_type(model: &Model) -> Type {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
                 map.insert(field.name().to_owned(), if is_field_output_omissible(field) {
-                    field.type_expr.resolved().wrap_in_optional()
+                    field.type_expr().resolved().wrap_in_optional()
                 } else {
-                    field.type_expr.resolved().clone()
+                    field.type_expr().resolved().clone()
                 });
             }
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_getter(field) {
                 map.insert(field.name().to_owned(), if is_field_output_omissible(field) {
-                    field.type_expr.resolved().wrap_in_optional()
+                    field.type_expr().resolved().wrap_in_optional()
                 } else {
-                    field.type_expr.resolved().clone()
+                    field.type_expr().resolved().clone()
                 });
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             map.insert(field.name().to_owned(), if is_field_output_omissible(field) {
-                field.type_expr.resolved().wrap_in_optional()
+                field.type_expr().resolved().wrap_in_optional()
             } else {
-                field.type_expr.resolved().clone()
+                field.type_expr().resolved().clone()
             });
         }
     }
@@ -932,22 +932,22 @@ fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
-            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
-                if field.type_expr.resolved().is_int_32_or_64() {
+            if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                if field.type_expr().resolved().is_int_32_or_64() {
                     map.insert(field.name().to_owned(), Type::Int64.wrap_in_optional());
-                } else if field.type_expr.resolved().is_float_32_or_64() {
+                } else if field.type_expr().resolved().is_float_32_or_64() {
                     map.insert(field.name().to_owned(), Type::Float.wrap_in_optional());
-                } else if field.type_expr.resolved().is_decimal() {
+                } else if field.type_expr().resolved().is_decimal() {
                     map.insert(field.name().to_owned(), Type::Decimal.wrap_in_optional());
                 }
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
-            if field.type_expr.resolved().is_any_number() && settings.cached {
-                if field.type_expr.resolved().is_int_32_or_64() {
+            if field.type_expr().resolved().is_any_number() && settings.cached {
+                if field.type_expr().resolved().is_int_32_or_64() {
                     map.insert(field.name().to_owned(), Type::Int64.wrap_in_optional());
-                } else if field.type_expr.resolved().is_float_32_or_64() {
+                } else if field.type_expr().resolved().is_float_32_or_64() {
                     map.insert(field.name().to_owned(), Type::Float.wrap_in_optional());
-                } else if field.type_expr.resolved().is_decimal() {
+                } else if field.type_expr().resolved().is_decimal() {
                     map.insert(field.name().to_owned(), Type::Decimal.wrap_in_optional());
                 }
             }
@@ -964,16 +964,16 @@ fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Type> {
     let mut map = indexmap! {};
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
-            if field.type_expr.resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
-                if field.type_expr.resolved().is_decimal() {
+            if field.type_expr().resolved().is_any_number() && !settings.dropped && !is_field_writeonly(field) {
+                if field.type_expr().resolved().is_decimal() {
                     map.insert(field.name().to_owned(), Type::Decimal.wrap_in_optional());
                 } else {
                     map.insert(field.name().to_owned(), Type::Float.wrap_in_optional());
                 }
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
-            if field.type_expr.resolved().is_any_number() && settings.cached {
-                if field.type_expr.resolved().is_decimal() {
+            if field.type_expr().resolved().is_any_number() && settings.cached {
+                if field.type_expr().resolved().is_decimal() {
                     map.insert(field.name().to_owned(), Type::Decimal.wrap_in_optional());
                 } else {
                     map.insert(field.name().to_owned(), Type::Float.wrap_in_optional());
@@ -993,11 +993,11 @@ fn resolve_min_aggregate_result_type(model: &Model) -> Option<Type> {
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         }
     }
@@ -1013,11 +1013,11 @@ fn resolve_max_aggregate_result_type(model: &Model) -> Option<Type> {
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         }
     }
@@ -1051,11 +1051,11 @@ fn resolve_group_by_result_type(model: &Model, availability: &ShapeAvailableCont
     for field in &model.fields {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached {
-                map.insert(field.name().to_owned(), field.type_expr.resolved().wrap_in_optional());
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         }
     }
@@ -1294,7 +1294,7 @@ fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContex
 }
 
 pub(super) fn relation_is_many(field: &Field) -> bool {
-    field.type_expr.resolved().unwrap_optional().is_array()
+    field.type_expr().resolved().unwrap_optional().is_array()
 }
 
 pub(super) fn has_property_setter(field: &Field) -> bool {
@@ -1380,7 +1380,7 @@ pub(super) fn field_has_on_save(field: &Field) -> bool {
 pub(super) fn get_opposite_relation_field<'a>(field: &'a Field, context: &'a ResolverContext<'a>) -> Option<&'a Field> {
     let relation_decorator = field.decorators().find(|d| d.identifier_path.identifiers.last().unwrap().name() == "relation")?;
     let argument_list = relation_decorator.argument_list()?;
-    let that_model_ref = field.type_expr.resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
+    let that_model_ref = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
     let that_model = context.schema.find_top_by_path(that_model_ref.path())?.as_model()?;
 
     let fields = argument_list.arguments().find(|a| a.name.is_some() && a.name.as_ref().unwrap().name() == "fields");

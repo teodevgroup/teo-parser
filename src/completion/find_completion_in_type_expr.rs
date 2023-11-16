@@ -56,10 +56,10 @@ fn find_completion_in_type_expr_kind(schema: &Schema, source: &Source, kind: &Ty
 }
 
 fn find_completion_in_type_expr_binary_op(schema: &Schema, source: &Source, binary_op: &TypeBinaryOperation, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
-    if binary_op.lhs.as_ref().span().contains_line_col(line_col) {
-        find_completion_in_type_expr_kind(schema, source, binary_op.lhs.as_ref(), line_col, namespace_path, generics, filter, availability)
-    } else if binary_op.rhs.as_ref().span().contains_line_col(line_col) {
-        find_completion_in_type_expr_kind(schema, source, binary_op.rhs.as_ref(), line_col, namespace_path, generics, filter, availability)
+    if binary_op.lhs().span().contains_line_col(line_col) {
+        find_completion_in_type_expr_kind(schema, source, binary_op.lhs(), line_col, namespace_path, generics, filter, availability)
+    } else if binary_op.rhs().span().contains_line_col(line_col) {
+        find_completion_in_type_expr_kind(schema, source, binary_op.rhs(), line_col, namespace_path, generics, filter, availability)
     } else {
         vec![]
     }

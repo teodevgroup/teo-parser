@@ -16,7 +16,7 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     let mut map = indexmap! {};
     let generics_map = calculate_generics_map(interface_declaration.generics_declaration.as_ref(), generics);
     for field in &interface_declaration.fields {
-        let t = field.type_expr.resolved().replace_generics(&generics_map);
+        let t = field.type_expr().resolved().replace_generics(&generics_map);
         map.insert(field.name().to_owned(), t.clone());
         if let Some((reference, gen)) = t.as_interface_object() {
             let declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();

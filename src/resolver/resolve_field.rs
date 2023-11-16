@@ -81,9 +81,9 @@ pub(super) fn resolve_field_decorators<'a>(
         resolve_decorator(decorator, context, &btreemap!{
             Keyword::SelfIdentifier => model_type.clone(),
             Keyword::ThisFieldType => if field.resolved().class.is_model_relation() {
-                field.type_expr.resolved().unwrap_optional().unwrap_array().clone()
+                field.type_expr().resolved().unwrap_optional().unwrap_array().clone()
             } else {
-                field.type_expr.resolved().clone()
+                field.type_expr().resolved().clone()
             },
         }, field.resolved().class.reference_type());
     }

@@ -11,7 +11,7 @@ pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &U
         find_completion_in_expression(
             schema,
             source,
-            unit.expressions.get(0).unwrap(),
+            unit.expression_at(0).unwrap(),
             line_col,
             namespace_path,
             availability,

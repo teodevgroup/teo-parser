@@ -159,7 +159,7 @@ fn resolve_struct_instance_for_unit<'a>(
             }
             let mut map = calculate_generics_map(struct_definition.generics_declaration(), &current.r#type.generic_types());
             let argument_declaration = argument_list_declaration.argument_declarations.first().unwrap();
-            let expected_type = argument_declaration.type_expr.resolved().replace_generics(&map);
+            let expected_type = argument_declaration.type_expr().resolved().replace_generics(&map);
             resolve_expression(subscript.expression.as_ref(), context, &Type::Undetermined, &btreemap! {});
             if expected_type.is_generic_item() {
                 map.insert(expected_type.as_generic_item().unwrap().to_string(), subscript.expression.resolved().r#type.clone());
@@ -388,7 +388,7 @@ fn resolve_interface_object_for_unit<'a>(
             if let Some(item) = interface.fields().find(|item| item.identifier().name() == identifier.name()) {
                 let map = calculate_generics_map(interface.generics_declaration(), types);
                 TypeAndValue::new(
-                    item.type_expr.resolved().replace_generics(&map),
+                    item.type_expr().resolved().replace_generics(&map),
                     current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
                 )
             } else {

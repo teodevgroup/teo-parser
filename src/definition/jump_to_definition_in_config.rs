@@ -44,7 +44,7 @@ pub(super) fn jump_to_definition_in_config(schema: &Schema, source: &Source, con
             let undetermined = Type::Undetermined;
             let expected_type = if let Some(config_declaration) = schema.find_config_declaration_by_name(config.keyword().name(), config.availability()) {
                 if let Some(field) = config_declaration.fields().find(|field| field.identifier().name() == item.identifier().name()) {
-                    field.type_expr.resolved()
+                    field.type_expr().resolved()
                 } else {
                     &undetermined
                 }

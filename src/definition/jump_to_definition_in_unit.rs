@@ -72,7 +72,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                             path: schema.source(config.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
                             target_span: config.span,
-                            identifier_span: config.identifier.as_ref().map_or(config.keyword().span, |i| i.span),
+                            identifier_span: config.identifier().map_or(config.keyword().span, |i| i.span),
                         }]
                     },
                     Node::ConfigDeclaration(config_declaration) => if let Some(identifier) = identifier_name {

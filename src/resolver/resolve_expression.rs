@@ -20,6 +20,7 @@ use crate::resolver::resolve_identifier::resolve_identifier_with_diagnostic_mess
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::value::TypeAndValue;
 
@@ -52,7 +53,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
 }
 
 fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
-    resolve_expression(&group.expression, context, expected, keywords_map)
+    resolve_expression(group.expression(), context, expected, keywords_map)
 }
 
 fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
@@ -170,8 +171,8 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 value: None,
             }
         };
-        if let Some(argument_list_declaration) = &member.argument_list_declaration {
-            if let Some(argument_list) = &e.argument_list {
+        if let Some(argument_list_declaration) = member.argument_list_declaration() {
+            if let Some(argument_list) = e.argument_list() {
                 resolve_argument_list(
                     e.identifier().span,
                     Some(argument_list),
@@ -198,7 +199,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
             TypeAndValue {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::OptionVariant(OptionVariant {
-                    value: member.resolved().value.as_int().unwrap(),
+                    value: member.resolved().as_int().unwrap(),
                     display: format!(".{}", member.identifier().name()),
                 }))
             }
@@ -206,7 +207,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
             TypeAndValue {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::EnumVariant(EnumVariant {
-                    value: member.resolved().value.as_str().unwrap().to_string(),
+                    value: member.resolved().as_str().unwrap().to_string(),
                     args: None,
                 }))
             }
@@ -233,11 +234,11 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
 }
 
 fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>) -> TypeAndValue {
-    if synthesized_enum.keys.contains(&e.identifier.name) {
+    if synthesized_enum.keys.contains(&e.identifier().name) {
         TypeAndValue {
             r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
             value: Some(Value::EnumVariant(EnumVariant {
-                value: e.identifier.name.to_string(),
+                value: e.identifier().name().to_string(),
                 args: None,
             }))
         }
@@ -354,7 +355,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
     match arith_expr {
         ArithExpr::Expression(e) => resolve_expression(e.as_ref(), context, expected, keywords_map),
         ArithExpr::UnaryOperation(unary) => {
-            let v = resolve_arith_expr(unary.rhs.as_ref(), context, expected, keywords_map);
+            let v = resolve_arith_expr(unary.rhs(), context, expected, keywords_map);
             if !v.r#type().is_undetermined() {
                 match unary.op {
                     ArithExprOperator::Neg => {
@@ -396,15 +397,15 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
             }
         }
         ArithExpr::UnaryPostfixOperation(unary) => {
-            let v = resolve_arith_expr(unary.lhs.as_ref(), context, expected, keywords_map);
+            let v = resolve_arith_expr(unary.lhs(), context, expected, keywords_map);
             TypeAndValue {
                 r#type: v.r#type.unwrap_optional().clone(),
                 value: v.value
             }
         }
         ArithExpr::BinaryOperation(binary) => {
-            let lhs = resolve_arith_expr(binary.lhs.as_ref(), context, expected, keywords_map);
-            let rhs = resolve_arith_expr(binary.rhs.as_ref(), context, expected, keywords_map);
+            let lhs = resolve_arith_expr(binary.lhs(), context, expected, keywords_map);
+            let rhs = resolve_arith_expr(binary.rhs(), context, expected, keywords_map);
             let new_type = if !lhs.r#type().is_undetermined() && !rhs.r#type().is_undetermined() {
                 match binary.op {
                     ArithExprOperator::Add | ArithExprOperator::Sub | ArithExprOperator::Mul | ArithExprOperator::Div | ArithExprOperator::Mod => {

@@ -65,7 +65,7 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: c.span,
-                identifier_span: c.identifier.as_ref().map_or(c.keyword.span, |i| i.span),
+                identifier_span: c.identifier().map_or(c.keyword().span, |i| i.span),
             }],
             _ => unreachable!()
         }

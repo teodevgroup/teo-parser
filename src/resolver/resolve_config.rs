@@ -32,15 +32,15 @@ pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContex
         // check each field
         for field in &config_declaration.fields {
             if let Some(item) = config.items.iter().find(|i| i.identifier().name() == field.identifier().name()) {
-                resolve_expression(&item.expression, context, field.type_expr.resolved(), &btreemap! {});
+                resolve_expression(&item.expression, context, field.type_expr().resolved(), &btreemap! {});
                 let r#type = item.expression.resolved().r#type();
                 if !r#type.is_undetermined() {
-                    if !field.type_expr.resolved().test(r#type) {
-                        context.insert_diagnostics_error(item.expression().span(), format!("expect {}, found {}", field.type_expr.resolved(), r#type));
+                    if !field.type_expr().resolved().test(r#type) {
+                        context.insert_diagnostics_error(item.expression().span(), format!("expect {}, found {}", field.type_expr().resolved(), r#type));
                     }
                 }
             } else {
-                if !field.type_expr.resolved().is_optional() {
+                if !field.type_expr().resolved().is_optional() {
                     missing_names.push(field.identifier().name());
                 }
             }

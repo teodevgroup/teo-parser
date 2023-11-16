@@ -38,7 +38,7 @@ impl SynthesizedShape {
     }
 
     pub fn iter(&self) -> Iter<String, Type> {
-        self.fields()
+        self.fields.iter()
     }
 
     pub fn iter_mut(&mut self) -> IterMut<String, Type> { self.fields.iter_mut() }
@@ -66,7 +66,7 @@ impl SynthesizedShape {
         Self {
             generics,
             keys: self.keys.clone(),
-            fields: self.fields().map(|(k, t)| (k.clone(), t.replace_generics(map))).collect()
+            fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_generics(map))).collect()
         }
     }
 
@@ -74,7 +74,7 @@ impl SynthesizedShape {
         Self {
             generics: self.generics.clone(),
             keys: self.keys.clone(),
-            fields: self.fields().map(|(k, t)| (k.clone(), t.replace_keywords(map))).collect()
+            fields: self.fields.iter().map(|(k, t)| (k.clone(), t.replace_keywords(map))).collect()
         }
     }
 

@@ -29,7 +29,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
-                u.lhs.as_ref(),
+                u.lhs(),
                 namespace_path,
                 line_col,
                 expect,
@@ -42,7 +42,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
-                u.rhs.as_ref(),
+                u.rhs(),
                 namespace_path,
                 line_col,
                 expect,
@@ -55,7 +55,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
-                b.lhs.as_ref(),
+                b.lhs(),
                 namespace_path,
                 line_col,
                 expect,
@@ -65,7 +65,7 @@ pub(super) fn jump_to_definition_in_arith_expr<'a>(
             jump_to_definition_in_arith_expr(
                 schema,
                 source,
-                b.rhs.as_ref(),
+                b.rhs(),
                 namespace_path,
                 line_col,
                 expect,
