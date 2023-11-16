@@ -1,15 +1,18 @@
 use crate::traits::write::Write;
 
+#[derive(Debug)]
 pub(super) enum Command<'a> {
     BranchCommand(BranchCommand<'a>),
     LeafCommand(LeafCommand<'a>),
 }
 
+#[derive(Debug)]
 pub(super) struct BranchCommand<'a> {
     node: &'a dyn Write,
     children: Vec<Command<'a>>,
 }
 
+#[derive(Debug)]
 pub(super) struct LeafCommand<'a> {
     node: &'a dyn Write,
     contents: Vec<&'a str>,

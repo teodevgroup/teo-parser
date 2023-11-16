@@ -29,7 +29,7 @@ fn search_top_in_source(source: &Source, line_col: (usize, usize)) -> Option<&No
 }
 
 fn search_top_in_namespace(namespace: &Namespace, line_col: (usize, usize)) -> Option<&Node> {
-    for top in namespace.tops() {
+    for top in namespace.children.values() {
         if top.span().contains_line_col(line_col) {
             return if let Some(namespace) = top.as_namespace() {
                 if let Some(top_in_namespace) = search_top_in_namespace(namespace, line_col) {

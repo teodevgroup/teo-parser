@@ -1,6 +1,6 @@
 use crate::format::Preferences;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub(super) struct FileState {
     pub(super) indent_level: usize,
     pub(super) previous_node_requires_whitespace_after: bool,

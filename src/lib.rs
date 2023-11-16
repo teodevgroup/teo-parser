@@ -15,7 +15,7 @@ pub mod format;
 #[macro_use]
 pub mod macros;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap};
 use crate::ast::schema::Schema;
 use crate::completion::completion_item::CompletionItem;
 use crate::definition::definition::Definition;
@@ -26,7 +26,7 @@ use crate::utils::path::FileUtility;
 pub fn parse(
     main: impl AsRef<str>,
     mut file_util: Option<FileUtility>,
-    unsaved_files: Option<HashMap<String, String>>,
+    unsaved_files: Option<BTreeMap<String, String>>,
 ) -> (Schema, Diagnostics) {
     if file_util.is_none() {
         file_util = Some(FileUtility::default());

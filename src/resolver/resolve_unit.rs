@@ -15,6 +15,7 @@ use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 use crate::value::TypeAndValue;
@@ -26,12 +27,12 @@ pub(super) fn resolve_unit<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
 ) -> TypeAndValue {
     if unit.expressions.len() == 1 {
-        return resolve_expression(unit.expressions.get(0).unwrap(), context, expected, keywords_map);
+        return resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map);
     }
     let mut current: Option<TypeAndValue> = None;
     for (index, expression) in unit.expressions().enumerate() {
         current = Some(resolve_current_item_for_unit(
-            if index == 0 { None } else { Some(unit.expressions.get(index - 1).unwrap().span()) },
+            if index == 0 { None } else { Some(unit.expression_at(index - 1).unwrap().span()) },
             current.as_ref(),
             expression,
             context,

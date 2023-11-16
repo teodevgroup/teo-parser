@@ -6,6 +6,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
+use crate::traits::identifiable::Identifiable;
 use crate::traits::resolved::Resolve;
 
 pub fn search_identifier_path_names_with_filter_to_type_and_value(
@@ -131,7 +132,7 @@ fn top_to_reference_type_and_value(top: &Node) -> TypeAndValue {
             Node::Import(_) => Type::Undetermined,
             Node::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
             Node::ConfigDeclaration(_) => Type::Undetermined,
-            Node::Constant(c) => return c.resolved().expression_resolved.clone(),
+            Node::Constant(c) => return c.resolved().clone(),
             Node::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
             Node::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
             Node::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
@@ -151,6 +152,7 @@ fn top_to_reference_type_and_value(top: &Node) -> TypeAndValue {
                 Type::Undetermined
             }
             Node::UseMiddlewaresBlock(_) => Type::Undetermined,
+            _ => Type::Undetermined,
         },
         value: None,
     }

@@ -5,6 +5,7 @@ use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::namespace::Namespace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 pub(crate) fn search_availability(schema: &Schema, source: &Source, namespace_path: &Vec<&str>) -> Availability {
     if namespace_path.len() == 0 {
@@ -43,22 +44,22 @@ pub(crate) fn find_source_connector<'a>(schema: &'a Schema, source: &'a Source) 
 
 pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Availability {
     if let Some(connector) = connector {
-        if let Some(provider) = connector.items.iter().find(|item| {
+        if let Some(provider) = connector.items().find(|item| {
             item.identifier().name() == "provider"
         }) {
-            if let Some(enum_variant_literal) = provider.expression.kind.as_enum_variant_literal() {
+            if let Some(enum_variant_literal) = provider.expression().kind.as_enum_variant_literal() {
                 availability_from_enum_variant_literal(enum_variant_literal)
-            } else if let Some(unit) = provider.expression.kind.as_unit() {
-                if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
+            } else if let Some(unit) = provider.expression().kind.as_unit() {
+                if let Some(enum_variant_literal) = unit.expressions().next().unwrap().kind.as_enum_variant_literal() {
                     availability_from_enum_variant_literal(enum_variant_literal)
                 } else {
                     Availability::no_database()
                 }
-            } else if let Some(arith) = provider.expression.kind.as_arith_expr() {
+            } else if let Some(arith) = provider.expression().kind.as_arith_expr() {
                 match arith {
                     ArithExpr::Expression(e) => {
                         if let Some(unit) = e.kind.as_unit() {
-                            if let Some(enum_variant_literal) = unit.expressions.first().unwrap().kind.as_enum_variant_literal() {
+                            if let Some(enum_variant_literal) = unit.expressions().next().unwrap().kind.as_enum_variant_literal() {
                                 availability_from_enum_variant_literal(enum_variant_literal)
                             } else {
                                 Availability::no_database()

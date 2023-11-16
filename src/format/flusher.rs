@@ -53,7 +53,7 @@ impl<'a> Flusher<'a> {
     fn restore_state<F>(&mut self, f: F) -> Option<String> where F: Fn() -> Option<String> {
         let file_state = self.file_state;
         let flusher_state = self.flusher_state;
-        if let Some(buffer) = f(self) {
+        if let Some(buffer) = f() {
             Some(buffer)
         } else {
             self.file_state = file_state;
