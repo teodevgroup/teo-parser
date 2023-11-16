@@ -19,7 +19,7 @@ pub(super) fn jump_to_definition_in_decorator<'a>(
 ) -> Vec<Definition> {
     let mut user_typed_spaces = vec![];
     let mut selector_span = None;
-    for identifier in decorator.identifier_path.identifiers.iter() {
+    for identifier in decorator.identifier_path.identifiers() {
         if identifier.span.contains_line_col(line_col) {
             user_typed_spaces.push(identifier.name());
             selector_span = Some(identifier.span);

@@ -141,7 +141,7 @@ fn jump_to_definition_in_type_item(
         if type_item.identifier_path.identifiers.len() == 1 {
             let identifier = type_item.identifier_path.identifiers.get(0).unwrap();
             for generics_declaration in generics_declarations {
-                if let Some(i) = generics_declaration.identifiers.iter().find(|i| i.name() == identifier.name()) {
+                if let Some(i) = generics_declaration.identifiers().find(|i| i.name() == identifier.name()) {
                     return vec![Definition {
                         path: schema.source(generics_declaration.source_id()).unwrap().file_path.clone(),
                         selection_span: identifier.span,
@@ -153,7 +153,7 @@ fn jump_to_definition_in_type_item(
         }
         let mut user_typed_spaces = vec![];
         let mut selector_span = None;
-        for identifier in type_item.identifier_path.identifiers.iter() {
+        for identifier in type_item.identifier_path.identifiers() {
             if identifier.span.contains_line_col(line_col) {
                 user_typed_spaces.push(identifier.name());
                 selector_span = Some(identifier.span);

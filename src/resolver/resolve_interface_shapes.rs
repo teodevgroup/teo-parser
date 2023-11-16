@@ -42,7 +42,7 @@ pub(super) fn calculate_generics_map<'a>(
 ) -> BTreeMap<String, Type> {
     if let Some(generics_declaration) = generics_declaration {
         if generics_declaration.identifiers.len() == types.len() {
-            return generics_declaration.identifiers.iter().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap().clone())).collect();
+            return generics_declaration.identifiers().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap().clone())).collect();
         }
     }
     btreemap!{}

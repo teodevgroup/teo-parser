@@ -16,7 +16,7 @@ pub(super) fn resolve_handler_group_types<'a>(
     if context.has_examined_default_path(&handler_group.string_path, Availability::default()) {
         context.insert_duplicated_identifier(handler_group.identifier().span);
     }
-    for handler_declaration in &handler_group.handler_declarations {
+    for handler_declaration in handler_group.handler_declarations() {
         resolve_handler_declaration_types(handler_declaration, context)
     }
     context.add_examined_default_path(handler_group.string_path.clone(), Availability::default());
@@ -26,7 +26,7 @@ pub(super) fn resolve_handler_group_decorators<'a>(
     handler_group: &'a HandlerGroupDeclaration,
     context: &'a ResolverContext<'a>
 ) {
-    for handler_declaration in &handler_group.handler_declarations {
+    for handler_declaration in handler_group.handler_declarations() {
         resolve_handler_declaration_decorators(handler_declaration, context)
     }
 }

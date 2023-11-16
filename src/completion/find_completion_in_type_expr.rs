@@ -98,7 +98,7 @@ fn find_completion_in_type_item(schema: &Schema, source: &Source, item: &TypeIte
 
 fn find_completion_in_type_item_identifier_path(schema: &Schema, source: &Source, identifier_path: &IdentifierPath, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     let mut user_typed_spaces = vec![];
-    for identifier in identifier_path.identifiers.iter() {
+    for identifier in identifier_path.identifiers() {
         if identifier.span.contains_line_col(line_col) {
             break
         } else {

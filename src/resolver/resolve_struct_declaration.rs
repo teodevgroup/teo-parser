@@ -18,7 +18,7 @@ pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDecla
         }
     }
     let r#type = Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), if let Some(generics_declaration) = struct_declaration.generics_declaration.as_ref() {
-        generics_declaration.identifiers.iter().map(|i| Type::GenericItem(i.name().to_owned())).collect()
+        generics_declaration.identifiers().map(|i| Type::GenericItem(i.name().to_owned())).collect()
     } else {
         vec![]
     });

@@ -129,6 +129,14 @@ impl TypeItem {
     node_child_fn!(identifier_path, IdentifierPath);
 
     node_optional_child_fn!(generics, TypeGenerics);
+
+    pub fn generic_items(&self) -> Vec<&TypeExpr> {
+        if let Some(generics) = self.generics() {
+            generics.type_exprs().collect()
+        } else {
+            vec![]
+        }
+    }
 }
 
 impl Write for TypeItem {

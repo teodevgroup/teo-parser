@@ -8,7 +8,7 @@ pub(super) fn resolve_middleware<'a>(middleware: &'a MiddlewareDeclaration, cont
     } else {
         context.add_examined_middleware_path(middleware.string_path.clone());
     }
-    if let Some(argument_list_declaration) = &middleware.argument_list_declaration {
+    if let Some(argument_list_declaration) = middleware.argument_list_declaration() {
         resolve_argument_list_declaration(argument_list_declaration, &vec![], &vec![], context, context.current_availability())
     }
 }

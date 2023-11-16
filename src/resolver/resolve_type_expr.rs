@@ -10,6 +10,7 @@ use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
 pub(super) fn resolve_type_expr<'a>(
@@ -19,22 +20,24 @@ pub(super) fn resolve_type_expr<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     availability: Availability,
-) {
-    type_expr.resolve(
-        resolve_type_expr_kind(
-            &type_expr.kind,
-            generics_declaration,
-            generics_constraint,
-            context,
-            availability,
-        ).replace_keywords(&keywords_map)
-    )
+) -> Type {
+    let result = resolve_type_expr_kind(
+        &type_expr.kind,
+        generics_declaration,
+        generics_constraint,
+        keywords_map,
+        context,
+        availability,
+    ).replace_keywords(&keywords_map);
+    type_expr.resolve(result.clone());
+    result
 }
 
 fn resolve_type_expr_kind<'a>(
     type_expr_kind: &'a TypeExprKind,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) -> Type {
@@ -44,6 +47,7 @@ fn resolve_type_expr_kind<'a>(
                 expr,
                 generics_declaration,
                 generics_constraint,
+                keywords_map,
                 context,
                 availability
             )
@@ -51,17 +55,19 @@ fn resolve_type_expr_kind<'a>(
         TypeExprKind::BinaryOp(binary_op) => {
             match binary_op.op {
                 TypeOperator::BitOr => {
-                    let lhs = resolve_type_expr_kind(
-                        binary_op.lhs().kind,
+                    let lhs = resolve_type_expr(
+                        binary_op.lhs(),
                         generics_declaration,
                         generics_constraint,
+                        keywords_map,
                         context,
                         availability,
                     );
-                    let rhs = resolve_type_expr_kind(
+                    let rhs = resolve_type_expr(
                         binary_op.rhs(),
                         generics_declaration,
                         generics_constraint,
+                        keywords_map,
                         context,
                         availability,
                     );
@@ -75,15 +81,17 @@ fn resolve_type_expr_kind<'a>(
                 type_item,
                 generics_declaration,
                 generics_constraint,
+                keywords_map,
                 context,
                 availability,
             )
         }
         TypeExprKind::TypeGroup(g) => {
-            let mut resolved = resolve_type_expr_kind(
-                g.kind(),
+            let mut resolved = resolve_type_expr(
+                g.type_expr(),
                 generics_declaration,
                 generics_constraint,
+                keywords_map,
                 context,
                 availability,
             );
@@ -107,6 +115,7 @@ fn resolve_type_expr_kind<'a>(
                 &k.kind,
                 generics_declaration,
                 generics_constraint,
+                keywords_map,
                 context,
                 availability,
             )).collect());
@@ -127,8 +136,8 @@ fn resolve_type_expr_kind<'a>(
         }
         TypeExprKind::TypeSubscript(subscript) => {
             let mut resolved = Type::FieldType(
-                Box::new(resolve_type_item(subscript.type_item(), generics_declaration, generics_constraint, context, availability)),
-                Box::new(resolve_type_expr_kind(subscript.type_expr(), generics_declaration, generics_constraint, context, availability)),
+                Box::new(resolve_type_expr(subscript.container(), generics_declaration, generics_constraint, keywords_map, context, availability)),
+                Box::new(resolve_type_expr(subscript.argument(), generics_declaration, generics_constraint, keywords_map, context, availability)),
             );
             if !resolved.is_optional() && subscript.item_optional {
                 resolved = Type::Optional(Box::new(resolved));
@@ -155,13 +164,14 @@ fn resolve_type_item<'a>(
     type_item: &'a TypeItem,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) -> Type {
-    let names = type_item.identifier_path.names();
+    let names = type_item.identifier_path().names();
     let mut base = if names.len() == 1 {
         let name = *names.get(0).unwrap();
-        type_item_builtin_match(name, type_item, generics_declaration, generics_constraint, context, availability)
+        type_item_builtin_match(name, type_item, generics_declaration, generics_constraint, keywords_map, context, availability)
     } else {
         None
     };
@@ -170,13 +180,21 @@ fn resolve_type_item<'a>(
             base = match resolved.r#type() {
                 Type::ModelReference(r) => Some(Type::ModelObject(r.clone())),
                 Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
-                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), type_item.generics().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
-                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), type_item.generics().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect())),
+                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), if let Some(generics) = type_item.generics() {
+                    generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
+                } else {
+                    vec![]
+                })),
+                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), if let Some(generics) = type_item.generics() {
+                    generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
+                } else {
+                    vec![]
+                })),
                 _ => None,
             };
         }
         if base.is_none() {
-            context.insert_diagnostics_error(type_item.identifier_path.span, "unknown type");
+            context.insert_diagnostics_error(type_item.identifier_path().span, "unknown type");
             base = Some(Type::Undetermined);
         }
     }
@@ -201,6 +219,7 @@ fn type_item_builtin_match<'a>(
     type_item: &'a TypeItem,
     generics_declaration: &Vec<&'a GenericsDeclaration>,
     generics_constraint: &Vec<&'a GenericsConstraint>,
+    keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) -> Option<Type> {
@@ -215,45 +234,45 @@ fn type_item_builtin_match<'a>(
         },
         "Union" => {
             check_generics_amount_multiple(type_item, context);
-            Some(Type::Union(type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect()))
+            Some(Type::Union(type_item.generic_items().iter().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()))
         },
         "Enumerable" => {
             check_generics_amount(1, type_item, context);
-            Some(Type::Enumerable(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
+            Some(Type::Enumerable(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         },
         "Optional" => {
             check_generics_amount(1, type_item, context);
-            Some(Type::Optional(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
+            Some(Type::Optional(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         },
         "FieldType" => {
             check_generics_amount(2, type_item, context);
-            if type_item.generics.len() != 2 {
+            if type_item.generic_items().len() != 2 {
                 return Some(Type::Undetermined);
             }
-            let t = type_item.generics.get(0).unwrap();
-            let f = type_item.generics.get(1).unwrap();
-            let Some(field_ref) = f.as_field_reference() else {
+            let t = type_item.generic_items().get(0).unwrap();
+            let f = type_item.generic_items().get(1).unwrap();
+            let Some(field_ref) = f.kind.as_field_reference() else {
                 context.insert_diagnostics_error(f.span(), "type is not field reference");
                 return Some(Type::Undetermined);
             };
-            let inner_type = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
+            let inner_type = resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability);
             if let Some(reference) = inner_type.as_model_object() {
                 let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                if let Some(field) = model.fields.iter().find(|f| f.identifier().name() == field_ref.identifier().name()) {
-                    Some(field.type_expr.resolved().clone())
+                if let Some(field) = model.fields().find(|f| f.identifier().name() == field_ref.identifier().name()) {
+                    Some(field.type_expr().resolved().clone())
                 } else {
                     context.insert_diagnostics_error(f.span(), "field not found");
                     Some(Type::Undetermined)
                 }
             } else if let Some((reference, interface_generics)) = inner_type.as_interface_object() {
                 let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                let map = calculate_generics_map(interface.generics_declaration.as_ref(), interface_generics);
-                if let Some(field) = interface.fields.iter().find(|f| f.identifier().name() == field_ref.identifier().name()) {
-                    Some(field.type_expr.resolved().replace_generics(&map))
+                let map = calculate_generics_map(interface.generics_declaration(), interface_generics);
+                if let Some(field) = interface.fields().find(|f| f.identifier().name() == field_ref.identifier().name()) {
+                    Some(field.type_expr().resolved().replace_generics(&map))
                 } else {
                     context.insert_diagnostics_error(f.span(), "field not found");
                     Some(Type::Undetermined)
@@ -286,7 +305,7 @@ fn type_item_builtin_match<'a>(
         "Int32" => {
             check_generics_amount(0, type_item, context);
             preferred_name(
-                type_item.identifier_path.identifiers.get(0).unwrap().span,
+                type_item.identifier_path().identifiers().next().unwrap().span,
                 "Int", "Int32", context
             );
             Some(Type::Int)
@@ -306,7 +325,7 @@ fn type_item_builtin_match<'a>(
         "Float64" => {
             check_generics_amount(0, type_item, context);
             preferred_name(
-                type_item.identifier_path.identifiers.get(0).unwrap().span,
+                type_item.identifier_path().identifiers().next().unwrap().span,
                 "Float", "Float64", context
             );
             Some(Type::Float)
@@ -345,27 +364,27 @@ fn type_item_builtin_match<'a>(
         },
         "Array" => {
             check_generics_amount(1, type_item, context);
-            Some(Type::Array(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
+            Some(Type::Array(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         },
         "Dictionary" => {
             check_generics_amount(1, type_item, context);
-            Some(Type::Dictionary(Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
+            Some(Type::Dictionary(Box::new(type_item.generic_items().get(1).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         },
         "Tuple" => {
             check_generics_amount_more_than_one(type_item, context);
-            Some(Type::Tuple(type_item.generics.iter().map(|t| resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)).collect()))
+            Some(Type::Tuple(type_item.generic_items().iter().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()))
         },
         "Range" => {
             check_generics_amount(1, type_item, context);
-            Some(Type::Range(Box::new(type_item.generics.get(0).map_or(Type::Int, |t| {
-                let kind = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
+            Some(Type::Range(Box::new(type_item.generic_items().get(0).map_or(Type::Int, |t| {
+                let kind = resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability);
                 if !(kind.is_int_32_or_64() || kind.is_float_32_or_64() || kind.is_decimal()) {
                     context.insert_diagnostics_error(
-                        type_item.generics.get(0).unwrap().span(),
+                        type_item.generic_items().get(0).unwrap().span(),
                         "range takes number types"
                     );
                     Type::Int
@@ -396,15 +415,15 @@ fn type_item_builtin_match<'a>(
         }
         "Pipeline" => {
             check_generics_amount(2, type_item, context);
-            Some(Type::Pipeline(Box::new(type_item.generics.get(0).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
-            })), Box::new(type_item.generics.get(1).map_or(Type::Any, |t| {
-                resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability)
+            Some(Type::Pipeline(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
+            })), Box::new(type_item.generic_items().get(1).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         }
         _ => {
             generics_declaration.iter().find_map(|generics_declaration| {
-                if generics_declaration.identifiers.iter().find(|i| i.name() == name).is_some() {
+                if generics_declaration.identifiers().find(|i| i.name() == name).is_some() {
                     Some(Type::GenericItem(name.to_string()))
                 } else {
                     None
@@ -416,7 +435,7 @@ fn type_item_builtin_match<'a>(
 
 // "ModelScalarFields" => {
 //     request_single_generics("ModelScalarFields", type_item, context);
-//     if let Some(t) = type_item.generics.get(0) {
+//     if let Some(t) = type_item.generic_items().get(0) {
 //         let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
 //         if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
 //             Some(Type::ModelScalarFields(Box::new(model_object), None))
@@ -430,7 +449,7 @@ fn type_item_builtin_match<'a>(
 // },
 // "ModelScalarFieldsWithoutVirtuals" => {
 //     request_single_generics("ModelScalarFieldsWithoutVirtuals", type_item, context);
-//     if let Some(t) = type_item.generics.get(0) {
+//     if let Some(t) = type_item.generic_items().get(0) {
 //         let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
 //         if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
 //             Some(Type::ModelScalarFieldsWithoutVirtuals(Box::new(model_object), None))
@@ -444,7 +463,7 @@ fn type_item_builtin_match<'a>(
 // },
 // "ModelSerializableScalarFields" => {
 //     request_single_generics("ModelSerializableScalarFields", type_item, context);
-//     if let Some(t) = type_item.generics.get(0) {
+//     if let Some(t) = type_item.generic_items().get(0) {
 //         let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
 //         if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
 //             Some(Type::ModelSerializableScalarFields(Box::new(model_object), None))
@@ -458,7 +477,7 @@ fn type_item_builtin_match<'a>(
 // },
 // "ModelRelations" => {
 //     request_single_generics("ModelRelations", type_item, context);
-//     if let Some(t) = type_item.generics.get(0) {
+//     if let Some(t) = type_item.generic_items().get(0) {
 //         let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
 //         if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
 //             Some(Type::ModelRelations(Box::new(model_object), None))
@@ -472,7 +491,7 @@ fn type_item_builtin_match<'a>(
 // },
 // "ModelDirectRelations" => {
 //     request_single_generics("ModelDirectRelations", type_item, context);
-//     if let Some(t) = type_item.generics.get(0) {
+//     if let Some(t) = type_item.generic_items().get(0) {
 //         let model_object = resolve_type_expr_kind(t, generics_declaration, generics_constraint, context, availability);
 //         if model_object.is_model_object() || model_object.is_keyword() || model_object.is_generic_item() {
 //             Some(Type::ModelDirectRelations(Box::new(model_object), None))
@@ -486,18 +505,18 @@ fn type_item_builtin_match<'a>(
 // },
 
 fn check_generics_amount<'a>(expect: usize, type_item: &TypeItem, context: &'a ResolverContext<'a>) {
-    if type_item.generics.len() == expect { return }
-    context.insert_diagnostics_error(type_item.identifier_path.span, format!("wrong number of generic arguments, expect {}, found {}", expect, type_item.generics.len()));
+    if type_item.generic_items().len() == expect { return }
+    context.insert_diagnostics_error(type_item.identifier_path().span, format!("wrong number of generic arguments, expect {}, found {}", expect, type_item.generic_items().len()));
 }
 
 fn check_generics_amount_multiple<'a>(type_item: &TypeItem, context: &'a ResolverContext<'a>) {
-    if type_item.generics.len() >= 2 { return }
-    context.insert_diagnostics_error(type_item.identifier_path.span, format!("expect multiple generic arguments"));
+    if type_item.generic_items().len() >= 2 { return }
+    context.insert_diagnostics_error(type_item.identifier_path().span, format!("expect multiple generic arguments"));
 }
 
 fn check_generics_amount_more_than_one<'a>(type_item: &TypeItem, context: &'a ResolverContext<'a>) {
-    if type_item.generics.len() >= 1 { return }
-    context.insert_diagnostics_error(type_item.identifier_path.span, format!("expect generic arguments"));
+    if type_item.generic_items().len() >= 1 { return }
+    context.insert_diagnostics_error(type_item.identifier_path().span, format!("expect generic arguments"));
 }
 
 fn preferred_name<'a>(span: Span, prefer: &str, current: &str, context: &'a ResolverContext<'a>) {
