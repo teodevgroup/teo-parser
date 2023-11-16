@@ -28,7 +28,7 @@ impl ConfigDeclaration {
     node_children_iter_fn!(fields, FieldsIter);
 
     pub fn get_field(&self, name: &str) -> Option<&Field> {
-        self.fields().find(|f| f.identifier.name() == name)
+        self.fields().find(|f| f.identifier().name() == name)
     }
 }
 

@@ -120,6 +120,16 @@ macro_rules! impl_node_defaults {
                 }
             }
         }
+        impl<'a> TryFrom<&'a crate::ast::node::Node> for &'a $struct_name {
+            type Error = &'static str;
+
+            fn try_from(value: &'a crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
+            }
+        }
         impl std::fmt::Display for $struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 f.write_str(&self.write_output_with_default_writer())
@@ -158,6 +168,16 @@ macro_rules! impl_container_node_defaults {
                 }
             }
         }
+        impl<'a> TryFrom<&'a crate::ast::node::Node> for &'a $struct_name {
+            type Error = &'static str;
+
+            fn try_from(value: &'a crate::ast::node::Node) -> Result<Self, Self::Error> {
+                match value {
+                    crate::ast::node::Node::$struct_name(n) => Ok(n),
+                    _ => Err("convert failed"),
+                }
+            }
+        }
         impl std::fmt::Display for $struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 f.write_str(&self.write_output_with_default_writer())
@@ -165,114 +185,27 @@ macro_rules! impl_container_node_defaults {
         }
     };
     ($struct_name:ident, named) => {
-        impl crate::traits::identifiable::Identifiable for $struct_name {
-            fn path(&self) -> &Vec<usize> {
-               &self.path
-            }
-        }
-        impl crate::traits::node_trait::NodeTrait for $struct_name {
-            fn span(&self) -> crate::ast::span::Span {
-                self.span
-            }
-            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
-                Some(&self.children)
-            }
-        }
-        impl From<$struct_name> for crate::ast::node::Node {
-            fn from(value: $struct_name) -> Self {
-                crate::ast::node::Node::$struct_name(value)
-            }
-        }
-        impl TryFrom<crate::ast::node::Node> for $struct_name {
-            type Error = &'static str;
-            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
-                match value {
-                    crate::ast::node::Node::$struct_name(n) => Ok(n),
-                    _ => Err("convert failed"),
-                }
-            }
-        }
+        impl_container_node_defaults!($struct_name);
         impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
             fn string_path(&self) -> &Vec<String> {
                 &self.string_path
             }
         }
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.write_output_with_default_writer())
-            }
-        }
+
     };
     ($struct_name:ident, availability) => {
-        impl crate::traits::identifiable::Identifiable for $struct_name {
-            fn path(&self) -> &Vec<usize> {
-               &self.path
-            }
-        }
-        impl crate::traits::node_trait::NodeTrait for $struct_name {
-            fn span(&self) -> crate::ast::span::Span {
-                self.span
-            }
-            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
-                Some(&self.children)
-            }
-        }
-        impl From<$struct_name> for crate::ast::node::Node {
-            fn from(value: $struct_name) -> Self {
-                crate::ast::node::Node::$struct_name(value)
-            }
-        }
-        impl TryFrom<crate::ast::node::Node> for $struct_name {
-            type Error = &'static str;
-            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
-                match value {
-                    crate::ast::node::Node::$struct_name(n) => Ok(n),
-                    _ => Err("convert failed"),
-                }
-            }
-        }
+        impl_container_node_defaults!($struct_name);
         impl crate::traits::has_availability::HasAvailability for $struct_name {
             fn define_availability(&self) -> crate::availability::Availability {
                 self.define_availability
             }
             fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
-            }
-        }
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.write_output_with_default_writer())
             }
         }
     };
     ($struct_name:ident, named, availability) => {
-        impl crate::traits::identifiable::Identifiable for $struct_name {
-            fn path(&self) -> &Vec<usize> {
-               &self.path
-            }
-        }
-        impl crate::traits::node_trait::NodeTrait for $struct_name {
-            fn span(&self) -> crate::ast::span::Span {
-                self.span
-            }
-            fn children(&self) -> Option<&std::collections::btree_map::BTreeMap<usize, crate::ast::node::Node>> {
-                Some(&self.children)
-            }
-        }
-        impl From<$struct_name> for crate::ast::node::Node {
-            fn from(value: $struct_name) -> Self {
-                crate::ast::node::Node::$struct_name(value)
-            }
-        }
-        impl TryFrom<crate::ast::node::Node> for $struct_name {
-            type Error = &'static str;
-            fn try_from(value: crate::ast::node::Node) -> Result<Self, Self::Error> {
-                match value {
-                    crate::ast::node::Node::$struct_name(n) => Ok(n),
-                    _ => Err("convert failed"),
-                }
-            }
-        }
+        impl_container_node_defaults!($struct_name);
         impl crate::traits::named_identifiable::NamedIdentifiable for $struct_name {
             fn string_path(&self) -> &Vec<String> {
                 &self.string_path
@@ -284,11 +217,6 @@ macro_rules! impl_container_node_defaults {
             }
             fn actual_availability(&self) -> crate::availability::Availability {
                 *self.actual_availability.borrow()
-            }
-        }
-        impl std::fmt::Display for $struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.write_output_with_default_writer())
             }
         }
     };
@@ -353,7 +281,11 @@ macro_rules! node_child_fn {
 macro_rules! node_optional_child_fn {
     ($name:ident, $class:ident) => {
         pub fn $name(&self) -> Option<&$class> {
-            self.$name.map(|n| self.children.get(&n).unwrap().try_into()).flatten()
+            if let Some(id) = self.$name {
+                Some(self.children.get(&id).unwrap().try_into().unwrap())
+            } else {
+                None
+            }
         }
     }
 }

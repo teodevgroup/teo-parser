@@ -39,7 +39,7 @@ impl Config {
     }
 
     pub fn get_item(&self, name: impl AsRef<str>) -> Option<&Expression> {
-        self.items().find(|item| item.identifier.name() == name.as_ref() && item.is_available()).map(|item| item.expression())
+        self.items().find(|item| item.identifier().name() == name.as_ref() && item.is_available()).map(|item| item.expression())
     }
 }
 
@@ -50,10 +50,10 @@ impl NamedIdentifiable for Config {
     }
 
     fn name(&self) -> &str {
-        if let Some(identifier) = &self.identifier {
+        if let Some(identifier) = self.identifier() {
             identifier.name()
         } else {
-            self.keyword.name()
+            self.keyword().name()
         }
     }
 }

@@ -18,3 +18,4 @@ impl Write for Identifier {
         writer.write_content(self, self.name());
     }
 }
+
