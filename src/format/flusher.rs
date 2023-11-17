@@ -50,10 +50,10 @@ impl<'a> Flusher<'a> {
         self.file_state.line_remaining_length = self.preferences.maximum_line_width();
     }
 
-    fn restore_state<F>(&mut self, f: F) -> Option<String> where F: FnMut() -> Option<String> {
+    fn restore_state<F>(&mut self, mut f: F) -> Option<String> where F: FnMut(&mut Self) -> Option<String> {
         let file_state = self.file_state;
         let flusher_state = self.flusher_state;
-        if let Some(buffer) = f() {
+        if let Some(buffer) = f(self) {
             Some(buffer)
         } else {
             self.file_state = file_state;
@@ -104,8 +104,8 @@ impl<'a> Flusher<'a> {
 
         // if one line cannot contain content, then do not write in one line
         loop {
-            if let Some(output) = self.restore_state(|| {
-                self.try_write_block_with_instruction(one_line)
+            if let Some(output) = self.restore_state(|slf| {
+                slf.try_write_block_with_instruction(one_line)
             }) {
                 buffer.push_str(&output);
                 break
