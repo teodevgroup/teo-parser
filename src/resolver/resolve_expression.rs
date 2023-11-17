@@ -8,6 +8,7 @@ use teo_teon::types::range::Range;
 use teo_teon::Value;
 use teo_teon::types::option_variant::OptionVariant;
 use crate::ast::arith_expr::{ArithExpr, ArithExprOperator};
+use crate::ast::bracket_expression::BracketExpression;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::group::Group;
@@ -21,7 +22,7 @@ use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
-use crate::traits::resolved::Resolve;
+use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::value::TypeAndValue;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> TypeAndValue {
@@ -49,6 +50,8 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
         ExpressionKind::IntSubscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected, keywords_map),
         ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected, keywords_map),
+        ExpressionKind::NamedExpression(_) => unreachable!(),
+        ExpressionKind::BracketExpression(e) => resolve_bracket_expression(e, context, &Type::String, keywords_map),
     }
 }
 
@@ -324,12 +327,12 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     let mut retval = hashset![];
     let mut retval_values = IndexMap::new();
     let mut unresolved = false;
-    for (k, v) in a.expressions() {
-        let k_value = resolve_expression(k, context, &Type::String, keywords_map);
+    for named_expression in a.expressions() {
+        let k_value = resolve_expression_for_named_expression_key(named_expression.key(), context, &Type::String, keywords_map);
         if !k_value.r#type.is_string() {
-            context.insert_diagnostics_error(k.span(), "ValueError: dictionary key is not String");
+            context.insert_diagnostics_error(named_expression.key().span(), "dictionary key is not string");
         }
-        let v_value = resolve_expression(v, context, r#type, keywords_map);
+        let v_value = resolve_expression(named_expression.value(), context, r#type, keywords_map);
         retval.insert(v_value.r#type.clone());
         if k_value.value.is_none() || v_value.value.is_none() {
             unresolved = true;
@@ -535,4 +538,17 @@ fn build_range_value(lhs: &Value, rhs: &Value, closed: bool) -> Value {
         start: Box::new(lhs.clone()),
         end: Box::new(rhs.clone()),
     })
+}
+
+pub(super) fn resolve_expression_for_named_expression_key<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+    expression.resolve_and_return(match &expression.kind {
+        ExpressionKind::StringLiteral(s) => resolve_string_literal(s, context, expected),
+        ExpressionKind::Identifier(i) => TypeAndValue::new(Type::String, Some(Value::String(i.name.clone()))),
+        ExpressionKind::BracketExpression(e) => resolve_bracket_expression(e, context, expected, keywords_map),
+        _ => unreachable!(),
+    })
+}
+
+fn resolve_bracket_expression<'a>(bracket_expression: &'a BracketExpression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+    resolve_expression(bracket_expression.expression(), context, expected, keywords_map)
 }

@@ -158,12 +158,17 @@ tuple_literal = { PAREN_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | d
 // #############
 // array literals
 // #############
+
 array_literal = { BRACKET_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (expression ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ ( COMMA ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ expression )* ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA?)? ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ BRACKET_CLOSE }
 
 // #############
-// dict literals
+// dictionary literals
 // #############
-named_expression = { expression ~ COLON ~ expression }
+
+named_expression = { (string_literal | identifier | bracket_expression) ~ COLON ~ expression }
+
+bracket_expression = { BRACKET_OPEN ~ expression ~ BRACKET_CLOSE }
+
 dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (named_expression ~ ( (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ named_expression )* ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA? ~ (NEWLINE | triple_comment_block | double_comment_block)*)? ~ BLOCK_CLOSE }
 
 // #############

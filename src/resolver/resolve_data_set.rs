@@ -2,7 +2,7 @@ use maplit::btreemap;
 use crate::ast::data_set::{DataSet, DataSetGroup};
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
-use crate::resolver::resolve_expression::resolve_expression;
+use crate::resolver::resolve_expression::{resolve_expression, resolve_expression_for_named_expression_key};
 use crate::resolver::resolve_identifier::resolve_identifier_path_with_filter;
 use crate::resolver::resolve_model_shapes::{has_property_setter, is_field_readonly};
 use crate::resolver::resolver_context::{ExaminedDataSetRecord, ResolverContext};
@@ -52,9 +52,11 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
         let model = context.schema.find_top_by_path(group.resolved().path()).unwrap().as_model().unwrap();
         for record in group.records() {
             let mut used_keys = vec![];
-            for (key_expression, value_expression) in record.dictionary().expressions() {
+            for named_expression in record.dictionary().expressions() {
+                let key_expression = named_expression.key();
+                let value_expression = named_expression.value();
                 let key_span = key_expression.span();
-                let key_resolved = resolve_expression(key_expression, context, &Type::String, &btreemap! {});
+                let key_resolved = resolve_expression_for_named_expression_key(key_expression, context, &Type::String, &btreemap! {});
                 if !key_resolved.r#type.is_string() {
                     context.insert_diagnostics_error(key_span, "record key is not string");
                     return;

@@ -36,6 +36,8 @@ mod parse_function_declaration;
 mod parse_availability_flag;
 mod parse_availability_end;
 mod parse_use_middlewares_block;
+mod parse_named_expression;
+mod parse_bracket_expression;
 mod pest_parser;
 mod parser_context;
 pub(super) mod parse;

@@ -3,11 +3,13 @@ use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::ArithExpr;
+use crate::ast::bracket_expression::BracketExpression;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
 use crate::ast::int_subscript::IntSubscript;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
+use crate::ast::named_expression::NamedExpression;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
@@ -38,6 +40,8 @@ pub enum ExpressionKind {
     IntSubscript(IntSubscript),
     Unit(Unit),
     Pipeline(Pipeline),
+    NamedExpression(NamedExpression),
+    BracketExpression(BracketExpression),
 }
 
 impl ExpressionKind {
@@ -61,6 +65,8 @@ impl ExpressionKind {
             ExpressionKind::IntSubscript(n) => n,
             ExpressionKind::Unit(n) => n,
             ExpressionKind::Pipeline(n) => n,
+            ExpressionKind::NamedExpression(n) => n,
+            ExpressionKind::BracketExpression(n) => n,
         }
     }
 
@@ -201,6 +207,20 @@ impl ExpressionKind {
     pub fn as_arith_expr(&self) -> Option<&ArithExpr> {
         match self {
             ExpressionKind::ArithExpr(a) => Some(a),
+            _ => None,
+        }
+    }
+
+    pub fn as_named_expression(&self) -> Option<&NamedExpression> {
+        match self {
+            ExpressionKind::NamedExpression(p) => Some(p),
+            _ => None,
+        }
+    }
+
+    pub fn as_bracket_expression(&self) -> Option<&BracketExpression> {
+        match self {
+            ExpressionKind::BracketExpression(p) => Some(p),
             _ => None,
         }
     }

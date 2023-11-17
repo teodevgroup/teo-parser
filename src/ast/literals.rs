@@ -4,6 +4,7 @@ use crate::ast::argument_list::ArgumentList;
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_children_pair_iter, node_optional_child_fn};
+use crate::ast::named_expression::NamedExpression;
 use crate::format::Writer;
 use crate::traits::write::Write;
 
@@ -137,11 +138,11 @@ impl Write for ArrayLiteral {
     }
 }
 
-declare_container_node!(DictionaryLiteral, pub(crate) expressions: Vec<(usize, usize)>);
+declare_container_node!(DictionaryLiteral, pub(crate) expressions: Vec<usize>);
 
 impl_container_node_defaults!(DictionaryLiteral);
 
-node_children_pair_iter!(DictionaryLiteral, Expression, DictionaryLiteralExpressionsIter, expressions);
+node_children_iter!(DictionaryLiteral, NamedExpression, DictionaryLiteralExpressionsIter, expressions);
 
 impl DictionaryLiteral {
 

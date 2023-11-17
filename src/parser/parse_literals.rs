@@ -10,6 +10,7 @@ use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_expression::{parse_expression};
 use crate::parser::parse_identifier::parse_identifier;
+use crate::parser::parse_named_expression::parse_named_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -146,41 +147,17 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext) 
         path,
         mut children,
     ) = parse_container_node_variables!(pair, context);
-    let mut expressions: Vec<(usize, usize)> = vec![];
+    let mut expressions: Vec<usize> = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
-            Rule::named_expression => {
-                let (key, colon, value) = parse_named_expression(current, context);
-                expressions.push((key.id(), value.id()));
-                children.insert(key.id(), key.into());
-                children.insert(colon.id(), colon.into());
-                children.insert(value.id(), value.into());
-            },
+            Rule::named_expression => parse_insert!(parse_named_expression(current, context), children, expressions),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     parse_container_node_variables_cleanup!(context);
     DictionaryLiteral { expressions, span, children, path }
-}
-
-fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) -> (Expression, Punctuation, Expression) {
-    let mut key = None;
-    let mut colon = None;
-    let mut value = None;
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::expression => if key.is_none() {
-                key = Some(parse_expression(current, context));
-            } else {
-                value = Some(parse_expression(current, context));
-            },
-            Rule::COLON => colon = Some(Punctuation::new(":", parse_span(&current), context.next_path())),
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    return (key.unwrap(), colon.unwrap(), value.unwrap())
 }

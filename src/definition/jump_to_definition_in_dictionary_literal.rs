@@ -17,8 +17,10 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
     _expect: &Type,
     availability: Availability,
 ) -> Vec<Definition> {
-    for (key_expression, value_expression) in dictionary_literal.expressions() {
-        if key_expression.span().contains_line_col(line_col) {
+    for named_expression in dictionary_literal.expressions() {
+        let key_expression = named_expression.key();
+        let value_expression = named_expression.value();
+        if key_expression.span().contains_line_col(line_col) && key_expression.kind.as_bracket_expression().is_some() {
             return jump_to_definition_in_expression(
                 schema,
                 source,

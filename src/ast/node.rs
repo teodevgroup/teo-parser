@@ -7,6 +7,7 @@ use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::arith_expr::{ArithExpr, BinaryOperation, UnaryOperation, UnaryPostfixOperation};
 use crate::ast::availability_flag::AvailabilityFlag;
 use crate::ast::availability_flag_end::AvailabilityFlagEnd;
+use crate::ast::bracket_expression::BracketExpression;
 use crate::ast::code_comment::CodeComment;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::config::Config;
@@ -31,6 +32,7 @@ use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
+use crate::ast::named_expression::NamedExpression;
 use crate::ast::namespace::Namespace;
 use crate::ast::operators::Operator;
 use crate::ast::pipeline::Pipeline;
@@ -79,6 +81,8 @@ pub enum Node {
     Enum(Enum),
     EnumMember(EnumMember),
     Expression(Expression),
+    NamedExpression(NamedExpression),
+    BracketExpression(BracketExpression),
     Group(Group),
     NumericLiteral(NumericLiteral),
     StringLiteral(StringLiteral),
@@ -406,6 +410,28 @@ impl Node {
     pub fn as_expression(&self) -> Option<&Expression> {
         match self {
             Node::Expression(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_named_expression(&self) -> bool {
+        self.as_named_expression().is_some()
+    }
+
+    pub fn as_named_expression(&self) -> Option<&NamedExpression> {
+        match self {
+            Node::NamedExpression(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_bracket_expression(&self) -> bool {
+        self.as_bracket_expression().is_some()
+    }
+
+    pub fn as_bracket_expression(&self) -> Option<&BracketExpression> {
+        match self {
+            Node::BracketExpression(c) => Some(c),
             _ => None,
         }
     }
@@ -889,6 +915,8 @@ impl Node {
             Node::Enum(n) => n,
             Node::EnumMember(n) => n,
             Node::Expression(n) => n,
+            Node::NamedExpression(n) => n,
+            Node::BracketExpression(n) => n,
             Node::Group(n) => n,
             Node::NumericLiteral(n) => n,
             Node::StringLiteral(n) => n,
