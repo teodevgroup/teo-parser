@@ -1,5 +1,6 @@
 mod test {
     use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items, jump_to_definition};
+    use teo_parser::format::format::format_document;
 
     #[test]
     fn print() {
@@ -60,11 +61,13 @@ mod test {
         //println!("{:?}", completions);
     }
 
+    use backtrace_on_stack_overflow;
     #[test]
     fn test_formatting() {
+        println!("test formatting start");
+        // unsafe { backtrace_on_stack_overflow::enable() };
         let path = "/Users/victor/Developer/hello-teo/schema.teo";
-        let (_schema, _) = parse(path, None, None);
-        //let completions = auto_complete_items(&schema, path, (4, 13));
-        //println!("{:?}", completions);
+        let (schema, _) = parse(path, None, None);
+        let _result = format_document(&schema, "/Users/victor/Developer/hello-teo/schema.teo");
     }
 }

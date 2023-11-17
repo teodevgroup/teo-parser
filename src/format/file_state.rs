@@ -6,7 +6,7 @@ pub(super) struct FileState {
     pub(super) previous_node_requires_whitespace_after: bool,
     pub(super) previous_node_is_decorator: bool,
     pub(super) is_at_newline: bool,
-    pub(super) line_remaining_length: usize,
+    pub(super) line_remaining_length: i64,
 }
 
 impl FileState {
@@ -17,7 +17,7 @@ impl FileState {
             previous_node_requires_whitespace_after: false,
             previous_node_is_decorator: false,
             is_at_newline: true,
-            line_remaining_length: preferences.maximum_line_width(),
+            line_remaining_length: preferences.maximum_line_width() as i64,
         }
     }
 

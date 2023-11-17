@@ -47,7 +47,7 @@ impl<'a> Flusher<'a> {
 
     fn reset_state_to_newline(&mut self) {
         self.file_state.is_at_newline = true;
-        self.file_state.line_remaining_length = self.preferences.maximum_line_width();
+        self.file_state.line_remaining_length = self.preferences.maximum_line_width() as i64;
     }
 
     fn restore_state<F>(&mut self, mut f: F) -> Option<String> where F: FnMut(&mut Self) -> Option<String> {
@@ -75,7 +75,11 @@ impl<'a> Flusher<'a> {
                 }
                 self.file_state.indent_level -= 1;
             }
-            self.write_next_command(&mut buffer);
+            if command.node().is_block_start() || command.node().is_block_end() {
+                self.write_non_block_command(&mut buffer);
+            } else {
+                self.write_next_command(&mut buffer);
+            }
             if command.node().is_block_start() || command.node().is_block_element_delimiter() {
                 if !one_line {
                     buffer.push('\n');
@@ -133,7 +137,7 @@ impl<'a> Flusher<'a> {
         if self.file_state.is_at_newline {
             if self.file_state.indent_level != 0 {
                 let whitespace_count = self.file_state.indent_level * self.preferences.indent_size();
-                self.file_state.line_remaining_length -= whitespace_count;
+                self.file_state.line_remaining_length -= whitespace_count as i64;
                 buffer.push_str(&" ".repeat(whitespace_count));
             }
             self.file_state.is_at_newline = false;
@@ -167,10 +171,10 @@ impl<'a> Flusher<'a> {
             if index == content.len() - 1 {
                 self.reset_state_to_newline();
             } else {
-                self.file_state.line_remaining_length = content.len() - 1 - index;
+                self.file_state.line_remaining_length = (content.len() as i64) - 1 - index as i64;
             }
         } else {
-            self.file_state.line_remaining_length -= content.len();
+            self.file_state.line_remaining_length -= content.len() as i64;
         }
 
         // open newline if last line exceed max line width
