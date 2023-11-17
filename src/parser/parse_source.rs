@@ -71,7 +71,7 @@ pub(super) fn parse_source(
             Rule::config_block => { // server { ... }
                 let config = parse_config_block(current, context);
                 references.configs.insert(config.id());
-                context.schema_references().add_config(&config);
+                context.schema_references_mut().add_config(&config);
                 if config.keyword().is_connector() {
                     references.connector = Some(config.id());
                 }
@@ -80,74 +80,74 @@ pub(super) fn parse_source(
             Rule::use_middlewares_block => { // middlewares [ ... ]
                 let middlewares = parse_use_middlewares_block(current, context);
                 references.use_middlewares_block = Some(middlewares.id());
-                context.schema_references().use_middlewares_blocks.push(middlewares.path.clone());
+                context.schema_references_mut().use_middlewares_blocks.push(middlewares.path.clone());
                 children.insert(middlewares.id(), Node::UseMiddlewaresBlock(middlewares));
             },
             Rule::model_declaration => { // model A { ... }
                 let model = parse_model_declaration(current, context);
                 references.models.insert(model.id());
-                context.schema_references().models.push(model.path.clone());
+                context.schema_references_mut().models.push(model.path.clone());
                 children.insert(model.id(), Node::Model(model));
             },
             Rule::enum_declaration => { // enum A { ... }
                 let r#enum = parse_enum_declaration(current, context);
                 references.enums.insert(r#enum.id());
-                context.schema_references().enums.push(r#enum.path.clone());
+                context.schema_references_mut().enums.push(r#enum.path.clone());
                 children.insert(r#enum.id(), Node::Enum(r#enum));
             },
             Rule::dataset_declaration => { // dataset a { ... }
                 let data_set = parse_data_set_declaration(current, context);
                 references.data_sets.insert(data_set.id());
-                context.schema_references().data_sets.push(data_set.path.clone());
+                context.schema_references_mut().data_sets.push(data_set.path.clone());
                 children.insert(data_set.id(), Node::DataSet(data_set));
             },
             Rule::interface_declaration => { // interface a { ... }
                 let interface = parse_interface_declaration(current, context);
                 references.interfaces.insert(interface.id());
-                context.schema_references().interfaces.push(interface.path.clone());
+                context.schema_references_mut().interfaces.push(interface.path.clone());
                 children.insert(interface.id(), Node::InterfaceDeclaration(interface));
             },
             Rule::namespace => {
                 let namespace = parse_namespace(current, context);
                 references.namespaces.insert(namespace.id());
-                context.schema_references().namespaces.push(namespace.path.clone());
+                context.schema_references_mut().namespaces.push(namespace.path.clone());
                 children.insert(namespace.id(), Node::Namespace(namespace));
             }
             // declares
             Rule::config_declaration => {
                 let config_declaration = parse_config_declaration(current, context);
                 references.config_declarations.insert(config_declaration.id());
-                context.schema_references().config_declarations.push(config_declaration.path.clone());
+                context.schema_references_mut().config_declarations.push(config_declaration.path.clone());
                 children.insert(config_declaration.id(), Node::ConfigDeclaration(config_declaration));
             }
             Rule::decorator_declaration => {
                 let decorator_declaration = parse_decorator_declaration(current, context);
                 references.decorator_declarations.insert(decorator_declaration.id());
-                context.schema_references().decorator_declarations.push(decorator_declaration.path.clone());
+                context.schema_references_mut().decorator_declarations.push(decorator_declaration.path.clone());
                 children.insert(decorator_declaration.id(), Node::DecoratorDeclaration(decorator_declaration));
             }
             Rule::pipeline_item_declaration => {
                 let pipeline_item_declaration = parse_pipeline_item_declaration(current, context);
                 references.pipeline_item_declarations.insert(pipeline_item_declaration.id());
-                context.schema_references().pipeline_item_declarations.push(pipeline_item_declaration.path.clone());
+                context.schema_references_mut().pipeline_item_declarations.push(pipeline_item_declaration.path.clone());
                 children.insert(pipeline_item_declaration.id(), Node::PipelineItemDeclaration(pipeline_item_declaration));
             },
             Rule::middleware_declaration => {
                 let middleware_declaration = parse_middleware_declaration(current, context);
                 references.middlewares.insert(middleware_declaration.id());
-                context.schema_references().middlewares.push(middleware_declaration.path.clone());
+                context.schema_references_mut().middlewares.push(middleware_declaration.path.clone());
                 children.insert(middleware_declaration.id(), Node::MiddlewareDeclaration(middleware_declaration));
             },
             Rule::handler_group_declaration => {
                 let handler_group_declaration = parse_handler_group_declaration(current, context);
                 references.handler_groups.insert(handler_group_declaration.id());
-                context.schema_references().handler_groups.push(handler_group_declaration.path.clone());
+                context.schema_references_mut().handler_groups.push(handler_group_declaration.path.clone());
                 children.insert(handler_group_declaration.id(), Node::HandlerGroupDeclaration(handler_group_declaration));
             },
             Rule::struct_declaration => {
                 let struct_declaration = parse_struct_declaration(current, context);
                 references.handler_groups.insert(struct_declaration.id());
-                context.schema_references().struct_declarations.push(struct_declaration.path.clone());
+                context.schema_references_mut().struct_declarations.push(struct_declaration.path.clone());
                 children.insert(struct_declaration.id(), Node::StructDeclaration(struct_declaration));
             }
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
@@ -157,9 +157,9 @@ pub(super) fn parse_source(
         }
     }
     if builtin {
-        context.schema_references().builtin_sources.push(id);
+        context.schema_references_mut().builtin_sources.push(id);
     } else {
-        context.schema_references().user_sources.push(id);
+        context.schema_references_mut().user_sources.push(id);
     }
     Source::new(
         id,

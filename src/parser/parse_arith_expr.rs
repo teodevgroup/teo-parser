@@ -1,5 +1,5 @@
 use crate::ast::arith_expr::{ArithExpr, BinaryOperation, ArithExprOperator, UnaryOperation, UnaryPostfixOperation};
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_operator};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_container_node_variables_without_span, parse_insert_operator};
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -7,6 +7,7 @@ use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
 use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &ParserContext) -> ArithExpr {
+    let span = parse_span(&pair);
     let result = EXPR_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::operand => {
             let expression = parse_expression(primary, context);
@@ -17,7 +18,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &ParserContext) -> Arith
             unreachable!()
         },
     }).map_prefix(|operator, rhs| {
-        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        let (path, mut children) = parse_container_node_variables_without_span!(context);
         let op = match operator.as_rule() {
             Rule::BI_NEG => ArithExprOperator::BitNeg,
             Rule::NEG => ArithExprOperator::Neg,
@@ -61,7 +62,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &ParserContext) -> Arith
             Rule::RANGE_OPEN => ArithExprOperator::RangeOpen,
             _ => unreachable!(),
         };
-        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        let (path, mut children) = parse_container_node_variables_without_span!(context);
         let lhs_id = lhs.id();
         let rhs_id = rhs.id();
         children.insert(lhs_id, lhs.into());
@@ -82,7 +83,7 @@ pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &ParserContext) -> Arith
             Rule::FORCE_UNWRAP => ArithExprOperator::ForceUnwrap,
             _ => unreachable!(),
         };
-        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        let (path, mut children) = parse_container_node_variables_without_span!(context);
         let lhs_id = lhs.id();
         children.insert(lhs_id, lhs.into());
         parse_insert_operator!(context, operator, children, operator.as_str());

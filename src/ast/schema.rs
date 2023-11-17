@@ -151,7 +151,7 @@ impl Schema {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SchemaReferences {
     pub builtin_sources: Vec<usize>,
     pub user_sources: Vec<usize>,

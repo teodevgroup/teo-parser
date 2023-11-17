@@ -1,4 +1,4 @@
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, Ref, RefCell, RefMut};
 use std::collections::{BTreeMap, HashSet};
 use maplit::btreemap;
 use crate::availability::Availability;
@@ -7,9 +7,9 @@ use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
 use crate::utils::path::FileUtility;
 
-pub(super) struct ParserContext<'a> {
-    pub(super) diagnostics: &'a mut Diagnostics,
-    pub(super) schema_references: &'a mut SchemaReferences,
+pub(super) struct ParserContext {
+    diagnostics: RefCell<Diagnostics>,
+    schema_references: RefCell<SchemaReferences>,
     pub(crate) file_util: FileUtility,
     pub(crate) unsaved_files: Option<BTreeMap<String, String>>,
     source_lookup: RefCell<BTreeMap<usize, String>>,
@@ -22,17 +22,17 @@ pub(super) struct ParserContext<'a> {
     examined_import_file_paths: RefCell<Vec<String>>,
 }
 
-impl<'a> ParserContext<'a> {
+impl ParserContext {
 
     pub(crate) fn new(
-        diagnostics: &'a mut Diagnostics,
-        schema_references: &'a mut SchemaReferences,
+        diagnostics: Diagnostics,
+        schema_references: SchemaReferences,
         file_util: FileUtility,
         unsaved_files: Option<BTreeMap<String, String>>,
-    ) -> ParserContext<'a> {
+    ) -> ParserContext {
         Self {
-            diagnostics,
-            schema_references,
+            diagnostics: RefCell::new(diagnostics),
+            schema_references: RefCell::new(schema_references),
             file_util,
             unsaved_files,
             source_lookup: RefCell::new(btreemap!{}),
@@ -46,8 +46,20 @@ impl<'a> ParserContext<'a> {
         }
     }
 
-    pub(super) fn schema_references(&self) -> &'a mut SchemaReferences {
-        self.schema_references
+    pub(super) fn diagnostics(&self) -> Ref<'_, Diagnostics> {
+        self.diagnostics.borrow()
+    }
+
+    pub(super) fn diagnostics_mut(&self) -> RefMut<'_, Diagnostics> {
+        self.diagnostics.borrow_mut()
+    }
+
+    pub(super) fn schema_references(&self) -> Ref<'_, SchemaReferences> {
+        self.schema_references.borrow()
+    }
+
+    pub(super) fn schema_references_mut(&self) -> RefMut<'_, SchemaReferences> {
+        self.schema_references.borrow_mut()
     }
 
     pub(super) fn read_file(&self, file_path: &str) -> Option<String> {
@@ -130,7 +142,8 @@ impl<'a> ParserContext<'a> {
     }
 
     pub(super) fn is_source_parsing_or_parsed(&self, path: &str) -> bool {
-        let set: HashSet<&String> = self.source_lookup.borrow().values().collect();
+        let binding = self.source_lookup.borrow();
+        let set: HashSet<&String> = binding.values().collect();
         set.iter().find(|p| p.as_str() == path).is_some()
     }
 
@@ -143,18 +156,21 @@ impl<'a> ParserContext<'a> {
     }
 
     pub(super) fn insert_unparsed(&self, span: Span) {
-        let path = self.source_lookup.borrow().get(&self.current_source_id.get()).unwrap();
-        self.diagnostics.insert_unparsed_rule(span, path.clone());
+        let binding = self.source_lookup.borrow();
+        let path = binding.get(&self.current_source_id.get()).unwrap();
+        self.diagnostics_mut().insert_unparsed_rule(span, path.clone());
     }
 
     pub(super) fn insert_invalid_decorator_declaration(&self, span: Span) {
-        let path = self.source_lookup.borrow().get(&self.current_source_id.get()).unwrap();
-        self.diagnostics.insert(DiagnosticsError::new(span, "Decorator type is invalid", path.clone()));
+        let binding = self.source_lookup.borrow();
+        let path = binding.get(&self.current_source_id.get()).unwrap();
+        self.diagnostics_mut().insert(DiagnosticsError::new(span, "decorator type is invalid", path.clone()));
     }
 
     pub(super) fn insert_error(&self, span: Span, message: impl Into<String>) {
-        let path = self.source_lookup.borrow().get(&self.current_source_id.get()).unwrap();
-        self.diagnostics.insert(DiagnosticsError::new(span, message.into(), path.clone()));
+        let binding = self.source_lookup.borrow();
+        let path = binding.get(&self.current_source_id.get()).unwrap();
+        self.diagnostics_mut().insert(DiagnosticsError::new(span, message.into(), path.clone()));
     }
 
     pub(super) fn insert_unattached_doc_comment(&self, span: Span) {
@@ -162,8 +178,9 @@ impl<'a> ParserContext<'a> {
     }
 
     pub(super) fn insert_warning(&self, span: Span, message: impl Into<String>) {
-        let path = self.source_lookup.borrow().get(&self.current_source_id.get()).unwrap();
-        self.diagnostics.insert(DiagnosticsWarning::new(span, message.into(), path.clone()));
+        let binding = self.source_lookup.borrow();
+        let path = binding.get(&self.current_source_id.get()).unwrap();
+        self.diagnostics_mut().insert(DiagnosticsWarning::new(span, message.into(), path.clone()));
     }
 
     pub(super) fn push_availability_flag(&self, new_flag: Availability) -> Availability {

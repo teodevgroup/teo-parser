@@ -4,12 +4,13 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
 use crate::ast::arity::Arity;
 use crate::ast::literals::EnumVariantLiteral;
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_operator, parse_insert_punctuation, parse_set, parse_set_optional};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_container_node_variables_without_span, parse_insert, parse_insert_operator, parse_insert_punctuation, parse_set, parse_set_optional};
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_enum_variant_literal;
 use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_type_expression(pair: Pair<'_>, context: &ParserContext) -> TypeExpr {
+    let span = parse_span(&pair);
     let result = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::type_item => TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(primary, context))),
         Rule::type_group => TypeExpr::new(TypeExprKind::TypeGroup(parse_type_group(primary, context))),
@@ -25,12 +26,12 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &ParserContext) -> 
             Rule::BI_OR => TypeOperator::BitOr,
             _ => unreachable!(),
         };
-        let (span, path, mut children) = parse_container_node_variables!(pair, context);
+        let (path, mut children) = parse_container_node_variables_without_span!(context);
         let lhs_id = lhs.id();
         let rhs_id = rhs.id();
         children.insert(lhs_id, lhs.into());
         parse_insert_operator!(context, operator, children, operator.as_str());
-        children.insert(lhs_id, lhs.into());
+        children.insert(rhs_id, rhs.into());
         let operation = TypeBinaryOperation {
             span,
             children,

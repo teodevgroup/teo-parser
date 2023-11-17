@@ -84,6 +84,17 @@ macro_rules! parse_set_identifier_and_string_path {
 }
 
 #[macro_export]
+macro_rules! parse_container_node_variables_without_span {
+    ($context:ident) => {
+        {
+            let children: std::collections::BTreeMap<usize, crate::ast::node::Node> = std::collections::BTreeMap::new();
+            let path = $context.next_parent_path();
+            (path, children)
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! parse_container_node_variables {
     ($pair:ident, $context:ident) => {
         {

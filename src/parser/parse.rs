@@ -14,9 +14,7 @@ pub fn parse(
     file_util: FileUtility,
     unsaved_files: Option<BTreeMap<String, String>>
 ) -> (Schema, Diagnostics) {
-    let mut diagnostics = Diagnostics::new();
-    let mut references = SchemaReferences::new();
-    let mut parser_context = ParserContext::new(&mut diagnostics, &mut references, file_util, unsaved_files);
+    let mut parser_context = ParserContext::new(Diagnostics::new(), SchemaReferences::new(), file_util, unsaved_files);
     let mut sources = btreemap!{};
     if !main.as_ref().ends_with("builtin/std.teo") {
         // std library
@@ -34,8 +32,9 @@ pub fn parse(
         &(parser_context.file_util.parent_directory)(main.as_ref()),
         &mut parser_context
     );
-    let schema = Schema { sources, references };
-    (schema, diagnostics)
+    let schema = Schema { sources, references: parser_context.schema_references_mut().clone() };
+    let x = (schema, parser_context.diagnostics().clone());
+    x
 }
 
 fn parse_user_source(
@@ -47,8 +46,8 @@ fn parse_user_source(
     let source = parse_source_file(path, base, parser_context);
     let source_id = source.id;
     sources.insert(source.id, source);
-    if parser_context.schema_references().main_source.is_none() {
-        parser_context.schema_references().main_source = Some(source_id);
+    if parser_context.schema_references_mut().main_source.is_none() {
+        parser_context.schema_references_mut().main_source = Some(source_id);
     }
     let import_paths: Vec<String> = sources.get(&source_id).unwrap().imports().iter().map(|i| i.file_path.clone()).collect();
     for import in import_paths {

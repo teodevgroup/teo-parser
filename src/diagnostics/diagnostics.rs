@@ -169,7 +169,7 @@ impl DiagnosticsWarning {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Diagnostics {
     errors: Vec<DiagnosticsError>,
     warnings: Vec<DiagnosticsWarning>,
