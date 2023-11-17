@@ -169,7 +169,7 @@ named_expression = { (string_literal | identifier | bracket_expression) ~ COLON 
 
 bracket_expression = { BRACKET_OPEN ~ expression ~ BRACKET_CLOSE }
 
-dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block)* ~ (named_expression ~ ( (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ named_expression )* ~ (NEWLINE | triple_comment_block | double_comment_block)* ~ COMMA? ~ (NEWLINE | triple_comment_block | double_comment_block)*)? ~ BLOCK_CLOSE }
+dictionary_literal = { BLOCK_OPEN ~ (WHITE_SPACE | NEWLINE | triple_comment_block | double_comment_block | availability_start | availability_end)* ~ (named_expression ~ ( (NEWLINE | triple_comment_block | double_comment_block | availability_start | availability_end)* ~ COMMA ~ (NEWLINE | triple_comment_block | double_comment_block | availability_start | availability_end)* ~ named_expression )* ~ (NEWLINE | triple_comment_block | double_comment_block | availability_start | availability_end)* ~ COMMA? ~ (NEWLINE | triple_comment_block | double_comment_block | availability_start | availability_end)*)? ~ BLOCK_CLOSE }
 
 // #############
 // subscript
@@ -300,13 +300,7 @@ config_keywords = { SERVER_KEYWORD | CONNECTOR_KEYWORD | CLIENT_KEYWORD | ENTITY
 config_block = {
     config_keywords
     ~ identifier?
-    ~ BLOCK_OPEN
-    ~ (config_item | identifier | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
-    ~ BLOCK_CLOSE
-}
-
-config_item = {
-    identifier ~ expression
+    ~ dictionary_literal
 }
 
 // #############

@@ -8,6 +8,7 @@ use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
+use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -23,7 +24,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Con
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut keyword: usize = 0;
     let mut identifier: Option<usize> = None;
-    let mut items: Vec<usize> = vec![];
+    let mut dictionary_literal = 0;
     let mut inside_block = false;
     let mut unattached_identifiers = vec![];
     for current in pair.into_inner() {
@@ -40,7 +41,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Con
             } else {
                 parse_set_optional!(parse_identifier(&current, context), children, identifier);
             },
-            Rule::config_item => parse_insert!(parse_config_item(current, context), children, items),
+            Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context), children, dictionary_literal),
             Rule::triple_comment_block => parse_append!(parse_doc_comment(current, context), children),
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
@@ -59,7 +60,7 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Con
         actual_availability,
         keyword,
         identifier,
-        items,
+        dictionary_literal,
         unattached_identifiers,
     }
 }
@@ -67,35 +68,4 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Con
 fn parse_config_keyword(pair: Pair<'_>, context: &ParserContext) -> Keyword {
     let (span, path) = parse_node_variables!(pair, context);
     Keyword { span, path, name: pair.as_str().to_owned() }
-}
-
-fn parse_config_item(pair: Pair<'_>, context: &ParserContext) -> ConfigItem {
-    let (
-        span,
-        path,
-        mut string_path,
-        mut children,
-        define_availability,
-        actual_availability
-    ) = parse_container_node_variables!(pair, context, named, availability);
-    let mut identifier = 0;
-    let mut expression= 0;
-    for current in pair.into_inner() {
-        match current.as_rule() {
-            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
-            Rule::expression => parse_set!(parse_expression(current, context), children, expression),
-            _ => context.insert_unparsed(parse_span(&current)),
-        }
-    }
-    parse_container_node_variables_cleanup!(context, named);
-    ConfigItem {
-        span,
-        path,
-        string_path,
-        children,
-        define_availability,
-        actual_availability,
-        identifier,
-        expression,
-    }
 }

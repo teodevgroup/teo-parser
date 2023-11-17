@@ -21,6 +21,7 @@ use crate::resolver::resolve_identifier::resolve_identifier_with_diagnostic_mess
 use crate::resolver::resolve_pipeline::resolve_pipeline;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::has_availability::HasAvailability;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::value::TypeAndValue;
@@ -317,7 +318,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     }
 }
 
-fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
     let undetermined = Type::Undetermined;
     let r#type = if let Some(v) = expected.as_dictionary() {
         v
@@ -328,16 +329,19 @@ fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a Resolve
     let mut retval_values = IndexMap::new();
     let mut unresolved = false;
     for named_expression in a.expressions() {
-        let k_value = resolve_expression_for_named_expression_key(named_expression.key(), context, &Type::String, keywords_map);
-        if !k_value.r#type.is_string() {
-            context.insert_diagnostics_error(named_expression.key().span(), "dictionary key is not string");
-        }
-        let v_value = resolve_expression(named_expression.value(), context, r#type, keywords_map);
-        retval.insert(v_value.r#type.clone());
-        if k_value.value.is_none() || v_value.value.is_none() {
-            unresolved = true;
-        } else {
-            retval_values.insert(k_value.value.as_ref().unwrap().as_str().unwrap().to_owned(), v_value.value.as_ref().unwrap().clone());
+        *named_expression.actual_availability.borrow_mut() = context.current_availability();
+        if named_expression.is_available() {
+            let k_value = resolve_expression_for_named_expression_key(named_expression.key(), context, &Type::String, keywords_map);
+            if !k_value.r#type.is_string() {
+                context.insert_diagnostics_error(named_expression.key().span(), "dictionary key is not string");
+            }
+            let v_value = resolve_expression(named_expression.value(), context, r#type, keywords_map);
+            retval.insert(v_value.r#type.clone());
+            if k_value.value.is_none() || v_value.value.is_none() {
+                unresolved = true;
+            } else {
+                retval_values.insert(k_value.value.as_ref().unwrap().as_str().unwrap().to_owned(), v_value.value.as_ref().unwrap().clone());
+            }
         }
     }
     let new_type = if retval.len() == 2 && retval.contains(&Type::Null) {

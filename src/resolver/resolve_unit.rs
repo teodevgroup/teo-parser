@@ -302,8 +302,8 @@ fn resolve_config_reference_for_unit<'a>(
     ).unwrap().as_config().unwrap();
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = config.items().find(|item| item.identifier().name() == identifier.name()) {
-                item.expression().resolved().clone()
+            if let Some(item) = config.items().iter().find(|item| item.identifier().name() == identifier.name()) {
+                item.1.resolved().clone()
             } else {
                 context.insert_diagnostics_error(expression.span(), "config item not found");
                 TypeAndValue::undetermined()

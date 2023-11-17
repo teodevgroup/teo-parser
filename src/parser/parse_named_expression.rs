@@ -16,7 +16,9 @@ pub(super) fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) ->
         span,
         path,
         mut children,
-    ) = parse_container_node_variables!(pair, context);
+        define_availability,
+        actual_availability
+    ) = parse_container_node_variables!(pair, context, availability);
     let mut key = 0;
     let mut colon = None;
     let mut value = 0;
@@ -34,8 +36,10 @@ pub(super) fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) ->
     NamedExpression {
         span,
         children,
+        define_availability,
         path,
         key,
         value,
+        actual_availability,
     }
 }

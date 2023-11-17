@@ -3,9 +3,9 @@ use crate::format::Writer;
 use crate::traits::write::Write;
 use crate::ast::expression::Expression;
 
-declare_container_node!(NamedExpression, pub(crate) key: usize, pub(crate) value: usize);
+declare_container_node!(NamedExpression, availability, pub(crate) key: usize, pub(crate) value: usize);
 
-impl_container_node_defaults!(NamedExpression);
+impl_container_node_defaults!(NamedExpression, availability);
 
 impl NamedExpression {
     node_child_fn!(key, Expression);

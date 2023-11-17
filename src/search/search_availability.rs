@@ -44,18 +44,24 @@ pub(crate) fn find_source_connector<'a>(schema: &'a Schema, source: &'a Source) 
 
 pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Availability {
     if let Some(connector) = connector {
-        if let Some(provider) = connector.items().find(|item| {
-            item.identifier().name() == "provider"
+        if let Some(provider) = connector.items().iter().find(|(key, _)| {
+            if let Some(string) = key.kind.as_string_literal() {
+                string.value.as_str() == "provider"
+            } else if let Some(identifier) = key.kind.as_identifier() {
+                identifier.name() == "provider"
+            } else {
+                false
+            }
         }) {
-            if let Some(enum_variant_literal) = provider.expression().kind.as_enum_variant_literal() {
+            if let Some(enum_variant_literal) = provider.1.kind.as_enum_variant_literal() {
                 availability_from_enum_variant_literal(enum_variant_literal)
-            } else if let Some(unit) = provider.expression().kind.as_unit() {
+            } else if let Some(unit) = provider.1.kind.as_unit() {
                 if let Some(enum_variant_literal) = unit.expressions().next().unwrap().kind.as_enum_variant_literal() {
                     availability_from_enum_variant_literal(enum_variant_literal)
                 } else {
                     Availability::no_database()
                 }
-            } else if let Some(arith) = provider.expression().kind.as_arith_expr() {
+            } else if let Some(arith) = provider.1.kind.as_arith_expr() {
                 match arith {
                     ArithExpr::Expression(e) => {
                         if let Some(unit) = e.kind.as_unit() {
