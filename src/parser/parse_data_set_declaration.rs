@@ -138,6 +138,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &ParserContext) -> DataS
             _ => (),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     DataSetRecord {
         span,
         path,

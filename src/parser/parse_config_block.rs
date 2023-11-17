@@ -87,7 +87,7 @@ fn parse_config_item(pair: Pair<'_>, context: &ParserContext) -> ConfigItem {
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
-    parse_container_node_variables_cleanup!(context);
+    parse_container_node_variables_cleanup!(context, named);
     ConfigItem {
         span,
         path,
