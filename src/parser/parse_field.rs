@@ -9,7 +9,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_field(pair: Pair<'_>, context: &mut ParserContext) -> Field {
+pub(super) fn parse_field(pair: Pair<'_>, context: &ParserContext) -> Field {
     let (
         span,
         path,

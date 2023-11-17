@@ -9,7 +9,7 @@ use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_enum_variant_literal;
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext) -> TypeExpr {
+pub(super) fn parse_type_expression(pair: Pair<'_>, context: &ParserContext) -> TypeExpr {
     let result = TYPE_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::type_item => TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(primary, context))),
         Rule::type_group => TypeExpr::new(TypeExprKind::TypeGroup(parse_type_group(primary, context))),
@@ -45,7 +45,7 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &mut ParserContext)
     result
 }
 
-fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
+fn parse_type_item(pair: Pair<'_>, context: &ParserContext) -> TypeItem {
     let (
         span,
         path,
@@ -86,7 +86,7 @@ fn parse_type_item(pair: Pair<'_>, context: &mut ParserContext) -> TypeItem {
     }
 }
 
-fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
+fn parse_type_group(pair: Pair<'_>, context: &ParserContext) -> TypeGroup {
     let (
         span,
         path,
@@ -126,7 +126,7 @@ fn parse_type_group(pair: Pair<'_>, context: &mut ParserContext) -> TypeGroup {
     }
 }
 
-fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
+fn parse_type_tuple(pair: Pair<'_>, context: &ParserContext) -> TypeTuple {
     let (
         span,
         path,
@@ -168,7 +168,7 @@ fn parse_type_tuple(pair: Pair<'_>, context: &mut ParserContext) -> TypeTuple {
     }
 }
 
-fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> TypeGenerics {
+fn parse_type_generics(pair: Pair<'_>, context: &ParserContext) -> TypeGenerics {
     let (
         span,
         path,
@@ -193,7 +193,7 @@ fn parse_type_generics(pair: Pair<'_>, context: &mut ParserContext) -> TypeGener
     }
 }
 
-fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubscript {
+fn parse_type_subscript(pair: Pair<'_>, context: &ParserContext) -> TypeSubscript {
     let (
         span,
         path,
@@ -236,7 +236,7 @@ fn parse_type_subscript(pair: Pair<'_>, context: &mut ParserContext) -> TypeSubs
     }
 }
 
-fn parse_type_reference(pair: Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
+fn parse_type_reference(pair: Pair<'_>, context: &ParserContext) -> EnumVariantLiteral {
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::enum_variant_literal => return parse_enum_variant_literal(current, context),

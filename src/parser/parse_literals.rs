@@ -15,7 +15,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_string_literal(pair: &Pair<'_>, context: &mut ParserContext) -> StringLiteral {
+pub(super) fn parse_string_literal(pair: &Pair<'_>, context: &ParserContext) -> StringLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     StringLiteral {
         span,
@@ -25,17 +25,17 @@ pub(super) fn parse_string_literal(pair: &Pair<'_>, context: &mut ParserContext)
     }
 }
 
-pub(super) fn parse_null_literal(pair: &Pair<'_>, context: &mut ParserContext) -> NullLiteral {
+pub(super) fn parse_null_literal(pair: &Pair<'_>, context: &ParserContext) -> NullLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     NullLiteral { span, path }
 }
 
-pub(super) fn parse_bool_literal(pair: &Pair<'_>, context: &mut ParserContext) -> BoolLiteral {
+pub(super) fn parse_bool_literal(pair: &Pair<'_>, context: &ParserContext) -> BoolLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     BoolLiteral { span, path, value: pair.as_str() == "true" }
 }
 
-pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &mut ParserContext) -> RegexLiteral {
+pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &ParserContext) -> RegexLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     let mut display = pair.as_str().to_owned();
     let mut value = None;
@@ -56,7 +56,7 @@ pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &mut ParserContext) -
     }
 }
 
-pub(super) fn parse_numeric_literal(pair: &Pair<'_>, context: &mut ParserContext) -> NumericLiteral {
+pub(super) fn parse_numeric_literal(pair: &Pair<'_>, context: &ParserContext) -> NumericLiteral {
     let (span, path) = parse_node_variables!(pair, context);
     let str_value = pair.as_str();
     NumericLiteral {
@@ -72,7 +72,7 @@ pub(super) fn parse_numeric_literal(pair: &Pair<'_>, context: &mut ParserContext
     }
 }
 
-pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserContext) -> EnumVariantLiteral {
+pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &ParserContext) -> EnumVariantLiteral {
     let (
         span,
         path,
@@ -97,7 +97,7 @@ pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &mut ParserCon
     }
 }
 
-pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -> ArrayLiteral {
+pub(super) fn parse_array_literal(pair: Pair<'_>, context: &ParserContext) -> ArrayLiteral {
     let (
         span,
         path,
@@ -117,7 +117,7 @@ pub(super) fn parse_array_literal(pair: Pair<'_>, context: &mut ParserContext) -
     ArrayLiteral { expressions, span, children, path }
 }
 
-pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -> TupleLiteral {
+pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &ParserContext) -> TupleLiteral {
     let (
         span,
         path,
@@ -137,7 +137,7 @@ pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &mut ParserContext) -
     TupleLiteral { expressions, span, children, path }
 }
 
-pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserContext) -> DictionaryLiteral {
+pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext) -> DictionaryLiteral {
     let (
         span,
         path,
@@ -163,7 +163,7 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &mut ParserConte
     DictionaryLiteral { expressions, span, children, path }
 }
 
-fn parse_named_expression(pair: Pair<'_>, context: &mut ParserContext) -> (Expression, Punctuation, Expression) {
+fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) -> (Expression, Punctuation, Expression) {
     let mut key = None;
     let mut colon = None;
     let mut value = None;

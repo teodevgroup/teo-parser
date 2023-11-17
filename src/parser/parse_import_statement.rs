@@ -8,7 +8,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context: &mut ParserContext) -> Import {
+pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context: &ParserContext) -> Import {
     let span = parse_span(&pair);
     if context.current_availability_flag() != Availability::default() {
         context.insert_error(span, "import statement is placed in availability flag");
@@ -35,7 +35,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     }
 }
 
-fn match_import_file(original: &str, context: &mut ParserContext) -> Option<String> {
+fn match_import_file(original: &str, context: &ParserContext) -> Option<String> {
     if (context.file_util.file_exists)(original) && !(context.file_util.file_is_directory)(original) {
         Some(original.to_string())
     } else {

@@ -6,7 +6,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, EXPR_PRATT_PARSER, Rule};
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &mut ParserContext) -> ArithExpr {
+pub(super) fn parse_arith_expr(pair: Pair<'_>, context: &ParserContext) -> ArithExpr {
     let result = EXPR_PRATT_PARSER.map_primary(|primary| match primary.as_rule() {
         Rule::operand => {
             let expression = parse_expression(primary, context);

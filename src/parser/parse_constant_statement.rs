@@ -9,7 +9,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &mut ParserContext) -> Constant {
+pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) -> Constant {
     let (
         span,
         path,

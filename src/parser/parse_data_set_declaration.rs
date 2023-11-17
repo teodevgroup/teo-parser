@@ -10,7 +10,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DataSet {
+pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &ParserContext) -> DataSet {
     let (
         span,
         path,
@@ -62,7 +62,7 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &mut ParserCon
     }
 }
 
-fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetGroup {
+fn parse_data_set_group(pair: Pair<'_>, context: &ParserContext) -> DataSetGroup {
     let (
         span,
         path,
@@ -111,7 +111,7 @@ fn parse_data_set_group(pair: Pair<'_>, context: &mut ParserContext) -> DataSetG
     }
 }
 
-fn parse_data_set_group_record(pair: Pair<'_>, context: &mut ParserContext) -> DataSetRecord {
+fn parse_data_set_group_record(pair: Pair<'_>, context: &ParserContext) -> DataSetRecord {
     let (
         span,
         path,

@@ -5,7 +5,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &mut ParserContext) -> AvailabilityFlag {
+pub(super) fn parse_availability_flag(pair: Pair<'_>, context: &ParserContext) -> AvailabilityFlag {
     let (span, path) = parse_node_variables!(pair, context);
     let mut name = String::new();
     for current in pair.into_inner() {

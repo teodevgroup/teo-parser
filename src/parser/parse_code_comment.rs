@@ -4,7 +4,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_code_comment(pair: Pair<'_>, context: &mut ParserContext) -> CodeComment {
+pub(super) fn parse_code_comment(pair: Pair<'_>, context: &ParserContext) -> CodeComment {
     let span = parse_span(&pair);
     let path = context.next_path();
     let mut lines = vec![];
@@ -23,7 +23,7 @@ pub(super) fn parse_code_comment(pair: Pair<'_>, context: &mut ParserContext) ->
     }
 }
 
-fn parse_comment_line(pair: Pair<'_>, context: &mut ParserContext) -> String {
+fn parse_comment_line(pair: Pair<'_>, context: &ParserContext) -> String {
     let mut content = "".to_owned();
     for current in pair.into_inner() {
         match current.as_rule() {

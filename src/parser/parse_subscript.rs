@@ -7,7 +7,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_subscript(pair: Pair<'_>, context: &mut ParserContext) -> Subscript {
+pub(super) fn parse_subscript(pair: Pair<'_>, context: &ParserContext) -> Subscript {
     let (
         span,
         path,
@@ -25,7 +25,7 @@ pub(super) fn parse_subscript(pair: Pair<'_>, context: &mut ParserContext) -> Su
     Subscript { span, children, path, expression }
 }
 
-pub(super) fn parse_int_subscript(pair: Pair<'_>, context: &mut ParserContext) -> IntSubscript {
+pub(super) fn parse_int_subscript(pair: Pair<'_>, context: &ParserContext) -> IntSubscript {
     let (span, path) = parse_node_variables!(pair, context);
     //let mut index = 0;
     // for current in pair.into_inner() {

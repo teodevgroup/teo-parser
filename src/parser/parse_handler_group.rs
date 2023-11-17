@@ -8,7 +8,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerGroupDeclaration {
+pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserContext) -> HandlerGroupDeclaration {
     let (
         span,
         path,
@@ -58,7 +58,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &mut Pars
     }
 }
 
-pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &mut ParserContext) -> HandlerDeclaration {
+pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext) -> HandlerDeclaration {
     let (
         span,
         path,

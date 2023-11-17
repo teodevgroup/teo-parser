@@ -12,7 +12,7 @@ use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 
-pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ConfigDeclaration {
+pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &ParserContext) -> ConfigDeclaration {
     let (
         span,
         path,

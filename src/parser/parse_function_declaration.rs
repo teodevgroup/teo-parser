@@ -8,7 +8,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &mut ParserContext, inside_struct: bool) -> FunctionDeclaration {
+pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &ParserContext, inside_struct: bool) -> FunctionDeclaration {
     let (
         span,
         path,

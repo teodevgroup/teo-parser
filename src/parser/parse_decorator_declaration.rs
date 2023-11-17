@@ -10,7 +10,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorDeclaration {
+pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &ParserContext) -> DecoratorDeclaration {
     let (
         span,
         path,
@@ -118,7 +118,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &mut ParserCo
     }
 }
 
-fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserContext) -> DecoratorDeclarationVariant {
+fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &ParserContext) -> DecoratorDeclarationVariant {
     let (
         span,
         path,
@@ -149,7 +149,7 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &mut ParserConte
     }
 }
 
-fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, handler: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &mut ParserContext) -> ReferenceSpace {
+fn parse_decorator_class(model: bool, r#enum: bool, interface: bool, handler: bool, field: bool, relation: bool, property: bool, member: bool, span: &Span, context: &ParserContext) -> ReferenceSpace {
     if model {
         if field {
             ReferenceSpace::ModelFieldDecorator

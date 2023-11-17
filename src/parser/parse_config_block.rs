@@ -12,7 +12,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) -> Config {
+pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Config {
     let (
         span,
         path,
@@ -64,12 +64,12 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &mut ParserContext) ->
     }
 }
 
-fn parse_config_keyword(pair: Pair<'_>, context: &mut ParserContext) -> Keyword {
+fn parse_config_keyword(pair: Pair<'_>, context: &ParserContext) -> Keyword {
     let (span, path) = parse_node_variables!(pair, context);
     Keyword { span, path, name: pair.as_str().to_owned() }
 }
 
-fn parse_config_item(pair: Pair<'_>, context: &mut ParserContext) -> ConfigItem {
+fn parse_config_item(pair: Pair<'_>, context: &ParserContext) -> ConfigItem {
     let (
         span,
         path,

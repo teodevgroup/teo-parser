@@ -8,7 +8,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &mut ParserContext) -> UseMiddlewaresBlock {
+pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &ParserContext) -> UseMiddlewaresBlock {
     let span = parse_span(&pair);
     let path = context.next_path();
     let string_path = context.next_string_path("useMiddlewares");

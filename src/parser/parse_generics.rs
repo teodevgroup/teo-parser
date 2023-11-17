@@ -6,7 +6,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserContext) -> GenericsDeclaration {
+pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &ParserContext) -> GenericsDeclaration {
     let (
         span,
         path,
@@ -31,7 +31,7 @@ pub(super) fn parse_generics_declaration(pair: Pair<'_>, context: &mut ParserCon
     }
 }
 
-pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &mut ParserContext) -> GenericsConstraint {
+pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &ParserContext) -> GenericsConstraint {
     let (
         span,
         path,
@@ -55,7 +55,7 @@ pub(super) fn parse_generics_constraint(pair: Pair<'_>, context: &mut ParserCont
     }
 }
 
-fn parse_generics_constraint_item(pair: Pair<'_>, context: &mut ParserContext) -> GenericsConstraintItem {
+fn parse_generics_constraint_item(pair: Pair<'_>, context: &ParserContext) -> GenericsConstraintItem {
     let (
         span,
         path,

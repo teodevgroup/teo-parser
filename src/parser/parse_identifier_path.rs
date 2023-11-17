@@ -8,7 +8,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_identifier_path(pair: Pair<'_>, context: &mut ParserContext) -> IdentifierPath {
+pub(super) fn parse_identifier_path(pair: Pair<'_>, context: &ParserContext) -> IdentifierPath {
     let path = context.next_parent_path();
     let mut children = BTreeMap::new();
     let mut main_span: Option<Span> = None;

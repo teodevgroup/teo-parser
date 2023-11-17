@@ -8,7 +8,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::traits::identifiable::Identifiable;
 
-pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ArgumentListDeclaration {
+pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &ParserContext) -> ArgumentListDeclaration {
     let (span, path, mut children) = parse_container_node_variables!(pair, context);
     let mut argument_declarations = vec![];
     for current in pair.into_inner() {
@@ -28,7 +28,7 @@ pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &mut Pars
     }
 }
 
-fn parse_argument_declaration(pair: Pair<'_>, context: &mut ParserContext) -> ArgumentDeclaration {
+fn parse_argument_declaration(pair: Pair<'_>, context: &ParserContext) -> ArgumentDeclaration {
     let (span, path, mut children) = parse_container_node_variables!(pair, context);
     let mut name = 0;
     let mut name_optional = false;

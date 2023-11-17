@@ -12,7 +12,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext) -> Enum {
+pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &ParserContext) -> Enum {
     let (
         span,
         path,
@@ -76,7 +76,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &mut ParserContext
     }
 }
 
-fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: bool, option: bool) -> EnumMember {
+fn parse_enum_member(pair: Pair<'_>, context: &ParserContext, interface: bool, option: bool) -> EnumMember {
     let (
         span,
         path,
@@ -125,7 +125,7 @@ fn parse_enum_member(pair: Pair<'_>, context: &mut ParserContext, interface: boo
     }
 }
 
-fn parse_enum_member_expression(pair: Pair<'_>, context: &mut ParserContext) -> Expression {
+fn parse_enum_member_expression(pair: Pair<'_>, context: &ParserContext) -> Expression {
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::arith_expr => return Expression::new(ExpressionKind::ArithExpr(parse_arith_expr(current, context))),

@@ -12,7 +12,7 @@ use crate::parser::parse_subscript::{parse_int_subscript, parse_subscript};
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_expression(pair: Pair<'_>, context: &mut ParserContext) -> Expression {
+pub(super) fn parse_expression(pair: Pair<'_>, context: &ParserContext) -> Expression {
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::arith_expr => return Expression::new(ExpressionKind::ArithExpr(parse_arith_expr(current, context))),
@@ -24,7 +24,7 @@ pub(super) fn parse_expression(pair: Pair<'_>, context: &mut ParserContext) -> E
     unreachable!()
 }
 
-pub(super) fn parse_unit(pair: Pair<'_>, context: &mut ParserContext) -> Unit {
+pub(super) fn parse_unit(pair: Pair<'_>, context: &ParserContext) -> Unit {
     let (
         span,
         path,
