@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
-use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_identifier_path::parse_identifier_path;
@@ -27,6 +27,7 @@ pub(super) fn parse_data_set_declaration(pair: Pair<'_>, context: &ParserContext
     let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::DATASET_KEYWORD => parse_insert_keyword!(context, current, children, "dataset"),
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::BLOCK_OPEN => {
                 parse_insert_punctuation!(context, current, children, "{");
@@ -77,6 +78,7 @@ fn parse_data_set_group(pair: Pair<'_>, context: &ParserContext) -> DataSetGroup
     let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::GROUP_KEYWORD => parse_insert_keyword!(context, current, children, "group"),
             Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::identifier_path => {
@@ -126,6 +128,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &ParserContext) -> DataS
     let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::RECORD_KEYWORD => parse_insert_keyword!(context, current, children, "record"),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context), children, dictionary),
             Rule::triple_comment_block => if !inside_block {

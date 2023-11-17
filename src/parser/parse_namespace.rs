@@ -2,7 +2,7 @@ use maplit::btreemap;
 use crate::availability::Availability;
 use crate::ast::namespace::{Namespace, NamespaceReferences};
 use crate::ast::node::Node;
-use crate::{parse_append, parse_insert_punctuation, parse_set_optional};
+use crate::{parse_append, parse_insert_keyword, parse_insert_punctuation, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -37,6 +37,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namesp
     let mut inside_block = false;
     for current in pair.into_inner() {
         match current.as_rule() {
+            Rule::NAMESPACE_KEYWORD => parse_insert_keyword!(context, current, children, "namespace"),
             Rule::BLOCK_OPEN => {
                 parse_insert_punctuation!(context, current, children, "{");
                 inside_block = true;

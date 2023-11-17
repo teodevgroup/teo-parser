@@ -17,7 +17,7 @@ impl Write for CodeComment {
     fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         let mut contents = vec![];
         for line in self.lines() {
-            contents.push("// ");
+            contents.push("//");
             contents.push(line.as_str());
             contents.push("\n");
         }

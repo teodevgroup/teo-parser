@@ -69,7 +69,7 @@ impl<'a> Flusher<'a> {
             let command = self.commands.get(self.flusher_state.processing_index).unwrap();
             let stop_and_return = command.node().is_block_end();
             if command.node().is_block_end() {
-                if !one_line {
+                if !one_line && !buffer.ends_with("\n") {
                     buffer.push('\n');
                     self.reset_state_to_newline();
                 }
@@ -125,13 +125,13 @@ impl<'a> Flusher<'a> {
         let command = self.commands.get(self.flusher_state.processing_index).unwrap();
 
         // handle new line open for block level elements
-        if !self.file_state.is_at_newline && command.node().always_start_on_new_line() {
+        if !self.file_state.is_at_newline && (command.node().always_start_on_new_line() || command.node().is_block_level_element()) {
             buffer.push('\n');
             self.reset_state_to_newline();
         }
 
         // capture newline status
-        let is_at_newline_after_indented = self.file_state.is_at_newline;
+        let mut is_at_newline_after_indented = self.file_state.is_at_newline;
 
         // insert indentations if needed
         if self.file_state.is_at_newline {
@@ -156,7 +156,20 @@ impl<'a> Flusher<'a> {
         let content = match command {
             Command::LeafCommand(leaf_command) => {
                 let mut content = String::new();
-                leaf_command.contents().iter().for_each(|c| content.push_str(c));
+                let mut previous_end_with_newline = false;
+                leaf_command.contents().iter().enumerate().for_each(|(i, c)| {
+                    if previous_end_with_newline {
+                        if self.file_state.indent_level != 0 {
+                            let whitespace_count = self.file_state.indent_level * self.preferences.indent_size();
+                            self.file_state.line_remaining_length -= whitespace_count as i64;
+                            buffer.push_str(&" ".repeat(whitespace_count));
+                        }
+                        self.file_state.is_at_newline = false;
+                        is_at_newline_after_indented = false;
+                    }
+                    content.push_str(c);
+                    previous_end_with_newline = c.ends_with("\n");
+                });
                 content
             }
             Command::BranchCommand(branch_command) => {
@@ -184,13 +197,15 @@ impl<'a> Flusher<'a> {
         }
 
         // handle new line close for block level elements
-        if !self.file_state.is_at_newline && command.node().always_end_on_new_line() {
+        if !self.file_state.is_at_newline && (command.node().always_end_on_new_line() || command.node().is_block_level_element()) {
             buffer.push('\n');
             self.reset_state_to_newline();
         }
 
         // record whitespace state
-        self.file_state.previous_node_requires_whitespace_after = command.node().prefer_whitespace_after();
+        if command.is_leaf_command() {
+            self.file_state.previous_node_requires_whitespace_after = command.node().prefer_whitespace_after();
+        }
 
         // going to the next command
         self.flusher_state.processing_index += 1;

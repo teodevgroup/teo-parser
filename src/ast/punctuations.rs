@@ -1,4 +1,3 @@
-
 use crate::{declare_node, impl_node_defaults};
 use crate::ast::span::Span;
 use crate::format::Writer;
@@ -31,21 +30,21 @@ impl Write for Punctuation {
 
     fn prefer_whitespace_before(&self) -> bool {
         match self.content() {
-            "@" | "}" => true,
+            "@" | "}" | "{" | "->" => true,
             _ => false,
         }
     }
 
     fn prefer_whitespace_after(&self) -> bool {
         match self.content() {
-            "," | ":" | "{" => true,
+            "," | ":" | "{" | "->" => true,
             _ => false,
         }
     }
 
     fn prefer_always_no_whitespace_before(&self) -> bool {
         match self.content() {
-            ")" | "]" => true,
+            "," | ")" | "]" => true,
             _ => false,
         }
     }
