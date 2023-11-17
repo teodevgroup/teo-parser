@@ -8,7 +8,7 @@ declare_node!(Keyword, pub(crate) name: String);
 impl_node_defaults!(Keyword);
 
 impl Write for Keyword {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_content(self, self.name());
     }
 

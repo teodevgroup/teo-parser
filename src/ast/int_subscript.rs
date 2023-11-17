@@ -7,7 +7,7 @@ declare_node!(IntSubscript, pub index: usize, pub(crate) index_string: String);
 impl_node_defaults!(IntSubscript);
 
 impl Write for IntSubscript {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_contents(self, vec![".", self.index_string.as_str()])
     }
 }

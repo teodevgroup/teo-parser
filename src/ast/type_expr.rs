@@ -44,7 +44,7 @@ impl TypeBinaryOperation {
 }
 
 impl Write for TypeBinaryOperation {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -64,7 +64,7 @@ impl TypeGroup {
 }
 
 impl Write for TypeGroup {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -86,7 +86,7 @@ impl TypeTuple {
 }
 
 impl Write for TypeTuple {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -109,7 +109,7 @@ impl TypeSubscript {
 }
 
 impl Write for TypeSubscript {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -140,7 +140,7 @@ impl TypeItem {
 }
 
 impl Write for TypeItem {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -158,7 +158,7 @@ impl TypeGenerics {
 }
 
 impl Write for TypeGenerics {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }
 }
@@ -252,7 +252,7 @@ impl Resolve<Type> for TypeExpr {
 }
 
 impl Write for TypeExprKind {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         self.as_dyn_node_trait().write(writer);
     }
 
@@ -302,7 +302,7 @@ impl Write for TypeExprKind {
 }
 
 impl Write for TypeExpr {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         self.kind.as_dyn_node_trait().write(writer);
     }
 

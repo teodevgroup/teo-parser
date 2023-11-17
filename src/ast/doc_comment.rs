@@ -27,7 +27,7 @@ impl DocComment {
 }
 
 impl Write for DocComment {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         let mut contents = vec![];
         if let Some(name) = self.name() {
             contents.push("/// @name ");

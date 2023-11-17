@@ -50,7 +50,7 @@ impl<'a> Flusher<'a> {
         self.file_state.line_remaining_length = self.preferences.maximum_line_width();
     }
 
-    fn restore_state<F>(&mut self, f: F) -> Option<String> where F: Fn() -> Option<String> {
+    fn restore_state<F>(&mut self, f: F) -> Option<String> where F: FnMut() -> Option<String> {
         let file_state = self.file_state;
         let flusher_state = self.flusher_state;
         if let Some(buffer) = f() {

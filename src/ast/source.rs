@@ -179,7 +179,7 @@ impl SourceReferences {
 }
 
 impl Write for Source {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values())
     }
 }

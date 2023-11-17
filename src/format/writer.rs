@@ -27,20 +27,20 @@ impl<'a> Writer<'a> {
         }
     }
 
-    pub fn write_children(&'a mut self, node: &'a dyn Write, children: Values<usize, Node>) {
+    pub fn write_children(&mut self, node: &'a dyn Write, children: Values<'a, usize, Node>) {
         if !self.can_write {
             panic!("writer can only write only once in one call");
         }
-        let mut writer = Self::new(self.preferences);
-        children.for_each(|c| {
+        let mut writer: Writer = Self::new(self.preferences);
+        for c in children {
             c.write(&mut writer);
             writer.can_write = true;
-        });
+        }
         self.commands.push(Command::branch(node, writer.commands));
         self.can_write = false;
     }
 
-    pub fn write_content(&'a mut self, node: &'a dyn Write, content: &'a str) {
+    pub fn write_content(&mut self, node: &'a dyn Write, content: &'a str) {
         if !self.can_write {
             panic!("writer can only write only once in one call");
         }
@@ -48,7 +48,7 @@ impl<'a> Writer<'a> {
         self.can_write = false;
     }
 
-    pub fn write_contents(&mut self, node: &dyn Write, contents: Vec<&'a str>) {
+    pub fn write_contents(&mut self, node: &'a dyn Write, contents: Vec<&'a str>) {
         if !self.can_write {
             panic!("writer can only write only once in one call");
         }
@@ -56,7 +56,7 @@ impl<'a> Writer<'a> {
         self.can_write = false;
     }
 
-    pub fn flush(&mut self) -> String {
+    pub fn flush(&self) -> String {
         let mut flusher = Flusher::new_from_beginning(&self.commands, self.preferences);
         flusher.flush()
     }

@@ -1064,7 +1064,7 @@ impl NodeTrait for Node {
 }
 
 impl Write for Node {
-    fn write<'a>(&'a self, writer: &'a mut Writer<'a>) {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         self.as_dyn_node_trait().write(writer)
     }
 
