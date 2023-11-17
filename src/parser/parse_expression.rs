@@ -1,6 +1,6 @@
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::unit::Unit;
-use crate::{parse_container_node_variables, parse_insert, parse_insert_punctuation};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_arith_expr::parse_arith_expr;
 use crate::parser::parse_group::parse_group;
@@ -51,5 +51,6 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &ParserContext) -> Unit {
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     Unit { span, children, path, expressions }
 }

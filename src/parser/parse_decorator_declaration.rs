@@ -1,7 +1,7 @@
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
-use crate::{parse_append, parse_container_node_variables, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -99,6 +99,7 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &ParserContex
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     DecoratorDeclaration {
         span,
         path,
@@ -138,6 +139,7 @@ fn parse_decorator_variant_declaration(pair: Pair<'_>, context: &ParserContext) 
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     DecoratorDeclarationVariant {
         span,
         children,

@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::constant::Constant;
-use crate::{parse_container_node_variables, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_optional};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
@@ -13,7 +13,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) 
     let (
         span,
         path,
-        string_path,
+        mut string_path,
         mut children,
         define_availability,
         actual_availability
@@ -28,12 +28,13 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) 
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             Rule::ASSIGN => parse_insert_punctuation!(context, current, children, "="),
             Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
-            Rule::identifier => parse_set!(parse_identifier(&current, context), children, identifier),
+            Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::expression => parse_set!(parse_expression(current, context), children, expression),
             Rule::type_expression => parse_set_optional!(parse_type_expression(current, context), children, type_expr),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     Constant {
         span,
         path,

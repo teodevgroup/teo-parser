@@ -59,4 +59,12 @@ mod test {
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }
+
+    #[test]
+    fn test_formatting() {
+        let path = "/Users/victor/Developer/hello-teo/schema.teo";
+        let (_schema, _) = parse(path, None, None);
+        //let completions = auto_complete_items(&schema, path, (4, 13));
+        //println!("{:?}", completions);
+    }
 }

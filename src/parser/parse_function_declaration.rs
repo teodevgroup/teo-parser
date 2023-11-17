@@ -1,5 +1,5 @@
 use crate::ast::function_declaration::FunctionDeclaration;
-use crate::{parse_container_node_variables, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
@@ -44,6 +44,7 @@ pub(super) fn parse_function_declaration(pair: Pair<'_>, context: &ParserContext
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     FunctionDeclaration {
         span,
         path,

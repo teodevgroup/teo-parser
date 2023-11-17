@@ -1,3 +1,4 @@
+use std::backtrace;
 use std::cell::{Cell, Ref, RefCell, RefMut};
 use std::collections::{BTreeMap, HashSet};
 use maplit::btreemap;
@@ -6,6 +7,8 @@ use crate::ast::schema::SchemaReferences;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
 use crate::utils::path::FileUtility;
+use backtrace::Backtrace;
+use std::sync::Once;
 
 pub(super) struct ParserContext {
     diagnostics: RefCell<Diagnostics>,
@@ -96,13 +99,8 @@ impl ParserContext {
         self.current_id.get()
     }
 
-    pub(super) fn next_parent_id(&self) -> usize {
-        let id = self.next_id();
-        self.current_path.borrow_mut().push(id);
-        id
-    }
-
     pub(super) fn pop_parent_id(&self) {
+        //println!("pop path: {:?}", self.current_path.borrow().clone());
         self.current_path.borrow_mut().pop();
     }
 
@@ -114,7 +112,13 @@ impl ParserContext {
     }
 
     pub(super) fn next_parent_path(&self) -> Vec<usize> {
-        self.next_parent_id();
+        let id = self.next_id();
+        // if id == 44 {
+        //     let bt = Backtrace::capture();
+        //     println!("{:?}", bt);
+        // }
+        self.current_path.borrow_mut().push(id);
+        //println!("next parent path: {:?}", self.current_path.borrow().clone());
         self.current_path.borrow().clone()
     }
 
@@ -126,10 +130,19 @@ impl ParserContext {
 
     pub(super) fn next_parent_string_path(&self, item: impl Into<String>) -> Vec<String> {
         self.current_string_path.borrow_mut().push(item.into());
+        println!("next parent string path: {:?}", self.current_string_path.borrow().clone());
         self.current_string_path.borrow().clone()
     }
 
     pub(super) fn pop_string_path(&self) {
+        if self.current_string_path.borrow().clone() == ["std".to_owned(), "ENV".to_owned()] {
+            START.call_once(|| {
+                let bt = Backtrace::capture();
+                println!("{:?}", bt);
+            });
+
+        }
+        println!("pop string path: {:?}", self.current_string_path.borrow().clone());
         self.current_string_path.borrow_mut().pop();
     }
 
@@ -201,3 +214,6 @@ impl ParserContext {
         *self.current_availability_flag_state.borrow().last().unwrap()
     }
 }
+
+static START: Once = Once::new();
+

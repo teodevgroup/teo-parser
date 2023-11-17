@@ -1,5 +1,5 @@
 use crate::ast::pipeline::Pipeline;
-use crate::{parse_container_node_variables, parse_insert_punctuation, parse_set};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_punctuation, parse_set};
 use crate::parser::parse_expression::parse_unit;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -19,6 +19,7 @@ pub(super) fn parse_pipeline(pair: Pair<'_>, context: &ParserContext) -> Pipelin
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     Pipeline {
         span,
         children,

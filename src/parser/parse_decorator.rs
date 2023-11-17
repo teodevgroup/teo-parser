@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::decorator::Decorator;
-use crate::{parse_container_node_variables, parse_insert_punctuation, parse_set, parse_set_optional};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_punctuation, parse_set, parse_set_optional};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_span::parse_span;
@@ -23,6 +23,7 @@ pub(super) fn parse_decorator(pair: Pair<'_>, context: &ParserContext) -> Decora
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     Decorator {
         span,
         children,

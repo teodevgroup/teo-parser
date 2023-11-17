@@ -75,6 +75,7 @@ fn parse_type_item(pair: Pair<'_>, context: &ParserContext) -> TypeItem {
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     TypeItem {
         span,
         children,
@@ -112,7 +113,8 @@ fn parse_type_group(pair: Pair<'_>, context: &ParserContext) -> TypeGroup {
             Rule::OPTIONAL => {
                 if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; }
                 parse_insert_punctuation!(context, current, children, "?");
-            },            _ => context.insert_unparsed(parse_span(&current)),
+            },
+            _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     parse_container_node_variables_cleanup!(context);
@@ -209,7 +211,7 @@ fn parse_type_subscript(pair: Pair<'_>, context: &ParserContext) -> TypeSubscrip
         match current.as_rule() {
             Rule::BRACKET_OPEN => parse_insert_punctuation!(context, current, children, "["),
             Rule::BRACKET_CLOSE => parse_insert_punctuation!(context, current, children, "]"),
-            Rule::type_item => parse_set!(parse_type_item(current, context), children, container),
+            Rule::type_item => parse_set!(TypeExpr::new(TypeExprKind::TypeItem(parse_type_item(current, context))), children, container),
             Rule::type_expression => parse_set!(parse_type_expression(current, context), children, argument),
             Rule::arity => if current.as_str() == "[]" {
                 arity = Arity::Array;
@@ -221,7 +223,8 @@ fn parse_type_subscript(pair: Pair<'_>, context: &ParserContext) -> TypeSubscrip
             Rule::OPTIONAL => {
                 if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; }
                 parse_insert_punctuation!(context, current, children, "?");
-            },            _ => context.insert_unparsed(parse_span(&current)),
+            },
+            _ => context.insert_unparsed(parse_span(&current)),
         }
     }
     parse_container_node_variables_cleanup!(context);

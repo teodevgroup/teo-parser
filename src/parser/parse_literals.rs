@@ -4,7 +4,7 @@ use regex::Regex;
 use teo_teon::value::Value;
 use crate::ast::expression::Expression;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
-use crate::{parse_append, parse_container_node_variables, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_optional};
 use crate::ast::punctuations::Punctuation;
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -88,6 +88,7 @@ pub(super) fn parse_enum_variant_literal(pair: Pair<'_>, context: &ParserContext
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     EnumVariantLiteral {
         span,
         children,
@@ -114,6 +115,7 @@ pub(super) fn parse_array_literal(pair: Pair<'_>, context: &ParserContext) -> Ar
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     ArrayLiteral { expressions, span, children, path }
 }
 
@@ -134,6 +136,7 @@ pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &ParserContext) -> Tu
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     TupleLiteral { expressions, span, children, path }
 }
 
@@ -160,6 +163,7 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext) 
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     DictionaryLiteral { expressions, span, children, path }
 }
 
