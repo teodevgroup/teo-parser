@@ -1597,13 +1597,13 @@ pub(crate) fn resolve_static_where_with_aggregates_input_for_type<'a>(t: &Type, 
     if t.is_bool() {
         Type::Union(vec![Type::Bool, search_filter_type_in_std("BoolWithAggregatesFilter", vec![], context)]).wrap_in_optional()
     } else if t.is_int() {
-        Type::Union(vec![Type::Int, search_filter_type_in_std("IntNumberWithAggregatesFilterFilter", vec![Type::Int], context)]).wrap_in_optional()
+        Type::Union(vec![Type::Int, search_filter_type_in_std("IntNumberWithAggregatesFilter", vec![Type::Int], context)]).wrap_in_optional()
     } else if t.is_int64() {
-        Type::Union(vec![Type::Int64, search_filter_type_in_std("IntNumberWithAggregatesFilterFilter", vec![Type::Int64], context)]).wrap_in_optional()
+        Type::Union(vec![Type::Int64, search_filter_type_in_std("IntNumberWithAggregatesFilter", vec![Type::Int64], context)]).wrap_in_optional()
     } else if t.is_float32() {
-        Type::Union(vec![Type::Float32, search_filter_type_in_std("FloatNumberWithAggregatesFilterFilter", vec![Type::Float32], context)]).wrap_in_optional()
+        Type::Union(vec![Type::Float32, search_filter_type_in_std("FloatNumberWithAggregatesFilter", vec![Type::Float32], context)]).wrap_in_optional()
     } else if t.is_float() {
-        Type::Union(vec![Type::Float, search_filter_type_in_std("FloatNumberWithAggregatesFilterFilter", vec![Type::Float], context)]).wrap_in_optional()
+        Type::Union(vec![Type::Float, search_filter_type_in_std("FloatNumberWithAggregatesFilter", vec![Type::Float], context)]).wrap_in_optional()
     } else if t.is_decimal() {
         Type::Union(vec![Type::Decimal, search_filter_type_in_std("DecimalWithAggregatesFilter", vec![Type::Decimal], context)]).wrap_in_optional()
     } else if t.is_date() {

@@ -16,7 +16,6 @@ pub(super) fn resolve_decorator<'a>(
     reference_type: ReferenceSpace,
 ) {
     if let Some(reference) = resolve_identifier_path(decorator.identifier_path(), context, reference_type, context.current_availability()) {
-        println!("see reference: {:?}", reference);
         decorator.resolve(reference.r#type().as_decorator_reference().unwrap().path().clone());
         let decorator_declaration = context.schema.find_top_by_path(decorator.resolved()).unwrap().as_decorator_declaration().unwrap();
         resolve_argument_list(
