@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::default::Default;
+
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use indexmap::IndexMap;
 use maplit::{btreemap, hashset};
@@ -133,28 +133,28 @@ fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<
     }
 }
 
-fn resolve_string_literal<'a>(s: &StringLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+fn resolve_string_literal<'a>(s: &StringLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
     TypeAndValue {
         r#type: Type::String,
         value: Some(Value::String(s.value.clone())),
     }
 }
 
-fn resolve_regex_literal<'a>(r: &RegexLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+fn resolve_regex_literal<'a>(r: &RegexLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
     TypeAndValue {
         r#type: Type::Regex,
         value: Some(Value::Regex(r.value.clone())),
     }
 }
 
-fn resolve_bool_literal<'a>(r: &BoolLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+fn resolve_bool_literal<'a>(r: &BoolLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
     TypeAndValue {
         r#type: Type::Bool,
         value: Some(Value::Bool(r.value)),
     }
 }
 
-fn resolve_null_literal<'a>(n: &NullLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+fn resolve_null_literal<'a>(_n: &NullLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
     TypeAndValue {
         r#type: Type::Null,
         value: Some(Value::Null),

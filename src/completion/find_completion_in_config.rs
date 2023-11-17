@@ -8,7 +8,7 @@ use crate::completion::completion_item_from_top::completion_item_from_field;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::node_trait::NodeTrait;
 
-pub(super) fn find_completion_in_config(schema: &Schema, source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<CompletionItem> {
+pub(super) fn find_completion_in_config(schema: &Schema, _source: &Source, config: &Config, line_col: (usize, usize)) -> Vec<CompletionItem> {
     let mut used: Vec<&str> = vec![];
     used.extend(config.items().map(|i| i.identifier().name()));
     used.extend(config.unattached_identifiers.iter().map(|i| i.name()));

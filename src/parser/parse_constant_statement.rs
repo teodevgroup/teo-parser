@@ -13,7 +13,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) 
     let (
         span,
         path,
-        mut string_path,
+        string_path,
         mut children,
         define_availability,
         actual_availability

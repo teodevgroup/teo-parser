@@ -73,7 +73,7 @@ fn parse_data_set_group(pair: Pair<'_>, context: &ParserContext) -> DataSetGroup
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut identifier_path: usize = 0;
     let mut records = vec![];
-    let mut inside_block = false;
+    let inside_block = false;
     let mut comment = None;
     for current in pair.into_inner() {
         match current.as_rule() {
@@ -120,7 +120,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &ParserContext) -> DataS
         define_availability,
         actual_availability
     ) = parse_container_node_variables!(pair, context, named, availability);
-    let mut inside_block = false;
+    let inside_block = false;
     let mut identifier = 0;
     let mut dictionary = 0;
     let mut comment = None;

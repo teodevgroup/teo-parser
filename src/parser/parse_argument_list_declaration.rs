@@ -6,7 +6,7 @@ use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
-use crate::traits::identifiable::Identifiable;
+
 
 pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &ParserContext) -> ArgumentListDeclaration {
     let (span, path, mut children) = parse_container_node_variables!(pair, context);

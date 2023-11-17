@@ -81,7 +81,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                         if !field.type_expr().resolved().test(value_resolved.r#type()) {
                             context.insert_diagnostics_error(value_span, format!("expect {}, found {}", field.type_expr().resolved(), value_resolved.r#type()));
                         }
-                    } else if let Some(relation_settings) = field.resolved().class.as_model_relation() {
+                    } else if let Some(_relation_settings) = field.resolved().class.as_model_relation() {
                         if let Some(model_reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
                             let reference_model = context.schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
                             let expect = Type::DataSetRecord(

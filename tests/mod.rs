@@ -39,7 +39,7 @@ mod test {
     #[test]
     fn test_auto_completion() {
         let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
-        let (schema, _) = parse(path, None, None);
+        let (_schema, _) = parse(path, None, None);
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }
@@ -47,7 +47,7 @@ mod test {
     #[test]
     fn test_availability() {
         let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
-        let (schema, _) = parse(path, None, None);
+        let (_schema, _) = parse(path, None, None);
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }
@@ -55,7 +55,7 @@ mod test {
     #[test]
     fn test_shape_resolve() {
         let path = "/Users/victor/Developer/teo-namespace-example/shape.teo";
-        let (schema, _) = parse(path, None, None);
+        let (_schema, _) = parse(path, None, None);
         //let completions = auto_complete_items(&schema, path, (4, 13));
         //println!("{:?}", completions);
     }

@@ -124,7 +124,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
         Type::Ignored => None,
         Type::EnumVariant(_) => None,
         Type::Model => Some("invalid form handler input type: Model is not supported"),
-        Type::InterfaceObject(_, items) => None,
+        Type::InterfaceObject(_, _items) => None,
         Type::FieldType(_, _) => Some("invalid form handler input type: FieldType is not supported"),
         Type::FieldName(_) => Some("invalid form handler input type: FieldReference is not supported"),
         Type::GenericItem(_) => Some("invalid form handler input type: GenericsItem is not supported"),

@@ -5,8 +5,8 @@ use crate::ast::source::Source;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::definition::definition::Definition;
 use crate::definition::jump_to_definition_in_argument_list_declaration::jump_to_definition_in_argument_list_declaration;
-use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_type_expr_kind;
-use crate::search::search_availability::search_availability;
+
+
 
 pub(super) fn jump_to_definition_in_struct_declaration(schema: &Schema, source: &Source, struct_declaration: &StructDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = struct_declaration.string_path.iter().map(|s| s.as_str()).collect();

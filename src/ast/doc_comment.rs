@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+
 use serde::Serialize;
 use crate::ast::span::Span;
 use crate::format::Writer;

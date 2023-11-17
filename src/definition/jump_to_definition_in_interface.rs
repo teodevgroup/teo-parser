@@ -1,13 +1,13 @@
 use crate::ast::interface::InterfaceDeclaration;
-use crate::ast::model::Model;
-use crate::ast::reference_space::ReferenceSpace;
+
+
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
-use crate::definition::jump_to_definition_in_decorator::jump_to_definition_in_decorator;
+
 use crate::definition::jump_to_definition_in_field::jump_to_definition_in_field;
 use crate::search::search_availability::search_availability;
-use crate::utils::top_filter::{top_filter_for_any_model_field_decorators, top_filter_for_reference_type};
+
 
 pub(super) fn jump_to_definition_in_interface(schema: &Schema, source: &Source, interface: &InterfaceDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = interface.string_path.iter().map(|s| s.as_str()).collect();

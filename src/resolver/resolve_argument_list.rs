@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap};
 use maplit::{btreemap, btreeset};
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
@@ -70,7 +70,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
 ) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>) {
     // declare errors and warnings
     let mut errors = vec![];
-    let mut warnings = vec![];
+    let warnings = vec![];
     // collect generics identifiers
     let mut generic_identifiers = btreeset!{};
     for g in &callable_variant.generics_declarations {
@@ -304,7 +304,7 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
                     let field = model.fields().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr().resolved().clone()
                 },
-                Type::InterfaceReference(reference, types) => {
+                Type::InterfaceReference(reference, _types) => {
                     let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
                     let field = interface.fields().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr().resolved().clone()

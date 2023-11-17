@@ -1,27 +1,27 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::availability::Availability;
-use crate::ast::expression::ExpressionKind;
-use crate::ast::reference_space::ReferenceSpace;
+
+
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
-use crate::r#type::r#type::Type;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
-use crate::search::search_unit_for_definition::UnitSearchResult;
-use crate::utils::top_filter::top_filter_for_reference_type;
+
+
+
+
 
 pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
-    schema: &Schema,
-    source: &Source,
-    unit: &Unit,
-    namespace_path: &Vec<&str>,
-    line_col: (usize, usize),
-    handle_argument_list: HAL,
-    handle_subscript: HS,
-    handle_identifier: HI,
+    _schema: &Schema,
+    _source: &Source,
+    _unit: &Unit,
+    _namespace_path: &Vec<&str>,
+    _line_col: (usize, usize),
+    _handle_argument_list: HAL,
+    _handle_subscript: HS,
+    _handle_identifier: HI,
     default: OUTPUT,
-    availability: Availability,
+    _availability: Availability,
 ) -> OUTPUT where
     HAL: Fn(&ArgumentList, &Vec<Vec<&str>>) -> OUTPUT,
     HS: Fn(&Subscript) -> OUTPUT,

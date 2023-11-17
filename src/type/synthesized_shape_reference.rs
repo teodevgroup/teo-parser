@@ -4,7 +4,7 @@ use crate::r#type::Type;
 use strum_macros::{Display, EnumString, AsRefStr};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
-use crate::r#type::synthesized_shape::SynthesizedShape;
+
 use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Copy, Clone, Eq, Hash, PartialEq, Serialize, Display, EnumString, AsRefStr)]

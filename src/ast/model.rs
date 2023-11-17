@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use indexmap::IndexMap;
-use serde::{Serialize, Serializer};
+use serde::{Serialize};
 use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::field::Field;

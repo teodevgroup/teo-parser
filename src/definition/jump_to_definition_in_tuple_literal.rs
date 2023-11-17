@@ -14,7 +14,7 @@ pub(super) fn jump_to_definition_in_tuple_literal<'a>(
     tuple_literal: &'a TupleLiteral,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    expect: &Type,
+    _expect: &Type,
     availability: Availability,
 ) -> Vec<Definition> {
     for expression in tuple_literal.expressions() {

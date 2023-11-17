@@ -70,12 +70,12 @@ pub(super) fn jump_to_definition_in_argument<'a>(
 }
 
 pub(super) fn jump_to_definition_in_argument_name<'a>(
-    schema: &'a Schema,
-    source: &'a Source,
-    name: &'a Identifier,
-    namespace_path: &Vec<&'a str>,
-    callable_reference: Option<Vec<usize>>,
-    line_col: (usize, usize),
+    _schema: &'a Schema,
+    _source: &'a Source,
+    _name: &'a Identifier,
+    _namespace_path: &Vec<&'a str>,
+    _callable_reference: Option<Vec<usize>>,
+    _line_col: (usize, usize),
 ) -> Vec<Definition> {
     vec![]
 }

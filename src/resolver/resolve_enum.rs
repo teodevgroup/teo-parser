@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::sync::atomic::Ordering;
+
 use std::sync::Mutex;
 use maplit::btreemap;
 use teo_teon::value::Value;
@@ -47,7 +47,7 @@ pub(super) fn resolve_enum_member<'a>(
     if let Some(member_expression) = member.expression() {
         if option {
             match &member_expression.kind {
-                ExpressionKind::StringLiteral(s) => {
+                ExpressionKind::StringLiteral(_s) => {
                     member.resolve(Value::Int(1 << index));
                     context.insert_diagnostics_error(
                         member_expression.span(),

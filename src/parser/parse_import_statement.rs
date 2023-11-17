@@ -1,8 +1,8 @@
 use crate::availability::Availability;
-use crate::ast::identifier::Identifier;
+
 use crate::ast::import::Import;
 use crate::ast::literals::StringLiteral;
-use crate::parser::parse_identifier::parse_identifier;
+
 use crate::parser::parse_literals::parse_string_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;

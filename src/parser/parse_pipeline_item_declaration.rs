@@ -4,7 +4,7 @@ use crate::parser::parse_argument_list_declaration::parse_argument_list_declarat
 use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_generics::{parse_generics_constraint, parse_generics_declaration};
-use crate::parser::parse_identifier::parse_identifier;
+
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;

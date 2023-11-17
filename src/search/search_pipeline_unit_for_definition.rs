@@ -7,7 +7,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::span::Span;
 use crate::ast::unit::Unit;
-use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path};
 use crate::traits::identifiable::Identifiable;
 use crate::utils::top_filter::top_filter_for_pipeline;
 

@@ -9,7 +9,7 @@ use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
 use crate::r#type::r#type::Type;
-use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path, search_identifier_path_names_with_filter_to_type_and_value};
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path};
 use crate::traits::identifiable::Identifiable;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
@@ -147,10 +147,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
-                                    ExpressionKind::Identifier(i) => {
+                                    ExpressionKind::Identifier(_i) => {
                                         return default;
                                     }
                                     _ => unreachable!()
@@ -169,10 +169,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     },
-                                    ExpressionKind::ArgumentList(a) => {
+                                    ExpressionKind::ArgumentList(_a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
                                     _ => unreachable!()
@@ -191,10 +191,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     }
-                                    ExpressionKind::ArgumentList(a) => {
+                                    ExpressionKind::ArgumentList(_a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
                                     _ => unreachable!()
@@ -213,10 +213,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     },
-                                    ExpressionKind::ArgumentList(a) => {
+                                    ExpressionKind::ArgumentList(_a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
                                     _ => unreachable!()
@@ -235,10 +235,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     },
-                                    ExpressionKind::ArgumentList(a) => {
+                                    ExpressionKind::ArgumentList(_a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
                                     _ => unreachable!()
@@ -257,10 +257,10 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                                             return default;
                                         }
                                     },
-                                    ExpressionKind::ArgumentList(a) => {
+                                    ExpressionKind::ArgumentList(_a) => {
                                         return default;
                                     }
-                                    ExpressionKind::Subscript(s) => {
+                                    ExpressionKind::Subscript(_s) => {
                                         return default;
                                     }
                                     _ => unreachable!()

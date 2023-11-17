@@ -14,7 +14,7 @@ pub(super) fn jump_to_definition_in_dictionary_literal<'a>(
     dictionary_literal: &'a DictionaryLiteral,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    expect: &Type,
+    _expect: &Type,
     availability: Availability,
 ) -> Vec<Definition> {
     for (key_expression, value_expression) in dictionary_literal.expressions() {

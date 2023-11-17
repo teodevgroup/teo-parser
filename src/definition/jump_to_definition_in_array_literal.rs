@@ -14,7 +14,7 @@ pub(super) fn jump_to_definition_in_array_literal<'a>(
     array_literal: &'a ArrayLiteral,
     namespace_path: &Vec<&'a str>,
     line_col: (usize, usize),
-    expect: &Type,
+    _expect: &Type,
     availability: Availability,
 ) -> Vec<Definition> {
     for expression in array_literal.expressions() {

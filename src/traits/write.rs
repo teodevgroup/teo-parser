@@ -47,7 +47,7 @@ pub trait Write: Debug {
         false
     }
 
-    fn wrap(&self, content: &str, available_length: usize) -> String {
+    fn wrap(&self, content: &str, _available_length: usize) -> String {
         content.to_owned()
     }
 }

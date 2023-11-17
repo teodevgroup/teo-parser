@@ -32,7 +32,7 @@ pub(super) fn resolve_source_first<'a>(context: &'a ResolverContext<'a>) {
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration(d, context),
             Node::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration(p, context),
             Node::StructDeclaration(s) => resolve_struct_declaration(s, context),
-            Node::UseMiddlewaresBlock(u) => (),
+            Node::UseMiddlewaresBlock(_u) => (),
             _ => (),
         }
     }

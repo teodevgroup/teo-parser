@@ -37,7 +37,7 @@ pub(super) fn parse_bool_literal(pair: &Pair<'_>, context: &ParserContext) -> Bo
 
 pub(super) fn parse_regex_literal(pair: Pair<'_>, context: &ParserContext) -> RegexLiteral {
     let (span, path) = parse_node_variables!(pair, context);
-    let mut display = pair.as_str().to_owned();
+    let display = pair.as_str().to_owned();
     let mut value = None;
     for current in pair.into_inner() {
         match current.as_rule() {

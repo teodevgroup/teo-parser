@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap};
 use maplit::btreemap;
 use crate::ast::schema::{Schema, SchemaReferences};
 use crate::ast::source::Source;

@@ -38,7 +38,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
             unit,
             namespace_path,
             line_col,
-            |argument_list, callable_container_path, callable_name| {
+            |_argument_list, _callable_container_path, _callable_name| {
                 vec![]
             },
             |subscript| {

@@ -76,7 +76,7 @@ pub(super) fn parse_enum_declaration(pair: Pair<'_>, context: &ParserContext) ->
     }
 }
 
-fn parse_enum_member(pair: Pair<'_>, context: &ParserContext, interface: bool, option: bool) -> EnumMember {
+fn parse_enum_member(pair: Pair<'_>, context: &ParserContext, interface: bool, _option: bool) -> EnumMember {
     let (
         span,
         path,
