@@ -11,7 +11,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_model;
 
-pub(super) fn resolve_data_set<'a>(data_set: &'a DataSet, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_data_set_references<'a>(data_set: &'a DataSet, context: &'a ResolverContext<'a>) {
     let actual_availability = context.current_availability();
     if context.has_examined_default_path(&data_set.string_path, data_set.define_availability) {
         context.insert_duplicated_identifier(data_set.identifier().span);

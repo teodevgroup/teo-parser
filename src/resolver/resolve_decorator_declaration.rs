@@ -4,7 +4,7 @@ use crate::resolver::resolve_argument_list_declaration::resolve_argument_list_de
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_decorator_declaration<'a>(decorator_declaration: &'a DecoratorDeclaration, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_decorator_declaration_references<'a>(decorator_declaration: &'a DecoratorDeclaration, context: &'a ResolverContext<'a>) {
     if let Some(generics_declaration) = decorator_declaration.generics_declaration() {
         resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = &decorator_declaration.generics_constraint() {

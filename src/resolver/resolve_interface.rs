@@ -7,7 +7,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_interface_declaration<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_interface_declaration_types<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&interface_declaration.string_path, interface_declaration.define_availability) {
         context.insert_duplicated_identifier(interface_declaration.identifier().span);
     }

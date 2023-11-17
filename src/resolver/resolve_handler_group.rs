@@ -11,7 +11,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_handler_group_types<'a>(
+pub(super) fn resolve_handler_group_references<'a>(
     handler_group: &'a HandlerGroupDeclaration,
     context: &'a ResolverContext<'a>
 ) {

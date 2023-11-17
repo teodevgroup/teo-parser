@@ -7,7 +7,7 @@ use crate::resolver::resolve_function_declaration::resolve_function_declaration;
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_struct_declaration<'a>(struct_declaration: &'a StructDeclaration, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_struct_declaration_types<'a>(struct_declaration: &'a StructDeclaration, context: &'a ResolverContext<'a>) {
     if context.has_examined_default_path(&struct_declaration.string_path, struct_declaration.define_availability) {
         context.insert_duplicated_identifier(struct_declaration.identifier().span);
     }

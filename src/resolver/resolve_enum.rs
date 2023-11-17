@@ -13,7 +13,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_enum<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_enum_types<'a>(r#enum: &'a Enum, context: &'a ResolverContext<'a>) {
     *r#enum.actual_availability.borrow_mut() = context.current_availability();
     if context.has_examined_default_path(&r#enum.string_path, r#enum.define_availability) {
         context.insert_duplicated_identifier(r#enum.identifier().span());

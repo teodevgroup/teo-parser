@@ -8,7 +8,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_config<'a>(config: &'a Config, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_config_references<'a>(config: &'a Config, context: &'a ResolverContext<'a>) {
     let availability = context.current_availability();
     *config.actual_availability.borrow_mut() = availability;
     for unattached_identifier in &config.unattached_identifiers {

@@ -6,7 +6,7 @@ use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_gen
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 
-pub(super) fn resolve_pipeline_item_declaration<'a>(pipeline_item_declaration: &'a PipelineItemDeclaration, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_pipeline_item_declaration_references<'a>(pipeline_item_declaration: &'a PipelineItemDeclaration, context: &'a ResolverContext<'a>) {
     if let Some(generics_declaration) = pipeline_item_declaration.generics_declaration() {
         resolve_generics_declaration(generics_declaration, &vec![], context);
         if let Some(generics_constraint) = pipeline_item_declaration.generics_constraint() {

@@ -12,7 +12,7 @@ use crate::resolver::resolve_model_shapes::resolve_model_shapes;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_model_info<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     let actual_availability = context.current_availability();
     *model.actual_availability.borrow_mut() = actual_availability;
     if context.has_examined_default_path(&model.string_path, model.define_availability) {
