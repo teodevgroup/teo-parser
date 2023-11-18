@@ -418,7 +418,7 @@ fn resolve_model_list_relation_filter(model: &Model) -> Type {
 }
 
 fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Type> {
-    let sort = context.schema.std_source().find_top_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let sort = context.schema.std_source().find_node_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -1527,7 +1527,7 @@ impl ShapeAvailableContext {
 }
 
 fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a ResolverContext<'a>) -> Type {
-    let interface = context.schema.std_source().find_top_by_string_path(
+    let interface = context.schema.std_source().find_node_by_string_path(
         &vec!["std", name],
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()

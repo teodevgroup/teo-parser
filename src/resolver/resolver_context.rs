@@ -33,6 +33,7 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) source: Mutex<Option<&'a Source>>,
     pub(crate) namespaces: Mutex<Vec<&'a Namespace>>,
     pub(crate) availabilities: Mutex<Vec<Availability>>,
+    pub(crate) resolving_dependencies: Mutex<Vec<Vec<usize>>>,
 }
 
 impl<'a> ResolverContext<'a> {
@@ -51,6 +52,7 @@ impl<'a> ResolverContext<'a> {
             source: Mutex::new(None),
             namespaces: Mutex::new(vec![]),
             availabilities: Mutex::new(vec![]),
+            resolving_dependencies: Mutex::new(vec![]),
         }
     }
 
@@ -296,10 +298,11 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(crate) fn alter_state_and_restore<F>(&self, source_id: usize, namespace_path: &Vec<usize>, job: F) where F: Fn(&Self) {
+    pub(crate) fn alter_state_and_restore<F>(&self, source_id: usize, namespace_path: &Vec<usize>, resolving_dependencies: Vec<Vec<usize>>, job: F) where F: Fn(&Self) {
         let source_to_restore = self.source();
         let availabilities_to_restore = self.availabilities.lock().unwrap().clone();
         let namespaces_to_restore = self.namespaces.lock().unwrap().clone();
+        let resolving_dependencies_to_restore = self.resolving_dependencies.lock().unwrap().clone();
         let new_source = self.schema.source(source_id).unwrap();
         self.start_source(new_source);
         for (index, namespace_id) in namespace_path.iter().enumerate() {
@@ -307,9 +310,11 @@ impl<'a> ResolverContext<'a> {
                 self.push_namespace(new_source.get_namespace(*namespace_id).unwrap());
             }
         }
+        *self.resolving_dependencies.lock().unwrap() = resolving_dependencies;
         job(self);
         *self.source.lock().unwrap() = Some(source_to_restore);
         *self.availabilities.lock().unwrap() = availabilities_to_restore;
         *self.namespaces.lock().unwrap() = namespaces_to_restore;
+        *self.resolving_dependencies.lock().unwrap() = resolving_dependencies_to_restore;
     }
 }

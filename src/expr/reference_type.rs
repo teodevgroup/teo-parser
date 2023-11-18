@@ -1,7 +1,7 @@
 #[derive(Copy, Clone, Debug)]
 pub enum ReferenceType {
     Config,
-    ConfigField,
+    DictionaryField,
     Constant,
     Enum,
     EnumMember,

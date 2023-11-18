@@ -126,7 +126,7 @@ fn resolve_struct_instance_for_unit<'a>(
     context: &'a ResolverContext<'a>,
     _keywords_map: &BTreeMap<Keyword, Type>,
 ) -> ExprInfo {
-    let Some(struct_definition) = context.source().find_top_by_string_path(
+    let Some(struct_definition) = context.source().find_node_by_string_path(
         struct_path,
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -209,7 +209,7 @@ fn resolve_enum_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let enum_declaration = context.source().find_top_by_string_path(
+    let enum_declaration = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -254,7 +254,7 @@ fn resolve_enum_variant_for_unit<'a>(
         context.insert_diagnostics_error(expression.span(), "invalid expression");
         return expression.resolve_and_return(ExprInfo::undetermined());
     }
-    let enum_declaration = context.source().find_top_by_string_path(
+    let enum_declaration = context.source().find_node_by_string_path(
         &current.r#type.as_enum_variant().unwrap().str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -295,7 +295,7 @@ fn resolve_config_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let config = context.source().find_top_by_string_path(
+    let config = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -321,7 +321,7 @@ fn resolve_model_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let model = context.source().find_top_by_string_path(
+    let model = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -348,7 +348,7 @@ fn resolve_interface_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let interface = context.source().find_top_by_string_path(
+    let interface = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -376,7 +376,7 @@ fn resolve_interface_object_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let interface = context.source().find_top_by_string_path(
+    let interface = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -408,7 +408,7 @@ fn resolve_struct_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_top_by_string_path(
+    let struct_declaration = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -451,7 +451,7 @@ fn resolve_struct_object_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_top_by_string_path(
+    let struct_declaration = context.source().find_node_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -479,7 +479,7 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_top_by_string_path(
+    let struct_declaration = context.source().find_node_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -516,7 +516,7 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_top_by_string_path(
+    let struct_declaration = context.source().find_node_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
@@ -552,7 +552,7 @@ fn resolve_middleware_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let middleware_declaration = context.source().find_top_by_string_path(
+    let middleware_declaration = context.source().find_node_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()

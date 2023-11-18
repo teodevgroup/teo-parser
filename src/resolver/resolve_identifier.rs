@@ -107,8 +107,7 @@ pub fn resolve_identifier_path_names_with_filter_to_expr_info(
         namespace_str_path,
         filter,
         availability,
-        Some(resolver_context),
-    ).map(|t| top_to_expr_info(t))
+    ).map(|t| top_to_expr_info(t, Some(resolver_context)))
 }
 
 pub fn resolve_identifier_path_names_with_filter_to_top<'a>(
@@ -118,7 +117,6 @@ pub fn resolve_identifier_path_names_with_filter_to_top<'a>(
     namespace_str_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-    resolver_context: Option<&ResolverContext>,
 ) -> Option<&'a Node> {
     let mut used_sources = vec![];
     let reference = resolve_identifier_path_names_in_source_to_top(
@@ -129,7 +127,6 @@ pub fn resolve_identifier_path_names_with_filter_to_top<'a>(
         &mut used_sources,
         namespace_str_path,
         availability,
-        resolver_context,
     );
     if reference.is_none() {
         for builtin_source in schema.builtin_sources() {
@@ -141,7 +138,6 @@ pub fn resolve_identifier_path_names_with_filter_to_top<'a>(
                 &mut used_sources,
                 &vec!["std"],
                 availability,
-                resolver_context,
             ) {
                 return Some(reference);
             }
@@ -158,7 +154,6 @@ fn resolve_identifier_path_names_in_source_to_top<'a>(
     used_sources: &mut Vec<usize>,
     ns_str_path: &Vec<&str>,
     availability: Availability,
-    resolver_context: Option<&ResolverContext>,
 ) -> Option<&'a Node> {
     if used_sources.contains(&source.id) {
         return None;
@@ -167,12 +162,12 @@ fn resolve_identifier_path_names_in_source_to_top<'a>(
     let mut ns_str_path_mut = ns_str_path.clone();
     loop {
         if ns_str_path_mut.is_empty() {
-            if let Some(top) = source.find_top_by_string_path(identifier_path_names, filter, availability) {
+            if let Some(top) = source.find_node_by_string_path(identifier_path_names, filter, availability) {
                 return Some(top);
             }
         } else {
             if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
-                if let Some(top) = ns.find_top_by_string_path(identifier_path_names, filter, availability) {
+                if let Some(top) = ns.find_node_by_string_path(identifier_path_names, filter, availability) {
                     return Some(top);
                 }
             }
@@ -188,7 +183,7 @@ fn resolve_identifier_path_names_in_source_to_top<'a>(
         if let Some(from_source) = schema.sources().iter().find(|source| {
             import.file_path.as_str() == source.file_path.as_str()
         }).map(|s| *s) {
-            if let Some(found) = resolve_identifier_path_names_in_source_to_top(identifier_path_names, schema, filter, from_source, used_sources, &ns_str_path, availability, resolver_context) {
+            if let Some(found) = resolve_identifier_path_names_in_source_to_top(identifier_path_names, schema, filter, from_source, used_sources, &ns_str_path, availability) {
                 return Some(found)
             }
         }
@@ -196,7 +191,7 @@ fn resolve_identifier_path_names_in_source_to_top<'a>(
     None
 }
 
-pub fn top_to_expr_info(top: &Node) -> ExprInfo {
+pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) -> ExprInfo {
     match top {
         Node::Import(_) => ExprInfo::undetermined(),
         Node::Config(c) => ExprInfo {
@@ -208,15 +203,32 @@ pub fn top_to_expr_info(top: &Node) -> ExprInfo {
                 None)
             ),
         },
-        Node::Constant(c) => ExprInfo {
-            r#type: c.resolved().r#type.clone(),
-            value: c.resolved().value.clone(),
+        Node::NamedExpression(n) => ExprInfo {
+            r#type: n.value().resolved().r#type.clone(),
+            value: n.value().resolved().value.clone(),
             reference_info: Some(ReferenceInfo::new(
-                ReferenceType::Constant,
-                Reference::new(c.path.clone(), c.string_path.clone()),
-                None)
-            ),
+                ReferenceType::DictionaryField,
+                Reference::new(n.path.clone(), vec![]),
+                None
+            ))
         },
+        Node::Constant(c) => if c.is_resolved() {
+            ExprInfo {
+                r#type: c.resolved().r#type.clone(),
+                value: c.resolved().value.clone(),
+                reference_info: Some(ReferenceInfo::new(
+                    ReferenceType::Constant,
+                    Reference::new(c.path.clone(), c.string_path.clone()),
+                    None)
+                ),
+            }
+        } else {
+            if let Some(resolver_context) = resolver_context {
+
+            } else {
+
+            }
+        }
         Node::Enum(e) => ExprInfo {
             r#type: Type::Undetermined,
             value: None,
