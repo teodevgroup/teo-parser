@@ -130,7 +130,7 @@ fn parse_data_set_group_record(pair: Pair<'_>, context: &ParserContext) -> DataS
         match current.as_rule() {
             Rule::RECORD_KEYWORD => parse_insert_keyword!(context, current, children, "record"),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
-            Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context), children, dictionary),
+            Rule::dictionary_literal => parse_set!(parse_dictionary_literal(current, context, false), children, dictionary),
             Rule::triple_comment_block => if !inside_block {
                 parse_set_optional!(parse_doc_comment(current, context), children, comment)
             } else {

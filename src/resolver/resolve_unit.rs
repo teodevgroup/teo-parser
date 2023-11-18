@@ -80,7 +80,7 @@ fn resolve_current_item_for_unit<'a>(
             Type::EnumReference(reference) => resolve_enum_reference_for_unit(reference, expression, context),
             Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
             Type::ConfigReference(reference) => resolve_config_reference_for_unit(reference, expression, context),
-            Type::ModelReference(reference) => resolve_model_reference_for_unit(reference, expression, context),
+            Type::ModelObject(reference) => resolve_model_reference_for_unit(reference, expression, context),
             Type::InterfaceReference(reference, types) => resolve_interface_reference_for_unit(reference, types, expression, context),
             Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
             Type::StructReference(reference, types) => resolve_struct_reference_for_unit(last_span.unwrap(), reference, types, expression, context),

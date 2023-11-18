@@ -328,6 +328,5 @@ impl<'a> ResolverContext<'a> {
         *self.source.lock().unwrap() = Some(source_to_restore);
         *self.availabilities.lock().unwrap() = availabilities_to_restore;
         *self.namespaces.lock().unwrap() = namespaces_to_restore;
-        *self.resolving_dependencies.lock().unwrap() = resolving_dependencies_to_restore;
     }
 }

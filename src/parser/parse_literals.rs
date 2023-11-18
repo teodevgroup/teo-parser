@@ -158,7 +158,7 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext, 
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
-            Rule::named_expression => parse_insert!(parse_named_expression(current, context), children, expressions),
+            Rule::named_expression => parse_insert!(parse_named_expression(current, context, is_config_field), children, expressions),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

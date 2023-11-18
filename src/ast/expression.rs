@@ -290,7 +290,7 @@ impl Expression {
     }
 
     pub fn named_key_without_resolving(&self) -> Option<&str> {
-        match &self.key().kind {
+        match &self.kind {
             ExpressionKind::StringLiteral(s) => Some(s.value.as_str()),
             ExpressionKind::Identifier(i) => Some(i.name()),
             _ => None,

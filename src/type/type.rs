@@ -172,10 +172,6 @@ pub enum Type {
     ///
     Middleware,
 
-    /// Middleware Reference
-    ///
-    MiddlewareReference(Reference),
-
     /// Data Set
     ///
     DataSet,
@@ -853,12 +849,11 @@ impl Type {
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
             Type::SynthesizedEnumVariantReference(r) => other.is_synthesized_enum_variant_reference() && r == other.as_synthesized_enum_variant_reference().unwrap(),
-            Type::Model => other.is_model() || other.is_model_reference(),
+            Type::Model => other.is_model(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
             Type::StructObject(r, types) => other.is_struct_object() && r == other.as_struct_object().unwrap().0 && other.as_struct_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_object().unwrap().1.get(index).unwrap())),
-            Type::Middleware => other.is_middleware() || other.is_middleware_reference(),
-            Type::MiddlewareReference(r) => other.is_middleware_reference() && r == other.as_middleware_reference().unwrap(),
+            Type::Middleware => other.is_middleware(),
             Type::DataSet => other.is_data_set(),
             Type::DataSetGroup(inner) => other.is_data_set_group() && inner.test(other.as_data_set_group().unwrap()),
             Type::DataSetRecord(a, b) => other.is_data_set_record() && a.test(other.as_data_set_record().unwrap().0) && b.test(other.as_data_set_record().unwrap().1),
@@ -1000,7 +995,6 @@ impl Display for Type {
                 f.write_str(&format!("{}<{}>", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
             },
             Type::Middleware => f.write_str("Middleware"),
-            Type::MiddlewareReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
             Type::DataSet => f.write_str("DataSet"),
             Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
             Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),

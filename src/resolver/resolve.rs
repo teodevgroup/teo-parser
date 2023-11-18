@@ -23,14 +23,6 @@ fn resolve_sources(context: &ResolverContext, sources: &Vec<&Source>) {
     }
     for source in sources {
         context.start_source(source);
-        resolve_source_references_second(&context);
-    }
-    for source in sources {
-        context.start_source(source);
-        resolve_source_references_check(&context);
-    }
-    for source in sources {
-        context.start_source(source);
         resolve_source_consumers(&context);
     }
 }

@@ -178,7 +178,7 @@ fn resolve_type_item<'a>(
     if base.is_none() {
         if let Some(resolved) = resolve_identifier_path(type_item.identifier_path(), context, ReferenceSpace::Default, availability) {
             base = match resolved.r#type() {
-                Type::ModelReference(r) => Some(Type::ModelObject(r.clone())),
+                Type::ModelObject(r) => Some(Type::ModelObject(r.clone())),
                 Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
                 Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), if let Some(generics) = type_item.generics() {
                     generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()

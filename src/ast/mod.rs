@@ -4,7 +4,6 @@ pub mod identifier;
 pub mod identifier_path;
 pub mod config_declaration;
 pub mod config;
-pub mod config_item;
 pub mod keyword;
 pub mod model;
 pub mod r#enum;

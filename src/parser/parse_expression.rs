@@ -43,7 +43,7 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &ParserContext) -> Unit {
             Rule::enum_variant_literal => parse_insert!(Expression::new(ExpressionKind::EnumVariantLiteral(parse_enum_variant_literal(current, context))), children, expressions),
             Rule::tuple_literal => parse_insert!(Expression::new(ExpressionKind::TupleLiteral(parse_tuple_literal(current, context))), children, expressions),
             Rule::array_literal => parse_insert!(Expression::new(ExpressionKind::ArrayLiteral(parse_array_literal(current, context))), children, expressions),
-            Rule::dictionary_literal => parse_insert!(Expression::new(ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context))), children, expressions),
+            Rule::dictionary_literal => parse_insert!(Expression::new(ExpressionKind::DictionaryLiteral(parse_dictionary_literal(current, context, false))), children, expressions),
             Rule::identifier => parse_insert!(Expression::new(ExpressionKind::Identifier(parse_identifier(&current, context))), children, expressions),
             Rule::subscript => parse_insert!(Expression::new(ExpressionKind::Subscript(parse_subscript(current, context))), children, expressions),
             Rule::int_subscript => parse_insert!(Expression::new(ExpressionKind::IntSubscript(parse_int_subscript(current, context))), children, expressions),

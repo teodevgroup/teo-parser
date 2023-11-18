@@ -299,7 +299,7 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
     t.replace_field_type(|container: &Type, reference: &Type| {
         if let Some(field_name) = reference.as_field_name() {
             match container {
-                Type::ModelReference(reference) => {
+                Type::ModelObject(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
                     let field = model.fields().find(|f| f.identifier().name() == field_name).unwrap();
                     field.type_expr().resolved().clone()
