@@ -10,20 +10,6 @@ use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 
-// match self.r#type() {
-// Type::InterfaceReference(r, _) => Some(r.path()),
-// Type::InterfaceFieldReference(r, _) => Some(r.path()),
-// Type::StructReference(r, _) => Some(r.path()),
-// Type::StructStaticFunctionReference(r, _) => Some(r.path()),
-// Type::StructInstanceFunctionReference(r, _) => Some(r.path()),
-// Type::FunctionReference(r) => Some(r.path()),
-// Type::DataSetReference(_r) => None,
-// Type::NamespaceReference(_r) => None,
-// Type::DecoratorReference(r) => Some(r.path()),
-// Type::PipelineItemReference(r) => Some(r.path()),
-// _ => None,
-// }
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
 
