@@ -19,18 +19,18 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
     context: &'a ResolverContext<'a>,
     expected: &Type,
     keywords_map: &BTreeMap<Keyword, Type>,
-) -> TypeAndValue {
+) -> ExprInfo {
     if unit.expressions.len() == 1 {
         return resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map);
     }
-    let mut current: Option<TypeAndValue> = None;
+    let mut current: Option<ExprInfo> = None;
     for (index, expression) in unit.expressions().enumerate() {
         current = Some(resolve_current_item_for_unit(
             if index == 0 { None } else { Some(unit.expression_at(index - 1).unwrap().span()) },
@@ -43,22 +43,22 @@ pub(super) fn resolve_unit<'a>(
             return current.as_ref().unwrap().clone();
         }
     }
-    current.unwrap_or(TypeAndValue::undetermined())
+    current.unwrap_or(ExprInfo::undetermined())
 }
 
 fn resolve_current_item_for_unit<'a>(
     last_span: Option<Span>,
-    current: Option<&TypeAndValue>,
+    current: Option<&ExprInfo>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
     keywords_map: &BTreeMap<Keyword, Type>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let expected = Type::Undetermined;
     if let Some(current) = current {
         match current.r#type() {
             Type::Optional(inner) => {
                 context.insert_diagnostics_error(expression.span(), "value may be null");
-                resolve_current_item_for_unit(last_span, Some(&current.with_type(inner.as_ref().clone())), expression, context, keywords_map)
+                resolve_current_item_for_unit(last_span, Some(&current.type_altered(inner.as_ref().clone())), expression, context, keywords_map)
             }
             Type::Null => resolve_builtin_struct_instance_for_unit("Null", &vec![], current, last_span, expression, context, keywords_map),
             Type::Bool => resolve_builtin_struct_instance_for_unit("Bool", &vec![], current, last_span, expression, context, keywords_map),
@@ -90,7 +90,7 @@ fn resolve_current_item_for_unit<'a>(
             Type::FunctionReference(_) => todo!(),
             Type::MiddlewareReference(reference) => resolve_middleware_reference_for_unit(last_span.unwrap(), reference, expression, context),
             Type::NamespaceReference(string_path) => resolve_namespace_reference_for_unit(string_path, expression, context),
-            _ => TypeAndValue::undetermined(),
+            _ => ExprInfo::undetermined(),
         }
     } else {
         resolve_expression(expression, context, &expected, keywords_map)
@@ -100,12 +100,12 @@ fn resolve_current_item_for_unit<'a>(
 fn resolve_builtin_struct_instance_for_unit<'a>(
     struct_name: &str,
     gens: &Vec<&Type>,
-    current: &TypeAndValue,
+    current: &ExprInfo,
     last_span: Option<Span>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
     keywords_map: &BTreeMap<Keyword, Type>,
-) -> TypeAndValue {
+) -> ExprInfo {
     resolve_struct_instance_for_unit(
         &vec!["std", struct_name],
         gens,
@@ -120,12 +120,12 @@ fn resolve_builtin_struct_instance_for_unit<'a>(
 fn resolve_struct_instance_for_unit<'a>(
     struct_path: &Vec<&str>,
     gens: &Vec<&Type>,
-    current: &TypeAndValue,
+    current: &ExprInfo,
     last_span: Option<Span>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
     _keywords_map: &BTreeMap<Keyword, Type>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let Some(struct_definition) = context.source().find_top_by_string_path(
         struct_path,
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -136,24 +136,24 @@ fn resolve_struct_instance_for_unit<'a>(
         } else {
             expression.span()
         }, "undefined struct");
-        return expression.resolve_and_return(TypeAndValue::undetermined());
+        return expression.resolve_and_return(ExprInfo::undetermined());
     };
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             let Some(instance_function) = struct_definition.instance_function(identifier.name()) else {
                 context.insert_diagnostics_error(expression.span(), "undefined instance function");
-                return expression.resolve_and_return(TypeAndValue::undetermined());
+                return expression.resolve_and_return(ExprInfo::undetermined());
             };
-            TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(instance_function.path.clone(), instance_function.string_path.clone()), gens.iter().map(Clone::clone).map(Clone::clone).collect()))
+            ExprInfo::type_only(Type::StructInstanceFunctionReference(Reference::new(instance_function.path.clone(), instance_function.string_path.clone()), gens.iter().map(Clone::clone).map(Clone::clone).collect()))
         },
         ExpressionKind::Subscript(subscript) => {
             let Some(subscript_function) = struct_definition.instance_function("subscript") else {
                 context.insert_diagnostics_error(expression.span(), format!("{} is not subscriptable", current.r#type()));
-                return expression.resolve_and_return(TypeAndValue::undetermined());
+                return expression.resolve_and_return(ExprInfo::undetermined());
             };
             let argument_list_declaration = subscript_function.argument_list_declaration();
             if argument_list_declaration.argument_declarations.len() != 1 {
-                return expression.resolve_and_return(TypeAndValue::undetermined());
+                return expression.resolve_and_return(ExprInfo::undetermined());
             }
             let mut map = calculate_generics_map(struct_definition.generics_declaration(), &current.r#type.generic_types());
             let argument_declaration = argument_list_declaration.argument_declarations().next().unwrap();
@@ -167,26 +167,26 @@ fn resolve_struct_instance_for_unit<'a>(
                 }
             }
             let return_type = subscript_function.return_type().resolved().replace_generics(&map);
-            TypeAndValue::type_only(return_type)
+            ExprInfo::type_only(return_type)
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
     })
 }
 
 fn resolve_tuple_for_unit<'a>(
     types: &Vec<Type>,
-    current: &TypeAndValue,
+    current: &ExprInfo,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::IntSubscript(int_subscript) => {
             if int_subscript.index >= types.len() {
                 context.insert_diagnostics_error(expression.span(), "index out of bounds");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             } else {
                 let t = types.get(int_subscript.index).unwrap().clone();
                 let v = if let Some(v) = &current.value {
@@ -194,12 +194,12 @@ fn resolve_tuple_for_unit<'a>(
                 } else {
                     None
                 };
-                TypeAndValue::new(t, v)
+                ExprInfo::new(t, v)
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
     })
 }
@@ -208,7 +208,7 @@ fn resolve_enum_reference_for_unit<'a>(
     reference: &Reference,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let enum_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -217,7 +217,7 @@ fn resolve_enum_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(m) = enum_declaration.members().find(|m| m.identifier().name() == identifier.name()) {
-                TypeAndValue::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
+                ExprInfo::new(Type::EnumVariant(reference.clone()), Some(if enum_declaration.option {
                     Value::OptionVariant(OptionVariant {
                         value: m.resolved().as_int().unwrap(),
                         display: format!(".{}", identifier.name()),
@@ -230,29 +230,29 @@ fn resolve_enum_reference_for_unit<'a>(
                 }))
             } else {
                 context.insert_diagnostics_error(expression.span(), "enum member not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
     })
 }
 
 fn resolve_enum_variant_for_unit<'a>(
     last_span: Span,
-    current: &TypeAndValue,
+    current: &ExprInfo,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let Some(value) = current.value().map(|v| v.as_enum_variant()).flatten() else {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(TypeAndValue::undetermined());
+        return expression.resolve_and_return(ExprInfo::undetermined());
     };
     if value.args.is_some() {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(TypeAndValue::undetermined());
+        return expression.resolve_and_return(ExprInfo::undetermined());
     }
     let enum_declaration = context.source().find_top_by_string_path(
         &current.r#type.as_enum_variant().unwrap().str_path(),
@@ -274,19 +274,19 @@ fn resolve_enum_variant_for_unit<'a>(
                 let args = argument_list.arguments().map(|argument| {
                     Some((argument.resolved_name()?.to_string(), argument.value().resolved().value.clone()?))
                 }).collect::<Option<BTreeMap<String, Value>>>();
-                expression.resolve_and_return(TypeAndValue::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
+                expression.resolve_and_return(ExprInfo::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
                     value: value.value.clone(),
                     args: Some(args),
                 }))))
             },
             _ => {
                 context.insert_diagnostics_error(expression.span(), "invalid expression");
-                return expression.resolve_and_return(TypeAndValue::undetermined());
+                return expression.resolve_and_return(ExprInfo::undetermined());
             }
         }
     } else {
         context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(TypeAndValue::undetermined());
+        return expression.resolve_and_return(ExprInfo::undetermined());
     }
 }
 
@@ -294,7 +294,7 @@ fn resolve_config_reference_for_unit<'a>(
     reference: &Reference,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let config = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -306,12 +306,12 @@ fn resolve_config_reference_for_unit<'a>(
                 item.1.resolved().clone()
             } else {
                 context.insert_diagnostics_error(expression.span(), "config item not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -320,7 +320,7 @@ fn resolve_model_reference_for_unit<'a>(
     reference: &Reference,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let model = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -329,15 +329,15 @@ fn resolve_model_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = model.fields().find(|item| item.identifier().name() == identifier.name()) {
-                TypeAndValue::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
+                ExprInfo::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
             } else {
                 context.insert_diagnostics_error(expression.span(), "model field not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -347,7 +347,7 @@ fn resolve_interface_reference_for_unit<'a>(
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let interface = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -356,26 +356,26 @@ fn resolve_interface_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields().find(|item| item.identifier().name() == identifier.name()) {
-                TypeAndValue::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
+                ExprInfo::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
 
 fn resolve_interface_object_for_unit<'a>(
     reference: &Reference,
-    current: &TypeAndValue,
+    current: &ExprInfo,
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let interface = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -385,18 +385,18 @@ fn resolve_interface_object_for_unit<'a>(
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields().find(|item| item.identifier().name() == identifier.name()) {
                 let map = calculate_generics_map(interface.generics_declaration(), types);
-                TypeAndValue::new(
+                ExprInfo::new(
                     item.type_expr().resolved().replace_generics(&map),
                     current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
                 )
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -407,7 +407,7 @@ fn resolve_struct_reference_for_unit<'a>(
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -416,10 +416,10 @@ fn resolve_struct_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.static_function(identifier.name()) {
-                TypeAndValue::type_only(Type::StructStaticFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+                ExprInfo::type_only(Type::StructStaticFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct static function not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         ExpressionKind::ArgumentList(argument_list) => {
@@ -432,15 +432,15 @@ fn resolve_struct_reference_for_unit<'a>(
                     context,
                     None
                 );
-                TypeAndValue::type_only(Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), types.clone()))
+                ExprInfo::type_only(Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), types.clone()))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct initializer not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -450,7 +450,7 @@ fn resolve_struct_object_for_unit<'a>(
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -459,15 +459,15 @@ fn resolve_struct_object_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.instance_function(identifier.name()) {
-                TypeAndValue::type_only(Type::StructInstanceFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+                ExprInfo::type_only(Type::StructInstanceFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct instance function not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -478,7 +478,7 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -496,15 +496,15 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
                     None
                 );
                 let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
-                TypeAndValue::type_only(function.return_type().resolved().replace_generics(&map))
+                ExprInfo::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct static function not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -515,7 +515,7 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
     types: &Vec<Type>,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let struct_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -533,15 +533,15 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
                     None
                 );
                 let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
-                TypeAndValue::type_only(function.return_type().resolved().replace_generics(&map))
+                ExprInfo::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct instance function not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -551,7 +551,7 @@ fn resolve_middleware_reference_for_unit<'a>(
     reference: &Reference,
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     let middleware_declaration = context.source().find_top_by_string_path(
         &reference.str_path_without_last(1),
         &top_filter_for_reference_type(ReferenceSpace::Default),
@@ -567,11 +567,11 @@ fn resolve_middleware_reference_for_unit<'a>(
                 context,
                 None
             );
-            TypeAndValue::type_only(Type::Middleware)
+            ExprInfo::type_only(Type::Middleware)
         }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }
@@ -580,7 +580,7 @@ fn resolve_namespace_reference_for_unit(
     string_path: &Vec<String>,
     expression: &Expression,
     context: &ResolverContext,
-) -> TypeAndValue {
+) -> ExprInfo {
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             let mut names: Vec<&str> = string_path.iter().map(AsRef::as_ref).collect();
@@ -596,12 +596,12 @@ fn resolve_namespace_reference_for_unit(
                 result
             } else {
                 context.insert_diagnostics_error(expression.span(), "identifier not found");
-                TypeAndValue::undetermined()
+                ExprInfo::undetermined()
             }
         }
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     })
 }

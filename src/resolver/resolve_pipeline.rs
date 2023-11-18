@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::span::Span;
 use crate::ast::type_info::TypeInfo;
@@ -12,7 +12,7 @@ use crate::search::search_identifier_path::search_identifier_path_names_with_fil
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
-pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> TypeAndValue {
+pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -28,7 +28,7 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
     } else {
         &undetermined
     };
-    TypeAndValue {
+    ExprInfo {
         r#type: resolve_pipeline_unit(pipeline.span, pipeline.unit(), context, r#type, keywords_map),
         value: None,
     }

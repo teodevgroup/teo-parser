@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::availability::Availability;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::node::Node;
@@ -15,12 +15,12 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
     identifier: &Identifier,
     context: &'a ResolverContext<'a>,
-) -> TypeAndValue {
+) -> ExprInfo {
     if let Some(result) = resolve_identifier(identifier, context, ReferenceSpace::Default, context.current_availability()) {
         result
     } else {
         context.insert_diagnostics_error(identifier.span, "undefined identifier");
-        TypeAndValue::undetermined()
+        ExprInfo::undetermined()
     }
 }
 
@@ -29,7 +29,7 @@ pub(super) fn resolve_identifier(
     context: &ResolverContext,
     reference_type: ReferenceSpace,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<ExprInfo> {
     resolve_identifier_with_filter(
         identifier,
         context,
@@ -43,7 +43,7 @@ pub(super) fn resolve_identifier_with_filter(
     context: &ResolverContext,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<ExprInfo> {
     search_identifier_path_names_with_filter_to_type_and_value(
         &vec![identifier.name()],
         context.schema,
@@ -59,7 +59,7 @@ pub(super) fn resolve_identifier_path(
     context: &ResolverContext,
     reference_type: ReferenceSpace,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<ExprInfo> {
     resolve_identifier_path_with_filter(
         identifier_path,
         context,
@@ -73,7 +73,7 @@ pub(super) fn resolve_identifier_path_with_filter(
     context: &ResolverContext,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<ExprInfo> {
     search_identifier_path_names_with_filter_to_type_and_value(
         &identifier_path.names(),
         context.schema,

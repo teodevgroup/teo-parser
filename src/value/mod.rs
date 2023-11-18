@@ -1,15 +1,18 @@
 use teo_teon::Value;
+use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 
 #[derive(Debug, Clone)]
-pub struct TypeAndValue {
+pub struct ExprInfo {
     pub r#type: Type,
     pub value: Option<Value>,
+    pub reference: Option<Reference>,
+    pub generics: Option<Vec<Type>>,
 }
 
-impl TypeAndValue {
-    pub fn new(r#type: Type, value: Option<Value>) -> Self {
-        Self { r#type, value }
+impl ExprInfo {
+    pub fn new(r#type: Type, value: Option<Value>, reference: Option<Reference>, generics: Option<Vec<Type>>) -> Self {
+        Self { r#type, value, reference, generics, }
     }
 
     pub fn r#type(&self) -> &Type {
@@ -20,56 +23,46 @@ impl TypeAndValue {
         self.value.as_ref()
     }
 
+    pub fn reference(&self) -> Option<&Reference> {
+        self.reference.as_ref()
+    }
+
+    pub fn generics(&self) -> Option<&Vec<Type>> {
+        self.generics.as_ref()
+    }
+
     pub fn is_undetermined(&self) -> bool {
         self.r#type().is_undetermined()
     }
 
     pub fn undetermined() -> Self {
-        TypeAndValue {
+        ExprInfo {
             r#type: Type::Undetermined,
             value: None,
+            reference: None,
+            generics: None,
         }
     }
 
-    pub fn with_type(&self, new_type: Type) -> Self {
-        TypeAndValue {
+    pub fn type_altered(&self, new_type: Type) -> Self {
+        ExprInfo {
             r#type: new_type,
-            value: self.value.clone()
-        }
-    }
-
-    pub fn with_value(&self, new_value: Option<Value>) -> Self {
-        TypeAndValue {
-            r#type: self.r#type.clone(),
-            value: new_value,
+            value: self.value.clone(),
+            reference: self.reference.clone(),
+            generics: self.generics.clone(),
         }
     }
 
     pub fn type_only(t: Type) -> Self {
-        TypeAndValue {
+        ExprInfo {
             r#type: t,
-            value: None
+            value: None,
+            reference: None,
+            generics: None,
         }
     }
 
     pub fn as_path(&self) -> Option<&Vec<usize>> {
-        match self.r#type() {
-            Type::EnumReference(r) => Some(r.path()),
-            Type::ConfigReference(r) => Some(r.path()),
-            Type::ModelReference(r) => Some(r.path()),
-            Type::ModelFieldReference(r) => Some(r.path()),
-            Type::InterfaceReference(r, _) => Some(r.path()),
-            Type::InterfaceFieldReference(r, _) => Some(r.path()),
-            Type::StructReference(r, _) => Some(r.path()),
-            Type::StructStaticFunctionReference(r, _) => Some(r.path()),
-            Type::StructInstanceFunctionReference(r, _) => Some(r.path()),
-            Type::FunctionReference(r) => Some(r.path()),
-            Type::MiddlewareReference(r) => Some(r.path()),
-            Type::DataSetReference(_r) => None,
-            Type::NamespaceReference(_r) => None,
-            Type::DecoratorReference(r) => Some(r.path()),
-            Type::PipelineItemReference(r) => Some(r.path()),
-            _ => None,
-        }
+        self.reference().map(|r| r.path())
     }
 }

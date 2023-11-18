@@ -24,15 +24,15 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 
-pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> TypeAndValue {
+pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
     let t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);
     expression.resolve(t.clone());
     t
 }
 
-fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),
         ExpressionKind::ArithExpr(e) => resolve_arith_expr(e, context, expected, keywords_map),
@@ -56,11 +56,11 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
     }
 }
 
-fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_group<'a>(group: &'a Group, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     resolve_expression(group.expression(), context, expected, keywords_map)
 }
 
-fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> ExprInfo {
     let mut expected = expected;
     if expected.is_optional() {
         expected = expected.unwrap_optional();
@@ -77,17 +77,17 @@ fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<
     };
     match expected {
         Type::Undetermined => if n.value.is_int64() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Int64,
                 value: Some(n.value.clone()),
             }
         } else if n.value.is_int() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Int,
                 value: Some(n.value.clone()),
             }
         } else if n.value.is_float() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Float,
                 value: Some(n.value.clone()),
             }
@@ -95,82 +95,82 @@ fn resolve_numeric_literal<'a>(n: &NumericLiteral, context: &'a ResolverContext<
             unreachable!()
         },
         Type::Int => if n.value.is_any_int() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Int,
                 value: Some(Value::Int(n.value.to_int().unwrap())),
             }
         } else {
             context.insert_diagnostics_error(n.span, "value is not int");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
         Type::Int64 => if n.value.is_any_int() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Int64,
                 value: Some(Value::Int64(n.value.to_int64().unwrap())),
             }
         } else {
             context.insert_diagnostics_error(n.span, "value is not int64");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
         Type::Float32 => if n.value.is_any_float() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Float32,
                 value: Some(Value::Float32(n.value.to_float32().unwrap())),
             }
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
         Type::Float => if n.value.is_any_float() {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::Float,
                 value: Some(Value::Float(n.value.to_float().unwrap())),
             }
         } else {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         },
         _ => {
             context.insert_diagnostics_error(n.span, "ValueError: value is of wrong type");
-            TypeAndValue::undetermined()
+            ExprInfo::undetermined()
         }
     }
 }
 
-fn resolve_string_literal<'a>(s: &StringLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
-    TypeAndValue {
+fn resolve_string_literal<'a>(s: &StringLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> ExprInfo {
+    ExprInfo {
         r#type: Type::String,
         value: Some(Value::String(s.value.clone())),
     }
 }
 
-fn resolve_regex_literal<'a>(r: &RegexLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
-    TypeAndValue {
+fn resolve_regex_literal<'a>(r: &RegexLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> ExprInfo {
+    ExprInfo {
         r#type: Type::Regex,
         value: Some(Value::Regex(r.value.clone())),
     }
 }
 
-fn resolve_bool_literal<'a>(r: &BoolLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
-    TypeAndValue {
+fn resolve_bool_literal<'a>(r: &BoolLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> ExprInfo {
+    ExprInfo {
         r#type: Type::Bool,
         value: Some(Value::Bool(r.value)),
     }
 }
 
-fn resolve_null_literal<'a>(_n: &NullLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> TypeAndValue {
-    TypeAndValue {
+fn resolve_null_literal<'a>(_n: &NullLiteral, _context: &'a ResolverContext<'a>, _expected: &Type) -> ExprInfo {
+    ExprInfo {
         r#type: Type::Null,
         value: Some(Value::Null),
     }
 }
 
-pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> TypeAndValue {
+pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> ExprInfo {
     if let Some(enum_reference) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_reference.path()).unwrap().as_enum().unwrap();
         let Some(member) = r#enum.members().find(|m| m.identifier().name() == e.identifier().name()) else {
             context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", enum_reference.string_path().join("."), e.identifier().name()));
-            return TypeAndValue {
+            return ExprInfo {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: None,
             }
@@ -193,14 +193,14 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 );
             } else {
                 context.insert_diagnostics_error(e.span, format!("expect argument list"));
-                return TypeAndValue {
+                return ExprInfo {
                     r#type: Type::EnumVariant(enum_reference.clone()),
                     value: None,
                 }
             }
         }
         if r#enum.option {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::OptionVariant(OptionVariant {
                     value: member.resolved().as_int().unwrap(),
@@ -208,7 +208,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 }))
             }
         } else {
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::EnumVariant(EnumVariant {
                     value: member.resolved().as_str().unwrap().to_string(),
@@ -223,23 +223,23 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
             resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
         } else {
             context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier().name()));
-            TypeAndValue {
+            ExprInfo {
                 r#type: Type::SynthesizedEnumReference(reference.clone()),
                 value: None
             }
         }
     } else {
         context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
-        TypeAndValue {
+        ExprInfo {
             r#type: expected.clone(),
             value: None
         }
     }
 }
 
-fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>) -> TypeAndValue {
+fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>) -> ExprInfo {
     if synthesized_enum.keys.contains(&e.identifier().name) {
-        TypeAndValue {
+        ExprInfo {
             r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
             value: Some(Value::EnumVariant(EnumVariant {
                 value: e.identifier().name().to_string(),
@@ -248,14 +248,14 @@ fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral
         }
     } else {
         context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier().name()));
-        TypeAndValue {
+        ExprInfo {
             r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
             value: None
         }
     }
 }
 
-fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     let types = expected.as_tuple();
     let mut retval_values = vec![];
     let mut retval_type = vec![];
@@ -270,13 +270,13 @@ fn resolve_tuple_literal<'a>(t: &'a TupleLiteral, context: &'a ResolverContext<'
         }
         retval_type.push(resolved.r#type);
     }
-    TypeAndValue {
+    ExprInfo {
         r#type: Type::Tuple(retval_type),
         value: if unresolved { None } else { Some(Value::Tuple(retval_values)) }
     }
 }
 
-fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     if expected.is_optional() {
         expected = expected.unwrap_optional();
     }
@@ -312,13 +312,13 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     } else {
         Type::Array(Box::new(Type::Union(retval.iter().map(|t| t.clone()).collect())))
     };
-    TypeAndValue {
+    ExprInfo {
         r#type: new_type,
         value: if unresolved { None } else { Some(Value::Array(retval_values)) }
     }
 }
 
-pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     let undetermined = Type::Undetermined;
     let r#type = if let Some(v) = expected.as_dictionary() {
         v
@@ -352,13 +352,13 @@ pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: 
     } else {
         Type::Dictionary(Box::new(Type::Union(retval.iter().map(|t| t.clone()).collect())))
     };
-    TypeAndValue {
+    ExprInfo {
         r#type: new_type,
         value: if unresolved { None } else { Some(Value::Dictionary(retval_values)) }
     }
 }
 
-fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     match arith_expr {
         ArithExpr::Expression(e) => resolve_expression(e.as_ref(), context, expected, keywords_map),
         ArithExpr::UnaryOperation(unary) => {
@@ -367,31 +367,31 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                 match unary.op {
                     ArithExprOperator::Neg => {
                         match v.r#type() {
-                            Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => TypeAndValue {
+                            Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => ExprInfo {
                                 r#type: v.r#type.clone(),
                                 value: if let Some(v) = v.value { Some(v.neg().unwrap()) } else { None }
                             },
                             _ => {
                                 context.insert_diagnostics_error(unary.span, "invalid expression");
-                                TypeAndValue {
+                                ExprInfo {
                                     r#type: Type::Undetermined,
                                     value: None,
                                 }
                             }
                         }
                     }
-                    ArithExprOperator::Not => TypeAndValue {
+                    ArithExprOperator::Not => ExprInfo {
                         r#type: Type::Bool,
                         value: if let Some(v) = v.value { Some(v.normal_not()) } else { None }
                     },
                     ArithExprOperator::BitNeg => match v.r#type() {
-                        Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => TypeAndValue {
+                        Type::Int | Type::Int64 | Type::Float | Type::Float32 | Type::Decimal => ExprInfo {
                             r#type: v.r#type.clone(),
                             value: if let Some(v) = v.value { Some(v.not().unwrap()) } else { None }
                         },
                         _ => {
                             context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
-                            TypeAndValue {
+                            ExprInfo {
                                 r#type: Type::Undetermined,
                                 value: None,
                             }
@@ -405,7 +405,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
         }
         ArithExpr::UnaryPostfixOperation(unary) => {
             let v = resolve_arith_expr(unary.lhs(), context, expected, keywords_map);
-            TypeAndValue {
+            ExprInfo {
                 r#type: v.r#type.unwrap_optional().clone(),
                 value: v.value
             }
@@ -503,7 +503,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                     _ => unreachable!()
                 })
             };
-            TypeAndValue {
+            ExprInfo {
                 r#type: new_type,
                 value: new_value,
             }
@@ -544,15 +544,15 @@ fn build_range_value(lhs: &Value, rhs: &Value, closed: bool) -> Value {
     })
 }
 
-pub(super) fn resolve_expression_for_named_expression_key<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+pub(super) fn resolve_expression_for_named_expression_key<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::StringLiteral(s) => resolve_string_literal(s, context, expected),
-        ExpressionKind::Identifier(i) => TypeAndValue::new(Type::String, Some(Value::String(i.name.clone()))),
+        ExpressionKind::Identifier(i) => ExprInfo::new(Type::String, Some(Value::String(i.name.clone()))),
         ExpressionKind::BracketExpression(e) => resolve_bracket_expression(e, context, expected, keywords_map),
         _ => unreachable!(),
     })
 }
 
-fn resolve_bracket_expression<'a>(bracket_expression: &'a BracketExpression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> TypeAndValue {
+fn resolve_bracket_expression<'a>(bracket_expression: &'a BracketExpression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     resolve_expression(bracket_expression.expression(), context, expected, keywords_map)
 }

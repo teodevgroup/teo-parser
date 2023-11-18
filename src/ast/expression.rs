@@ -19,7 +19,7 @@ use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::traits::write::Write;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 
 #[derive(Debug)]
 pub enum ExpressionKind {
@@ -272,7 +272,7 @@ impl Display for ExpressionKind {
 #[derive(Debug)]
 pub struct Expression {
     pub kind: ExpressionKind,
-    pub resolved: RefCell<Option<TypeAndValue>>,
+    pub resolved: RefCell<Option<ExprInfo>>,
 }
 
 impl Expression {
@@ -313,8 +313,8 @@ impl NodeTrait for Expression {
     }
 }
 
-impl Resolve<TypeAndValue> for Expression {
-    fn resolved_ref_cell(&self) -> &RefCell<Option<TypeAndValue>> {
+impl Resolve<ExprInfo> for Expression {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<ExprInfo>> {
         &self.resolved
     }
 }
@@ -436,4 +436,4 @@ impl From<Expression> for Node {
     }
 }
 
-impl ResolveAndClone<TypeAndValue> for Expression { }
+impl ResolveAndClone<ExprInfo> for Expression { }

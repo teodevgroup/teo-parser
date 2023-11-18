@@ -10,6 +10,20 @@ use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 
+// match self.r#type() {
+// Type::InterfaceReference(r, _) => Some(r.path()),
+// Type::InterfaceFieldReference(r, _) => Some(r.path()),
+// Type::StructReference(r, _) => Some(r.path()),
+// Type::StructStaticFunctionReference(r, _) => Some(r.path()),
+// Type::StructInstanceFunctionReference(r, _) => Some(r.path()),
+// Type::FunctionReference(r) => Some(r.path()),
+// Type::DataSetReference(_r) => None,
+// Type::NamespaceReference(_r) => None,
+// Type::DecoratorReference(r) => Some(r.path()),
+// Type::PipelineItemReference(r) => Some(r.path()),
+// _ => None,
+// }
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
 
@@ -141,10 +155,6 @@ pub enum Type {
     ///
     Enum,
 
-    /// Enum Reference
-    ///
-    EnumReference(Reference),
-
     /// Enum Variant
     ///
     EnumVariant(Reference),
@@ -161,30 +171,28 @@ pub enum Type {
     ///
     SynthesizedEnumVariantReference(SynthesizedEnumReference),
 
-    ConfigReference(Reference),
+    /// Config
+    ///
+    Config,
 
     /// Model
     ///
     Model,
 
-    /// Model Reference
+    /// Model Field
     ///
-    ModelReference(Reference),
-
-    /// Model Field Reference
-    ///
-    ModelFieldReference(Reference),
+    ModelField,
 
     /// Model Object
     ModelObject(Reference),
 
     /// Interface
     ///
-    InterfaceReference(Reference, Vec<Type>),
+    Interface,
 
-    /// Interface Field Reference
+    /// Interface Field
     ///
-    InterfaceFieldReference(Reference, Vec<Type>),
+    InterfaceField,
 
     /// Interface Object
     ///
@@ -192,7 +200,7 @@ pub enum Type {
 
     /// Struct
     ///
-    StructReference(Reference, Vec<Type>),
+    Struct,
 
     /// Struct Object
     ///
@@ -200,17 +208,17 @@ pub enum Type {
 
     /// Struct Static Function
     ///
-    StructStaticFunctionReference(Reference, Vec<Type>),
+    StructStaticFunction,
 
     /// Struct Static Function
     ///
-    StructInstanceFunctionReference(Reference, Vec<Type>),
+    StructInstanceFunction,
 
     /// Function
     ///
     /// These functions are declared outside of structs
     ///
-    FunctionReference(Reference),
+    Function,
 
     /// Middleware
     ///
@@ -527,17 +535,6 @@ impl Type {
         }
     }
 
-    pub fn is_enum_reference(&self) -> bool {
-        self.as_enum_reference().is_some()
-    }
-
-    pub fn as_enum_reference(&self) -> Option<&Reference> {
-        match self {
-            Type::EnumReference(a) => Some(a),
-            _ => None,
-        }
-    }
-
     pub fn is_enum_variant(&self) -> bool {
         self.as_enum_variant().is_some()
     }
@@ -582,14 +579,10 @@ impl Type {
         }
     }
 
-    pub fn is_config_reference(&self) -> bool {
-        self.as_config_reference().is_some()
-    }
-
-    pub fn as_config_reference(&self) -> Option<&Reference> {
+    pub fn is_config(&self) -> bool {
         match self {
-            Type::ConfigReference(r) => Some(r),
-            _ => None,
+            Type::Config => true,
+            _ => false,
         }
     }
 
@@ -600,25 +593,10 @@ impl Type {
         }
     }
 
-    pub fn is_model_reference(&self) -> bool {
-        self.as_model_reference().is_some()
-    }
-
-    pub fn as_model_reference(&self) -> Option<&Reference> {
+    pub fn is_model_field(&self) -> bool {
         match self {
-            Type::ModelReference(r) => Some(r),
-            _ => None,
-        }
-    }
-
-    pub fn is_model_field_reference(&self) -> bool {
-        self.as_model_field_reference().is_some()
-    }
-
-    pub fn as_model_field_reference(&self) -> Option<&Reference> {
-        match self {
-            Type::ModelFieldReference(r) => Some(r),
-            _ => None,
+            Type::ModelField => true,
+            _ => false,
         }
     }
 
@@ -633,25 +611,17 @@ impl Type {
         }
     }
 
-    pub fn is_interface_reference(&self) -> bool {
-        self.as_interface_reference().is_some()
-    }
-
-    pub fn as_interface_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+    pub fn is_interface(&self) -> bool {
         match self {
-            Type::InterfaceReference(r, g) => Some((r, g)),
-            _ => None,
+            Type::Interface => true,
+            _ => false,
         }
     }
 
-    pub fn is_interface_field_reference(&self) -> bool {
-        self.as_interface_field_reference().is_some()
-    }
-
-    pub fn as_interface_field_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+    pub fn is_interface_field(&self) -> bool {
         match self {
-            Type::InterfaceFieldReference(r, g) => Some((r, g)),
-            _ => None,
+            Type::InterfaceField => true,
+            _ => false,
         }
     }
 
@@ -666,14 +636,10 @@ impl Type {
         }
     }
 
-    pub fn is_struct_reference(&self) -> bool {
-        self.as_struct_reference().is_some()
-    }
-
-    pub fn as_struct_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+    pub fn is_struct(&self) -> bool {
         match self {
-            Type::StructReference(r, g) => Some((r, g)),
-            _ => None,
+            Type::Struct => true,
+            _ => false,
         }
     }
 
@@ -688,36 +654,24 @@ impl Type {
         }
     }
 
-    pub fn is_struct_static_function_reference(&self) -> bool {
-        self.as_struct_static_function_reference().is_some()
-    }
-
-    pub fn as_struct_static_function_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+    pub fn is_struct_static_function(&self) -> bool {
         match self {
-            Type::StructStaticFunctionReference(r, g) => Some((r, g)),
-            _ => None,
+            Type::StructStaticFunction => true,
+            _ => false,
         }
     }
 
-    pub fn is_struct_instance_function_reference(&self) -> bool {
-        self.as_struct_instance_function_reference().is_some()
-    }
-
-    pub fn as_struct_instance_function_reference(&self) -> Option<(&Reference, &Vec<Type>)> {
+    pub fn is_struct_instance_function(&self) -> bool {
         match self {
-            Type::StructInstanceFunctionReference(r, g) => Some((r, g)),
-            _ => None,
+            Type::StructInstanceFunction => true,
+            _ => false,
         }
     }
 
-    pub fn is_function_reference(&self) -> bool {
-        self.as_function_reference().is_some()
-    }
-
-    pub fn as_function_reference(&self) -> Option<&Reference> {
+    pub fn is_function(&self) -> bool {
         match self {
-            Type::FunctionReference(r) => Some(r),
-            _ => None,
+            Type::Function => true,
+            _ => false,
         }
     }
 
@@ -725,17 +679,6 @@ impl Type {
         match self {
             Type::Middleware => true,
             _ => false,
-        }
-    }
-
-    pub fn is_middleware_reference(&self) -> bool {
-        self.as_middleware_reference().is_some()
-    }
-
-    pub fn as_middleware_reference(&self) -> Option<&Reference> {
-        match self {
-            Type::MiddlewareReference(r) => Some(r),
-            _ => None,
         }
     }
 
@@ -960,12 +903,8 @@ impl Type {
             Type::Tuple(types) => types.iter().any(|t| t.contains_generics()),
             Type::Range(inner) => inner.contains_generics(),
             Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
-            Type::InterfaceReference(_, types) => types.iter().any(|t| t.contains_generics()),
             Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_generics()),
-            Type::StructReference(_, types) => types.iter().any(|t| t.contains_generics()),
             Type::StructObject(_, types) => types.iter().any(|t| t.contains_generics()),
-            Type::StructStaticFunctionReference(_, types) => types.iter().any(|t| t.contains_generics()),
-            Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_generics()),
             Type::DataSetGroup(inner) => inner.contains_generics(),
             Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
             Type::Pipeline(a, b) => a.contains_generics() || b.contains_generics(),
@@ -985,12 +924,8 @@ impl Type {
             Type::Tuple(types) => types.iter().any(|t| t.contains_keywords()),
             Type::Range(inner) => inner.contains_keywords(),
             Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
-            Type::InterfaceReference(_, types) => types.iter().any(|t| t.contains_keywords()),
             Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_keywords()),
-            Type::StructReference(_, types) => types.iter().any(|t| t.contains_keywords()),
             Type::StructObject(_, types) => types.iter().any(|t| t.contains_keywords()),
-            Type::StructStaticFunctionReference(_, types) => types.iter().any(|t| t.contains_keywords()),
-            Type::StructInstanceFunctionReference(_, types) => types.iter().any(|t| t.contains_keywords()),
             Type::DataSetGroup(inner) => inner.contains_keywords(),
             Type::DataSetRecord(a, b) => a.contains_keywords() || b.contains_keywords(),
             Type::Pipeline(a, b) => a.contains_keywords() || b.contains_keywords(),
@@ -1017,12 +952,8 @@ impl Type {
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| t.replace_generics(map)).collect()),
             Type::Range(inner) => Type::Range(Box::new(inner.replace_generics(map))),
             Type::SynthesizedShape(shape) => Type::SynthesizedShape(shape.replace_generics(map)),
-            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
             Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
             Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
-            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| t.replace_generics(map)).collect()),
             Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(inner.replace_generics(map))),
             Type::DataSetRecord(a, b) => Type::DataSetRecord(
                 Box::new(a.replace_generics(map)),
@@ -1055,12 +986,8 @@ impl Type {
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| t.replace_keywords(map)).collect()),
             Type::Range(inner) => Type::Range(Box::new(inner.replace_keywords(map))),
             Type::SynthesizedShape(shape) => Type::SynthesizedShape(shape.replace_keywords(map)),
-            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
             Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
-            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
             Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
-            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
-            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| t.replace_keywords(map)).collect()),
             Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(inner.replace_keywords(map))),
             Type::DataSetRecord(a, b) => Type::DataSetRecord(
                 Box::new(a.replace_keywords(map)),
@@ -1108,24 +1035,14 @@ impl Type {
             Type::SynthesizedShape(shape) => other.is_synthesized_shape() && shape.test(other.as_synthesized_shape().unwrap()),
             Type::SynthesizedShapeReference(r) => other.is_synthesized_shape_reference() && r == other.as_synthesized_shape_reference().unwrap(),
             Type::Enum => other.is_enum() || other.is_enum_reference(),
-            Type::EnumReference(r) => other.is_enum_reference() && r == other.as_enum_reference().unwrap(),
             Type::EnumVariant(r) => other.is_enum_variant() && r == other.as_enum_variant().unwrap(),
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
             Type::SynthesizedEnumVariantReference(r) => other.is_synthesized_enum_variant_reference() && r == other.as_synthesized_enum_variant_reference().unwrap(),
-            Type::ConfigReference(r) => other.is_config_reference() && other.as_config_reference().unwrap() == r,
             Type::Model => other.is_model() || other.is_model_reference(),
-            Type::ModelReference(r) => other.is_model_reference() && r == other.as_model_reference().unwrap(),
-            Type::ModelFieldReference(r) => other.is_model_field_reference() && r == other.as_model_field_reference().unwrap(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
-            Type::InterfaceReference(r, types) => other.is_interface_reference() && r == other.as_interface_reference().unwrap().0 && other.as_interface_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_reference().unwrap().1.get(index).unwrap())),
-            Type::InterfaceFieldReference(r, types) => other.is_interface_field_reference() && r == other.as_interface_field_reference().unwrap().0 && other.as_interface_field_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_field_reference().unwrap().1.get(index).unwrap())),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
-            Type::StructReference(r, types) => other.is_struct_reference() && r == other.as_struct_reference().unwrap().0 && other.as_struct_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_reference().unwrap().1.get(index).unwrap())),
             Type::StructObject(r, types) => other.is_struct_object() && r == other.as_struct_object().unwrap().0 && other.as_struct_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_object().unwrap().1.get(index).unwrap())),
-            Type::StructStaticFunctionReference(r, types) => other.is_struct_static_function_reference() && r == other.as_struct_static_function_reference().unwrap().0 && other.as_struct_static_function_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_static_function_reference().unwrap().1.get(index).unwrap())),
-            Type::StructInstanceFunctionReference(r, types) => other.is_struct_instance_function_reference() && r == other.as_struct_instance_function_reference().unwrap().0 && other.as_struct_instance_function_reference().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_instance_function_reference().unwrap().1.get(index).unwrap())),
-            Type::FunctionReference(r) => other.is_function_reference() && r == other.as_function_reference().unwrap(),
             Type::Middleware => other.is_middleware() || other.is_middleware_reference(),
             Type::MiddlewareReference(r) => other.is_middleware_reference() && r == other.as_middleware_reference().unwrap(),
             Type::DataSet => other.is_data_set(),
@@ -1137,6 +1054,14 @@ impl Type {
             Type::Pipeline(a, b) => other.is_pipeline() && a.test(other.as_pipeline().unwrap().0) && b.test(other.as_pipeline().unwrap().1),
             Type::DecoratorReference(r) => other.is_decorator_reference() && other.as_decorator_reference().unwrap() == r,
             Type::PipelineItemReference(r) => other.is_pipeline_item_reference() && other.as_pipeline_item_reference().unwrap() == r,
+            Type::Config => other.is_config(),
+            Type::ModelField => other.is_model_field(),
+            Type::Interface => other.is_interface(),
+            Type::InterfaceField => other.is_interface_field(),
+            Type::Struct => other.is_struct(),
+            Type::StructStaticFunction => other.is_struct_static_function(),
+            Type::StructInstanceFunction => other.is_struct_instance_function(),
+            Type::Function => other.is_function(),
         }
     }
 
@@ -1169,12 +1094,8 @@ impl Type {
             Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
             Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
             Type::Pipeline(t1, t2) => Type::Pipeline(Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f))),
-            Type::InterfaceReference(r, types) => Type::InterfaceReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
-            Type::StructReference(r, types) => Type::StructReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
-            Type::StructStaticFunctionReference(r, types) => Type::StructStaticFunctionReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
-            Type::StructInstanceFunctionReference(r, types) => Type::StructInstanceFunctionReference(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::DataSetGroup(inner) => Type::DataSetGroup(Box::new(f_ref(inner, &f))),
             Type::DataSetRecord(a, b) => Type::DataSetRecord(
                 Box::new(f_ref(a, &f)),
@@ -1191,12 +1112,8 @@ impl Type {
             Type::Dictionary(inner) => vec![inner.as_ref().clone()],
             Type::Tuple(types) => types.clone(),
             Type::Range(inner) => vec![inner.as_ref().clone()],
-            Type::InterfaceReference(_, types) => types.clone(),
             Type::InterfaceObject(_, types) => types.clone(),
-            Type::StructReference(_, types) => types.clone(),
             Type::StructObject(_, types) => types.clone(),
-            Type::StructStaticFunctionReference(_, types) => types.clone(),
-            Type::StructInstanceFunctionReference(_, types) => types.clone(),
             Type::Pipeline(input, output) => vec![input.as_ref().clone(), output.as_ref().clone()],
             _ => vec![]
         }
@@ -1266,52 +1183,22 @@ impl Display for Type {
             Type::SynthesizedShape(shape) => Display::fmt(shape, f),
             Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
             Type::Enum => f.write_str("Enum"),
-            Type::EnumReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
             Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}.Type", r)),
             Type::SynthesizedEnumVariantReference(s) => Display::fmt(s, f),
-            Type::ConfigReference(_) => f.write_str(&format!("Config")),
             Type::Model => f.write_str("Model"),
-            Type::ModelReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
-            Type::ModelFieldReference(r) => f.write_str(&format!("{}.Type", r.string_path().join("."))),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
-            Type::InterfaceReference(r, t) => if t.is_empty() {
-                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
-            } else {
-                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            },
-            Type::InterfaceFieldReference(r, t) => if t.is_empty() {
-                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
-            } else {
-                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            },
             Type::InterfaceObject(r, t) => if t.is_empty() {
                 f.write_str(&format!("{}", &r.string_path().join(".")))
             } else {
                 f.write_str(&format!("{}<{}>", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
             }
-            Type::StructReference(r, t) => if t.is_empty() {
-                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
-            } else {
-                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            }
             Type::StructObject(r, t) => if t.is_empty() {
                 f.write_str(&format!("{}", &r.string_path().join(".")))
             } else {
                 f.write_str(&format!("{}<{}>", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            }
-            Type::StructStaticFunctionReference(r, t) => if t.is_empty() {
-                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
-            } else {
-                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            }
-            Type::StructInstanceFunctionReference(r, t) => if t.is_empty() {
-                f.write_str(&format!("{}.Type", &r.string_path().join(".")))
-            } else {
-                f.write_str(&format!("{}<{}>.Type", &r.string_path().join("."), t.iter().map(|t| format!("{t}")).join(", ")))
-            }
-            Type::FunctionReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
+            },
             Type::Middleware => f.write_str("Middleware"),
             Type::MiddlewareReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
             Type::DataSet => f.write_str("DataSet"),
@@ -1323,6 +1210,14 @@ impl Display for Type {
             Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
             Type::DecoratorReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
             Type::PipelineItemReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
+            Type::Config => f.write_str("Config"),
+            Type::ModelField => f.write_str("ModelField"),
+            Type::Interface => f.write_str("Interface"),
+            Type::InterfaceField => f.write_str("InterfaceField"),
+            Type::Struct => f.write_str("Struct"),
+            Type::StructStaticFunction => f.write_str("StructStaticFunction"),
+            Type::StructInstanceFunction => f.write_str("StructInstanceFunction"),
+            Type::Function => f.write_str("Function"),
         }
     }
 }

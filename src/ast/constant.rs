@@ -9,14 +9,14 @@ use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 
 declare_container_node!(Constant, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) identifier: usize,
     pub(crate) type_expr: Option<usize>,
     pub(crate) expression: usize,
-    pub(crate) resolved: RefCell<Option<TypeAndValue>>,
+    pub(crate) resolved: RefCell<Option<ExprInfo >>,
 );
 
 impl_container_node_defaults!(Constant, named, availability);
@@ -38,8 +38,8 @@ impl InfoProvider for Constant {
     }
 }
 
-impl Resolve<TypeAndValue> for Constant {
-    fn resolved_ref_cell(&self) -> &RefCell<Option<TypeAndValue>> {
+impl Resolve<ExprInfo> for Constant {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<ExprInfo>> {
         &self.resolved
     }
 }

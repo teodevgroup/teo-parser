@@ -5,6 +5,19 @@ Schema parser for Teo schema language
 
 ## Roadmap
 
+### 0.0.59 (Current)
+
+* File format
+* Improved jump to definition and auto completion
+
+### 0.1.0
+
+* Improve stability
+
+### 0.3.0
+
+* Refactor variable names in place
+
 ### 0.4.0
 
 * diagnostic code

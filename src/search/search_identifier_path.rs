@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::ast::node::Node;
 use crate::availability::Availability;
-use crate::value::TypeAndValue;
+use crate::value::ExprInfo;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::r#type::reference::Reference;
@@ -16,7 +16,7 @@ pub fn search_identifier_path_names_with_filter_to_type_and_value(
     namespace_str_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-) -> Option<TypeAndValue> {
+) -> Option<ExprInfo> {
     search_identifier_path_names_with_filter_to_top(
         identifier_path_names,
         schema,
@@ -126,8 +126,8 @@ fn search_identifier_path_names_in_source_to_top<'a>(
     None
 }
 
-fn top_to_reference_type_and_value(top: &Node) -> TypeAndValue {
-    TypeAndValue {
+fn top_to_reference_type_and_value(top: &Node) -> ExprInfo {
+    ExprInfo {
         r#type: match top {
             Node::Import(_) => Type::Undetermined,
             Node::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
