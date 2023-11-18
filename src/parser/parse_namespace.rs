@@ -29,6 +29,7 @@ use crate::traits::identifiable::Identifiable;
 pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namespace {
     let span = parse_span(&pair);
     let path = context.next_parent_path();
+    context.push_namespace_id(*path.last().unwrap());
     let mut comment = None;
     let mut identifier = 0;
     let mut string_path = vec![];
@@ -158,6 +159,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namesp
             _ => (),
         }
     }
+    context.pop_namespace_id();
     context.pop_parent_id();
     context.pop_string_path();
     Namespace {

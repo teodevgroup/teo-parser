@@ -11,7 +11,7 @@ use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 use crate::ast::expression::Expression;
 
-pub(super) fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) -> NamedExpression {
+pub(super) fn parse_named_expression(pair: Pair<'_>, context: &ParserContext, is_config_field: bool) -> NamedExpression {
     let (
         span,
         path,
@@ -41,5 +41,7 @@ pub(super) fn parse_named_expression(pair: Pair<'_>, context: &ParserContext) ->
         key,
         value,
         actual_availability,
+        is_config_field,
+        namespace_path: context.current_namespace_path(),
     }
 }

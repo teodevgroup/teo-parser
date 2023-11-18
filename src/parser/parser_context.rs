@@ -17,6 +17,7 @@ pub(super) struct ParserContext {
     current_id: Cell<usize>,
     current_path: RefCell<Vec<usize>>,
     current_string_path: RefCell<Vec<String>>,
+    current_namespace_path: RefCell<Vec<usize>>,
     current_availability_flag_state: RefCell<Vec<Availability>>,
     current_source_is_builtin: Cell<bool>,
     examined_import_file_paths: RefCell<Vec<String>>,
@@ -40,10 +41,23 @@ impl ParserContext {
             current_id: Cell::new(0),
             current_path: RefCell::new(vec![]),
             current_string_path: RefCell::new(vec![]),
+            current_namespace_path: RefCell::new(vec![]),
             current_availability_flag_state: RefCell::new(vec![Availability::default()]),
             current_source_is_builtin: Cell::new(false),
             examined_import_file_paths: RefCell::new(vec![]),
         }
+    }
+
+    pub(super) fn push_namespace_id(&self, id: usize) {
+        self.current_namespace_path.borrow_mut().push(id);
+    }
+
+    pub(super) fn pop_namespace_id(&self) {
+        self.current_namespace_path.borrow_mut().pop();
+    }
+
+    pub(super) fn current_namespace_path(&self) -> Vec<usize> {
+        self.current_namespace_path.borrow().clone()
     }
 
     pub(super) fn diagnostics(&self) -> Ref<'_, Diagnostics> {

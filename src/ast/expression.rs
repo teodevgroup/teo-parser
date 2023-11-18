@@ -288,6 +288,14 @@ impl Expression {
     pub fn unwrap_enumerable_enum_member_string(&self) -> Option<&str> {
         self.kind.unwrap_enumerable_enum_member_string()
     }
+
+    pub fn named_key_without_resolving(&self) -> Option<&str> {
+        match &self.key().kind {
+            ExpressionKind::StringLiteral(s) => Some(s.value.as_str()),
+            ExpressionKind::Identifier(i) => Some(i.name()),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {

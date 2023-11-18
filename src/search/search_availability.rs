@@ -45,10 +45,8 @@ pub(crate) fn find_source_connector<'a>(schema: &'a Schema, source: &'a Source) 
 pub(crate) fn find_availability_in_connector(connector: Option<&Config>) -> Availability {
     if let Some(connector) = connector {
         if let Some(provider) = connector.items().iter().find(|(key, _)| {
-            if let Some(string) = key.kind.as_string_literal() {
-                string.value.as_str() == "provider"
-            } else if let Some(identifier) = key.kind.as_identifier() {
-                identifier.name() == "provider"
+            if let Some(key) = key.named_key_without_resolving() {
+                key == "provider"
             } else {
                 false
             }

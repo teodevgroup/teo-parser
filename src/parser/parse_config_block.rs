@@ -1,12 +1,10 @@
 use crate::ast::config::Config;
-use crate::ast::config_item::ConfigItem;
 use crate::ast::keyword::Keyword;
-use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
-use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_literals::parse_dictionary_literal;
 use crate::parser::parse_span::parse_span;

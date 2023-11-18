@@ -143,7 +143,7 @@ pub(super) fn parse_tuple_literal(pair: Pair<'_>, context: &ParserContext) -> Tu
     TupleLiteral { expressions, span, children, path }
 }
 
-pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext) -> DictionaryLiteral {
+pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext, is_config_field: bool) -> DictionaryLiteral {
     let (
         span,
         path,
@@ -163,5 +163,12 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext) 
         }
     }
     parse_container_node_variables_cleanup!(context);
-    DictionaryLiteral { expressions, span, children, path }
+    DictionaryLiteral {
+        expressions,
+        namespace_path: context.current_namespace_path(),
+        span,
+        children,
+        path,
+        is_config_field,
+    }
 }

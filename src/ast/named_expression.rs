@@ -3,7 +3,7 @@ use crate::format::Writer;
 use crate::traits::write::Write;
 use crate::ast::expression::Expression;
 
-declare_container_node!(NamedExpression, availability, pub(crate) key: usize, pub(crate) value: usize);
+declare_container_node!(NamedExpression, availability, pub(crate) key: usize, pub(crate) value: usize, pub(crate) is_config_field: bool, pub(crate) namespace_path: Vec<usize>);
 
 impl_container_node_defaults!(NamedExpression, availability);
 

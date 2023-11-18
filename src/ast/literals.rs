@@ -138,7 +138,11 @@ impl Write for ArrayLiteral {
     }
 }
 
-declare_container_node!(DictionaryLiteral, pub(crate) expressions: Vec<usize>);
+declare_container_node!(DictionaryLiteral,
+    pub(crate) expressions: Vec<usize>,
+    pub(crate) namespace_path: Vec<usize>,
+    pub(crate) is_config_field: bool,
+);
 
 impl_container_node_defaults!(DictionaryLiteral);
 

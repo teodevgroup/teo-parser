@@ -10,6 +10,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
+use crate::resolver::resolve_config::resolve_config_references;
 use crate::resolver::resolve_constant::resolve_constant_references;
 
 use crate::resolver::resolver_context::ResolverContext;
@@ -207,15 +208,72 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
                 None)
             ),
         },
-        Node::NamedExpression(n) => ExprInfo {
-            r#type: n.value().resolved().r#type.clone(),
-            value: n.value().resolved().value.clone(),
-            reference_info: Some(ReferenceInfo::new(
-                ReferenceType::DictionaryField,
-                Reference::new(n.path.clone(), vec![]),
-                None
-            ))
-        },
+        Node::NamedExpression(n) => if n.value().is_resolved() {
+            ExprInfo {
+                r#type: n.value().resolved().r#type.clone(),
+                value: n.value().resolved().value.clone(),
+                reference_info: Some(ReferenceInfo::new(
+                    ReferenceType::DictionaryField,
+                    Reference::new(n.path.clone(), vec![]),
+                    None
+                ))
+            }
+        } else {
+            if let Some(resolver_context) = resolver_context {
+                if resolver_context.has_dependency(&n.value().path()) {
+                    resolver_context.insert_diagnostics_error(n.key().identifier().span, "circular reference detected");
+                    ExprInfo {
+                        r#type: Type::Undetermined,
+                        value: None,
+                        reference_info: Some(ReferenceInfo::new(
+                            ReferenceType::DictionaryField,
+                            Reference::new(n.path().clone(), n.string_path().clone()),
+                            None)
+                        ),
+                    }
+                } else {
+                    resolver_context.alter_state_and_restore(n.source_id(), &n.namespace_path, |ctx| {
+                        if n.is_config_field {
+                            let mut p = n.parent_path();
+                            p.pop();
+                            let config = ctx.schema.find_top_by_path(&p).unwrap().as_config().unwrap();
+                            resolve_config_references(config, ctx);
+                        }
+                    });
+                    if n.value().is_resolved() {
+                        ExprInfo {
+                            r#type: n.value().resolved().r#type.clone(),
+                            value: n.value().resolved().value.clone(),
+                            reference_info: Some(ReferenceInfo::new(
+                                ReferenceType::DictionaryField,
+                                Reference::new(n.path.clone(), vec![]),
+                                None)
+                            ),
+                        }
+                    } else {
+                        ExprInfo {
+                            r#type: Type::Undetermined,
+                            value: None,
+                            reference_info: Some(ReferenceInfo::new(
+                                ReferenceType::DictionaryField,
+                                Reference::new(n.path.clone(), vec![]),
+                                None)
+                            ),
+                        }
+                    }
+                }
+            } else {
+                ExprInfo {
+                    r#type: Type::Undetermined,
+                    value: None,
+                    reference_info: Some(ReferenceInfo::new(
+                        ReferenceType::DictionaryField,
+                        Reference::new(n.path.clone(), vec![]),
+                        None)
+                    ),
+                }
+            }
+        }
         Node::Constant(c) => if c.is_resolved() {
             ExprInfo {
                 r#type: c.resolved().r#type.clone(),
@@ -228,7 +286,7 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
             }
         } else {
             if let Some(resolver_context) = resolver_context {
-                if resolver_context.has_dependency(&c.path) {
+                if resolver_context.has_dependency(c.path()) {
                     resolver_context.insert_diagnostics_error(c.identifier().span, "circular reference detected");
                     ExprInfo {
                         r#type: Type::Undetermined,
