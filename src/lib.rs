@@ -10,7 +10,7 @@ pub(crate) mod definition;
 pub mod search;
 pub mod traits;
 pub mod availability;
-pub mod value;
+pub mod expr;
 pub mod format;
 #[macro_use]
 pub mod macros;

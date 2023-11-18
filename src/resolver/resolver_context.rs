@@ -274,7 +274,7 @@ impl<'a> ResolverContext<'a> {
     pub(super) fn insert_data_set_record_relation_value_is_not_array(&self, span: Span) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
-            "Relation value is not array",
+            "Relation expr is not array",
             self.source().file_path.clone()
         ))
     }
@@ -282,7 +282,7 @@ impl<'a> ResolverContext<'a> {
     pub(super) fn insert_data_set_record_relation_value_is_not_records_array(&self, span: Span, model_name: &str, dataset_path: &str) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
-            format!("Relation value is not array of `{model_name}` records in dataset `{dataset_path}`"),
+            format!("Relation expr is not array of `{model_name}` records in dataset `{dataset_path}`"),
             self.source().file_path.clone()
         ))
     }
@@ -290,7 +290,7 @@ impl<'a> ResolverContext<'a> {
     pub(super) fn insert_data_set_record_relation_value_is_not_enum_variant(&self, span: Span, model_name: &str, dataset_path: &str) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
-            format!("Relation value is not enum variant of `{model_name}` records in dataset `{dataset_path}`"),
+            format!("Relation expr is not enum variant of `{model_name}` records in dataset `{dataset_path}`"),
             self.source().file_path.clone()
         ))
     }

@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::span::Span;
 use crate::ast::type_info::TypeInfo;

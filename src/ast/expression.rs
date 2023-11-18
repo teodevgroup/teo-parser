@@ -19,7 +19,7 @@ use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::traits::write::Write;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 
 #[derive(Debug)]
 pub enum ExpressionKind {

@@ -9,7 +9,7 @@ use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 
 declare_container_node!(Constant, named, availability,
     pub(crate) comment: Option<usize>,

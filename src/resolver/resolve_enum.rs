@@ -51,7 +51,7 @@ pub(super) fn resolve_enum_member<'a>(
                     member.resolve(Value::Int(1 << index));
                     context.insert_diagnostics_error(
                         member_expression.span(),
-                        "EnumMemberError: Option value expression should be numeric or defined member expression"
+                        "EnumMemberError: Option expr expression should be numeric or defined member expression"
                     )
                 },
                 ExpressionKind::NumericLiteral(n) => {
@@ -73,7 +73,7 @@ pub(super) fn resolve_enum_member<'a>(
                     member.resolve(Value::String(member.identifier().name().to_owned()));
                     context.insert_diagnostics_error(
                         member_expression.span(),
-                        "EnumMemberError: Enum value expression should be string literal"
+                        "EnumMemberError: Enum expr expression should be string literal"
                     )
                 }
             }

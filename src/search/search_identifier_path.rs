@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::ast::node::Node;
 use crate::availability::Availability;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::r#type::reference::Reference;

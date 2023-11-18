@@ -13,5 +13,14 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a Constant, context: &
         resolve_type_expr(type_expr, &vec![], &vec![], &btreemap!{}, context, context.current_availability());
     }
     let undetermined = Type::Undetermined;
-    constant.resolve(resolve_expression(constant.expression(), context, constant.type_expr().map_or(&undetermined, |t| t.resolved()), &btreemap! {}));
+    let resolved = resolve_expression(constant.expression(), context, constant.type_expr().map_or(&undetermined, |t| t.resolved()), &btreemap! {});
+    if let Ok(resolved) = resolved {
+        constant.resolve(resolved);
+    }
+}
+
+pub(super) fn resolve_constant_check<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {
+    if !constant.is_resolved() {
+
+    }
 }

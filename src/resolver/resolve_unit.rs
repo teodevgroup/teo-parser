@@ -19,7 +19,7 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
@@ -57,7 +57,7 @@ fn resolve_current_item_for_unit<'a>(
     if let Some(current) = current {
         match current.r#type() {
             Type::Optional(inner) => {
-                context.insert_diagnostics_error(expression.span(), "value may be null");
+                context.insert_diagnostics_error(expression.span(), "expr may be null");
                 resolve_current_item_for_unit(last_span, Some(&current.type_altered(inner.as_ref().clone())), expression, context, keywords_map)
             }
             Type::Null => resolve_builtin_struct_instance_for_unit("Null", &vec![], current, last_span, expression, context, keywords_map),

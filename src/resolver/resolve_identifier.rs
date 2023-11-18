@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::availability::Availability;
-use crate::value::ExprInfo;
+use crate::expr::ExprInfo;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::node::Node;
