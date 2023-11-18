@@ -9,7 +9,7 @@ use crate::r#type::Type;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::resolved::Resolve;
 
-pub fn search_identifier_path_names_with_filter_to_type_and_value(
+pub fn search_identifier_path_names_with_filter_to_expr_info(
     identifier_path_names: &Vec<&str>,
     schema: &Schema,
     source: &Source,

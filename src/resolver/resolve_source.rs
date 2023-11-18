@@ -9,7 +9,7 @@ use crate::resolver::resolve_enum::resolve_enum_types;
 use crate::resolver::resolve_interface::resolve_interface_declaration_types;
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_types};
-use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_references_check, resolve_namespace_references, resolve_namespace_references_second, resolve_namespace_types};
+use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_references, resolve_namespace_types};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;

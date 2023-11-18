@@ -8,7 +8,7 @@ use crate::ast::node::Node;
 use crate::ast::reference_space::ReferenceSpace;
 
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -44,7 +44,7 @@ pub(super) fn resolve_identifier_with_filter(
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<ExprInfo> {
-    search_identifier_path_names_with_filter_to_type_and_value(
+    search_identifier_path_names_with_filter_to_expr_info(
         &vec![identifier.name()],
         context.schema,
         context.source(),
@@ -74,7 +74,7 @@ pub(super) fn resolve_identifier_path_with_filter(
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<ExprInfo> {
-    search_identifier_path_names_with_filter_to_type_and_value(
+    search_identifier_path_names_with_filter_to_expr_info(
         &identifier_path.names(),
         context.schema,
         context.source(),

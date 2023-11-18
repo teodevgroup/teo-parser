@@ -56,6 +56,7 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn start_source(&self, source: &'a Source) {
         *self.source.lock().unwrap() = Some(source);
+        *self.namespaces.lock().unwrap() = vec![];
         // set availability
         let availability = find_source_availability(self.schema, source);
         *self.availabilities.lock().unwrap() = vec![availability];
@@ -293,5 +294,22 @@ impl<'a> ResolverContext<'a> {
             format!("Relation expr is not enum variant of `{model_name}` records in dataset `{dataset_path}`"),
             self.source().file_path.clone()
         ))
+    }
+
+    pub(crate) fn alter_state_and_restore<F>(&self, source_id: usize, namespace_path: &Vec<usize>, job: F) where F: Fn(&Self) {
+        let source_to_restore = self.source();
+        let availabilities_to_restore = self.availabilities.lock().unwrap().clone();
+        let namespaces_to_restore = self.namespaces.lock().unwrap().clone();
+        let new_source = self.schema.source(source_id).unwrap();
+        self.start_source(new_source);
+        for (index, namespace_id) in namespace_path.iter().enumerate() {
+            if index != 0 {
+                self.push_namespace(new_source.get_namespace(*namespace_id).unwrap());
+            }
+        }
+        job(self);
+        *self.source.lock().unwrap() = Some(source_to_restore);
+        *self.availabilities.lock().unwrap() = availabilities_to_restore;
+        *self.namespaces.lock().unwrap() = namespaces_to_restore;
     }
 }

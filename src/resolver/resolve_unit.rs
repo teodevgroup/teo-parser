@@ -14,7 +14,7 @@ use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
@@ -585,7 +585,7 @@ fn resolve_namespace_reference_for_unit(
         ExpressionKind::Identifier(identifier) => {
             let mut names: Vec<&str> = string_path.iter().map(AsRef::as_ref).collect();
             names.push(identifier.name());
-            if let Some(result) = search_identifier_path_names_with_filter_to_type_and_value(
+            if let Some(result) = search_identifier_path_names_with_filter_to_expr_info(
                 &names,
                 context.schema,
                 context.source(),

@@ -8,7 +8,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::resolve_argument_list;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_type_and_value;
+use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
@@ -46,7 +46,7 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
         if let Some(identifier) = expression.kind.as_identifier() {
             let mut names: Vec<&str> = current_space.iter().map(AsRef::as_ref).collect();
             names.push(identifier.name());
-            if let Some(type_and_value) = search_identifier_path_names_with_filter_to_type_and_value(
+            if let Some(type_and_value) = search_identifier_path_names_with_filter_to_expr_info(
                 &names,
                 context.schema,
                 context.source(),
