@@ -10,10 +10,11 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
+use crate::resolver::resolve_constant::resolve_constant_references;
 
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::identifiable::Identifiable;
+use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -41,6 +42,7 @@ pub(super) fn resolve_identifier(
         context,
         &top_filter_for_reference_type(reference_type),
         availability,
+        context,
     )
 }
 
@@ -49,14 +51,16 @@ pub(super) fn resolve_identifier_with_filter(
     context: &ResolverContext,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
+    resolver_context: &ResolverContext,
 ) -> Option<ExprInfo> {
-    search_identifier_path_names_with_filter_to_expr_info(
+    resolve_identifier_path_names_with_filter_to_expr_info(
         &vec![identifier.name()],
         context.schema,
         context.source(),
         &context.current_namespace().map_or(vec![], |n| n.str_path()),
         filter,
         availability,
+        resolver_context,
     )
 }
 
@@ -224,9 +228,41 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
             }
         } else {
             if let Some(resolver_context) = resolver_context {
-
+                if resolver_context.has_dependency(&c.path) {
+                    resolver_context.insert_diagnostics_error(c.identifier().span, "circular reference detected");
+                    ExprInfo {
+                        r#type: Type::Undetermined,
+                        value: None,
+                        reference_info: Some(ReferenceInfo::new(
+                            ReferenceType::Constant,
+                            Reference::new(c.path.clone(), c.string_path.clone()),
+                            None)
+                        ),
+                    }
+                } else {
+                    resolver_context.alter_state_and_restore(c.source_id(), &c.namespace_path(), |ctx| {
+                        resolve_constant_references(c, ctx);
+                    });
+                    ExprInfo {
+                        r#type: c.resolved().r#type.clone(),
+                        value: c.resolved().value.clone(),
+                        reference_info: Some(ReferenceInfo::new(
+                            ReferenceType::Constant,
+                            Reference::new(c.path.clone(), c.string_path.clone()),
+                            None)
+                        ),
+                    }
+                }
             } else {
-
+                ExprInfo {
+                    r#type: Type::Undetermined,
+                    value: None,
+                    reference_info: Some(ReferenceInfo::new(
+                        ReferenceType::Constant,
+                        Reference::new(c.path.clone(), c.string_path.clone()),
+                        None)
+                    ),
+                }
             }
         }
         Node::Enum(e) => ExprInfo {

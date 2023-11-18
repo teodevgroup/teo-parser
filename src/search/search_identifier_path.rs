@@ -25,7 +25,7 @@ pub fn search_identifier_path_names_with_filter_to_expr_info(
         namespace_str_path,
         filter,
         availability
-    ).map(|t| top_to_expr_info(t))
+    ).map(|t| top_to_expr_info(t, ))
 }
 
 pub fn search_identifier_path_names_with_filter_to_path(
@@ -61,6 +61,5 @@ pub fn search_identifier_path_names_with_filter_to_top<'a>(
         namespace_str_path,
         filter,
         availability,
-        None,
     )
 }

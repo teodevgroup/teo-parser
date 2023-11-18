@@ -13,8 +13,10 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a Constant, context: &
         resolve_type_expr(type_expr, &vec![], &vec![], &btreemap!{}, context, context.current_availability());
     }
     let undetermined = Type::Undetermined;
+    context.push_dependency(constant.path.clone());
     let resolved = resolve_expression(constant.expression(), context, constant.type_expr().map_or(&undetermined, |t| t.resolved()), &btreemap! {});
     constant.resolve(resolved);
+    context.pop_dependency();
 }
 
 pub(super) fn resolve_constant_check<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {

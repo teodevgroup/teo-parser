@@ -33,6 +33,7 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) source: Mutex<Option<&'a Source>>,
     pub(crate) namespaces: Mutex<Vec<&'a Namespace>>,
     pub(crate) availabilities: Mutex<Vec<Availability>>,
+    // this is used for circular reference detection
     pub(crate) resolving_dependencies: Mutex<Vec<Vec<usize>>>,
 }
 
@@ -62,6 +63,20 @@ impl<'a> ResolverContext<'a> {
         // set availability
         let availability = find_source_availability(self.schema, source);
         *self.availabilities.lock().unwrap() = vec![availability];
+    }
+
+    // this is used for circular reference detection
+    pub(crate) fn push_dependency(&self, dependency: Vec<usize>) {
+        self.resolving_dependencies.lock().unwrap().push(dependency);
+    }
+
+    // this is used for circular reference detection
+    pub(crate) fn pop_dependency(&self) {
+        self.resolving_dependencies.lock().unwrap().pop();
+    }
+
+    pub(crate) fn has_dependency(&self, dependency: &Vec<usize>) -> bool {
+        self.resolving_dependencies.lock().unwrap().contains(dependency)
     }
 
     pub(crate) fn push_namespace(&self, namespace: &'a Namespace) {
@@ -298,11 +313,10 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(crate) fn alter_state_and_restore<F>(&self, source_id: usize, namespace_path: &Vec<usize>, resolving_dependencies: Vec<Vec<usize>>, job: F) where F: Fn(&Self) {
+    pub(crate) fn alter_state_and_restore<F>(&self, source_id: usize, namespace_path: &Vec<usize>, job: F) where F: Fn(&Self) {
         let source_to_restore = self.source();
         let availabilities_to_restore = self.availabilities.lock().unwrap().clone();
         let namespaces_to_restore = self.namespaces.lock().unwrap().clone();
-        let resolving_dependencies_to_restore = self.resolving_dependencies.lock().unwrap().clone();
         let new_source = self.schema.source(source_id).unwrap();
         self.start_source(new_source);
         for (index, namespace_id) in namespace_path.iter().enumerate() {
@@ -310,7 +324,6 @@ impl<'a> ResolverContext<'a> {
                 self.push_namespace(new_source.get_namespace(*namespace_id).unwrap());
             }
         }
-        *self.resolving_dependencies.lock().unwrap() = resolving_dependencies;
         job(self);
         *self.source.lock().unwrap() = Some(source_to_restore);
         *self.availabilities.lock().unwrap() = availabilities_to_restore;
