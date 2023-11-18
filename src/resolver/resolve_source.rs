@@ -9,7 +9,7 @@ use crate::resolver::resolve_enum::resolve_enum_types;
 use crate::resolver::resolve_interface::resolve_interface_declaration_types;
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_types};
-use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_references_check, resolve_namespace_references_first, resolve_namespace_references_second, resolve_namespace_types};
+use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_references_check, resolve_namespace_references, resolve_namespace_references_second, resolve_namespace_types};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
@@ -29,40 +29,18 @@ pub(super) fn resolve_source_types<'a>(context: &'a ResolverContext<'a>) {
     }
 }
 
-pub(super) fn resolve_source_references_first<'a>(context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_source_references<'a>(context: &'a ResolverContext<'a>) {
     for node in context.source().children.values() {
         match node {
             Node::Constant(constant) => resolve_constant_references(constant, context),
             Node::Config(config) => resolve_config_references(config, context),
             Node::MiddlewareDeclaration(middleware) => resolve_middleware_references(middleware, context),
-            Node::Namespace(namespace) => resolve_namespace_references_first(namespace, context),
+            Node::Namespace(namespace) => resolve_namespace_references(namespace, context),
             Node::Model(model) => resolve_model_references(model, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_references(handler_group, context),
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration_references(d, context),
             Node::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration_references(p, context),
             Node::DataSet(data_set) => resolve_data_set_references(data_set, context),
-            _ => (),
-        }
-    }
-}
-
-pub(super) fn resolve_source_references_second<'a>(context: &'a ResolverContext<'a>) {
-    for node in context.source().children.values() {
-        match node {
-            Node::Constant(constant) => resolve_constant_references(constant, context),
-            Node::Config(config) => resolve_config_references(config, context),
-            Node::Namespace(namespace) => resolve_namespace_references_second(namespace, context),
-            _ => (),
-        }
-    }
-}
-
-pub(super) fn resolve_source_references_check<'a>(context: &'a ResolverContext<'a>) {
-    for node in context.source().children.values() {
-        match node {
-            Node::Constant(constant) => resolve_constant_references_check(constant, context),
-            Node::Config(config) => resolve_config_references_check(config, context),
-            Node::Namespace(namespace) => resolve_namespace_references_check(namespace, context),
             _ => (),
         }
     }

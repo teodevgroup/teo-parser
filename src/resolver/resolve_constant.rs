@@ -14,9 +14,7 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a Constant, context: &
     }
     let undetermined = Type::Undetermined;
     let resolved = resolve_expression(constant.expression(), context, constant.type_expr().map_or(&undetermined, |t| t.resolved()), &btreemap! {});
-    if let Ok(resolved) = resolved {
-        constant.resolve(resolved);
-    }
+    constant.resolve(resolved);
 }
 
 pub(super) fn resolve_constant_check<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {

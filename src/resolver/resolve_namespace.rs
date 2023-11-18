@@ -31,45 +31,19 @@ pub(super) fn resolve_namespace_types<'a>(namespace: &'a Namespace, context: &'a
     context.pop_namespace();
 }
 
-pub(super) fn resolve_namespace_references_first<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_namespace_references<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
     for node in namespace.children.values() {
         match node {
             Node::Constant(constant) => resolve_constant_references(constant, context),
             Node::Config(config) => resolve_config_references(config, context),
             Node::MiddlewareDeclaration(middleware) => resolve_middleware_references(middleware, context),
-            Node::Namespace(namespace) => resolve_namespace_references_first(namespace, context),
+            Node::Namespace(namespace) => resolve_namespace_references(namespace, context),
             Node::Model(model) => resolve_model_references(model, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_references(handler_group, context),
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration_references(d, context),
             Node::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration_references(p, context),
             Node::DataSet(data_set) => resolve_data_set_references(data_set, context),
-            _ => (),
-        }
-    }
-    context.pop_namespace();
-}
-
-pub(super) fn resolve_namespace_references_second<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
-    context.push_namespace(namespace);
-    for node in namespace.children.values() {
-        match node {
-            Node::Constant(constant) => resolve_constant_references(constant, context),
-            Node::Config(config) => resolve_config_references(config, context),
-            Node::Namespace(namespace) => resolve_namespace_references_second(namespace, context),
-            _ => (),
-        }
-    }
-    context.pop_namespace();
-}
-
-pub(super) fn resolve_namespace_references_check<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
-    context.push_namespace(namespace);
-    for node in namespace.children.values() {
-        match node {
-            Node::Constant(constant) => resolve_constant_references_check(constant, context),
-            Node::Config(config) => resolve_config_references_check(config, context),
-            Node::Namespace(namespace) => resolve_namespace_references_check(namespace, context),
             _ => (),
         }
     }
