@@ -9,5 +9,11 @@ pub trait NamedIdentifiable {
     fn name(&self) -> &str {
         *self.str_path().last().unwrap()
     }
+
+    fn parent_string_path(&self) -> Vec<String> {
+        let mut result = self.string_path().clone();
+        result.pop();
+        result
+    }
 }
 

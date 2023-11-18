@@ -9,4 +9,10 @@ pub trait Identifiable {
     fn id(&self) -> usize {
         *self.path().last().unwrap()
     }
+
+    fn parent_path(&self) -> Vec<usize> {
+        let mut result = self.path().clone();
+        result.pop();
+        result
+    }
 }

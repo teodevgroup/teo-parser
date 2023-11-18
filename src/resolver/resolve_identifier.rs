@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::availability::Availability;
-use crate::expr::ExprInfo;
+use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::node::Node;
@@ -13,6 +13,7 @@ use crate::r#type::Type;
 
 use crate::resolver::resolver_context::ResolverContext;
 use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
+use crate::traits::identifiable::Identifiable;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -199,44 +200,122 @@ pub fn top_to_expr_info(top: &Node) -> ExprInfo {
     match top {
         Node::Import(_) => ExprInfo::undetermined(),
         Node::Config(c) => ExprInfo {
-            r#type: Type::Config,
+            r#type: Type::Undetermined,
             value: None,
-            reference: Some(Reference::new(c.path.clone(), c.string_path.clone())),
-            generics: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Config,
+                Reference::new(c.path.clone(), c.string_path.clone()),
+                None)
+            ),
         },
         Node::Constant(c) => ExprInfo {
             r#type: c.resolved().r#type.clone(),
             value: c.resolved().value.clone(),
-            reference: Some(Reference)
-        }
-    }
-    ExprInfo {
-        r#type: match top {
-            Node::Import(_) => Type::Undetermined,
-            Node::Config(c) => Type::ConfigReference(Reference::new(c.path.clone(), c.string_path.clone())),
-            Node::ConfigDeclaration(_) => Type::Undetermined,
-            Node::Constant(c) => return c.resolved().clone(),
-            Node::Enum(e) => Type::EnumReference(Reference::new(e.path.clone(), e.string_path.clone())),
-            Node::Model(m) => Type::ModelReference(Reference::new(m.path.clone(), m.string_path.clone())),
-            Node::DataSet(d) => Type::DataSetReference(d.string_path.clone()),
-            Node::MiddlewareDeclaration(m) => Type::MiddlewareReference(Reference::new(m.path.clone(), m.string_path.clone())),
-            Node::HandlerGroupDeclaration(_) => Type::Undetermined,
-            Node::InterfaceDeclaration(i) => if i.generics_declaration.is_none() {
-                Type::InterfaceReference(Reference::new(i.path.clone(), i.string_path.clone()), vec![])
-            } else {
-                Type::Undetermined
-            },
-            Node::Namespace(n) => Type::NamespaceReference(n.string_path.clone()),
-            Node::DecoratorDeclaration(d) => Type::DecoratorReference(Reference::new(d.path.clone(), d.string_path.clone())),
-            Node::PipelineItemDeclaration(p) => Type::PipelineItemReference(Reference::new(p.path.clone(), p.string_path.clone())),
-            Node::StructDeclaration(s) => if s.generics_declaration.is_none() {
-                Type::StructReference(Reference::new(s.path.clone(), s.string_path.clone()), vec![])
-            } else {
-                Type::Undetermined
-            }
-            Node::UseMiddlewaresBlock(_) => Type::Undetermined,
-            _ => Type::Undetermined,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Constant,
+                Reference::new(c.path.clone(), c.string_path.clone()),
+                None)
+            ),
         },
-        value: None,
+        Node::Enum(e) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Enum,
+                Reference::new(e.path.clone(), e.string_path.clone()),
+                None)
+            )
+        },
+        Node::Model(m) => ExprInfo {
+            r#type: Type::Model,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Model,
+                Reference::new(m.path.clone(), m.string_path.clone()),
+                None
+            ))
+        },
+        Node::DataSet(d) => ExprInfo {
+            r#type: Type::DataSet,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::DataSet,
+                Reference::new(d.path.clone(), d.string_path.clone()),
+                None
+            ))
+        },
+        Node::MiddlewareDeclaration(m) => ExprInfo {
+            r#type: Type::Middleware,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Middleware,
+                Reference::new(m.path.clone(), m.string_path.clone()),
+                None
+            ))
+        },
+        Node::InterfaceDeclaration(i) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Interface,
+                Reference::new(i.path.clone(), i.string_path.clone()),
+                None
+            ))
+        },
+        Node::Namespace(n) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::Namespace,
+                Reference::new(n.path.clone(), n.string_path.clone()),
+                None
+            ))
+        },
+        Node::DecoratorDeclaration(d) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::DecoratorDeclaration,
+                Reference::new(d.path.clone(), d.string_path.clone()),
+                None
+            ))
+        },
+        Node::PipelineItemDeclaration(p) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::PipelineItemDeclaration,
+                Reference::new(p.path.clone(), p.string_path.clone()),
+                None
+            ))
+        },
+        Node::StructDeclaration(s) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::StructDeclaration,
+                Reference::new(s.path.clone(), s.string_path.clone()),
+                None
+            ))
+        },
+        Node::Field(f) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                if f.resolved().class.is_interface_field() { ReferenceType::InterfaceField } else { ReferenceType::ModelField },
+                Reference::new(f.path.clone(), f.string_path.clone()),
+                None
+            ))
+        },
+        Node::EnumMember(e) => ExprInfo {
+            r#type: Type::EnumVariant(Reference::new(e.parent_path(), e.parent_string_path())),
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::EnumMember,
+                Reference::new(e.path.clone(), e.string_path.clone()),
+                None
+            ))
+        },
+        _ => ExprInfo::undetermined()
     }
 }

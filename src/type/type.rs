@@ -137,10 +137,6 @@ pub enum Type {
     ///
     SynthesizedShapeReference(SynthesizedShapeReference),
 
-    /// Enum
-    ///
-    Enum,
-
     /// Enum Variant
     ///
     EnumVariant(Reference),
@@ -157,54 +153,20 @@ pub enum Type {
     ///
     SynthesizedEnumVariantReference(SynthesizedEnumReference),
 
-    /// Config
-    ///
-    Config,
-
     /// Model
     ///
     Model,
 
-    /// Model Field
-    ///
-    ModelField,
-
     /// Model Object
     ModelObject(Reference),
-
-    /// Interface
-    ///
-    Interface,
-
-    /// Interface Field
-    ///
-    InterfaceField,
 
     /// Interface Object
     ///
     InterfaceObject(Reference, Vec<Type>),
 
-    /// Struct
-    ///
-    Struct,
-
     /// Struct Object
     ///
     StructObject(Reference, Vec<Type>),
-
-    /// Struct Static Function
-    ///
-    StructStaticFunction,
-
-    /// Struct Static Function
-    ///
-    StructInstanceFunction,
-
-    /// Function
-    ///
-    /// These functions are declared outside of structs
-    ///
-    Function,
 
     /// Middleware
     ///
@@ -218,9 +180,6 @@ pub enum Type {
     ///
     DataSet,
 
-    /// Data Set Object
-    DataSetReference(Vec<String>),
-
     /// Data Set Group
     ///
     DataSetGroup(Box<Type>),
@@ -229,25 +188,9 @@ pub enum Type {
     ///
     DataSetRecord(Box<Type>, Box<Type>),
 
-    /// Namespace
-    ///
-    Namespace,
-
-    /// Namespace Reference
-    ///
-    NamespaceReference(Vec<String>),
-
     /// Pipeline
     ///
     Pipeline(Box<Type>, Box<Type>),
-
-    /// Decorator Reference
-    ///
-    DecoratorReference(Reference),
-
-    /// Pipeline Item Reference
-    ///
-    PipelineItemReference(Reference),
 }
 
 impl Type {
@@ -514,13 +457,6 @@ impl Type {
         }
     }
 
-    pub fn is_enum(&self) -> bool {
-        match self {
-            Type::Enum => true,
-            _ => false,
-        }
-    }
-
     pub fn is_enum_variant(&self) -> bool {
         self.as_enum_variant().is_some()
     }
@@ -565,23 +501,9 @@ impl Type {
         }
     }
 
-    pub fn is_config(&self) -> bool {
-        match self {
-            Type::Config => true,
-            _ => false,
-        }
-    }
-
     pub fn is_model(&self) -> bool {
         match self {
             Type::Model => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_model_field(&self) -> bool {
-        match self {
-            Type::ModelField => true,
             _ => false,
         }
     }
@@ -597,20 +519,6 @@ impl Type {
         }
     }
 
-    pub fn is_interface(&self) -> bool {
-        match self {
-            Type::Interface => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_interface_field(&self) -> bool {
-        match self {
-            Type::InterfaceField => true,
-            _ => false,
-        }
-    }
-
     pub fn is_interface_object(&self) -> bool {
         self.as_interface_object().is_some()
     }
@@ -619,13 +527,6 @@ impl Type {
         match self {
             Type::InterfaceObject(r, g) => Some((r, g)),
             _ => None,
-        }
-    }
-
-    pub fn is_struct(&self) -> bool {
-        match self {
-            Type::Struct => true,
-            _ => false,
         }
     }
 
@@ -640,27 +541,6 @@ impl Type {
         }
     }
 
-    pub fn is_struct_static_function(&self) -> bool {
-        match self {
-            Type::StructStaticFunction => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_struct_instance_function(&self) -> bool {
-        match self {
-            Type::StructInstanceFunction => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_function(&self) -> bool {
-        match self {
-            Type::Function => true,
-            _ => false,
-        }
-    }
-
     pub fn is_middleware(&self) -> bool {
         match self {
             Type::Middleware => true,
@@ -672,17 +552,6 @@ impl Type {
         match self {
             Type::DataSet => true,
             _ => false,
-        }
-    }
-
-    pub fn is_data_set_reference(&self) -> bool {
-        self.as_data_set_reference().is_some()
-    }
-
-    pub fn as_data_set_reference(&self) -> Option<&Vec<String>> {
-        match self {
-            Type::DataSetReference(r) => Some(r),
-            _ => None,
         }
     }
 
@@ -708,24 +577,6 @@ impl Type {
         }
     }
 
-    pub fn is_namespace(&self) -> bool {
-        match self {
-            Type::Namespace => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_namespace_reference(&self) -> bool {
-        self.as_namespace_reference().is_some()
-    }
-
-    pub fn as_namespace_reference(&self) -> Option<&Vec<String>> {
-        match self {
-            Type::NamespaceReference(r) => Some(r),
-            _ => None,
-        }
-    }
-
     pub fn is_pipeline(&self) -> bool {
         self.as_pipeline().is_some()
     }
@@ -733,28 +584,6 @@ impl Type {
     pub fn as_pipeline(&self) -> Option<(&Type, &Type)> {
         match self {
             Type::Pipeline(a, b) => Some((a.as_ref(), b.as_ref())),
-            _ => None,
-        }
-    }
-
-    pub fn is_decorator_reference(&self) -> bool {
-        self.as_decorator_reference().is_some()
-    }
-
-    pub fn as_decorator_reference(&self) -> Option<&Reference> {
-        match self {
-            Type::DecoratorReference(r) => Some(r),
-            _ => None,
-        }
-    }
-
-    pub fn is_pipeline_item_reference(&self) -> bool {
-        self.as_pipeline_item_reference().is_some()
-    }
-
-    pub fn as_pipeline_item_reference(&self) -> Option<&Reference> {
-        match self {
-            Type::PipelineItemReference(r) => Some(r),
             _ => None,
         }
     }
@@ -1020,7 +849,6 @@ impl Type {
             Type::Range(inner) => other.is_range() && inner.as_ref().test(other.as_range().unwrap()),
             Type::SynthesizedShape(shape) => other.is_synthesized_shape() && shape.test(other.as_synthesized_shape().unwrap()),
             Type::SynthesizedShapeReference(r) => other.is_synthesized_shape_reference() && r == other.as_synthesized_shape_reference().unwrap(),
-            Type::Enum => other.is_enum() || other.is_enum_reference(),
             Type::EnumVariant(r) => other.is_enum_variant() && r == other.as_enum_variant().unwrap(),
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
@@ -1032,22 +860,9 @@ impl Type {
             Type::Middleware => other.is_middleware() || other.is_middleware_reference(),
             Type::MiddlewareReference(r) => other.is_middleware_reference() && r == other.as_middleware_reference().unwrap(),
             Type::DataSet => other.is_data_set(),
-            Type::DataSetReference(r) => other.is_data_set_reference() && r == other.as_data_set_reference().unwrap(),
             Type::DataSetGroup(inner) => other.is_data_set_group() && inner.test(other.as_data_set_group().unwrap()),
             Type::DataSetRecord(a, b) => other.is_data_set_record() && a.test(other.as_data_set_record().unwrap().0) && b.test(other.as_data_set_record().unwrap().1),
-            Type::Namespace => other.is_namespace() || other.is_namespace_reference(),
-            Type::NamespaceReference(r) => other.is_namespace_reference() && r == other.as_namespace_reference().unwrap(),
             Type::Pipeline(a, b) => other.is_pipeline() && a.test(other.as_pipeline().unwrap().0) && b.test(other.as_pipeline().unwrap().1),
-            Type::DecoratorReference(r) => other.is_decorator_reference() && other.as_decorator_reference().unwrap() == r,
-            Type::PipelineItemReference(r) => other.is_pipeline_item_reference() && other.as_pipeline_item_reference().unwrap() == r,
-            Type::Config => other.is_config(),
-            Type::ModelField => other.is_model_field(),
-            Type::Interface => other.is_interface(),
-            Type::InterfaceField => other.is_interface_field(),
-            Type::Struct => other.is_struct(),
-            Type::StructStaticFunction => other.is_struct_static_function(),
-            Type::StructInstanceFunction => other.is_struct_instance_function(),
-            Type::Function => other.is_function(),
         }
     }
 
@@ -1168,7 +983,6 @@ impl Display for Type {
             Type::Range(inner) => f.write_str(&format!("Range<{}>", inner)),
             Type::SynthesizedShape(shape) => Display::fmt(shape, f),
             Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
-            Type::Enum => f.write_str("Enum"),
             Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}.Type", r)),
@@ -1188,22 +1002,9 @@ impl Display for Type {
             Type::Middleware => f.write_str("Middleware"),
             Type::MiddlewareReference(r) => f.write_str(&format!("{}.Type", &r.string_path().join("."))),
             Type::DataSet => f.write_str("DataSet"),
-            Type::DataSetReference(r) => f.write_str(&format!("{}.Type", &r.join("."))),
             Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
             Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),
-            Type::Namespace => f.write_str("Namespace"),
-            Type::NamespaceReference(r) => f.write_str(&format!("{}.Type", &r.join("."))),
             Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
-            Type::DecoratorReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
-            Type::PipelineItemReference(r) => f.write_str(&format!("{}.Type", &r.str_path().join("."))),
-            Type::Config => f.write_str("Config"),
-            Type::ModelField => f.write_str("ModelField"),
-            Type::Interface => f.write_str("Interface"),
-            Type::InterfaceField => f.write_str("InterfaceField"),
-            Type::Struct => f.write_str("Struct"),
-            Type::StructStaticFunction => f.write_str("StructStaticFunction"),
-            Type::StructInstanceFunction => f.write_str("StructInstanceFunction"),
-            Type::Function => f.write_str("Function"),
         }
     }
 }
