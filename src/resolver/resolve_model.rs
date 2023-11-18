@@ -19,24 +19,26 @@ pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverCon
         context.insert_duplicated_identifier(model.identifier().span);
     }
     context.clear_examined_fields();
-
     // fields
     for field in model.fields() {
         resolve_field_class(field, FieldParentType::Model, None, None, context);
-    }
-    // handlers
-    for handler in model.handlers() {
-        resolve_handler_declaration_types(handler, context);
     }
     model.resolve(ModelResolved {
         enums: indexmap! {},
         shapes: indexmap! {},
     });
+    resolve_model_shapes(model, context);
     context.add_examined_default_path(model.string_path.clone(), model.define_availability);
 }
 
+pub(super) fn resolve_model_references<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+    // handlers
+    for handler in model.handlers() {
+        resolve_handler_declaration_types(handler, context);
+    }
+}
+
 pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
-    resolve_model_shapes(model, context);
     // decorators
     let model_type = Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone()));
     for decorator in model.decorators() {
