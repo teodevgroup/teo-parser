@@ -1,4 +1,5 @@
 use teo_teon::Value;
+use crate::expr::ReferenceInfo;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 
@@ -6,13 +7,12 @@ use crate::r#type::Type;
 pub struct ExprInfo {
     pub r#type: Type,
     pub value: Option<Value>,
-    pub reference: Option<Reference>,
-    pub generics: Option<Vec<Type>>,
+    pub reference_info: Option<ReferenceInfo>,
 }
 
 impl ExprInfo {
-    pub fn new(r#type: Type, value: Option<Value>, reference: Option<Reference>, generics: Option<Vec<Type>>) -> Self {
-        Self { r#type, value, reference, generics, }
+    pub fn new(r#type: Type, value: Option<Value>, reference_info: Option<ReferenceInfo>) -> Self {
+        Self { r#type, value, reference_info }
     }
 
     pub fn r#type(&self) -> &Type {
@@ -23,12 +23,8 @@ impl ExprInfo {
         self.value.as_ref()
     }
 
-    pub fn reference(&self) -> Option<&Reference> {
-        self.reference.as_ref()
-    }
-
-    pub fn generics(&self) -> Option<&Vec<Type>> {
-        self.generics.as_ref()
+    pub fn reference_info(&self) -> Option<&ReferenceInfo> {
+        self.reference_info.as_ref()
     }
 
     pub fn is_undetermined(&self) -> bool {
@@ -39,8 +35,7 @@ impl ExprInfo {
         ExprInfo {
             r#type: Type::Undetermined,
             value: None,
-            reference: None,
-            generics: None,
+            reference_info: None,
         }
     }
 
@@ -48,8 +43,7 @@ impl ExprInfo {
         ExprInfo {
             r#type: new_type,
             value: self.value.clone(),
-            reference: self.reference.clone(),
-            generics: self.generics.clone(),
+            reference_info: self.reference_info.clone(),
         }
     }
 
@@ -57,12 +51,7 @@ impl ExprInfo {
         ExprInfo {
             r#type: t,
             value: None,
-            reference: None,
-            generics: None,
+            reference_info: None,
         }
-    }
-
-    pub fn as_path(&self) -> Option<&Vec<usize>> {
-        self.reference().map(|r| r.path())
     }
 }

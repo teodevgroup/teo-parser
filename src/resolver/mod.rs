@@ -6,7 +6,7 @@ mod resolve_namespace;
 mod resolve_source;
 mod resolve_decorator;
 mod resolve_pipeline;
-mod resolve_identifier;
+pub mod resolve_identifier;
 mod resolve_constant;
 mod resolve_decorator_declaration;
 mod resolve_pipeline_item_declaration;

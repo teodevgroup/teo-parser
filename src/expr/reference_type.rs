@@ -1,0 +1,21 @@
+#[derive(Copy, Clone, Debug)]
+pub enum ReferenceType {
+    Config,
+    ConfigField,
+    Constant,
+    Enum,
+    EnumMember,
+    Model,
+    ModelField,
+    Interface,
+    InterfaceField,
+    Middleware,
+    DataSet,
+    DecoratorDeclaration,
+    PipelineItemDeclaration,
+    StructDeclaration,
+    StructInstanceFunction,
+    StructStaticFunction,
+    FunctionDeclaration,
+    Namespace,
+}
