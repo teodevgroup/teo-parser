@@ -1,5 +1,6 @@
 use maplit::btreemap;
 use crate::ast::data_set::{DataSet, DataSetGroup};
+use crate::expr::ReferenceType;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 use crate::resolver::resolve_expression::{resolve_expression, resolve_expression_for_named_expression_key};
@@ -24,9 +25,17 @@ pub(super) fn resolve_data_set_references<'a>(data_set: &'a DataSet, context: &'
 
 fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, context: &'a ResolverContext<'a>) {
     *group.actual_availability.borrow_mut() = context.current_availability();
-    if let Some(reference) = resolve_identifier_path_with_filter(group.identifier_path(), context, &top_filter_for_model(), context.current_availability()) {
-        let model = context.schema.find_top_by_path(reference.r#type().as_model_reference().unwrap().path()).unwrap().as_model().unwrap();
-        group.resolve(Reference::new(model.path.clone(), model.string_path.clone()));
+    if let Some(expr_info) = resolve_identifier_path_with_filter(group.identifier_path(), context, &top_filter_for_model(), context.current_availability()) {
+        if let Some(reference_info) = expr_info.reference_info() {
+            if reference_info.r#type == ReferenceType::Model {
+                let model = context.schema.find_top_by_path(reference_info.reference().path()).unwrap().as_model().unwrap();
+                group.resolve(Reference::new(model.path.clone(), model.string_path.clone()));
+            } else {
+                context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
+            }
+        } else {
+            context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
+        }
     } else {
         context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
     }
@@ -87,7 +96,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                         if let Some(model_reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
                             let reference_model = context.schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
                             let expect = Type::DataSetRecord(
-                                Box::new(Type::DataSetReference(data_set.string_path.clone())),
+                                Box::new(Type::DataSetObject(data_set.string_path.clone())),
                                 Box::new(Type::ModelObject(Reference::new(reference_model.path.clone(), reference_model.string_path.clone())))
                             );
                             if field.type_expr().resolved().unwrap_optional().is_array() {

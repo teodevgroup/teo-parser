@@ -61,12 +61,12 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                 let top = schema.find_top_by_path(identifier_container_path).unwrap();
                 match top {
                     Node::Config(config) => if let Some(identifier) = identifier_name {
-                        let item = config.items().iter().find(|i| i.identifier().name() == identifier).unwrap();
+                        let item = config.items().iter().find(|i| i.0.named_key_without_resolving() == Some(identifier)).unwrap();
                         vec![Definition {
                             path: schema.source(config.source_id()).unwrap().file_path.clone(),
                             selection_span: span,
-                            target_span: item.span,
-                            identifier_span: item.identifier().span,
+                            target_span: item.0.span(),
+                            identifier_span: item.0.span(),
                         }]
                     } else {
                         vec![Definition {

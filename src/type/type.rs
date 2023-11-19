@@ -176,6 +176,10 @@ pub enum Type {
     ///
     DataSet,
 
+    /// Data Set Object
+    ///
+    DataSetObject(Vec<String>),
+
     /// Data Set Group
     ///
     DataSetGroup(Box<Type>),
@@ -551,6 +555,17 @@ impl Type {
         }
     }
 
+    pub fn is_data_set_object(&self) -> bool {
+        self.as_data_set_object().is_some()
+    }
+
+    pub fn as_data_set_object(&self) -> Option<&Vec<String>> {
+        match self {
+            Type::DataSetObject(path) => Some(path),
+            _ => None,
+        }
+    }
+
     pub fn is_data_set_group(&self) -> bool {
         self.as_data_set_group().is_some()
     }
@@ -855,6 +870,7 @@ impl Type {
             Type::StructObject(r, types) => other.is_struct_object() && r == other.as_struct_object().unwrap().0 && other.as_struct_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_struct_object().unwrap().1.get(index).unwrap())),
             Type::Middleware => other.is_middleware(),
             Type::DataSet => other.is_data_set(),
+            Type::DataSetObject(r) => other.is_data_set_object() && r == other.as_data_set_object().unwrap(),
             Type::DataSetGroup(inner) => other.is_data_set_group() && inner.test(other.as_data_set_group().unwrap()),
             Type::DataSetRecord(a, b) => other.is_data_set_record() && a.test(other.as_data_set_record().unwrap().0) && b.test(other.as_data_set_record().unwrap().1),
             Type::Pipeline(a, b) => other.is_pipeline() && a.test(other.as_pipeline().unwrap().0) && b.test(other.as_pipeline().unwrap().1),
@@ -996,6 +1012,7 @@ impl Display for Type {
             },
             Type::Middleware => f.write_str("Middleware"),
             Type::DataSet => f.write_str("DataSet"),
+            Type::DataSetObject(r) => f.write_str(&format!("DataSetObject<{}>", r.join("."))),
             Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
             Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),
             Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),

@@ -10,6 +10,7 @@ use crate::ast::identifier::Identifier;
 use crate::ast::model::{Model};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::unit::Unit;
+use crate::expr::ReferenceType;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
@@ -1469,20 +1470,21 @@ fn unwrap_model_path_in_arith_expr<'a>(arith_expr: &'a ArithExpr, model: &'a Mod
 }
 
 fn unwrap_model_path_in_identifier<'a>(identifier: &'a Identifier, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
-    resolve_identifier(identifier, context, ReferenceSpace::Default, model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten()
+    let Some(expr_info) = resolve_identifier(identifier, context, ReferenceSpace::Default, model.availability()) else { return None; };
+    let Some(reference_info) = expr_info.reference_info() else { return None };
+    if reference_info.r#type != ReferenceType::Model {
+        return None;
+    }
+    Some(reference_info.reference.path().clone())
 }
 
 fn unwrap_model_path_in_unit<'a>(unit: &'a Unit, model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Vec<usize>> {
-    let resolved = resolve_unit(unit, context, &Type::Undetermined, &btreemap! {});
-    if let Some(value) = &resolved.value {
-        let path: Vec<&str> = value.as_array()?.iter().map(|i| i.as_str()).collect::<Option<Vec<_>>>()?;
-        return search_identifier_path_names_with_filter_to_expr_info(&path, context.schema, context.source(), &if context.current_namespace().is_some() {
-            context.current_namespace().unwrap().str_path()
-        } else {
-            vec![]
-        }, &top_filter_for_reference_type(ReferenceSpace::Default), model.availability()).map(|r| r.r#type.as_model_reference().map(|r| r.path().clone())).flatten();
+    let expr_info = resolve_unit(unit, context, &Type::Undetermined, &btreemap! {});
+    let Some(reference_info) = expr_info.reference_info() else { return None };
+    if reference_info.r#type != ReferenceType::Model {
+        return None;
     }
-    None
+    Some(reference_info.reference.path().clone())
 }
 
 struct ShapeAvailableContext {

@@ -159,11 +159,11 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
                             Node::Config(config) => {
                                 match &expression.kind {
                                     ExpressionKind::Identifier(identifier) => {
-                                        if let Some(item) = config.items().find(|i| i.identifier().name() == identifier.name()) {
+                                        if let Some(item) = config.items().iter().find(|(k, v)| k.named_key_without_resolving().is_some() && k.named_key_without_resolving().unwrap() == identifier.name()) {
                                             if identifier.span.contains_line_col(line_col) {
-                                                return handle_identifier(identifier.span, config.path.as_ref(), Some(item.identifier().name()));
+                                                return handle_identifier(identifier.span, config.path.as_ref(), item.0.named_key_without_resolving());
                                             } else {
-                                                current = Some(UnitSearchResult::Type(item.expression().resolved().r#type.clone()));
+                                                current = Some(UnitSearchResult::Type(item.1.resolved().r#type.clone()));
                                             }
                                         } else {
                                             return default;
