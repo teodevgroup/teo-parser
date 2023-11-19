@@ -1,4 +1,7 @@
-pub mod stdlib;
+pub mod parse;
+pub mod jump_to_definition;
+pub mod auto_completion;
+pub mod format;
 
 mod test {
     use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items, jump_to_definition};
