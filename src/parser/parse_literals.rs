@@ -2,10 +2,8 @@ use std::str::FromStr;
 use snailquote::unescape;
 use regex::Regex;
 use teo_teon::value::Value;
-use crate::ast::expression::Expression;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_optional};
-use crate::ast::punctuations::Punctuation;
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
@@ -16,7 +14,6 @@ use crate::parser::parse_named_expression::parse_named_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
-use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_string_literal(pair: &Pair<'_>, context: &ParserContext) -> StringLiteral {
     let (span, path) = parse_node_variables!(pair, context);

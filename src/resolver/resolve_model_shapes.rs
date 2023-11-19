@@ -20,7 +20,6 @@ use crate::r#type::synthesized_shape_reference::{SynthesizedShapeReference, Synt
 use crate::resolver::resolve_identifier::resolve_identifier;
 use crate::resolver::resolve_unit::resolve_unit;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;

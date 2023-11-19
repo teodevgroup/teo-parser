@@ -167,7 +167,7 @@ impl ParserContext {
     pub(super) fn insert_unparsed(&self, span: Span) {
         let binding = self.source_lookup.borrow();
         let path = binding.get(&self.current_source_id.get()).unwrap();
-        self.diagnostics_mut().insert_unparsed_rule(span, path.clone());
+        self.diagnostics_mut().insert(DiagnosticsError::new(span, "unexpected content", path.clone()));
     }
 
     pub(super) fn insert_invalid_decorator_declaration(&self, span: Span) {

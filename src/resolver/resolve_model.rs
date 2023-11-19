@@ -8,7 +8,6 @@ use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators, resolve_field_types};
 use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
-use crate::resolver::resolve_model_shapes::resolve_model_shapes;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::resolved::Resolve;
 

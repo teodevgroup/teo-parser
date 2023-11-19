@@ -233,14 +233,6 @@ impl<'a> ResolverContext<'a> {
         ))
     }
 
-    pub(super) fn insert_unresolved_model(&self, span: Span) {
-        self.diagnostics().insert_unresolved_model(span, self.source().file_path.clone())
-    }
-
-    pub(super) fn insert_unresolved_enum(&self, span: Span) {
-        self.diagnostics().insert_unresolved_enum(span, self.source().file_path.clone())
-    }
-
     pub(super) fn insert_data_set_record_key_type_is_not_string(&self, span: Span) {
         self.diagnostics().insert(DiagnosticsError::new(
             span,
