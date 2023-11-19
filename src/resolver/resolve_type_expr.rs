@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::str::FromStr;
 use crate::ast::arity::Arity;
 use crate::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
@@ -8,6 +9,9 @@ use crate::ast::span::Span;
 use crate::expr::ReferenceType;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
+use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
+use crate::r#type::Type::SynthesizedShapeReference;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
@@ -172,7 +176,31 @@ fn resolve_type_item<'a>(
     let names = type_item.identifier_path().names();
     let mut base = if names.len() == 1 {
         let name = *names.get(0).unwrap();
-        type_item_builtin_match(name, type_item, generics_declaration, generics_constraint, keywords_map, context, availability)
+        if let Some(matched) = type_item_builtin_match(name, type_item, generics_declaration, generics_constraint, keywords_map, context, availability) {
+            Some(matched)
+        } else {
+            if let Ok(enum_reference_kind) = SynthesizedEnumReferenceKind::from_str(name) {
+                check_generics_amount(1, type_item, context);
+                if type_item.generic_items().len() == 1 {
+                    let argument = *type_item.generic_items().first().unwrap();
+                    let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
+                    if resolved_type.is_model_object() {
+                        Some(Type::SynthesizedEnumReference(SynthesizedEnumReference {
+                            kind: enum_reference_kind,
+                            owner: Box::new(resolved_type)
+                        }))
+                    } else {
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            } else if let Ok(shape_reference_kind) = SynthesizedShapeReferenceKind::from_str(name) {
+                None
+            } else {
+                None
+            }
+        }
     } else {
         None
     };
