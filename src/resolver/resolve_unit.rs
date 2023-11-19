@@ -19,7 +19,7 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
-use crate::expr::ExprInfo;
+use crate::expr::{ExprInfo, ReferenceType};
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
@@ -55,42 +55,55 @@ fn resolve_current_item_for_unit<'a>(
 ) -> ExprInfo {
     let expected = Type::Undetermined;
     if let Some(current) = current {
-        match current.r#type() {
-            Type::Optional(inner) => {
-                context.insert_diagnostics_error(expression.span(), "expr may be null");
-                resolve_current_item_for_unit(last_span, Some(&current.type_altered(inner.as_ref().clone())), expression, context, keywords_map)
+        if let Some(reference_info) = current.reference_info() {
+            match reference_info.r#type() {
+                ReferenceType::Config => resolve_config_reference_for_unit(reference_info.reference(), expression, context),
+                ReferenceType::DictionaryField => {} // should go to type resolving
+                ReferenceType::Constant => {} // should go to type resolving
+                ReferenceType::Enum => resolve_enum_reference_for_unit(reference_info.reference(), expression, context),
+                ReferenceType::EnumMember => {} // should go to type resolving
+                ReferenceType::Model => resolve_model_reference_for_unit(reference_info.reference(), expression, context),
+                ReferenceType::ModelField => {}
+                ReferenceType::Interface => resolve_interface_reference_for_unit(reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
+                ReferenceType::InterfaceField => {}
+                ReferenceType::Middleware => resolve_middleware_reference_for_unit(last_span.unwrap(), reference_info.reference(), expression, context),
+                ReferenceType::DataSet => unreachable!(),
+                ReferenceType::DecoratorDeclaration => unreachable!(),
+                ReferenceType::PipelineItemDeclaration => unreachable!(),
+                ReferenceType::StructDeclaration => resolve_struct_reference_for_unit(last_span.unwrap(), reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
+                ReferenceType::StructStaticFunction => resolve_struct_static_function_reference_for_unit(last_span.unwrap(), reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
+                ReferenceType::StructInstanceFunction => resolve_struct_instance_function_reference_for_unit(last_span.unwrap(), reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
+                ReferenceType::FunctionDeclaration => todo!(),
+                ReferenceType::Namespace => resolve_namespace_reference_for_unit(reference_info.reference().string_path(), expression, context),
             }
-            Type::Null => resolve_builtin_struct_instance_for_unit("Null", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Bool => resolve_builtin_struct_instance_for_unit("Bool", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Int => resolve_builtin_struct_instance_for_unit("Int", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Int64 => resolve_builtin_struct_instance_for_unit("Int64", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Float32 => resolve_builtin_struct_instance_for_unit("Float32", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Float => resolve_builtin_struct_instance_for_unit("Float", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Decimal => resolve_builtin_struct_instance_for_unit("Decimal", &vec![], current, last_span, expression, context, keywords_map),
-            Type::String => resolve_builtin_struct_instance_for_unit("String", &vec![], current, last_span, expression, context, keywords_map),
-            Type::ObjectId => resolve_builtin_struct_instance_for_unit("ObjectId", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Date => resolve_builtin_struct_instance_for_unit("Date", &vec![], current, last_span, expression, context, keywords_map),
-            Type::DateTime => resolve_builtin_struct_instance_for_unit("DateTime", &vec![], current, last_span, expression, context, keywords_map),
-            Type::File => resolve_builtin_struct_instance_for_unit("File", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Regex => resolve_builtin_struct_instance_for_unit("Regex", &vec![], current, last_span, expression, context, keywords_map),
-            Type::Array(inner) => resolve_builtin_struct_instance_for_unit("Array", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
-            Type::Dictionary(inner) => resolve_builtin_struct_instance_for_unit("Dictionary", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
-            Type::Tuple(types) => resolve_tuple_for_unit(types, current, expression, context),
-            Type::Range(inner) => resolve_builtin_struct_instance_for_unit("Range", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
-            Type::EnumReference(reference) => resolve_enum_reference_for_unit(reference, expression, context),
-            Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
-            Type::ConfigReference(reference) => resolve_config_reference_for_unit(reference, expression, context),
-            Type::ModelObject(reference) => resolve_model_reference_for_unit(reference, expression, context),
-            Type::InterfaceReference(reference, types) => resolve_interface_reference_for_unit(reference, types, expression, context),
-            Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
-            Type::StructReference(reference, types) => resolve_struct_reference_for_unit(last_span.unwrap(), reference, types, expression, context),
-            Type::StructObject(reference, types) => resolve_struct_object_for_unit(reference, types, expression, context),
-            Type::StructStaticFunctionReference(reference, types) => resolve_struct_static_function_reference_for_unit(last_span.unwrap(), reference, types, expression, context),
-            Type::StructInstanceFunctionReference(reference, types) => resolve_struct_instance_function_reference_for_unit(last_span.unwrap(),reference, types, expression, context),
-            Type::FunctionReference(_) => todo!(),
-            Type::MiddlewareReference(reference) => resolve_middleware_reference_for_unit(last_span.unwrap(), reference, expression, context),
-            Type::NamespaceReference(string_path) => resolve_namespace_reference_for_unit(string_path, expression, context),
-            _ => ExprInfo::undetermined(),
+        } else {
+            match current.r#type() {
+                Type::Optional(inner) => {
+                    context.insert_diagnostics_error(expression.span(), "expression might be null");
+                    resolve_current_item_for_unit(last_span, Some(&current.type_altered(inner.as_ref().clone())), expression, context, keywords_map)
+                }
+                Type::Null => resolve_builtin_struct_instance_for_unit("Null", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Bool => resolve_builtin_struct_instance_for_unit("Bool", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Int => resolve_builtin_struct_instance_for_unit("Int", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Int64 => resolve_builtin_struct_instance_for_unit("Int64", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Float32 => resolve_builtin_struct_instance_for_unit("Float32", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Float => resolve_builtin_struct_instance_for_unit("Float", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Decimal => resolve_builtin_struct_instance_for_unit("Decimal", &vec![], current, last_span, expression, context, keywords_map),
+                Type::String => resolve_builtin_struct_instance_for_unit("String", &vec![], current, last_span, expression, context, keywords_map),
+                Type::ObjectId => resolve_builtin_struct_instance_for_unit("ObjectId", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Date => resolve_builtin_struct_instance_for_unit("Date", &vec![], current, last_span, expression, context, keywords_map),
+                Type::DateTime => resolve_builtin_struct_instance_for_unit("DateTime", &vec![], current, last_span, expression, context, keywords_map),
+                Type::File => resolve_builtin_struct_instance_for_unit("File", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Regex => resolve_builtin_struct_instance_for_unit("Regex", &vec![], current, last_span, expression, context, keywords_map),
+                Type::Array(inner) => resolve_builtin_struct_instance_for_unit("Array", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
+                Type::Dictionary(inner) => resolve_builtin_struct_instance_for_unit("Dictionary", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
+                Type::Tuple(types) => resolve_tuple_for_unit(types, current, expression, context),
+                Type::Range(inner) => resolve_builtin_struct_instance_for_unit("Range", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
+                Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
+                Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
+                Type::StructObject(reference, types) => resolve_struct_object_for_unit(reference, types, expression, context),
+                _ => ExprInfo::undetermined(),
+            }
         }
     } else {
         resolve_expression(expression, context, &expected, keywords_map)

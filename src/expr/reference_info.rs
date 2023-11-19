@@ -19,6 +19,10 @@ impl ReferenceInfo {
         self.r#type
     }
 
+    pub fn reference(&self) -> &Reference {
+        &self.reference
+    }
+
     pub fn reference_path(&self) -> &Reference {
         &self.reference
     }
