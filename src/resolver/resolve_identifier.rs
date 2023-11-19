@@ -17,6 +17,7 @@ use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -221,13 +222,13 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
         } else {
             if let Some(resolver_context) = resolver_context {
                 if resolver_context.has_dependency(&n.value().path()) {
-                    resolver_context.insert_diagnostics_error(n.key().identifier().span, "circular reference detected");
+                    resolver_context.insert_diagnostics_error(n.key().span(), "circular reference detected");
                     ExprInfo {
                         r#type: Type::Undetermined,
                         value: None,
                         reference_info: Some(ReferenceInfo::new(
                             ReferenceType::DictionaryField,
-                            Reference::new(n.path().clone(), n.string_path().clone()),
+                            Reference::new(n.path().clone(), vec![]),
                             None)
                         ),
                     }

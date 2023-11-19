@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::expr::ExprInfo;
+use crate::expr::{ExprInfo, ReferenceType};
 use crate::ast::pipeline::Pipeline;
 use crate::ast::span::Span;
 use crate::ast::type_info::TypeInfo;
@@ -7,8 +7,8 @@ use crate::ast::unit::Unit;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_argument_list::resolve_argument_list;
+use crate::resolver::resolve_identifier::resolve_identifier_path_names_with_filter_to_expr_info;
 use crate::resolver::resolver_context::ResolverContext;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_expr_info;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
@@ -28,10 +28,7 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
     } else {
         &undetermined
     };
-    ExprInfo {
-        r#type: resolve_pipeline_unit(pipeline.span, pipeline.unit(), context, r#type, keywords_map),
-        value: None,
-    }
+    ExprInfo::type_only(resolve_pipeline_unit(pipeline.span, pipeline.unit(), context, r#type, keywords_map))
 }
 
 pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> Type {
@@ -46,26 +43,30 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
         if let Some(identifier) = expression.kind.as_identifier() {
             let mut names: Vec<&str> = current_space.iter().map(AsRef::as_ref).collect();
             names.push(identifier.name());
-            if let Some(type_and_value) = search_identifier_path_names_with_filter_to_expr_info(
+            if let Some(expr_info) = resolve_identifier_path_names_with_filter_to_expr_info(
                 &names,
                 context.schema,
                 context.source(),
                 &context.current_namespace().map_or(vec![], |n| n.str_path()),
                 &top_filter_for_pipeline(),
                 context.current_availability(),
+                context,
             ) {
-                match type_and_value.r#type() {
-                    Type::NamespaceReference(r) => current_space = r.clone(),
-                    Type::PipelineItemReference(r) => {
-                        let pipeline_item_declaration = context.schema.find_top_by_path(r.path()).unwrap().as_pipeline_item_declaration().unwrap();
+                if expr_info.reference_info().is_none() {
+                    context.insert_diagnostics_error(identifier.span, "identifier not found");
+                    has_errors = true;
+                }
+                match expr_info.reference_info().unwrap().r#type {
+                    ReferenceType::Namespace => current_space = expr_info.reference_info().unwrap().reference.string_path().clone(),
+                    ReferenceType::PipelineItemDeclaration => {
+                        let pipeline_item_declaration = context.schema.find_top_by_path(expr_info.reference_info().unwrap().reference.path()).unwrap().as_pipeline_item_declaration().unwrap();
                         let pipeline_type_context = TypeInfo {
                             passed_in: current_input_type.clone()
                         };
                         let argument_list = unit.expression_at(index + 1).map(|e| e.kind.as_argument_list()).flatten();
                         current_input_type = resolve_argument_list(identifier.span, argument_list, pipeline_item_declaration.callable_variants(), keywords_map, context, Some(&pipeline_type_context)).unwrap();
                         current_space = vec![];
-
-                    },
+                    }
                     _ => ()
                 }
             } else {

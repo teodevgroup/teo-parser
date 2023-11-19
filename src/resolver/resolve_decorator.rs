@@ -15,8 +15,8 @@ pub(super) fn resolve_decorator<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
     reference_type: ReferenceSpace,
 ) {
-    if let Some(reference) = resolve_identifier_path(decorator.identifier_path(), context, reference_type, context.current_availability()) {
-        decorator.resolve(reference.r#type().as_decorator_reference().unwrap().path().clone());
+    if let Some(expr_info) = resolve_identifier_path(decorator.identifier_path(), context, reference_type, context.current_availability()) {
+        decorator.resolve(expr_info.reference_info().unwrap().reference().path().clone());
         let decorator_declaration = context.schema.find_top_by_path(decorator.resolved()).unwrap().as_decorator_declaration().unwrap();
         resolve_argument_list(
             decorator.identifier_path().identifiers().last().unwrap().span(),

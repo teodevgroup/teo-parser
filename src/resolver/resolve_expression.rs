@@ -427,7 +427,6 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             r#type: v.r#type.clone(),
                             value: if let Some(v) = v.value { Some(v.not().unwrap()) } else { None },
                             reference_info: None,
-
                         },
                         _ => {
                             context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
