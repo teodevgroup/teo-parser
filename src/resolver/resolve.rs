@@ -12,17 +12,17 @@ pub(crate) fn resolve(schema: &Schema, diagnostics: &mut Diagnostics) {
     resolve_sources(&context, &schema.user_sources());
 }
 
-fn resolve_sources(context: &ResolverContext, sources: &Vec<&Source>) {
+fn resolve_sources<'a>(context: &'a ResolverContext<'a>, sources: &Vec<&'a Source>) {
     for source in sources {
         context.start_source(source);
-        resolve_source_types(&context);
+        resolve_source_types(context);
     }
     for source in sources {
         context.start_source(source);
-        resolve_source_references(&context);
+        resolve_source_references(context);
     }
     for source in sources {
         context.start_source(source);
-        resolve_source_consumers(&context);
+        resolve_source_consumers(context);
     }
 }

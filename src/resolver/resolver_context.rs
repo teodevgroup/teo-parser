@@ -94,7 +94,7 @@ impl<'a> ResolverContext<'a> {
         *self.availabilities.lock().unwrap().last().unwrap()
     }
 
-    pub(crate) fn source(&self) -> &Source {
+    pub(crate) fn source(&self) -> &'a Source {
         self.source.lock().unwrap().unwrap()
     }
 

@@ -173,7 +173,7 @@ fn resolve_struct_instance_for_unit<'a>(
                 reference_info: Some(ReferenceInfo::new(
                     ReferenceType::StructInstanceFunction,
                     Reference::new(instance_function.path.clone(), instance_function.string_path.clone()),
-                    gens.iter().map(Clone::clone).map(Clone::clone).collect())
+                    Some(gens.iter().map(Clone::clone).map(Clone::clone).collect()))
                 ),
             }
         },
@@ -337,7 +337,7 @@ fn resolve_config_reference_for_unit<'a>(
     ).unwrap().as_config().unwrap();
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = config.items().iter().find(|item| item.identifier().name() == identifier.name()) {
+            if let Some(item) = config.items().iter().find(|item| item.0.named_key_without_resolving() == Some(identifier.name())) {
                 item.1.resolved().clone()
             } else {
                 context.insert_diagnostics_error(expression.span(), "config item not found");
@@ -636,10 +636,10 @@ fn resolve_middleware_reference_for_unit<'a>(
     })
 }
 
-fn resolve_namespace_reference_for_unit(
+fn resolve_namespace_reference_for_unit<'a>(
     string_path: &Vec<String>,
     expression: &Expression,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {

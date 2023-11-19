@@ -28,8 +28,8 @@ pub(super) fn resolve_config_references<'a>(config: &'a Config, context: &'a Res
         let differences = exist_keys.difference(&defined_keys);
         // undefined items
         for item_name in differences {
-            let item = config.items().iter().find(|(k, v)| k.named_key_without_resolving().is_some() && k.named_key_without_resolving().unwrap() == *item_name).unwrap();
-            context.insert_diagnostics_error(item.0.span(), "undefined config item");
+            let item = config.dictionary_literal().expressions().find(|e| e.key().named_key_without_resolving() == Some(*item_name)).unwrap();
+            context.insert_diagnostics_error(item.key().span(), "undefined config item");
         }
         // duplicated items
         for item in config.items().iter().duplicates_by(|(k, v)| k.named_key_without_resolving().unwrap()) {

@@ -33,9 +33,9 @@ pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
     }
 }
 
-pub(super) fn resolve_identifier(
+pub(super) fn resolve_identifier<'a>(
     identifier: &Identifier,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
     reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Option<ExprInfo> {
@@ -44,16 +44,14 @@ pub(super) fn resolve_identifier(
         context,
         &top_filter_for_reference_type(reference_type),
         availability,
-        context,
     )
 }
 
-pub(super) fn resolve_identifier_with_filter(
+pub(super) fn resolve_identifier_with_filter<'a>(
     identifier: &Identifier,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-    resolver_context: &ResolverContext,
 ) -> Option<ExprInfo> {
     resolve_identifier_path_names_with_filter_to_expr_info(
         &vec![identifier.name()],
@@ -62,13 +60,13 @@ pub(super) fn resolve_identifier_with_filter(
         &context.current_namespace().map_or(vec![], |n| n.str_path()),
         filter,
         availability,
-        resolver_context,
+        context,
     )
 }
 
-pub(super) fn resolve_identifier_path(
+pub(super) fn resolve_identifier_path<'a>(
     identifier_path: &IdentifierPath,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
     reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Option<ExprInfo> {
@@ -80,9 +78,9 @@ pub(super) fn resolve_identifier_path(
     )
 }
 
-pub(super) fn resolve_identifier_path_with_filter(
+pub(super) fn resolve_identifier_path_with_filter<'a>(
     identifier_path: &IdentifierPath,
-    context: &ResolverContext,
+    context: &'a ResolverContext<'a>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
 ) -> Option<ExprInfo> {
@@ -97,14 +95,14 @@ pub(super) fn resolve_identifier_path_with_filter(
     )
 }
 
-pub fn resolve_identifier_path_names_with_filter_to_expr_info(
+pub(crate) fn resolve_identifier_path_names_with_filter_to_expr_info<'a>(
     identifier_path_names: &Vec<&str>,
-    schema: &Schema,
-    source: &Source,
+    schema: &'a Schema,
+    source: &'a Source,
     namespace_str_path: &Vec<&str>,
     filter: &Arc<dyn Fn(&Node) -> bool>,
     availability: Availability,
-    resolver_context: &ResolverContext,
+    resolver_context: &'a ResolverContext<'a>,
 ) -> Option<ExprInfo> {
     resolve_identifier_path_names_with_filter_to_top(
         identifier_path_names,
@@ -113,7 +111,7 @@ pub fn resolve_identifier_path_names_with_filter_to_expr_info(
         namespace_str_path,
         filter,
         availability,
-    ).map(|t| top_to_expr_info(t, Some(resolver_context)))
+    ).map(move |t| top_to_expr_info(t, Some(resolver_context)))
 }
 
 pub fn resolve_identifier_path_names_with_filter_to_top<'a>(
@@ -197,7 +195,7 @@ fn resolve_identifier_path_names_in_source_to_top<'a>(
     None
 }
 
-pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) -> ExprInfo {
+pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a ResolverContext<'a>>) -> ExprInfo {
     match top {
         Node::Import(_) => ExprInfo::undetermined(),
         Node::Config(c) => ExprInfo {
@@ -238,7 +236,7 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
                             let mut p = n.parent_path();
                             p.pop();
                             let config = ctx.schema.find_top_by_path(&p).unwrap().as_config().unwrap();
-                            resolve_config_references(config, ctx);
+                            resolve_config_references(config, resolver_context);
                         }
                     });
                     if n.value().is_resolved() {
@@ -300,7 +298,7 @@ pub fn top_to_expr_info(top: &Node, resolver_context: Option<&ResolverContext>) 
                     }
                 } else {
                     resolver_context.alter_state_and_restore(c.source_id(), &c.namespace_path(), |ctx| {
-                        resolve_constant_references(c, ctx);
+                        resolve_constant_references(c, resolver_context);
                     });
                     ExprInfo {
                         r#type: c.resolved().r#type.clone(),
