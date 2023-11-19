@@ -47,11 +47,11 @@ impl ExprInfo {
         }
     }
 
+    pub fn reference_only(reference_info: ReferenceInfo) -> Self {
+        Self::new(Type::Undetermined, None, Some(reference_info))
+    }
+
     pub fn type_only(t: Type) -> Self {
-        ExprInfo {
-            r#type: t,
-            value: None,
-            reference_info: None,
-        }
+        Self::new(t, None, None)
     }
 }

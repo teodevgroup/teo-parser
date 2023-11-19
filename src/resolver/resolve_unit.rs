@@ -19,7 +19,7 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
-use crate::expr::{ExprInfo, ReferenceType};
+use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
@@ -157,7 +157,15 @@ fn resolve_struct_instance_for_unit<'a>(
                 context.insert_diagnostics_error(expression.span(), "undefined instance function");
                 return expression.resolve_and_return(ExprInfo::undetermined());
             };
-            ExprInfo::type_only(Type::StructInstanceFunctionReference(Reference::new(instance_function.path.clone(), instance_function.string_path.clone()), gens.iter().map(Clone::clone).map(Clone::clone).collect()))
+            ExprInfo {
+                r#type: Type::Undetermined,
+                value: None,
+                reference_info: Some(ReferenceInfo::new(
+                    ReferenceType::StructInstanceFunction,
+                    Reference::new(instance_function.path.clone(), instance_function.string_path.clone()),
+                    gens.iter().map(Clone::clone).map(Clone::clone).collect())
+                ),
+            }
         },
         ExpressionKind::Subscript(subscript) => {
             let Some(subscript_function) = struct_definition.instance_function("subscript") else {
@@ -207,7 +215,7 @@ fn resolve_tuple_for_unit<'a>(
                 } else {
                     None
                 };
-                ExprInfo::new(t, v)
+                ExprInfo::new(t, v, None)
             }
         },
         _ => {
@@ -240,7 +248,11 @@ fn resolve_enum_reference_for_unit<'a>(
                         value: identifier.name().to_owned(),
                         args: None,
                     })
-                }))
+                }), Some(ReferenceInfo::new(
+                    ReferenceType::EnumMember,
+                    Reference::new(m.path.clone(), m.string_path.clone()),
+                    None,
+                )))
             } else {
                 context.insert_diagnostics_error(expression.span(), "enum member not found");
                 ExprInfo::undetermined()
@@ -290,7 +302,7 @@ fn resolve_enum_variant_for_unit<'a>(
                 expression.resolve_and_return(ExprInfo::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
                     value: value.value.clone(),
                     args: Some(args),
-                }))))
+                })), current.reference_info().cloned()))
             },
             _ => {
                 context.insert_diagnostics_error(expression.span(), "invalid expression");
@@ -342,7 +354,15 @@ fn resolve_model_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = model.fields().find(|item| item.identifier().name() == identifier.name()) {
-                ExprInfo::type_only(Type::ModelFieldReference(Reference::new(item.path.clone(), item.string_path.clone())))
+                ExprInfo {
+                    r#type: Type::Undetermined,
+                    value: None,
+                    reference_info: Some(ReferenceInfo::new(
+                        ReferenceType::ModelField,
+                        Reference::new(item.path.clone(), item.string_path.clone()),
+                        None
+                    ))
+                }
             } else {
                 context.insert_diagnostics_error(expression.span(), "model field not found");
                 ExprInfo::undetermined()
@@ -369,7 +389,15 @@ fn resolve_interface_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(item) = interface.fields().find(|item| item.identifier().name() == identifier.name()) {
-                ExprInfo::type_only(Type::InterfaceFieldReference(Reference::new(item.path.clone(), item.string_path.clone()), types.clone()))
+                ExprInfo {
+                    r#type: Type::Undetermined,
+                    value: None,
+                    reference_info: Some(ReferenceInfo::new(
+                        ReferenceType::InterfaceField,
+                        Reference::new(item.path.clone(), item.string_path.clone()),
+                        Some(types.clone()),
+                    ))
+                }
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
                 ExprInfo::undetermined()
@@ -401,6 +429,7 @@ fn resolve_interface_object_for_unit<'a>(
                 ExprInfo::new(
                     item.type_expr().resolved().replace_generics(&map),
                     current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
+                    None,
                 )
             } else {
                 context.insert_diagnostics_error(expression.span(), "interface field not found");
@@ -429,7 +458,11 @@ fn resolve_struct_reference_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.static_function(identifier.name()) {
-                ExprInfo::type_only(Type::StructStaticFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+                ExprInfo::new(Type::Undetermined, None, Some(ReferenceInfo::new(
+                    ReferenceType::StructStaticFunction,
+                    Reference::new(function.path.clone(), function.string_path.clone()),
+                    Some(types.clone())
+                )))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct static function not found");
                 ExprInfo::undetermined()
@@ -472,7 +505,11 @@ fn resolve_struct_object_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some(function) = struct_declaration.instance_function(identifier.name()) {
-                ExprInfo::type_only(Type::StructInstanceFunctionReference(Reference::new(function.path.clone(), function.string_path.clone()), types.clone()))
+                ExprInfo::reference_only(ReferenceInfo::new(
+                    ReferenceType::StructInstanceFunction,
+                    Reference::new(function.path.clone(), function.string_path.clone()),
+                    Some(types.clone()),
+                ))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct instance function not found");
                 ExprInfo::undetermined()
