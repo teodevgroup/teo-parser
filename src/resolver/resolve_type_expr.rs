@@ -5,6 +5,7 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::type_expr::{TypeExpr, TypeExprKind, TypeItem, TypeOperator};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
+use crate::expr::ReferenceType;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
@@ -177,21 +178,23 @@ fn resolve_type_item<'a>(
     };
     if base.is_none() {
         if let Some(resolved) = resolve_identifier_path(type_item.identifier_path(), context, ReferenceSpace::Default, availability) {
-            base = match resolved.r#type() {
-                Type::ModelObject(r) => Some(Type::ModelObject(r.clone())),
-                Type::EnumReference(r) => Some(Type::EnumVariant(r.clone())),
-                Type::InterfaceReference(r, _) => Some(Type::InterfaceObject(r.clone(), if let Some(generics) = type_item.generics() {
-                    generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
-                } else {
-                    vec![]
-                })),
-                Type::StructReference(r, _) => Some(Type::StructReference(r.clone(), if let Some(generics) = type_item.generics() {
-                    generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
-                } else {
-                    vec![]
-                })),
-                _ => None,
-            };
+            if let Some(reference_info) = resolved.reference_info() {
+                base = match reference_info.r#type() {
+                    ReferenceType::Model => Some(Type::ModelObject(reference_info.reference().clone())),
+                    ReferenceType::Enum => Some(Type::EnumVariant(reference_info.reference().clone())),
+                    ReferenceType::Interface => Some(Type::InterfaceObject(reference_info.reference().clone(), if let Some(generics) = type_item.generics() {
+                        generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
+                    } else {
+                        vec![]
+                    })),
+                    ReferenceType::StructDeclaration => Some(Type::StructObject(reference_info.reference().clone(), if let Some(generics) = type_item.generics() {
+                        generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect()
+                    } else {
+                        vec![]
+                    })),
+                    _ => None,
+                };
+            }
         }
         if base.is_none() {
             context.insert_diagnostics_error(type_item.identifier_path().span, "unknown type");
@@ -393,10 +396,6 @@ fn type_item_builtin_match<'a>(
                 }
             }))))
         },
-        "Enum" => {
-            check_generics_amount(0, type_item, context);
-            Some(Type::Enum)
-        },
         "Model" => {
             check_generics_amount(0, type_item, context);
             Some(Type::Model)
@@ -409,10 +408,6 @@ fn type_item_builtin_match<'a>(
             check_generics_amount(0, type_item, context);
             Some(Type::DataSet)
         },
-        "Namespace" => {
-            check_generics_amount(0, type_item, context);
-            Some(Type::Namespace)
-        }
         "Pipeline" => {
             check_generics_amount(2, type_item, context);
             Some(Type::Pipeline(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
