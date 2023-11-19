@@ -11,7 +11,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
-use crate::r#type::Type::SynthesizedShapeReference;
+use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
 use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
@@ -196,7 +196,42 @@ fn resolve_type_item<'a>(
                     Some(Type::Undetermined)
                 }
             } else if let Ok(shape_reference_kind) = SynthesizedShapeReferenceKind::from_str(name) {
-                None
+                check_generics_amount(if shape_reference_kind.requires_without() { 2 } else { 1 }, type_item, context);
+                if shape_reference_kind.requires_without() && type_item.generic_items().len() == 2 {
+                    let argument = *type_item.generic_items().first().unwrap();
+                    let without_field_type_expr = *type_item.generic_items().last().unwrap();
+                    let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
+                    let resolved_field_name = resolve_type_expr(without_field_type_expr, generics_declaration, generics_constraint, keywords_map, context, availability);
+                    if resolved_type.is_model_object() && resolved_field_name.is_field_name() {
+                        let model = context.schema.find_top_by_path(resolved_type.as_model_object().unwrap().path()).unwrap().as_model().unwrap();
+                        let found = model.fields().find(|f| f.is_resolved() && f.resolved().class.is_model_primitive_field()).is_some();
+                        if found {
+                            Some(Type::SynthesizedShapeReference(SynthesizedShapeReference {
+                                kind: shape_reference_kind,
+                                owner: Box::new(resolved_type),
+                                without: Some(resolved_field_name.as_field_name().unwrap().to_owned()),
+                            }))
+                        } else {
+                            Some(Type::Undetermined)
+                        }
+                    } else {
+                        Some(Type::Undetermined)
+                    }
+                } else if !shape_reference_kind.requires_without() && type_item.generic_items().len() == 1 {
+                    let argument = *type_item.generic_items().first().unwrap();
+                    let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
+                    if resolved_type.is_model_object() {
+                        Some(Type::SynthesizedShapeReference(SynthesizedShapeReference {
+                            kind: shape_reference_kind,
+                            owner: Box::new(resolved_type),
+                            without: None,
+                        }))
+                    } else {
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
             } else {
                 None
             }
