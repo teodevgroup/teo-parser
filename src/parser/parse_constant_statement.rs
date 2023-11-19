@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use crate::ast::constant::Constant;
+use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_expression::parse_expression;
@@ -9,7 +9,7 @@ use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
-pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) -> Constant {
+pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) -> ConstantDeclaration {
     let (
         span,
         path,
@@ -35,7 +35,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) 
         }
     }
     parse_container_node_variables_cleanup!(context, named);
-    Constant {
+    ConstantDeclaration {
         span,
         path,
         string_path,

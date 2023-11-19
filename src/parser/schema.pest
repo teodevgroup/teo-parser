@@ -67,7 +67,7 @@ COLON = @{ ":" }
 COMMA = @{ "," }
 DOT = @{ "." }
 ASSIGN = @{ "=" }
-BLOCK_OPEN = { "{" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
+BLOCK_OPEN = { "{" }
 BLOCK_CLOSE = { "}" }
 PAREN_OPEN = { "(" }
 PAREN_CLOSE = { ")" }
@@ -262,7 +262,7 @@ expression = {
 // variable & constant declaration
 // #############
 
-constant_statement = { LET_KEYWORD ~ identifier ~ (COLON ~ type_expression)? ~ ASSIGN ~ expression }
+constant_statement = { triple_comment_block? ~ LET_KEYWORD ~ identifier ~ (COLON ~ type_expression)? ~ ASSIGN ~ expression }
 
 // #############
 // arguments
@@ -379,7 +379,7 @@ decorator_declaration = {
     identifier ~
     (generics_declaration? ~ argument_list_declaration ~ generics_constraint?)? ~
     (BLOCK_OPEN ~
-    (triple_comment_block | double_comment_block | decorator_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+    (decorator_variant_declaration | triple_comment_block | double_comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
     BLOCK_CLOSE)?
 }
 
@@ -403,7 +403,7 @@ pipeline_item_declaration = {
         type_expression ~ generics_constraint?
       ) | (
         BLOCK_OPEN ~
-        (triple_comment_block | double_comment_block | pipeline_item_variant_declaration | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+        (pipeline_item_variant_declaration | triple_comment_block | double_comment_block | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
         BLOCK_CLOSE
       )
     )

@@ -38,7 +38,7 @@ pub fn find_completion(schema: &Schema, file_path: &str, line_col: (usize, usize
                 Node::Enum(e) => {
                     return find_completion_in_enum_declaration(schema, source, e, line_col);
                 }
-                Node::Constant(c) => {
+                Node::ConstantDeclaration(c) => {
                     return find_completion_in_constant_declaration(schema, source, c, line_col);
                 }
                 Node::DataSet(d) => {

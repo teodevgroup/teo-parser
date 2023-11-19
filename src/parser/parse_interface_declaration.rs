@@ -44,6 +44,7 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &ParserContex
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
             Rule::INTERFACE_KEYWORD => parse_insert_keyword!(context, current, children, "interface"),
+            Rule::EXTENDS_KEYWORD => parse_insert_keyword!(context, current, children, "extends"),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, extends),

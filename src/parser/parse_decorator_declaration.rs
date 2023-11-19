@@ -51,6 +51,18 @@ pub(super) fn parse_decorator_declaration(pair: Pair<'_>, context: &ParserContex
                 parse_append!(parse_doc_comment(current, context), children);
             },
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
+            Rule::DECLARE_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "declare");
+            },
+            Rule::UNIQUE_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "unique");
+            },
+            Rule::EXCLUSIVE_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "exclusive");
+            },
+            Rule::DECORATOR_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "decorator");
+            }
             Rule::MODEL_KEYWORD => {
                 parse_insert_keyword!(context, current, children, "model");
                 model = true;

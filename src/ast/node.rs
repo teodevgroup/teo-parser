@@ -13,7 +13,7 @@ use crate::ast::doc_comment::DocComment;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::keyword::Keyword;
-use crate::ast::constant::Constant;
+use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
@@ -69,7 +69,7 @@ pub enum Node {
     Config(Config),
     Keyword(Keyword),
     ConfigDeclaration(ConfigDeclaration),
-    Constant(Constant),
+    ConstantDeclaration(ConstantDeclaration),
     DataSet(DataSet),
     DataSetGroup(DataSetGroup),
     DataSetRecord(DataSetRecord),
@@ -291,13 +291,13 @@ impl Node {
         }
     }
 
-    pub fn is_constant(&self) -> bool {
-        self.as_constant().is_some()
+    pub fn is_constant_declaration(&self) -> bool {
+        self.as_constant_declaration().is_some()
     }
 
-    pub fn as_constant(&self) -> Option<&Constant> {
+    pub fn as_constant_declaration(&self) -> Option<&ConstantDeclaration> {
         match self {
-            Node::Constant(c) => Some(c),
+            Node::ConstantDeclaration(c) => Some(c),
             _ => None,
         }
     }
@@ -891,7 +891,7 @@ impl Node {
             Node::Config(n) => n,
             Node::Keyword(n) => n,
             Node::ConfigDeclaration(n) => n,
-            Node::Constant(n) => n,
+            Node::ConstantDeclaration(n) => n,
             Node::DataSet(n) => n,
             Node::DataSetGroup(n) => n,
             Node::DataSetRecord(n) => n,
@@ -949,7 +949,7 @@ impl Node {
 
     pub fn identifier_span(&self) -> Option<Span> {
         match self {
-            Node::Constant(c) => Some(c.identifier().span()),
+            Node::ConstantDeclaration(c) => Some(c.identifier().span()),
             Node::Enum(e) => Some(e.identifier().span()),
             Node::Model(m) => Some(m.identifier().span()),
             Node::Config(c) => Some(c.identifier().as_ref().map_or(c.keyword().span(), |i| i.span())),
@@ -968,7 +968,7 @@ impl Node {
 
     pub fn available_test(&self, availability: Availability) -> bool {
         match self {
-            Node::Constant(t) => t.define_availability().contains(availability),
+            Node::ConstantDeclaration(t) => t.define_availability().contains(availability),
             Node::Enum(t) => t.define_availability().contains(availability),
             Node::Model(t) => t.define_availability().contains(availability),
             Node::DataSet(t) => t.define_availability().contains(availability),
@@ -982,7 +982,7 @@ impl Node {
 
     pub fn string_path(&self) -> Option<&Vec<String>> {
         match self {
-            Node::Constant(c) => Some(c.string_path()),
+            Node::ConstantDeclaration(c) => Some(c.string_path()),
             Node::Enum(e) => Some(e.string_path()),
             Node::Model(m) => Some(m.string_path()),
             Node::Config(c) => Some(c.string_path()),
@@ -1001,7 +1001,7 @@ impl Node {
 
     pub fn str_path(&self) -> Option<Vec<&str>> {
         match self {
-            Node::Constant(c) => Some(c.str_path()),
+            Node::ConstantDeclaration(c) => Some(c.str_path()),
             Node::Enum(e) => Some(e.str_path()),
             Node::Model(m) => Some(m.str_path()),
             Node::Config(c) => Some(c.str_path()),
@@ -1020,7 +1020,7 @@ impl Node {
 
     pub fn name(&self) -> Option<&str> {
         match self {
-            Node::Constant(c) => Some(c.identifier().name()),
+            Node::ConstantDeclaration(c) => Some(c.identifier().name()),
             Node::Enum(e) => Some(e.identifier().name()),
             Node::Model(m) => Some(m.identifier().name()),
             Node::Config(c) => Some(c.name()),

@@ -273,7 +273,7 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
                 }
             }
         }
-        Node::Constant(c) => if c.is_resolved() {
+        Node::ConstantDeclaration(c) => if c.is_resolved() {
             ExprInfo {
                 r#type: c.resolved().r#type.clone(),
                 value: c.resolved().value.clone(),

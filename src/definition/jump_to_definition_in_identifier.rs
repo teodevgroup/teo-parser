@@ -25,7 +25,7 @@ pub(super) fn jump_to_definition_in_identifier<'a>(
         availability,
     ) {
         match schema.find_top_by_path(&reference).unwrap() {
-            Node::Constant(c) => vec![Definition {
+            Node::ConstantDeclaration(c) => vec![Definition {
                 path: schema.source(*reference.get(0).unwrap()).unwrap().file_path.clone(),
                 selection_span: identifier.span,
                 target_span: c.span,

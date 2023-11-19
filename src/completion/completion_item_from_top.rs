@@ -1,7 +1,7 @@
 use crate::ast::doc_comment::DocComment;
 use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
-use crate::ast::constant::Constant;
+use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::field::Field;
@@ -23,7 +23,7 @@ pub(super) fn completion_item_from_top(top: &Node) -> CompletionItem {
         Node::Import(_) => unreachable!(),
         Node::Config(c) => completion_item_from_config(c),
         Node::ConfigDeclaration(c) => completion_item_from_config_declaration(c),
-        Node::Constant(c) => completion_item_from_constant(c),
+        Node::ConstantDeclaration(c) => completion_item_from_constant(c),
         Node::Enum(e) => completion_item_from_enum(e),
         Node::Model(m) => completion_item_from_model(m),
         Node::DataSet(d) => completion_item_from_data_set(d),
@@ -90,7 +90,7 @@ pub(super) fn completion_item_from_config_declaration(config_declaration: &Confi
     }
 }
 
-pub(super) fn completion_item_from_constant(constant: &Constant) -> CompletionItem {
+pub(super) fn completion_item_from_constant(constant: &ConstantDeclaration) -> CompletionItem {
     CompletionItem {
         label: constant.identifier().name.clone(),
         namespace_path: Some(readable_namespace_path(&constant.string_path)),

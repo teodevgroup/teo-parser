@@ -11,7 +11,7 @@ use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 use crate::expr::ExprInfo;
 
-declare_container_node!(Constant, named, availability,
+declare_container_node!(ConstantDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) identifier: usize,
     pub(crate) type_expr: Option<usize>,
@@ -19,9 +19,9 @@ declare_container_node!(Constant, named, availability,
     pub(crate) resolved: RefCell<Option<ExprInfo >>,
 );
 
-impl_container_node_defaults!(Constant, named, availability);
+impl_container_node_defaults!(ConstantDeclaration, named, availability);
 
-impl Constant {
+impl ConstantDeclaration {
 
     node_child_fn!(identifier, Identifier);
 
@@ -32,19 +32,19 @@ impl Constant {
     node_child_fn!(expression, Expression);
 }
 
-impl InfoProvider for Constant {
+impl InfoProvider for ConstantDeclaration {
     fn namespace_skip(&self) -> usize {
         1
     }
 }
 
-impl Resolve<ExprInfo> for Constant {
+impl Resolve<ExprInfo> for ConstantDeclaration {
     fn resolved_ref_cell(&self) -> &RefCell<Option<ExprInfo>> {
         &self.resolved
     }
 }
 
-impl Write for Constant {
+impl Write for ConstantDeclaration {
     fn write<'a>(&'a self, writer: &mut Writer<'a>) {
         writer.write_children(self, self.children.values());
     }

@@ -22,7 +22,7 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
                 Node::Import(i) => jump_to_definition_in_import(schema, source, i, line_col),
                 Node::Model(m) => jump_to_definition_in_model(schema, source, m, line_col),
                 Node::InterfaceDeclaration(i) => jump_to_definition_in_interface(schema, source, i, line_col),
-                Node::Constant(c) => jump_to_definition_in_constant(schema, source, c, line_col),
+                Node::ConstantDeclaration(c) => jump_to_definition_in_constant(schema, source, c, line_col),
                 Node::Config(c) => jump_to_definition_in_config(schema, source, c, line_col),
                 Node::ConfigDeclaration(c) => jump_to_definition_in_config_declaration(schema, source, c, line_col),
                 Node::PipelineItemDeclaration(p) => jump_to_definition_in_pipeline_item_declaration(schema, source, p, line_col),

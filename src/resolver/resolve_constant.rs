@@ -1,12 +1,12 @@
 use maplit::btreemap;
-use crate::ast::constant::{Constant};
+use crate::ast::constant_declaration::{ConstantDeclaration};
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_constant_references<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_constant_references<'a>(constant: &'a ConstantDeclaration, context: &'a ResolverContext<'a>) {
     if constant.is_resolved() { return; }
     *constant.actual_availability.borrow_mut() = context.current_availability();
     if let Some(type_expr) = constant.type_expr() {
@@ -19,7 +19,7 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a Constant, context: &
     context.pop_dependency();
 }
 
-pub(super) fn resolve_constant_check<'a>(constant: &'a Constant, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_constant_check<'a>(constant: &'a ConstantDeclaration, context: &'a ResolverContext<'a>) {
     if !constant.is_resolved() {
 
     }

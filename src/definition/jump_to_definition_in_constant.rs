@@ -1,4 +1,4 @@
-use crate::ast::constant::Constant;
+use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::definition::definition::Definition;
@@ -11,7 +11,7 @@ use crate::traits::node_trait::NodeTrait;
 pub(super) fn jump_to_definition_in_constant<'a>(
     schema: &'a Schema,
     source: &'a Source,
-    constant: &'a Constant,
+    constant: &'a ConstantDeclaration,
     line_col: (usize, usize),
 ) -> Vec<Definition> {
     let mut namespace_path: Vec<&str> = constant.string_path.iter().map(|s| s.as_str()).collect();

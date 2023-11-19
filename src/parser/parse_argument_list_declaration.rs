@@ -15,6 +15,7 @@ pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &ParserCo
         match current.as_rule() {
             Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
             Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
+            Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::argument_declaration => parse_insert!(parse_argument_declaration(current, context), children, argument_declarations),
             _ => context.insert_unparsed(parse_span(&current)),
         }

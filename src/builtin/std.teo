@@ -1208,7 +1208,7 @@ namespace std {
         _max: EnumFilter<T>?
     }
 
-    interface EnumNullableWithAggregatesFilter extends EnumNullableFilter<T> {
+    interface EnumNullableWithAggregatesFilter<T> extends EnumNullableFilter<T> {
         _count: Int64?
         _min: EnumNullableFilter<T>?
         _max: EnumNullableFilter<T>?

@@ -92,7 +92,7 @@ pub(super) fn jump_to_definition_in_unit<'a>(
                             identifier_span: config_declaration.identifier().span,
                         }]
                     },
-                    Node::Constant(constant) => vec![Definition {
+                    Node::ConstantDeclaration(constant) => vec![Definition {
                         path: schema.source(constant.source_id()).unwrap().file_path.clone(),
                         selection_span: span,
                         target_span: constant.span,

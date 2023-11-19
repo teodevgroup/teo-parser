@@ -35,7 +35,7 @@ pub(super) fn resolve_namespace_references<'a>(namespace: &'a Namespace, context
     context.push_namespace(namespace);
     for node in namespace.children.values() {
         match node {
-            Node::Constant(constant) => resolve_constant_references(constant, context),
+            Node::ConstantDeclaration(constant) => resolve_constant_references(constant, context),
             Node::Config(config) => resolve_config_references(config, context),
             Node::MiddlewareDeclaration(middleware) => resolve_middleware_references(middleware, context),
             Node::Namespace(namespace) => resolve_namespace_references(namespace, context),

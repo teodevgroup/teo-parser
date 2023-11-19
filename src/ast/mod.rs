@@ -21,7 +21,7 @@ pub mod type_expr;
 pub mod arity;
 pub mod argument;
 pub mod argument_list;
-pub mod constant;
+pub mod constant_declaration;
 pub mod data_set;
 pub mod decorator;
 pub mod group;

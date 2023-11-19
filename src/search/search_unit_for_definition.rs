@@ -95,8 +95,8 @@ pub fn search_unit_for_definition<HAL, HS, HI, OUTPUT>(
             }
             if current.is_some() && current.as_ref().unwrap().is_reference() {
                 let top = schema.find_top_by_path(current.as_ref().unwrap().as_reference().unwrap()).unwrap();
-                if top.is_constant() {
-                    current = Some(UnitSearchResult::Type(top.as_constant().unwrap().resolved().r#type.clone()));
+                if top.is_constant_declaration() {
+                    current = Some(UnitSearchResult::Type(top.as_constant_declaration().unwrap().resolved().r#type.clone()));
                 }
             }
         } else {

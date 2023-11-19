@@ -1529,6 +1529,7 @@ impl ShapeAvailableContext {
 }
 
 fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a ResolverContext<'a>) -> Type {
+    println!("name to find: {}", name);
     let interface = context.schema.std_source().find_node_by_string_path(
         &vec!["std", name],
         &top_filter_for_reference_type(ReferenceSpace::Default),

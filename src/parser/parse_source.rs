@@ -66,7 +66,7 @@ pub(super) fn parse_source(
             Rule::constant_statement => { // let a = 5
                 let constant = parse_constant_statement(current, context);
                 references.constants.insert(constant.id());
-                children.insert(constant.id(), Node::Constant(constant));
+                children.insert(constant.id(), Node::ConstantDeclaration(constant));
             },
             Rule::config_block => { // server { ... }
                 let config = parse_config_block(current, context);
