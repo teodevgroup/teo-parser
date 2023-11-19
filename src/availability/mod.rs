@@ -6,9 +6,9 @@ static MONGO: u32 = 1 << 1;
 static MYSQL: u32 = 1 << 2;
 static POSTGRES: u32 = 1 << 3;
 static SQLITE: u32 = 1 << 4;
-static DATABASE: u32 = MONGO | MYSQL | POSTGRES | SQLITE;
 static SQL: u32 = MYSQL | POSTGRES | SQLITE;
-static ALL: u32 = SQL | MONGO;
+static DATABASE: u32 = MONGO | SQL;
+static ALL: u32 = DATABASE | NO_DATABASE;
 
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]

@@ -9,18 +9,43 @@ use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaratio
 use crate::resolver::resolve_enum::resolve_enum_types;
 use crate::resolver::resolve_interface::resolve_interface_declaration_types;
 use crate::resolver::resolve_middleware::resolve_middleware_references;
-use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_references, resolve_model_types};
+use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references, resolve_model_types};
+use crate::resolver::resolve_model_shapes::resolve_model_shapes;
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
 use crate::resolver::resolver_context::ResolverContext;
+
+pub(super) fn resolve_namespace_model_fields<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+    context.push_namespace(namespace);
+    for node in namespace.children.values() {
+        match node {
+            Node::Model(m) => resolve_model_fields(m, context),
+            Node::Namespace(n) => resolve_namespace_model_fields(n, context),
+            _ => (),
+        }
+    }
+    context.pop_namespace();
+}
+
+pub(super) fn resolve_namespace_model_shapes<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+    context.push_namespace(namespace);
+    for node in namespace.children.values() {
+        match node {
+            Node::Model(m) => resolve_model_shapes(m, context),
+            Node::Namespace(n) => resolve_namespace_model_shapes(n, context),
+            _ => (),
+        }
+    }
+    context.pop_namespace();
+}
 
 pub(super) fn resolve_namespace_types<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
     for node in namespace.children.values() {
         match node {
             Node::Enum(r#enum) => resolve_enum_types(r#enum, context),
-            Node::Model(model) => resolve_model_types(model, context),
+            Node::Model(model) => (),
             Node::InterfaceDeclaration(interface) => resolve_interface_declaration_types(interface, context),
             Node::Namespace(namespace) => resolve_namespace_types(namespace, context),
             Node::ConfigDeclaration(config_declaration) => resolve_config_declaration_types(config_declaration, context),

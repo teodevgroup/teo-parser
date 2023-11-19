@@ -18,8 +18,6 @@ pub(super) enum FieldParentType {
 pub(super) fn resolve_field_class<'a>(
     field: &'a Field,
     parent_type: FieldParentType,
-    generics_declaration: Option<&'a GenericsDeclaration>,
-    generics_constraint: Option<&'a GenericsConstraint>,
     context: &'a ResolverContext<'a>,
 ) {
     *field.actual_availability.borrow_mut() = context.current_availability();
@@ -52,6 +50,14 @@ pub(super) fn resolve_field_class<'a>(
             });
         }
     }
+}
+
+pub(super) fn resolve_field_types<'a>(
+    field: &'a Field,
+    generics_declaration: Option<&'a GenericsDeclaration>,
+    generics_constraint: Option<&'a GenericsConstraint>,
+    context: &'a ResolverContext<'a>
+) {
     resolve_type_expr(
         field.type_expr(),
         &if let Some(generics_declaration) = generics_declaration {

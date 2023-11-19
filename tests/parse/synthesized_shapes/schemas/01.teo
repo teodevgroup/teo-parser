@@ -1,0 +1,66 @@
+connector {
+  // provider
+  provider: .mysql,
+  url: "mysql://localhost:3306/synthesized_shapes_01",
+}
+
+server {
+  bind: ("0.0.0.0", 5500)
+}
+
+enum Sex {
+  male
+  female
+}
+
+model User {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  age: Int?
+  @relation(fields: .id, references: .userId)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
+
+interface BackupInput {
+  name: String?
+  age: Int
+}
+
+declare handler group Backup {
+  declare handler call(BackupInput): Any
+}
+
+namespace intro {
+  model Cat {
+    @id @readonly @autoIncrement
+    id: Int
+    name: String
+  }
+}
+
+dataset default {
+  group User {
+    record john {
+      "name": "dd",
+      "age": 5,
+      "posts": [.a]
+    }
+  }
+  group Post {
+    record a {
+      "name": "Post 1",
+      "user": .john
+    }
+  }
+}

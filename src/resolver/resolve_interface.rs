@@ -1,6 +1,6 @@
 use maplit::btreemap;
 use crate::ast::interface::InterfaceDeclaration;
-use crate::resolver::resolve_field::{FieldParentType, resolve_field_class};
+use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_types};
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
@@ -43,27 +43,14 @@ pub(super) fn resolve_interface_declaration_types<'a>(interface_declaration: &'a
         resolve_field_class(
             field,
             FieldParentType::Interface,
+            context,
+        );
+        resolve_field_types(
+            field,
             interface_declaration.generics_declaration(),
             interface_declaration.generics_constraint(),
-            context,
-        );
-        resolve_type_expr(
-            field.type_expr(),
-            &if let Some(generics_declaration) = interface_declaration.generics_declaration() {
-                vec![generics_declaration]
-            } else {
-                vec![]
-            },
-            &if let Some(generics_constraint) = interface_declaration.generics_constraint() {
-                vec![generics_constraint]
-            } else {
-                vec![]
-            },
-            &btreemap! {},
-            context,
-            interface_declaration.define_availability,
+            context
         );
     }
-
     context.add_examined_default_path(interface_declaration.string_path.clone(), interface_declaration.define_availability);
 }

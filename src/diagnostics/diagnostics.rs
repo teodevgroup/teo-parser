@@ -209,8 +209,8 @@ impl Diagnostics {
     }
 
     pub(crate) fn insert_unparsed_rule(&mut self, span: Span, source_path: String) {
-        let backtrace = std::backtrace::Backtrace::capture();
-        println!("see {}", backtrace);
+        // let backtrace = std::backtrace::Backtrace::capture();
+        // println!("see {}", backtrace);
         self.insert(DiagnosticsError::new(span, "unexpected content", source_path))
     }
 

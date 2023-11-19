@@ -1,7 +1,7 @@
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::diagnostics::diagnostics::Diagnostics;
-use crate::resolver::resolve_source::{resolve_source_consumers, resolve_source_references, resolve_source_types};
+use crate::resolver::resolve_source::{resolve_source_consumers, resolve_source_model_fields, resolve_source_model_shapes, resolve_source_references, resolve_source_types};
 use crate::resolver::resolver_context::ResolverContext;
 
 pub(crate) fn resolve(schema: &Schema, diagnostics: &mut Diagnostics) {
@@ -13,6 +13,14 @@ pub(crate) fn resolve(schema: &Schema, diagnostics: &mut Diagnostics) {
 }
 
 fn resolve_sources<'a>(context: &'a ResolverContext<'a>, sources: &Vec<&'a Source>) {
+    for source in sources {
+        context.start_source(source);
+        resolve_source_model_fields(context);
+    }
+    for source in sources {
+        context.start_source(source);
+        resolve_source_model_shapes(context);
+    }
     for source in sources {
         context.start_source(source);
         resolve_source_types(context);

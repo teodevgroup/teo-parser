@@ -3,8 +3,8 @@ mod test {
     use teo_parser::parse;
 
     #[test]
-    fn builtin_std_teo_should_be_no_errors() {
-        let path_buf = std::env::current_dir().unwrap().join("src/builtin/std.teo");
+    fn synthesized_shapes_can_reference_to_interfaces_in_stdlib() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/parse/synthesized_shapes/schemas/01.teo");
         let path = path_buf.to_str().unwrap();
         let (_, diagnostics) = parse(path, None, None);
         print_diagnostics(&diagnostics, true);

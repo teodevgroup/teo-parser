@@ -27,6 +27,9 @@ use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+    if !context.current_availability().contains(Availability::database()) {
+        return
+    }
     let mut enums = IndexMap::new();
     let mut shapes = IndexMap::new();
     let mut shape_available_context = ShapeAvailableContext::new();
@@ -1529,7 +1532,6 @@ impl ShapeAvailableContext {
 }
 
 fn search_filter_type_in_std<'a>(name: &str, generics: Vec<Type>, context: &'a ResolverContext<'a>) -> Type {
-    println!("name to find: {}", name);
     let interface = context.schema.std_source().find_node_by_string_path(
         &vec!["std", name],
         &top_filter_for_reference_type(ReferenceSpace::Default),

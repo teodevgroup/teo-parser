@@ -6,13 +6,13 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
-use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators};
+use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators, resolve_field_types};
 use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
 use crate::resolver::resolve_model_shapes::resolve_model_shapes;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::resolved::Resolve;
 
-pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+pub(super) fn resolve_model_fields<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     let actual_availability = context.current_availability();
     *model.actual_availability.borrow_mut() = actual_availability;
     if context.has_examined_default_path(&model.string_path, model.define_availability) {
@@ -21,14 +21,20 @@ pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverCon
     context.clear_examined_fields();
     // fields
     for field in model.fields() {
-        resolve_field_class(field, FieldParentType::Model, None, None, context);
+        resolve_field_class(field, FieldParentType::Model, context);
     }
+    resolve_model_types(model, context);
     model.resolve(ModelResolved {
         enums: indexmap! {},
         shapes: indexmap! {},
     });
-    resolve_model_shapes(model, context);
     context.add_examined_default_path(model.string_path.clone(), model.define_availability);
+}
+
+pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+    for field in model.fields() {
+        resolve_field_types(field, None, None, context);
+    }
 }
 
 pub(super) fn resolve_model_references<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
