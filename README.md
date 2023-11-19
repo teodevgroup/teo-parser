@@ -13,6 +13,8 @@ Schema parser for Teo schema language
 ### 0.1.0
 
 * Improve stability
+* Optimizations
+* Improve performance
 
 ### 0.3.0
 

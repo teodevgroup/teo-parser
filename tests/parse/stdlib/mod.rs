@@ -8,7 +8,7 @@ mod test {
         let path = "/Users/victor/Developer/teo-parser/src/builtin/std.teo";
         let (schema, diagnostics) = parse(path, None, None);
         print_diagnostics(&diagnostics, true);
-        // assert_eq!(diagnostics.has_errors(), false);
-        // assert_eq!(diagnostics.has_warnings(), false);
+        assert_eq!(diagnostics.has_errors(), false);
+        assert_eq!(diagnostics.has_warnings(), false);
     }
 }

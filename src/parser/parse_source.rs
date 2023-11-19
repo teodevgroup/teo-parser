@@ -153,6 +153,7 @@ pub(super) fn parse_source(
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
+            Rule::EOI => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
