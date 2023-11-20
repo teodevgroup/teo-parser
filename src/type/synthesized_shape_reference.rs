@@ -1,8 +1,10 @@
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use serde::Serialize;
 use crate::r#type::Type;
 use strum_macros::{Display, EnumString, AsRefStr};
 use crate::ast::schema::Schema;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
 
 use crate::traits::resolved::Resolve;
@@ -542,6 +544,22 @@ impl SynthesizedShapeReference {
             kind: SynthesizedShapeReferenceKind::GroupByResult,
             owner: Box::new(Type::ModelObject(reference)),
             without: None
+        }
+    }
+
+    pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
+        Self {
+            kind: self.kind,
+            owner: Box::new(self.owner.replace_keywords(map)),
+            without: self.without.clone(),
+        }
+    }
+
+    pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
+        Self {
+            kind: self.kind,
+            owner: Box::new(self.owner.replace_generics(map)),
+            without: self.without.clone(),
         }
     }
 }

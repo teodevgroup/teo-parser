@@ -184,7 +184,7 @@ fn resolve_type_item<'a>(
                 if type_item.generic_items().len() == 1 {
                     let argument = *type_item.generic_items().first().unwrap();
                     let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
-                    if resolved_type.is_model_object() {
+                    if resolved_type.is_model_object() || resolved_type.is_keyword() || resolved_type.is_generic_item() {
                         Some(Type::SynthesizedEnumReference(SynthesizedEnumReference {
                             kind: enum_reference_kind,
                             owner: Box::new(resolved_type)
@@ -202,7 +202,7 @@ fn resolve_type_item<'a>(
                     let without_field_type_expr = *type_item.generic_items().last().unwrap();
                     let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
                     let resolved_field_name = resolve_type_expr(without_field_type_expr, generics_declaration, generics_constraint, keywords_map, context, availability);
-                    if resolved_type.is_model_object() && resolved_field_name.is_field_name() {
+                    if (resolved_type.is_model_object() || resolved_type.is_keyword() || resolved_type.is_generic_item()) && resolved_field_name.is_field_name() {
                         let model = context.schema.find_top_by_path(resolved_type.as_model_object().unwrap().path()).unwrap().as_model().unwrap();
                         let found = model.fields().find(|f| f.is_resolved() && f.resolved().class.is_model_primitive_field()).is_some();
                         if found {
