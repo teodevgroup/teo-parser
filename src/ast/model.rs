@@ -51,16 +51,27 @@ impl Model {
     node_children_iter_fn!(handlers, HandlersIter);
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct ModelResolved {
     pub enums: IndexMap<SynthesizedEnumReferenceKind, SynthesizedEnum>,
     pub shapes: IndexMap<(SynthesizedShapeReferenceKind, Option<String>), Type>,
 }
 
 impl ModelResolved {
+    
+    pub fn new() -> Self {
+        Self {
+            enums: Default::default(),
+            shapes: Default::default(),
+        }
+    }
 
     pub fn get(&self, key: SynthesizedShapeReferenceKind) -> Option<&Type> {
         self.shapes.get(&(key, None))
+    }
+
+    pub fn get_without(&self, key: SynthesizedShapeReferenceKind, without: &str) -> Option<&Type> {
+        self.shapes.get(&(key, Some(without.to_owned())))
     }
 }
 

@@ -38,7 +38,7 @@ pub enum ArithExprOperator {
     ForceUnwrap,
 }
 
-declare_container_node!(UnaryOperation, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
+declare_container_node!(UnaryOperation, pub op: ArithExprOperator, pub(crate) rhs: usize);
 
 impl_container_node_defaults!(UnaryOperation);
 
@@ -53,7 +53,7 @@ impl Write for UnaryOperation {
     }
 }
 
-declare_container_node!(UnaryPostfixOperation, pub(crate) op: ArithExprOperator, pub(crate) lhs: usize);
+declare_container_node!(UnaryPostfixOperation, pub op: ArithExprOperator, pub(crate) lhs: usize);
 
 impl_container_node_defaults!(UnaryPostfixOperation);
 
