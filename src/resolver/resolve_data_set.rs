@@ -17,6 +17,10 @@ pub(super) fn resolve_data_set_references<'a>(data_set: &'a DataSet, context: &'
     if context.has_examined_default_path(&data_set.string_path, data_set.define_availability) {
         context.insert_duplicated_identifier(data_set.identifier().span);
     }
+    if context.has_examined_data_set(data_set.string_path()) {
+        context.insert_diagnostics_error(data_set.identifier().span, "duplicated data set definition in a file");
+    }
+    context.add_examined_data_set(data_set.string_path.clone());
     *data_set.actual_availability.borrow_mut() = actual_availability;
     for group in data_set.groups() {
         resolve_data_set_group(data_set, group, context);

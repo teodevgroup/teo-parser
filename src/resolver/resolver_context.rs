@@ -29,6 +29,8 @@ pub(crate) struct ResolverContext<'a> {
     pub(crate) examined_fields: Mutex<BTreeSet<String>>,
     pub(crate) examined_middleware_paths: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) examined_data_set_records: Mutex<BTreeSet<ExaminedDataSetRecord>>,
+    pub(crate) examined_namespaces_in_a_file: Mutex<BTreeSet<Vec<String>>>,
+    pub(crate) examined_datasets_in_a_file: Mutex<BTreeSet<Vec<String>>>,
     pub(crate) diagnostics: RefCell<&'a mut Diagnostics>,
     pub(crate) schema: &'a Schema,
     pub(crate) source: Mutex<Option<&'a Source>>,
@@ -49,6 +51,8 @@ impl<'a> ResolverContext<'a> {
             examined_fields: Mutex::new(btreeset!{}),
             examined_middleware_paths: Mutex::new(btreeset!{}),
             examined_data_set_records: Mutex::new(btreeset!{}),
+            examined_namespaces_in_a_file: Mutex::new(btreeset! {}),
+            examined_datasets_in_a_file: Mutex::new(btreeset! {}),
             diagnostics: RefCell::new(diagnostics),
             schema,
             source: Mutex::new(None),
@@ -64,6 +68,8 @@ impl<'a> ResolverContext<'a> {
         // set availability
         let availability = find_source_availability(self.schema, source);
         *self.availabilities.lock().unwrap() = vec![availability];
+        *self.examined_datasets_in_a_file.lock().unwrap() = btreeset! {};
+        *self.examined_namespaces_in_a_file.lock().unwrap() = btreeset! {};
     }
 
     // this is used for circular reference detection
@@ -80,7 +86,19 @@ impl<'a> ResolverContext<'a> {
         self.resolving_dependencies.lock().unwrap().contains(dependency)
     }
 
+    pub(crate) fn has_examined_data_set(&self, path: &Vec<String>) -> bool {
+        self.examined_datasets_in_a_file.lock().unwrap().contains(path)
+    }
+
+    pub(crate) fn add_examined_data_set(&self, path: Vec<String>) {
+        self.examined_datasets_in_a_file.lock().unwrap().insert(path);
+    }
+
     pub(crate) fn push_namespace(&self, namespace: &'a Namespace) {
+        if self.examined_namespaces_in_a_file.lock().unwrap().contains(namespace.string_path()) {
+            self.insert_diagnostics_error(namespace.identifier().span, "duplicated namespace in a file");
+        }
+        *self.examined_namespaces_in_a_file.lock().unwrap().insert(namespace.string_path().clone());
         self.namespaces.lock().unwrap().push(namespace);
         let availability = find_namespace_availability(namespace, self.schema, self.source());
         self.availabilities.lock().unwrap().push(availability);
