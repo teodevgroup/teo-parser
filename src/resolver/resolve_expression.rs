@@ -216,7 +216,6 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                     r#type: Type::EnumVariant(enum_reference.clone()),
                     value: None,
                     reference_info: None,
-
                 }
             }
         }
@@ -234,7 +233,24 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 r#type: Type::EnumVariant(enum_reference.clone()),
                 value: Some(Value::EnumVariant(EnumVariant {
                     value: member.resolved().as_str().unwrap().to_string(),
-                    args: None,
+                    args: if let Some(argument_list) = e.argument_list() {
+                        let mut has_runtime_value = false;
+                        let mut args = btreemap! {};
+                        for argument in argument_list.arguments() {
+                            if !argument.is_resolved() {
+                                has_runtime_value = true;
+                                break
+                            }
+                            if argument.value().resolved().value().is_none() {
+                                has_runtime_value = true;
+                                break
+                            }
+                            args.insert(argument.resolved_name().unwrap().to_owned(), argument.value().resolved().value().unwrap().clone());
+                        }
+                        if has_runtime_value { None } else { Some(args) }
+                    } else {
+                        None
+                    },
                 })),
                 reference_info: None,
             }

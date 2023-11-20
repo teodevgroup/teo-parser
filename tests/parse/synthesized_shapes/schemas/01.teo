@@ -76,6 +76,7 @@ model Artist {
 model Song {
   @id @readonly @autoIncrement
   id: Int
+  @db(.varChar(181))
   name: String
   @relation(through: Perform, local: .song, foreign: .artist)
 }

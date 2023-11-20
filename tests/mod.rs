@@ -4,8 +4,6 @@ pub mod auto_completion;
 pub mod format;
 
 mod test {
-    use teo_parser::{parse, print_to_terminal, generate_json_diagnostics, auto_complete_items, jump_to_definition};
-    use teo_parser::format::format::format_document;
 
     // #[test]
     // fn print() {

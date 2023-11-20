@@ -1,6 +1,6 @@
 [package]
 name = "teo-parser"
-version = "0.0.59-alpha.0"
+version = "0.0.59"
 edition = "2021"
 description = "Parser for Teo schema language"
 license = "Apache-2.0"
