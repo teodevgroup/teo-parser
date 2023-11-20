@@ -533,6 +533,15 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             lhs.r#type().clone()
                         } else if lhs.r#type().is_int() && rhs.r#type().is_int_32_or_64() {
                             lhs.r#type().clone()
+                        } else if lhs.r#type().is_enum_variant() && lhs.r#type().test(rhs.r#type()) {
+                            let definition = lhs.r#type().as_enum_variant().unwrap();
+                            let e = context.schema.find_top_by_path(definition.path()).unwrap().as_enum().unwrap();
+                            if e.option {
+                                lhs.r#type().clone()
+                            } else {
+                                context.insert_diagnostics_error(binary.span, "invalid expression");
+                                Type::Undetermined
+                            }
                         } else {
                             context.insert_diagnostics_error(binary.span, "invalid expression");
                             Type::Undetermined

@@ -13,9 +13,11 @@ enum Sex {
   female
 }
 
+@action(.create | .update | .delete | .copy | .find)
 model User {
   @id @readonly @autoIncrement
   id: Int
+  @db(.varChar(156))
   name: String
   age: Int?
   @relation(fields: .id, references: .userId)

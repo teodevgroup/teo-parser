@@ -63,7 +63,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                 return t;
             }
         }
-        context.insert_diagnostics_error(callable_span, "variant not found for arguments");
+        context.insert_diagnostics_error(callable_span, "callable variant not found for arguments");
         return Some(Type::Undetermined);
     }
 }
