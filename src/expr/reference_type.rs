@@ -11,6 +11,7 @@ pub enum ReferenceType {
     InterfaceField,
     Middleware,
     DataSet,
+    DataSetRecord,
     DecoratorDeclaration,
     PipelineItemDeclaration,
     StructDeclaration,

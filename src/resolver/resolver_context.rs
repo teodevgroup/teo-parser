@@ -12,6 +12,7 @@ use crate::ast::source::Source;
 use crate::ast::span::Span;
 use crate::diagnostics::diagnostics::{Diagnostics, DiagnosticsError, DiagnosticsWarning};
 use crate::search::search_availability::{find_namespace_availability, find_source_availability};
+use crate::traits::named_identifiable::NamedIdentifiable;
 
 #[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) struct ExaminedDataSetRecord {
@@ -100,6 +101,10 @@ impl<'a> ResolverContext<'a> {
 
     pub(crate) fn current_namespace(&self) -> Option<&Namespace> {
         self.namespaces.lock().unwrap().last().map(|r| *r)
+    }
+
+    pub(crate) fn current_namespace_path(&self) -> Vec<&str> {
+        self.current_namespace().map(|n| n.str_path()).unwrap_or(vec![])
     }
 
     pub(crate) fn add_examined_default_path(&self, path: Vec<String>, availability: Availability) {

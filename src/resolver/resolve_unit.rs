@@ -74,6 +74,7 @@ fn resolve_current_item_for_unit<'a>(
                 ReferenceType::StructStaticFunction => resolve_struct_static_function_reference_for_unit(last_span.unwrap(), reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
                 ReferenceType::StructInstanceFunction => resolve_struct_instance_function_reference_for_unit(last_span.unwrap(), reference_info.reference(), reference_info.generics().unwrap_or(&vec![]), expression, context),
                 ReferenceType::FunctionDeclaration => todo!(),
+                ReferenceType::DataSetRecord => todo!(),
                 ReferenceType::Namespace => resolve_namespace_reference_for_unit(reference_info.reference().string_path(), expression, context),
             }
         } else {
