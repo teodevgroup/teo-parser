@@ -64,3 +64,30 @@ dataset default {
     }
   }
 }
+
+model Artist {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .artist, foreign: .song)
+  songs: Song[]
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .song, foreign: .artist)
+}
+
+@id([.songId, .artistId])
+model Perform {
+  @relation(fields: .songId, references: .id)
+  song: Song
+  @relation(fields: .artistId, references: .id)
+  artist: Artist
+  @foreignKey
+  songId: Int
+  @foreignKey
+  artistId: Int
+}

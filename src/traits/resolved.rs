@@ -9,10 +9,6 @@ pub trait Resolve<T> {
     }
 
     fn resolved(&self) -> &T {
-        if !self.is_resolved() {
-            let backtrace = std::backtrace::Backtrace::capture();
-            println!("see resolved {}", backtrace);
-        }
         (unsafe { &*self.resolved_ref_cell().as_ptr() }).as_ref().unwrap()
     }
 

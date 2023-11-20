@@ -20,20 +20,4 @@ impl FileState {
             line_remaining_length: preferences.maximum_line_width() as i64,
         }
     }
-
-    fn set_indent_level(&mut self, indent_level: usize) {
-        if indent_level > 0 {
-            self.indent_level = indent_level;
-        }
-    }
-
-    fn increase_indent_level(&mut self) {
-        self.indent_level += 1;
-    }
-
-    fn decrease_indent_level(&mut self) {
-        if self.indent_level > 0 {
-            self.indent_level -= 1;
-        }
-    }
 }

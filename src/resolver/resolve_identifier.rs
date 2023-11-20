@@ -332,7 +332,7 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
             )
         },
         Node::Model(m) => ExprInfo {
-            r#type: Type::Model,
+            r#type: Type::ModelObject(Reference::new(m.path.clone(), m.string_path.clone())),
             value: None,
             reference_info: Some(ReferenceInfo::new(
                 ReferenceType::Model,

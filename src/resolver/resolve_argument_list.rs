@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap};
+use std::collections::{BTreeMap, BTreeSet};
 use maplit::{btreemap, btreeset};
 use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
@@ -22,11 +22,19 @@ pub(super) fn resolve_argument_list<'a, 'b>(
     context: &'a ResolverContext<'a>,
     pipeline_type_context: Option<&'b TypeInfo>,
 ) -> Option<Type> {
-    if callable_variants.len() == 1 {
+    let matched_variants = matched_callable_variants(&callable_variants, argument_list);
+    let only_to_match = if callable_variants.len() == 1 {
+        Some(callable_variants.first().unwrap())
+    } else if matched_variants.len() == 1 {
+        Some(*matched_variants.first().unwrap())
+    } else {
+        None
+    };
+    if let Some(only_to_match) = only_to_match {
         let (errors, warnings, t) = try_resolve_argument_list_for_callable_variant(
             callable_span,
             argument_list,
-            callable_variants.first().unwrap(),
+            only_to_match,
             keywords_map,
             context,
             pipeline_type_context,
@@ -266,7 +274,7 @@ fn validate_generics_map_with_constraint_info<'a>(
                 if item.identifier().name() == name {
                     let mut generics_map_without_name = generics_map.clone();
                     generics_map_without_name.remove(name);
-                    if !t.constraint_test(&item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)) {
+                    if !item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map).constraint_test(t) {
                         results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr().resolved())))
                     }
                 }
@@ -341,4 +349,26 @@ fn guess_extend_and_check<'a>(
     }
     // guessing more by constraints
     generics_map.extend(guess_generics_by_constraints(&generics_map, keywords_map, &callable_variant.generics_constraints));
+}
+
+fn matched_callable_variants<'a, 'b>(callable_variants: &'b Vec<CallableVariant<'a>>, argument_list: Option<&'a ArgumentList>) -> Vec<&'b CallableVariant<'a>> {
+    if let Some(argument_list) = argument_list {
+        let mut occurred_names = btreeset!{};
+        for argument in argument_list.arguments() {
+            if let Some(name) = argument.name() {
+                occurred_names.insert(name.name());
+            }
+        }
+        callable_variants.iter().filter(|v| {
+            if let Some(argument_list_declaration) = v.argument_list_declaration {
+                let names: BTreeSet<&str> = argument_list_declaration.argument_declarations().map(|d| d.name().name()).collect();
+                let result: Vec<&&str> = occurred_names.difference(&names).collect();
+                result.is_empty()
+            } else {
+                false
+            }
+        }).collect()
+    } else {
+        callable_variants.iter().filter(|f| f.argument_list_declaration.is_none() || f.argument_list_declaration.unwrap().every_argument_is_optional()).collect()
+    }
 }

@@ -16,6 +16,10 @@ Schema parser for Teo schema language
 * Optimizations
 * Improve performance
 
+### 0.2.0
+* Add `import "..." use namespace.{identifier1, identifier2 as alias2}` syntax
+* Add `use namespace.{identifier1, identifier2 as alias2}` syntax
+
 ### 0.3.0
 
 * Refactor variable names in place
