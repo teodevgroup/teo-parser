@@ -13,7 +13,6 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     if context.current_availability_flag() != Availability::default() {
         context.insert_error(span, "import statement is placed in availability flag");
     }
-
     let mut source: Option<StringLiteral> = None;
     for current in pair.into_inner() {
         match current.as_rule() {

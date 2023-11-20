@@ -28,6 +28,9 @@ use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namespace {
     let span = parse_span(&pair);
+    if context.current_availability_flag() != Availability::default() {
+        context.insert_error(span, "namespace is placed in availability flag");
+    }
     let path = context.next_parent_path();
     context.push_namespace_id(*path.last().unwrap());
     let mut comment = None;
