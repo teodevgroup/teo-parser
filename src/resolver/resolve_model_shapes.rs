@@ -34,111 +34,82 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     let mut shape_available_context = ShapeAvailableContext::new();
 
     // scalar field
-    if let Some(input) = resolve_model_scalar_fields(model) {
-        enums.insert(SynthesizedEnumReferenceKind::ModelScalarFields, input);
-    }
+    enums.insert(SynthesizedEnumReferenceKind::ModelScalarFields, resolve_model_scalar_fields(model));
 
     // serializable scalar field
-    if let Some(input) = resolve_model_serializable_scalar_fields(model) {
-        enums.insert(SynthesizedEnumReferenceKind::ModelSerializableScalarFields, input);
-        shape_available_context.has_serializable_scalar_fields = true;
-    }
+    enums.insert(SynthesizedEnumReferenceKind::ModelSerializableScalarFields, resolve_model_serializable_scalar_fields(model));
+    shape_available_context.has_serializable_scalar_fields = true;
 
     // relations
-    if let Some(input) = resolve_model_relations(model) {
-        enums.insert(SynthesizedEnumReferenceKind::ModelRelations, input);
-    }
+    enums.insert(SynthesizedEnumReferenceKind::ModelRelations, resolve_model_relations(model));
 
     // direct relations
-    if let Some(input) = resolve_model_direct_relations(model) {
-        enums.insert(SynthesizedEnumReferenceKind::ModelDirectRelations, input);
-    }
+    enums.insert(SynthesizedEnumReferenceKind::ModelDirectRelations, resolve_model_direct_relations(model));
 
     // indirect relations
-    if let Some(input) = resolve_model_indirect_relations(model) {
-        enums.insert(SynthesizedEnumReferenceKind::ModelIndirectRelations, input);
-    }
+    enums.insert(SynthesizedEnumReferenceKind::ModelIndirectRelations, resolve_model_indirect_relations(model));
 
     // select
-    if let Some(input) = resolve_model_select_shape(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::Select, None), input);
-        shape_available_context.has_select = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::Select, None), resolve_model_select_shape(model));
+    shape_available_context.has_select = true;
+
     // include
-    if let Some(input) = resolve_model_include_shape(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::Include, None), input);
-        shape_available_context.has_include = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::Include, None), resolve_model_include_shape(model));
+    shape_available_context.has_include = true;
+
     // where input
-    if let Some(input) = resolve_model_where_input_shape(model, true, false, context) {
-        shapes.insert((SynthesizedShapeReferenceKind::WhereInput, None), input);
-        shape_available_context.has_where = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::WhereInput, None), resolve_model_where_input_shape(model, true, false, context));
+    shape_available_context.has_where = true;
+
     // where unique input
-    if let Some(input) = resolve_model_where_unique_input_shape(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::WhereUniqueInput, None), input);
-        shape_available_context.has_where_unique = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::WhereUniqueInput, None), resolve_model_where_unique_input_shape(model));
+    shape_available_context.has_where_unique = true;
+
     // scalar where with aggregates input
-    if let Some(input) = resolve_model_where_input_shape(model, false, true, context) {
-        shapes.insert((SynthesizedShapeReferenceKind::ScalarWhereWithAggregatesInput, None), input);
-        shape_available_context.has_where_with_aggregates = true;
-    }
-    if shape_available_context.has_where {
-        // relation filter
-        shapes.insert((SynthesizedShapeReferenceKind::RelationFilter, None), resolve_model_relation_filter(model));
-        // list relation filter
-        shapes.insert((SynthesizedShapeReferenceKind::ListRelationFilter, None), resolve_model_list_relation_filter(model));
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::ScalarWhereWithAggregatesInput, None), resolve_model_where_input_shape(model, false, true, context));
+    shape_available_context.has_where_with_aggregates = true;
+
+
+    // relation filter
+    shapes.insert((SynthesizedShapeReferenceKind::RelationFilter, None), resolve_model_relation_filter(model));
+    // list relation filter
+    shapes.insert((SynthesizedShapeReferenceKind::ListRelationFilter, None), resolve_model_list_relation_filter(model));
+
     // order by input
-    if let Some(input) = resolve_model_order_by_input_shape(model, context) {
-        shapes.insert((SynthesizedShapeReferenceKind::OrderByInput, None), input);
-        shape_available_context.has_order_by = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::OrderByInput, None), resolve_model_order_by_input_shape(model, context));
+    shape_available_context.has_order_by = true;
+
     // count aggregate input type
-    if let Some(input) = resolve_count_aggregate_input_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::CountAggregateInputType, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::CountAggregateInputType, None), resolve_count_aggregate_input_type(model));
+
     // sum aggregate input type
-    if let Some(input) = resolve_sum_aggregate_input_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::SumAggregateInputType, None), input);
-        shape_available_context.has_sum_aggregate = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::SumAggregateInputType, None), resolve_sum_aggregate_input_type(model));
+    shape_available_context.has_sum_aggregate = true;
+
     // avg aggregate input type
-    if let Some(input) = resolve_avg_aggregate_input_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateInputType, None), input);
-        shape_available_context.has_avg_aggregate = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateInputType, None), resolve_avg_aggregate_input_type(model));
+    shape_available_context.has_avg_aggregate = true;
+
     // min aggregate input type
-    if let Some(input) = resolve_min_aggregate_input_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::MinAggregateInputType, None), input);
-        shape_available_context.has_min_aggregate = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::MinAggregateInputType, None), resolve_min_aggregate_input_type(model));
+    shape_available_context.has_min_aggregate = true;
+
     // max aggregate input type
-    if let Some(input) = resolve_max_aggregate_input_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateInputType, None), input);
-        shape_available_context.has_max_aggregate = true;
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateInputType, None), resolve_max_aggregate_input_type(model));
+    shape_available_context.has_max_aggregate = true;
+
     // create input
-    if let Some(input) = resolve_create_input_type(model, None, context) {
-        shapes.insert((SynthesizedShapeReferenceKind::CreateInput, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::CreateInput, None), resolve_create_input_type(model, None, context));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            if let Some(input) = resolve_create_input_type(model, Some(field.name()), context) {
-                shapes.insert((SynthesizedShapeReferenceKind::CreateInput, Some(field.name().to_owned())), input);
-            }
+            shapes.insert((SynthesizedShapeReferenceKind::CreateInput, Some(field.name().to_owned())), resolve_create_input_type(model, Some(field.name()), context));
         }
     }
     // update input
-    if let Some(input) = resolve_update_input_type(model, None, context) {
-        shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, None), resolve_update_input_type(model, None, context));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            if let Some(input) = resolve_update_input_type(model, Some(field.name()), context) {
-                shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, Some(field.name().to_owned())), input);
-            }
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, Some(field.name().to_owned())), resolve_update_input_type(model, Some(field.name()), context));
         }
     }
     // create nested one input
@@ -202,29 +173,19 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // count aggregate result
     shapes.insert((SynthesizedShapeReferenceKind::CountAggregateResult, None), resolve_count_aggregate_result_type(model));
     // sum aggregate result
-    if let Some(input) = resolve_sum_aggregate_result_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::SumAggregateResult, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::SumAggregateResult, None), resolve_sum_aggregate_result_type(model));
     // avg aggregate result
-    if let Some(input) = resolve_avg_aggregate_result_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateResult, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::AvgAggregateResult, None), resolve_avg_aggregate_result_type(model));
     // min aggregate result
-    if let Some(input) = resolve_min_aggregate_result_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::MinAggregateResult, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::MinAggregateResult, None), resolve_min_aggregate_result_type(model));
     // max aggregate result
-    if let Some(input) = resolve_max_aggregate_result_type(model) {
-        shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateResult, None), input);
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::MaxAggregateResult, None), resolve_max_aggregate_result_type(model));
     // aggregate result
     shapes.insert((SynthesizedShapeReferenceKind::AggregateResult, None), resolve_aggregate_result_type(model, &shape_available_context));
     // group by result
     shapes.insert((SynthesizedShapeReferenceKind::GroupByResult, None), resolve_group_by_result_type(model, &shape_available_context));
     // args
-    if shape_available_context.has_args() {
-        shapes.insert((SynthesizedShapeReferenceKind::Args, None), resolve_args_type(model, &shape_available_context));
-    }
+    shapes.insert((SynthesizedShapeReferenceKind::Args, None), resolve_args_type(model, &shape_available_context));
     // find many args
     shapes.insert((SynthesizedShapeReferenceKind::FindManyArgs, None), resolve_find_many_args_type(model, &shape_available_context));
     // find first args
@@ -260,7 +221,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     model.resolved_mut().shapes = shapes;
 }
 
-fn resolve_model_select_shape(model: &Model) -> Option<Type> {
+fn resolve_model_select_shape(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(field_settings) = field.resolved().class.as_model_primitive_field() {
@@ -273,14 +234,10 @@ fn resolve_model_select_shape(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_model_include_shape(model: &Model) -> Option<Type> {
+fn resolve_model_include_shape(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(_) = field.resolved().class.as_model_relation() {
@@ -301,14 +258,10 @@ fn resolve_model_include_shape(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, with_aggregates: bool, context: &'a ResolverContext<'a>) -> Option<Type> {
+fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, with_aggregates: bool, context: &'a ResolverContext<'a>) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -348,24 +301,20 @@ fn resolve_model_where_input_shape<'a>(model: &Model, include_relations: bool, w
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        // insert the three ops
-        map.insert("AND".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
-        ).wrap_in_array().wrap_in_optional());
-        map.insert("OR".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
-        ).wrap_in_array().wrap_in_optional());
-        map.insert("NOT".to_owned(), Type::SynthesizedShapeReference(
-            SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
-        ).wrap_in_optional());
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    // insert the three ops
+    map.insert("AND".to_owned(), Type::SynthesizedShapeReference(
+        SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
+    ).wrap_in_array().wrap_in_optional());
+    map.insert("OR".to_owned(), Type::SynthesizedShapeReference(
+        SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
+    ).wrap_in_array().wrap_in_optional());
+    map.insert("NOT".to_owned(), Type::SynthesizedShapeReference(
+        SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))
+    ).wrap_in_optional());
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
+fn resolve_model_where_unique_input_shape(model: &Model) -> Type {
     let mut inputs = vec![];
     for decorator in model.decorators() {
         if decorator_has_any_name(decorator, vec!["id", "unique"]) {
@@ -398,11 +347,7 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Option<Type> {
             }
         }
     }
-    if inputs.is_empty() {
-        None
-    } else {
-        Some(Type::Union(inputs))
-    }
+    Type::Union(inputs)
 }
 
 fn resolve_model_relation_filter(model: &Model) -> Type {
@@ -420,7 +365,7 @@ fn resolve_model_list_relation_filter(model: &Model) -> Type {
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Option<Type> {
+fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a ResolverContext<'a>) -> Type {
     let sort = context.schema.std_source().find_node_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
     let mut map = indexmap! {};
     for field in model.fields() {
@@ -434,14 +379,10 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_model_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
+fn resolve_model_scalar_fields(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -453,14 +394,10 @@ fn resolve_model_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
             }
         }
     }
-    if !members.is_empty() {
-        Some(SynthesizedEnum::new(members))
-    } else {
-        None
-    }
+    SynthesizedEnum::new(members)
 }
 
-fn resolve_model_relations(model: &Model) -> Option<SynthesizedEnum> {
+fn resolve_model_relations(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(_) = field.resolved().class.as_model_relation() {
@@ -470,14 +407,10 @@ fn resolve_model_relations(model: &Model) -> Option<SynthesizedEnum> {
             });
         }
     }
-    if !members.is_empty() {
-        Some(SynthesizedEnum::new(members))
-    } else {
-        None
-    }
+    SynthesizedEnum::new(members)
 }
 
-fn resolve_model_direct_relations(model: &Model) -> Option<SynthesizedEnum> {
+fn resolve_model_direct_relations(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_relation() {
@@ -489,14 +422,10 @@ fn resolve_model_direct_relations(model: &Model) -> Option<SynthesizedEnum> {
             }
         }
     }
-    if !members.is_empty() {
-        Some(SynthesizedEnum::new(members))
-    } else {
-        None
-    }
+    SynthesizedEnum::new(members)
 }
 
-fn resolve_model_indirect_relations(model: &Model) -> Option<SynthesizedEnum> {
+fn resolve_model_indirect_relations(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_relation() {
@@ -508,14 +437,10 @@ fn resolve_model_indirect_relations(model: &Model) -> Option<SynthesizedEnum> {
             }
         }
     }
-    if !members.is_empty() {
-        Some(SynthesizedEnum::new(members))
-    } else {
-        None
-    }
+    SynthesizedEnum::new(members)
 }
 
-fn resolve_model_serializable_scalar_fields(model: &Model) -> Option<SynthesizedEnum> {
+fn resolve_model_serializable_scalar_fields(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -534,14 +459,10 @@ fn resolve_model_serializable_scalar_fields(model: &Model) -> Option<Synthesized
             }
         }
     }
-    if !members.is_empty() {
-        Some(SynthesizedEnum::new(members))
-    } else {
-        None
-    }
+    SynthesizedEnum::new(members)
 }
 
-fn resolve_count_aggregate_input_type(model: &Model) -> Option<Type> {
+fn resolve_count_aggregate_input_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -555,14 +476,10 @@ fn resolve_count_aggregate_input_type(model: &Model) -> Option<Type> {
         }
     }
     map.insert("_all".to_owned(), Type::Bool.wrap_in_optional());
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Type> {
+fn resolve_sum_aggregate_input_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -575,14 +492,10 @@ fn resolve_sum_aggregate_input_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Type> {
+fn resolve_avg_aggregate_input_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -595,14 +508,10 @@ fn resolve_avg_aggregate_input_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_min_aggregate_input_type(model: &Model) -> Option<Type> {
+fn resolve_min_aggregate_input_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -615,14 +524,10 @@ fn resolve_min_aggregate_input_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_max_aggregate_input_type(model: &Model) -> Option<Type> {
+fn resolve_max_aggregate_input_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -635,14 +540,10 @@ fn resolve_max_aggregate_input_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Type> {
+fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -669,34 +570,31 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
                     continue
                 }
             }
-            let that_model = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
-            if relation_is_many(field) {
-                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
+            if let Some(that_model) = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
+                if relation_is_many(field) {
+                    if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    } else {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_many_input(that_model.clone())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    }
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_many_input(that_model.clone())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
-                }
-            } else {
-                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_one_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
-                } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_one_input(that_model.clone())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
+                    if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_one_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    } else {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::create_nested_one_input(that_model.clone())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    }
                 }
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Option<Type> {
+fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, context: &'a ResolverContext<'a>) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -713,31 +611,28 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
                     continue
                 }
             }
-            let that_model = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object()?;
-            if relation_is_many(field) {
-                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
+            if let Some(that_model) = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
+                if relation_is_many(field) {
+                    if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_many_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    } else {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_many_input(that_model.clone())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    }
                 } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_many_input(that_model.clone())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
-                }
-            } else {
-                if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_one_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
-                } else {
-                    let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_one_input(that_model.clone())).wrap_in_optional();
-                    map.insert(field.name().to_owned(), t);
+                    if let Some(opposite_relation_field) = get_opposite_relation_field(field, context) {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_one_input_without(that_model.clone(), opposite_relation_field.name().to_owned())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    } else {
+                        let t = Type::SynthesizedShapeReference(SynthesizedShapeReference::update_nested_one_input(that_model.clone())).wrap_in_optional();
+                        map.insert(field.name().to_owned(), t);
+                    }
                 }
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_create_nested_one_input_type(model: &Model, without: Option<&str>) -> Type {
@@ -931,7 +826,7 @@ fn resolve_count_aggregate_result_type(model: &Model) -> Type {
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Type> {
+fn resolve_sum_aggregate_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -956,14 +851,10 @@ fn resolve_sum_aggregate_result_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Type> {
+fn resolve_avg_aggregate_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -984,14 +875,10 @@ fn resolve_avg_aggregate_result_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_min_aggregate_result_type(model: &Model) -> Option<Type> {
+fn resolve_min_aggregate_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -1004,14 +891,10 @@ fn resolve_min_aggregate_result_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_max_aggregate_result_type(model: &Model) -> Option<Type> {
+fn resolve_max_aggregate_result_type(model: &Model) -> Type {
     let mut map = indexmap! {};
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
@@ -1024,11 +907,7 @@ fn resolve_max_aggregate_result_type(model: &Model) -> Option<Type> {
             }
         }
     }
-    if map.is_empty() {
-        None
-    } else {
-        Some(Type::SynthesizedShape(SynthesizedShape::new(map)))
-    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_aggregate_result_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
