@@ -98,7 +98,7 @@ impl<'a> ResolverContext<'a> {
         if self.examined_namespaces_in_a_file.lock().unwrap().contains(namespace.string_path()) {
             self.insert_diagnostics_error(namespace.identifier().span, "duplicated namespace in a file");
         }
-        *self.examined_namespaces_in_a_file.lock().unwrap().insert(namespace.string_path().clone());
+        self.examined_namespaces_in_a_file.lock().unwrap().insert(namespace.string_path().clone());
         self.namespaces.lock().unwrap().push(namespace);
         let availability = find_namespace_availability(namespace, self.schema, self.source());
         self.availabilities.lock().unwrap().push(availability);

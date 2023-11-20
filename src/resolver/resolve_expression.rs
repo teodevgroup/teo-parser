@@ -26,7 +26,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
-use crate::search::search_identifier_path::search_identifier_path_names_with_filter_to_top;
+use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
@@ -270,38 +270,32 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         }
     } else if let Some((data_set_object, that_model)) = expected.as_data_set_record() {
         let string_path = data_set_object.as_data_set_object().unwrap();
-        let data_set = search_identifier_path_names_with_filter_to_top(
+        for data_set in search_identifier_path_names_with_filter_to_top_multiple(
             &string_path.iter().map(AsRef::as_ref).collect(),
             context.schema,
             context.source(),
             &context.current_namespace_path(),
             &top_filter_for_reference_type(ReferenceSpace::Default),
             context.current_availability(),
-        ).unwrap().as_data_set().unwrap();
-        let Some(group) = data_set.groups().find(|g| g.resolved().path() == that_model.as_model_object().unwrap().path()) else {
-            context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
-            return ExprInfo {
-                r#type: expected.clone(),
-                value: None,
-                reference_info: None,
-            };
+        ).iter().map(|n| n.as_data_set().unwrap()) {
+            if let Some(group) = data_set.groups().find(|g| g.resolved().path() == that_model.as_model_object().unwrap().path()) {
+                if let Some(record) = group.records().find(|r| r.identifier().name() == e.identifier().name()) {
+                    return ExprInfo {
+                        r#type: expected.clone(),
+                        value: Some(Value::EnumVariant(EnumVariant {
+                            value: e.identifier().name().to_owned(),
+                            args: None,
+                        })),
+                        reference_info: Some(ReferenceInfo::new(ReferenceType::DataSetRecord, Reference::new(record.path.clone(), record.string_path.clone()), None)),
+                    };
+                }
+            }
         };
-        if let Some(record) = group.records().find(|r| r.identifier().name() == e.identifier().name()) {
-            ExprInfo {
-                r#type: expected.clone(),
-                value: Some(Value::EnumVariant(EnumVariant {
-                    value: e.identifier().name().to_owned(),
-                    args: None,
-                })),
-                reference_info: Some(ReferenceInfo::new(ReferenceType::DataSetRecord, Reference::new(record.path.clone(), record.string_path.clone()), None)),
-            }
-        } else {
-            context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
-            ExprInfo {
-                r#type: expected.clone(),
-                value: None,
-                reference_info: None,
-            }
+        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+        ExprInfo {
+            r#type: expected.clone(),
+            value: None,
+            reference_info: None,
         }
     } else {
         context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
