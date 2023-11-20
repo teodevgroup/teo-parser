@@ -681,7 +681,7 @@ impl Type {
         if result.is_optional() {
             result = result.unwrap_optional();
         }
-        if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() {
+        if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() || result.is_data_set_record() {
             result.clone()
         } else {
             Type::Undetermined
@@ -1001,7 +1001,7 @@ impl Display for Type {
             Type::DataSet => f.write_str("DataSet"),
             Type::DataSetObject(r) => f.write_str(&format!("DataSetObject<{}>", r.join("."))),
             Type::DataSetGroup(inner) => f.write_str(&format!("DataSetGroup<{}>", inner)),
-            Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetGroup<{}, {}>", a, b)),
+            Type::DataSetRecord(a, b) => f.write_str(&format!("DataSetRecord<{}, {}>", a, b)),
             Type::Pipeline(i, o) => f.write_str(&format!("Pipeline<{}, {}>", i, o)),
         }
     }
