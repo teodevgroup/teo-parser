@@ -31,7 +31,7 @@ pub(super) fn jump_to_definition_in_enum_variant_literal<'a>(
                     vec![]
                 }
             }
-            Type::SynthesizedEnumVariantReference(reference) => {
+            Type::SynthesizedEnumReference(reference) => {
                 if let Some(reference) = reference.owner.as_model_object() {
                     let model = schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
                     if let Some(field) = model.fields().find(|f| f.identifier().name() == enum_variant_literal.identifier().name()) {

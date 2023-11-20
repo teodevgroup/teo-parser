@@ -126,7 +126,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         if !named_argument.value().resolved().r#type.is_undetermined() {
                             errors.push(context.generate_diagnostics_error(named_argument.value().span(), format!("expect {}, found {}", desired_type, named_argument.value().resolved().r#type())))
                         }
-                    } else if desired_type_original.is_generic_item() && desired_type.is_synthesized_enum_variant_reference() {
+                    } else if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum()) {
                         generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value().resolved().r#type.clone());
                     } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                         guess_extend_and_check(
@@ -175,7 +175,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             if !unnamed_argument.value().resolved().r#type().is_undetermined() {
                                 errors.push(context.generate_diagnostics_error(unnamed_argument.value().span(), format!("expect {}, found {}", desired_type, unnamed_argument.value().resolved().r#type())))
                             }
-                        } else if desired_type_original.is_generic_item() && desired_type.is_synthesized_enum_variant_reference() {
+                        } else if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum()) {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
                         } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                             guess_extend_and_check(

@@ -25,5 +25,5 @@ fn resolve_argument_declaration<'a>(
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {
-    resolve_type_expr(argument_declaration.type_expr(), generics_declaration, generics_constraint, &btreemap! {}, context, availability);
+    let result = resolve_type_expr(argument_declaration.type_expr(), generics_declaration, generics_constraint, &btreemap! {}, context, availability);
 }

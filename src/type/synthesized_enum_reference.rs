@@ -8,6 +8,7 @@ use strum_macros::{Display, EnumString, AsRefStr};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
+use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 
 
@@ -85,6 +86,7 @@ impl SynthesizedEnumReference {
 
     pub fn fetch_synthesized_definition<'a>(&self, schema: &'a Schema) -> Option<&'a SynthesizedEnum> {
         let model = schema.find_top_by_path(self.owner.as_model_object().unwrap().path()).unwrap().as_model().unwrap();
+        println!("fetch result: {:?} {:?}", model.string_path(), model.resolved().enums);
         model.resolved().enums.get(&self.kind)
     }
 }

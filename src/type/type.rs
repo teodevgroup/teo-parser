@@ -149,10 +149,6 @@ pub enum Type {
     ///
     SynthesizedEnumReference(SynthesizedEnumReference),
 
-    /// Synthesized Enum Variant Reference
-    ///
-    SynthesizedEnumVariantReference(SynthesizedEnumReference),
-
     /// Model
     ///
     Model,
@@ -490,17 +486,6 @@ impl Type {
         }
     }
 
-    pub fn is_synthesized_enum_variant_reference(&self) -> bool {
-        self.as_synthesized_enum_reference().is_some()
-    }
-
-    pub fn as_synthesized_enum_variant_reference(&self) -> Option<&SynthesizedEnumReference> {
-        match self {
-            Type::SynthesizedEnumVariantReference(a) => Some(a),
-            _ => None,
-        }
-    }
-
     pub fn is_model(&self) -> bool {
         match self {
             Type::Model => true,
@@ -696,7 +681,7 @@ impl Type {
         if result.is_optional() {
             result = result.unwrap_optional();
         }
-        if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_variant_reference() {
+        if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() {
             result.clone()
         } else {
             Type::Undetermined
@@ -867,7 +852,6 @@ impl Type {
             Type::EnumVariant(r) => other.is_enum_variant() && r == other.as_enum_variant().unwrap(),
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
-            Type::SynthesizedEnumVariantReference(r) => other.is_synthesized_enum_variant_reference() && r == other.as_synthesized_enum_variant_reference().unwrap(),
             Type::Model => other.is_model(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
@@ -1001,7 +985,6 @@ impl Display for Type {
             Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}", r)),
-            Type::SynthesizedEnumVariantReference(s) => Display::fmt(s, f),
             Type::Model => f.write_str("Model"),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
             Type::InterfaceObject(r, t) => if t.is_empty() {

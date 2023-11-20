@@ -238,7 +238,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         }
     } else if let Some(synthesized_enum) = expected.as_synthesized_enum() {
         resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
-    } else if let Some(reference) = expected.as_synthesized_enum_variant_reference() {
+    } else if let Some(reference) = expected.as_synthesized_enum_reference() {
         if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
             resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
         } else {
