@@ -424,3 +424,77 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
         _ => ExprInfo::undetermined()
     }
 }
+
+pub fn resolve_identifier_path_names_with_filter_to_top_multiple<'a>(
+    identifier_path_names: &Vec<&str>,
+    schema: &'a Schema,
+    source: &'a Source,
+    namespace_str_path: &Vec<&str>,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
+    availability: Availability,
+) -> Vec<&'a Node> {
+    let mut used_sources = vec![];
+    let mut result = vec![];
+    let reference = resolve_identifier_path_names_in_source_to_top_multiple(
+        identifier_path_names,
+        schema,
+        filter,
+        source,
+        &mut used_sources,
+        namespace_str_path,
+        availability,
+    );
+    result.extend(reference);
+    for builtin_source in schema.builtin_sources() {
+        result.extend(resolve_identifier_path_names_in_source_to_top_multiple(
+            &identifier_path_names,
+            schema,
+            filter,
+            builtin_source,
+            &mut used_sources,
+            &vec!["std"],
+            availability,
+        ));
+    }
+    result
+}
+
+fn resolve_identifier_path_names_in_source_to_top_multiple<'a>(
+    identifier_path_names: &Vec<&str>,
+    schema: &'a Schema,
+    filter: &Arc<dyn Fn(&Node) -> bool>,
+    source: &'a Source,
+    used_sources: &mut Vec<usize>,
+    ns_str_path: &Vec<&str>,
+    availability: Availability,
+) -> Vec<&'a Node> {
+    if used_sources.contains(&source.id) {
+        return vec![];
+    }
+    used_sources.push(source.id);
+    let mut result = vec![];
+    let mut ns_str_path_mut = ns_str_path.clone();
+    loop {
+        if ns_str_path_mut.is_empty() {
+            result.extend(source.find_node_by_string_path(identifier_path_names, filter, availability));
+        } else {
+            if let Some(ns) = source.find_child_namespace_by_string_path(&ns_str_path_mut) {
+                result.extend(ns.find_node_by_string_path(identifier_path_names, filter, availability));
+            }
+        }
+        if ns_str_path_mut.len() > 0 {
+            ns_str_path_mut.pop();
+        } else {
+            break
+        }
+    }
+    for import in source.imports() {
+        // find with imports
+        if let Some(from_source) = schema.sources().iter().find(|source| {
+            import.file_path.as_str() == source.file_path.as_str()
+        }).map(|s| *s) {
+            result.extend(resolve_identifier_path_names_in_source_to_top_multiple(identifier_path_names, schema, filter, from_source, used_sources, &ns_str_path, availability));
+        }
+    }
+    result
+}
