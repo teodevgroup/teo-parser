@@ -180,7 +180,6 @@ fn resolve_null_literal<'a>(_n: &NullLiteral, _context: &'a ResolverContext<'a>,
 }
 
 pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, context: &'a ResolverContext<'a>, expected: &Type) -> ExprInfo {
-    println!("see enum variant literal: {}: {}", e, expected);
     if let Some(enum_reference) = expected.as_enum_variant() {
         let r#enum = context.schema.find_top_by_path(enum_reference.path()).unwrap().as_enum().unwrap();
         let Some(member) = r#enum.members().find(|m| m.identifier().name() == e.identifier().name()) else {
@@ -237,10 +236,10 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
             }
         }
     } else if let Some(synthesized_enum) = expected.as_synthesized_enum() {
-        resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
+        resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context, expected)
     } else if let Some(reference) = expected.as_synthesized_enum_reference() {
         if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
-            resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context)
+            resolve_enum_variant_literal_from_synthesized_enum(e, synthesized_enum, context, expected)
         } else {
             context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier().name()));
             ExprInfo {
@@ -260,10 +259,10 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
     }
 }
 
-fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>) -> ExprInfo {
+fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral, synthesized_enum: &SynthesizedEnum, context: &'a ResolverContext<'a>, source: &Type) -> ExprInfo {
     if synthesized_enum.keys.contains(&e.identifier().name) {
         ExprInfo {
-            r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+            r#type: source.clone(),
             value: Some(Value::EnumVariant(EnumVariant {
                 value: e.identifier().name().to_string(),
                 args: None,
@@ -274,10 +273,9 @@ fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral
     } else {
         context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier().name()));
         ExprInfo {
-            r#type: Type::SynthesizedEnum(synthesized_enum.clone()),
+            r#type: source.clone(),
             value: None,
             reference_info: None,
-
         }
     }
 }
