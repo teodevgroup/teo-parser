@@ -68,7 +68,7 @@ impl Write for UnaryPostfixOperation {
     }
 }
 
-declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub(crate) op: ArithExprOperator, pub(crate) rhs: usize);
+declare_container_node!(BinaryOperation, pub(crate) lhs: usize, pub op: ArithExprOperator, pub(crate) rhs: usize);
 
 impl_container_node_defaults!(BinaryOperation);
 

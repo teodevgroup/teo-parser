@@ -16,6 +16,10 @@ impl Reference {
         &self.path
     }
 
+    pub fn path_without_last(&self, n: usize) -> Vec<usize> {
+        self.path().iter().rev().skip(n).rev().map(Clone::clone).collect()
+    }
+
     pub fn str_path(&self) -> Vec<&str> {
         self.string_path.iter().map(AsRef::as_ref).collect()
     }
