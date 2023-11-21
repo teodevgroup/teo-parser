@@ -684,8 +684,19 @@ impl Type {
         if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() || result.is_data_set_record() {
             result.clone()
         } else {
-            Type::Undetermined
+            result
         }
+    }
+
+    pub fn expect_for_tuple_literal(&self) -> Type {
+        let mut result = self;
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if result.is_tuple() {
+            return result.clone();
+        }
+        result
     }
 
     pub fn expect_for_array_literal(&self) -> Type {
@@ -699,7 +710,18 @@ impl Type {
         if result.is_enumerable() {
             return Type::Array(Box::new(result.as_enumerable().unwrap().clone()));
         }
-        return Type::Undetermined
+        return result
+    }
+
+    pub fn expect_for_dictionary_literal(&self) -> Type {
+        let mut result = self;
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if result.is_dictionary() {
+            return result.clone();
+        }
+        return result
     }
 
     pub fn contains_generics(&self) -> bool {
