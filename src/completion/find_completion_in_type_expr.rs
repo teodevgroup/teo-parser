@@ -1,3 +1,4 @@
+use strum::IntoEnumIterator;
 use crate::availability::Availability;
 use crate::ast::generics::GenericsDeclaration;
 use crate::ast::identifier_path::IdentifierPath;
@@ -6,6 +7,8 @@ use crate::ast::source::Source;
 use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeItem, TypeSubscript, TypeTuple};
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
+use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
+use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::traits::node_trait::NodeTrait;
 use crate::utils::top_filter::top_filter_for_type_expr_filter;
 
@@ -138,6 +141,9 @@ fn builtin_types(filter: TypeExprFilter) -> Vec<CompletionItem> {
     let mut result = vec![];
     if !filter.is_model() {
         result.push(builtin_type("Any"));
+        for kind in SynthesizedShapeReferenceKind::iter() {
+            result.push(builtin_type(&kind.to_string()));
+        }
     }
     if filter.is_none() {
         result.push(builtin_type("Ignored"));
@@ -151,11 +157,9 @@ fn builtin_types(filter: TypeExprFilter) -> Vec<CompletionItem> {
         result.push(builtin_type("Tuple"));
         result.push(builtin_type("Range"));
         result.push(builtin_type("Union"));
-        result.push(builtin_type("ModelScalarFields"));
-        result.push(builtin_type("ModelScalarFieldsWithoutVirtuals"));
-        result.push(builtin_type("ModelSerializableScalarFields"));
-        result.push(builtin_type("ModelRelations"));
-        result.push(builtin_type("ModelDirectRelations"));
+        for kind in SynthesizedEnumReferenceKind::iter() {
+            result.push(builtin_type(&kind.to_string()));
+        }
         result.push(builtin_type("DataSetRecord"));
         result.push(builtin_type("FieldType"));
         result.push(builtin_type("Pipeline"));

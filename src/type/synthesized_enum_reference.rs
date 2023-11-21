@@ -4,7 +4,7 @@ use educe::Educe;
 use serde::Serialize;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
-use strum_macros::{Display, EnumString, AsRefStr};
+use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
@@ -12,7 +12,7 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::resolved::Resolve;
 
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Display, EnumString, AsRefStr)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Display, EnumString, AsRefStr, EnumIter)]
 pub enum SynthesizedEnumReferenceKind {
     ModelScalarFields,
     ModelSerializableScalarFields,

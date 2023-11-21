@@ -2,14 +2,14 @@ use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use serde::Serialize;
 use crate::r#type::Type;
-use strum_macros::{Display, EnumString, AsRefStr};
+use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
 
 use crate::traits::resolved::Resolve;
 
-#[derive(Debug, Copy, Clone, Eq, Hash, PartialEq, Serialize, Display, EnumString, AsRefStr)]
+#[derive(Debug, Copy, Clone, Eq, Hash, PartialEq, Serialize, Display, EnumString, AsRefStr, EnumIter)]
 pub enum SynthesizedShapeReferenceKind {
     Args,
     FindManyArgs,

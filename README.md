@@ -13,6 +13,7 @@ Schema parser for Teo schema language
 ### 0.0.60
 
 * Rewrite syntax highlight with yaml and precise rules
+* Accept indentation settings argument in format 
 
 ### 0.1.0
 
@@ -21,6 +22,8 @@ Schema parser for Teo schema language
 * Improve performance
 
 ### 0.2.0
+* Add `linter` config declaration
+* Separate `fix` command and `format` command
 * Add `import "..." use namespace.{identifier1, identifier2 as alias2}` syntax
 * Add `use namespace.{identifier1, identifier2 as alias2}` syntax
 
