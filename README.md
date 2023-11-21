@@ -10,6 +10,10 @@ Schema parser for Teo schema language
 * File format
 * Improved jump to definition and auto completion
 
+### 0.0.60
+
+* Rewrite syntax highlight with yaml and precise rules
+
 ### 0.1.0
 
 * Improve stability
