@@ -8,6 +8,7 @@ Schema parser for Teo schema language
 ### 0.0.59 (Current)
 
 * File format
+* Trigger auto completions by `":"` and `"$"`
 * Improved jump to definition and auto completion
 
 ### 0.0.60
@@ -24,6 +25,8 @@ Schema parser for Teo schema language
 ### 0.2.0
 * Add `linter` config declaration
 * Separate `fix` command and `format` command
+* Expand auto completion candidates for callables into snippets
+* Choose completion item from callable variants
 * Add `import "..." use namespace.{identifier1, identifier2 as alias2}` syntax
 * Add `use namespace.{identifier1, identifier2 as alias2}` syntax
 

@@ -85,7 +85,9 @@ impl Source {
     }
 
     pub fn find_node_by_string_path(&self, path: &Vec<&str>, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
-        if path.len() == 1 {
+        if path.len() == 0 {
+            return None;
+        } else if path.len() == 1 {
             self.find_top_by_name(path.get(0).unwrap(), filter, availability)
         } else {
             let mut path_for_ns = path.clone();

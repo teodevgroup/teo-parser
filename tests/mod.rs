@@ -24,13 +24,6 @@ mod test {
     //     print_to_terminal(&diagnostics)
     // }
     //
-    // #[test]
-    // fn auto_completion() {
-    //     let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
-    //     let (schema, _) = parse(path, None, None);
-    //     let completions = auto_complete_items(&schema, path, (4, 13));
-    //     println!("{:?}", completions);
-    // }
     //
     // #[test]
     // fn test_jump_to_definition() {
@@ -40,13 +33,6 @@ mod test {
     //     println!("{:?}", definitions)
     // }
     //
-    // #[test]
-    // fn test_auto_completion() {
-    //     let path = "/Users/victor/Developer/teo-namespace-example/schema.teo";
-    //     let (_schema, _) = parse(path, None, None);
-    //     //let completions = auto_complete_items(&schema, path, (4, 13));
-    //     //println!("{:?}", completions);
-    // }
     //
     // #[test]
     // fn test_availability() {
