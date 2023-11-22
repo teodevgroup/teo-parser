@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::span::Span;
-use crate::parse_insert_punctuation;
+use crate::{parse_insert_punctuation, parse_set_optional};
+use crate::parser::parse_empty_dot::parse_empty_dot;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -13,9 +14,11 @@ pub(super) fn parse_identifier_path(pair: Pair<'_>, context: &ParserContext) -> 
     let mut children = BTreeMap::new();
     let mut main_span: Option<Span> = None;
     let mut identifiers = vec![];
+    let mut empty_dot = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::DOT => parse_insert_punctuation!(context, current, children, "."),
+            Rule::empty_dot => parse_set_optional!(parse_empty_dot(current, context), children, empty_dot),
             Rule::identifier => {
                 let span = parse_span(&current);
                 let identifier = parse_identifier(&current, context);
@@ -36,5 +39,6 @@ pub(super) fn parse_identifier_path(pair: Pair<'_>, context: &ParserContext) -> 
         path,
         children,
         identifiers,
+        empty_dot,
     }
 }

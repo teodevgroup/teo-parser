@@ -70,6 +70,9 @@ pub(super) fn resolve_identifier_path<'a>(
     reference_type: ReferenceSpace,
     availability: Availability,
 ) -> Option<ExprInfo> {
+    if let Some(empty_dot) = identifier_path.empty_dot() {
+        context.insert_diagnostics_error(empty_dot.span, "empty reference");
+    }
     resolve_identifier_path_with_filter(
         identifier_path,
         context,
