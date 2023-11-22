@@ -27,7 +27,7 @@ pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Sourc
         ExpressionKind::TupleLiteral(tuple) => find_completion_in_tuple_literal(schema, source, tuple, line_col, namespace_path, availability),
         ExpressionKind::ArrayLiteral(array) => find_completion_in_array_literal(schema, source, array, line_col, namespace_path, availability),
         ExpressionKind::DictionaryLiteral(dictionary) => find_completion_in_dictionary_literal(schema, source, dictionary, line_col, namespace_path, availability),
-        ExpressionKind::Identifier(identifier) => find_completion_in_identifier(schema, source, identifier, line_col, namespace_path),
+        ExpressionKind::Identifier(identifier) => find_completion_in_identifier(schema, source, identifier, line_col, namespace_path, availability),
         ExpressionKind::Unit(unit) => find_completion_in_unit(schema, source, unit, line_col, namespace_path, availability),
         ExpressionKind::Pipeline(pipeline) => find_completion_in_pipeline(schema, source, pipeline, line_col, namespace_path, availability),
         ExpressionKind::EmptyPipeline(pipeline) => find_completion_in_empty_pipeline(schema, source, pipeline, line_col, namespace_path, availability),
