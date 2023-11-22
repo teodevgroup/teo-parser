@@ -17,6 +17,7 @@ use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
+use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::ast::expression::Expression;
 use crate::ast::field::Field;
 use crate::ast::function_declaration::FunctionDeclaration;
@@ -96,6 +97,7 @@ pub enum Node {
     IntSubscript(IntSubscript),
     Unit(Unit),
     Pipeline(Pipeline),
+    EmptyPipeline(EmptyPipeline),
     Field(Field),
     FunctionDeclaration(FunctionDeclaration),
     GenericsDeclaration(GenericsDeclaration),
@@ -588,6 +590,17 @@ impl Node {
         }
     }
 
+    pub fn is_empty_pipeline(&self) -> bool {
+        self.as_empty_pipeline().is_some()
+    }
+
+    pub fn as_empty_pipeline(&self) -> Option<&EmptyPipeline> {
+        match self {
+            Node::EmptyPipeline(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn is_field(&self) -> bool {
         self.as_field().is_some()
     }
@@ -918,6 +931,7 @@ impl Node {
             Node::IntSubscript(n) => n,
             Node::Unit(n) => n,
             Node::Pipeline(n) => n,
+            Node::EmptyPipeline(n) => n,
             Node::Field(n) => n,
             Node::FunctionDeclaration(n) => n,
             Node::GenericsDeclaration(n) => n,

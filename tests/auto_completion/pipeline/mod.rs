@@ -7,6 +7,24 @@ mod test {
         let path = path_buf.to_str().unwrap();
         let (schema, diagnostics) = parse(path, None, None);
         let completions = auto_complete_items(&schema, path, (115, 30));
-        println!("{:?}", completions);
+        assert!(completions.len() >= 80);
+    }
+
+    #[test]
+    fn completion_items_for_empty_pipeline() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/pipeline/schemas/02.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, diagnostics) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (115, 28));
+        assert!(completions.len() >= 80);
+    }
+
+    #[test]
+    fn completion_extra_argument_should_not_cause_errors() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/pipeline/schemas/03.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, diagnostics) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (115, 38));
+        assert!(completions.len() >= 80);
     }
 }

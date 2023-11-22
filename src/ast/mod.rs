@@ -29,6 +29,7 @@ pub mod literals;
 pub mod middleware;
 pub mod field;
 pub mod pipeline;
+pub mod empty_pipeline;
 pub mod subscript;
 pub mod int_subscript;
 pub mod unit;

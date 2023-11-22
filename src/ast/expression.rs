@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::ArithExpr;
 use crate::ast::bracket_expression::BracketExpression;
+use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::identifier::Identifier;
@@ -40,6 +41,7 @@ pub enum ExpressionKind {
     IntSubscript(IntSubscript),
     Unit(Unit),
     Pipeline(Pipeline),
+    EmptyPipeline(EmptyPipeline),
     NamedExpression(NamedExpression),
     BracketExpression(BracketExpression),
 }
@@ -65,6 +67,7 @@ impl ExpressionKind {
             ExpressionKind::IntSubscript(n) => n,
             ExpressionKind::Unit(n) => n,
             ExpressionKind::Pipeline(n) => n,
+            ExpressionKind::EmptyPipeline(n) => n,
             ExpressionKind::NamedExpression(n) => n,
             ExpressionKind::BracketExpression(n) => n,
         }

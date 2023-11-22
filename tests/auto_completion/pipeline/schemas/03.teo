@@ -1,0 +1,134 @@
+connector {
+  // provider .postgres
+  // url "postgres://localhost:5432/newhellonext"
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+client ts {
+  provider: .typeScript,
+  dest: "../hello-teo-ts-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client swift {
+  provider: .swift,
+  dest: "../hello-teo-swift-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client dart {
+  provider: .dart,
+  dest: "../hello-teo-dart-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client kotlin {
+  provider: .kotlin,
+  dest: "../hello-teo-kotlin-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+entity {
+  provider: .rust,
+  dest: "./src/entities",
+}
+
+enum Sex {
+  male
+  female
+}
+
+@action(.create | .update | .delete | .copy | .find)
+model User {
+  @id @readonly @autoIncrement @db(.text)
+  id: Int
+  @db(.varChar(181))
+  name: String
+  age: Int?
+  @relation(fields: .id, references: .userId)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
+
+model Artist {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .artist, foreign: .song)
+  songs: Song[]
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .song, foreign: .artist)
+}
+
+@id([.songId, .artistId])
+model Perform {
+  @relation(fields: .songId, references: .id)
+  song: Song
+  @relation(fields: .artistId, references: .id)
+  artist: Artist
+  @foreignKey
+  songId: Int
+  @foreignKey
+  artistId: Int
+}
+
+interface BackupInput {
+  name: String?
+  age: Int
+}
+
+declare handler group Backup {
+  declare handler call(BackupInput): Any
+}
+
+namespace intro {
+  model Cat {
+    @id @readonly @autoIncrement
+    id: Int
+    @onSet($if($presents, $isEmail, $))
+    name: String
+  }
+}
+
+dataset default {
+  group User {
+    record john {
+      "name": "dd",
+      "age": 5,
+      "posts": [.a]
+    }
+  }
+  group Post {
+    record a {
+      "name": "Post 1",
+      "user": .john
+    }
+  }
+}

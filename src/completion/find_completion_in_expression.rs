@@ -8,14 +8,15 @@ use crate::completion::find_completion_in_array_literal::find_completion_in_arra
 use crate::completion::find_completion_in_dictionary_literal::find_completion_in_dictionary_literal;
 use crate::completion::find_completion_in_enum_variant_literal::find_completion_in_enum_variant_literal;
 use crate::completion::find_completion_in_identifier::find_completion_in_identifier;
-use crate::completion::find_completion_in_pipeline::find_completion_in_pipeline;
+use crate::completion::find_completion_in_pipeline::{find_completion_in_empty_pipeline, find_completion_in_pipeline};
 use crate::completion::find_completion_in_tuple_literal::find_completion_in_tuple_literal;
 use crate::completion::find_completion_in_unit::find_completion_in_unit;
 use crate::r#type::Type;
 use crate::traits::resolved::Resolve;
 
 pub(super) fn find_completion_in_expression(schema: &Schema, source: &Source, expression: &Expression, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
-    find_completion_in_expression_kind(schema, source, &expression.kind, line_col, namespace_path, expression.resolved().r#type(), availability)
+    let undetermined = Type::Undetermined;
+    find_completion_in_expression_kind(schema, source, &expression.kind, line_col, namespace_path, if expression.is_resolved() { expression.resolved().r#type() } else { &undetermined }, availability)
 }
 
 pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Source, kind: &ExpressionKind, line_col: (usize, usize), namespace_path: &Vec<&str>, expect: &Type, availability: Availability) -> Vec<CompletionItem> {
@@ -29,6 +30,7 @@ pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Sourc
         ExpressionKind::Identifier(identifier) => find_completion_in_identifier(schema, source, identifier, line_col, namespace_path),
         ExpressionKind::Unit(unit) => find_completion_in_unit(schema, source, unit, line_col, namespace_path, availability),
         ExpressionKind::Pipeline(pipeline) => find_completion_in_pipeline(schema, source, pipeline, line_col, namespace_path, availability),
+        ExpressionKind::EmptyPipeline(pipeline) => find_completion_in_empty_pipeline(schema, source, pipeline, line_col, namespace_path, availability),
         _ => vec![],
     }
 }

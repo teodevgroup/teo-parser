@@ -1,3 +1,4 @@
+use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::availability::Availability;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::schema::Schema;
@@ -9,6 +10,14 @@ use crate::completion::find_completion_in_argument_list::find_completion_in_argu
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::search::search_pipeline_unit_for_auto_completion::search_pipeline_unit_for_auto_completion;
 use crate::utils::top_filter::top_filter_for_pipeline;
+
+pub(super) fn find_completion_in_empty_pipeline(schema: &Schema, source: &Source, pipeline: &EmptyPipeline, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
+    if pipeline.span.contains_line_col(line_col) {
+        find_top_completion_with_filter(schema, source, namespace_path, &vec![], &top_filter_for_pipeline(), availability)
+    } else {
+        vec![]
+    }
+}
 
 pub(super) fn find_completion_in_pipeline(schema: &Schema, source: &Source, pipeline: &Pipeline, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
     find_completion_in_pipeline_unit(schema, source, pipeline.unit(), line_col, namespace_path, availability)

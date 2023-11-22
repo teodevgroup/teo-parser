@@ -250,12 +250,13 @@ identifier_unit = {
     ~ (subscript | argument_list | (NEWLINE | WHITESPACE)* ~ DOT ~ (NEWLINE | WHITESPACE)* ~ identifier)*
 }
 
-operand = { unit | pipeline }
+operand = { unit | pipeline | empty_pipeline }
 
 expression = {
     arith_expr |
     unit |
-    pipeline
+    pipeline |
+    empty_pipeline
 }
 
 // #############
@@ -277,6 +278,7 @@ argument = { (identifier ~ COLON)? ~ expression }
 decorator = { AT ~ identifier_path ~ argument_list? }
 empty_decorator = { AT }
 pipeline = { DOLLAR ~ identifier_unit }
+empty_pipeline = { DOLLAR }
 
 // #############
 // arguments declaration
