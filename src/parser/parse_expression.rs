@@ -1,8 +1,9 @@
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::unit::Unit;
-use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_set_optional};
 use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_arith_expr::parse_arith_expr;
+use crate::parser::parse_empty_dot::parse_empty_dot;
 use crate::parser::parse_empty_pipeline::parse_empty_pipeline;
 use crate::parser::parse_group::parse_group;
 use crate::parser::parse_identifier::parse_identifier;
@@ -33,9 +34,11 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &ParserContext) -> Unit {
         mut children,
     ) = parse_container_node_variables!(pair, context);
     let mut expressions = vec![];
+    let mut empty_dot = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::DOT => parse_insert_punctuation!(context, current, children, "."),
+            Rule::empty_dot => parse_set_optional!(parse_empty_dot(current, context), children, empty_dot),
             Rule::group => parse_insert!(Expression::new(ExpressionKind::Group(parse_group(current, context))), children, expressions),
             Rule::null_literal => parse_insert!(Expression::new(ExpressionKind::NullLiteral(parse_null_literal(&current, context))), children, expressions),
             Rule::bool_literal => parse_insert!(Expression::new(ExpressionKind::BoolLiteral(parse_bool_literal(&current, context))), children, expressions),
@@ -54,5 +57,5 @@ pub(super) fn parse_unit(pair: Pair<'_>, context: &ParserContext) -> Unit {
         }
     }
     parse_container_node_variables_cleanup!(context);
-    Unit { span, children, path, expressions }
+    Unit { span, children, path, expressions, empty_dot }
 }

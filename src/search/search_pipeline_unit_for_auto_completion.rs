@@ -44,5 +44,10 @@ pub fn search_pipeline_unit_for_auto_completion<HAL, HI, OUTPUT>(
             }
         }
     }
+    if let Some(empty_dot) = unit.empty_dot() {
+        if empty_dot.span.contains_line_col(line_col) {
+            return handle_identifier(&user_typed_prefix);
+        }
+    }
     default
 }

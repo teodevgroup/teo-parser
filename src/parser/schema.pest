@@ -247,8 +247,11 @@ int_subscript = @{ ASCII_DIGIT+ }
 
 identifier_unit = {
     identifier
-    ~ (subscript | argument_list | (NEWLINE | WHITESPACE)* ~ DOT ~ (NEWLINE | WHITESPACE)* ~ identifier)*
+    ~ (argument_list | (NEWLINE | WHITESPACE)* ~ DOT ~ (NEWLINE | WHITESPACE)* ~ identifier)*
+    ~ empty_dot?
 }
+
+empty_dot = { DOT }
 
 operand = { unit | pipeline | empty_pipeline }
 

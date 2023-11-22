@@ -32,6 +32,9 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
 }
 
 pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> Type {
+    if let Some(empty_dot) = unit.empty_dot() {
+        context.insert_diagnostics_error(empty_dot.span, "empty reference");
+    }
     let mut has_errors = false;
     let mut current_input_type = if let Some((input, _)) = expected.as_pipeline() {
         input.clone()

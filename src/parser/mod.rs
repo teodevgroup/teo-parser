@@ -39,6 +39,7 @@ mod parse_availability_end;
 mod parse_use_middlewares_block;
 mod parse_named_expression;
 mod parse_bracket_expression;
+mod parse_empty_dot;
 mod pest_parser;
 mod parser_context;
 pub(super) mod parse;

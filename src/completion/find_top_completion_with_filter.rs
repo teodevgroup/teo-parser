@@ -16,8 +16,18 @@ pub fn find_top_completion_with_filter<'a>(
     availability: Availability,
 ) -> Vec<CompletionItem> {
     let paths = collect_reference_completion_in_source(schema, source, namespace_path, user_typed_prefix, filter, availability);
-    paths.iter().map(|path| {
+    paths.iter().filter_map(|path| {
         let top = schema.find_top_by_path(path).unwrap();
-        completion_item_from_top(top)
+        if user_typed_prefix.is_empty() {
+            Some(completion_item_from_top(top))
+        } else {
+            let user_typed = user_typed_prefix.join(".");
+            let actual = top.str_path().unwrap().join(".");
+            if actual.starts_with(&user_typed) {
+                Some(completion_item_from_top(top))
+            } else {
+                None
+            }
+        }
     }).collect()
 }

@@ -1,11 +1,12 @@
-
 use crate::ast::expression::Expression;
-use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn};
+use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::ast::empty_dot::EmptyDot;
 use crate::format::Writer;
 use crate::traits::write::Write;
 
 declare_container_node!(Unit,
     pub(crate) expressions: Vec<usize>,
+    pub(crate) empty_dot: Option<usize>,
 );
 
 impl_container_node_defaults!(Unit);
@@ -13,6 +14,9 @@ impl_container_node_defaults!(Unit);
 node_children_iter!(Unit, Expression, ExpressionsIter, expressions);
 
 impl Unit {
+
+    node_optional_child_fn!(empty_dot, EmptyDot);
+
     node_children_iter_fn!(expressions, ExpressionsIter);
 
     pub fn expression_at(&self, idx: usize) -> Option<&Expression> {

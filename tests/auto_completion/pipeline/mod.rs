@@ -27,4 +27,13 @@ mod test {
         let completions = auto_complete_items(&schema, path, (115, 38));
         assert!(completions.len() >= 80);
     }
+
+    #[test]
+    fn completion_from_user_typed_namespace() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/pipeline/schemas/04.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, diagnostics) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (116, 50));
+        assert_eq!(completions.len(), 1);
+    }
 }

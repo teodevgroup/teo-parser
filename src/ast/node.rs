@@ -17,6 +17,7 @@ use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
+use crate::ast::empty_dot::EmptyDot;
 use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::ast::expression::Expression;
 use crate::ast::field::Field;
@@ -124,6 +125,7 @@ pub enum Node {
     UseMiddlewaresBlock(UseMiddlewaresBlock),
     Punctuation(Punctuation),
     Operator(Operator),
+    EmptyDot(EmptyDot),
 }
 
 impl Node {
@@ -887,6 +889,17 @@ impl Node {
         }
     }
 
+    pub fn is_empty_dot(&self) -> bool {
+        self.as_empty_dot().is_some()
+    }
+
+    pub fn as_empty_dot(&self) -> Option<&EmptyDot> {
+        match self {
+            Node::EmptyDot(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -958,6 +971,7 @@ impl Node {
             Node::UseMiddlewaresBlock(n) => n,
             Node::Punctuation(n) => n,
             Node::Operator(n) => n,
+            Node::EmptyDot(n) => n,
         }
     }
 

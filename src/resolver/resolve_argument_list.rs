@@ -165,7 +165,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             if let Some(argument_declaration) = argument_list_declaration.get(name) {
                 if !argument_declaration.name_optional {
                     if !argument_declaration.type_expr().resolved().is_optional() {
-                        errors.push(context.generate_diagnostics_error(argument_declaration.span, format!("Missing argument '{}'", name)));
+                        errors.push(context.generate_diagnostics_error(callable_span, format!("missing argument '{}'", name)));
                     }
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name().name()).map(|s| *s).collect();
                 }
@@ -212,14 +212,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         for declaration_name in declaration_names {
             if let Some(argument_declaration) = argument_list_declaration.get(declaration_name) {
                 if !argument_declaration.type_expr().resolved().is_optional() {
-                    errors.push(context.generate_diagnostics_error(argument_declaration.span, format!("Missing argument '{}'", declaration_name)));
+                    errors.push(context.generate_diagnostics_error(callable_span, format!("missing argument '{}'", declaration_name)));
                 }
             }
         }
     } else {
         if let Some(argument_list) = argument_list {
             if !argument_list.arguments.is_empty() {
-                errors.push(context.generate_diagnostics_error(argument_list.span, "Callable requires no arguments"));
+                errors.push(context.generate_diagnostics_error(argument_list.span, "callable requires no arguments"));
             }
         }
     }
