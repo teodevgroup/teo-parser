@@ -17,7 +17,7 @@ Schema parser for Teo schema language
 ### 0.0.59 (Current)
 
 * File format
-* Trigger auto completions by `":"` and `"$"`
+* Trigger auto completions by `"."`, `":"` and `"$"`
 * Improved jump to definition and auto completion
 
 ### 0.0.60
