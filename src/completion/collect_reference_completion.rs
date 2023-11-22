@@ -20,9 +20,11 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
         combined.extend(user_typed_prefix);
         if let Some(namespace) = source.find_child_namespace_by_string_path(&combined) {
             result.extend(collect_reference_completion_in_namespace(namespace, filter));
-            namespace_path_mut.pop();
         }
-        break
+        if namespace_path_mut.is_empty() {
+            break
+        }
+        namespace_path_mut.pop();
     }
     for top in source.children() {
         if let Some(namespace) = top.as_namespace() {

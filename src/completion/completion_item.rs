@@ -2,8 +2,8 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct CompletionItem {
-    pub(crate) label: String,
-    pub(crate) namespace_path: Option<String>,
-    pub(crate) documentation: Option<String>,
-    pub(crate) detail: Option<String>,
+    pub label: String,
+    pub namespace_path: Option<String>,
+    pub documentation: Option<String>,
+    pub detail: Option<String>,
 }

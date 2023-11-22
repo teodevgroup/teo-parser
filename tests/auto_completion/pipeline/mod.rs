@@ -35,5 +35,6 @@ mod test {
         let (schema, diagnostics) = parse(path, None, None);
         let completions = auto_complete_items(&schema, path, (116, 50));
         assert_eq!(completions.len(), 1);
+        assert_eq!(completions.first().unwrap().label.as_str(), "myintro");
     }
 }

@@ -23,7 +23,7 @@ pub fn find_top_completion_with_filter<'a>(
         } else {
             let user_typed = user_typed_prefix.join(".");
             let actual = top.str_path().unwrap().join(".");
-            if actual.starts_with(&user_typed) {
+            if actual.starts_with(&user_typed) && actual != user_typed {
                 Some(completion_item_from_top(top))
             } else {
                 None
