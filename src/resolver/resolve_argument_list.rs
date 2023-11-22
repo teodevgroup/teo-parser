@@ -150,13 +150,14 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     }
                     named_argument.resolve(ArgumentResolved {
                         name: named_argument.name().unwrap().name.clone().to_string(),
-                        expect: argument_declaration.type_expr().resolved().clone(),
+                        expect: desired_type.replace_generics(&generics_map),
                     });
+
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name().name()).map(|s| *s).collect();
                 } else {
                     let undetermined = Type::Undetermined;
                     resolve_expression(named_argument.value(), context, &undetermined, keywords_map);
-                    errors.push(context.generate_diagnostics_error(named_argument.name().unwrap().span, "Undefined argument"))
+                    errors.push(context.generate_diagnostics_error(named_argument.name().unwrap().span, "undefined argument"))
                 }
             }
         }
@@ -199,7 +200,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         }
                         unnamed_argument.resolve(ArgumentResolved {
                             name: name.to_string(),
-                            expect: argument_declaration.type_expr().resolved().clone(),
+                            expect: desired_type.replace_generics(&generics_map),
                         });
                         declaration_names = declaration_names.iter().filter(|d| *d != name).map(|s| *s).collect();
                     }
