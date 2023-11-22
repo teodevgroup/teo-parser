@@ -23,7 +23,7 @@ pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Sourc
     match kind {
         ExpressionKind::Group(g) => find_completion_in_expression(schema, source, g.expression(), line_col, namespace_path, availability),
         ExpressionKind::ArithExpr(arith) => find_completion_in_arith_expr(schema, source, arith, line_col, namespace_path, availability),
-        ExpressionKind::EnumVariantLiteral(enum_variant_literal) => find_completion_in_enum_variant_literal(schema, source, enum_variant_literal, line_col, namespace_path, expect),
+        ExpressionKind::EnumVariantLiteral(enum_variant_literal) => find_completion_in_enum_variant_literal(schema, source, enum_variant_literal, line_col, namespace_path, &expect.expect_for_enum_variant_literal(), availability),
         ExpressionKind::TupleLiteral(tuple) => find_completion_in_tuple_literal(schema, source, tuple, line_col, namespace_path, availability),
         ExpressionKind::ArrayLiteral(array) => find_completion_in_array_literal(schema, source, array, line_col, namespace_path, availability),
         ExpressionKind::DictionaryLiteral(dictionary) => find_completion_in_dictionary_literal(schema, source, dictionary, line_col, namespace_path, availability),

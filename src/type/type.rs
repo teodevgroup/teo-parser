@@ -681,6 +681,13 @@ impl Type {
         if result.is_optional() {
             result = result.unwrap_optional();
         }
+        if let Some(union) = result.as_union() {
+            for result in union {
+                if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() || result.is_data_set_record() {
+                    return result.clone();
+                }
+            }
+        }
         if result.is_enum_variant() || result.is_synthesized_enum() || result.is_synthesized_enum_reference() || result.is_data_set_record() {
             result.clone()
         } else {

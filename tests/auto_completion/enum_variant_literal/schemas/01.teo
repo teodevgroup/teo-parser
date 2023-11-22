@@ -1,0 +1,64 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+enum Sex {
+  male
+  female
+}
+
+@action(.create | .update | .delete | .copy | .find)
+model User {
+  @id @readonly @autoIncrement @db(.text)
+  id: Int
+  @db(.varChar(181))
+  name: String
+  age: Int?
+  @default(.m)
+  sex: Sex
+  @relation(fields: .id, references: .userId)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  @std.db(.varChar(101))
+  name: String
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
+
+model Artist {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .artist, foreign: .song)
+  songs: Song[]
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .song, foreign: .artist)
+}
+
+@id([.songId, .artistId])
+model Perform {
+  @relation(fields: .songId, references: .id)
+  song: Song
+  @relation(fields: .artistId, references: .id)
+  artist: Artist
+  @foreignKey
+  songId: Int
+  @foreignKey
+  artistId: Int
+}
