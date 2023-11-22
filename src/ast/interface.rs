@@ -7,6 +7,7 @@ use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::ast::partial_field::PartialField;
 use crate::format::Writer;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
@@ -21,6 +22,7 @@ declare_container_node!(InterfaceDeclaration, named, availability,
     pub(crate) generics_constraint: Option<usize>,
     pub(crate) extends: Vec<usize>,
     pub(crate) fields: Vec<usize>,
+    pub(crate) partial_fields: Vec<usize>,
     pub(crate) resolved: RefCell<Option<InterfaceDeclarationResolved>>,
 );
 
@@ -29,6 +31,8 @@ impl_container_node_defaults!(InterfaceDeclaration, named, availability);
 node_children_iter!(InterfaceDeclaration, TypeExpr, ExtendsIter, extends);
 
 node_children_iter!(InterfaceDeclaration, Field, FieldsIter, fields);
+
+node_children_iter!(InterfaceDeclaration, PartialField, PartialFieldsIter, partial_fields);
 
 impl InterfaceDeclaration {
 
@@ -43,6 +47,8 @@ impl InterfaceDeclaration {
     node_children_iter_fn!(extends, ExtendsIter);
 
     node_children_iter_fn!(fields, FieldsIter);
+
+    node_children_iter_fn!(partial_fields, PartialFieldsIter);
 
     pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
         self.resolved().map.get(generics)

@@ -6,6 +6,7 @@ use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_identifier::parse_identifier;
+use crate::parser::parse_partial_field::parse_partial_field;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -24,6 +25,7 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &ParserContext) 
     let mut comment: Option<usize> = None;
     let mut identifier: usize = 0;
     let mut fields: Vec<usize> = vec![];
+    let mut partial_fields: Vec<usize> = vec![];
     let mut inside_block = false;
     for current in pair.into_inner() {
         match current.as_rule() {
@@ -51,6 +53,7 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &ParserContext) 
                 children.insert(node.id(), node.into());
             },
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
+            Rule::partial_field => parse_insert!(parse_partial_field(current, context), children, partial_fields),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
@@ -68,5 +71,6 @@ pub(super) fn parse_config_declaration(pair: Pair<'_>, context: &ParserContext) 
         comment,
         identifier,
         fields,
+        partial_fields,
     }
 }

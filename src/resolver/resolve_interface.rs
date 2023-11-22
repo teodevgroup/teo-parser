@@ -39,6 +39,9 @@ pub(super) fn resolve_interface_declaration_types<'a>(interface_declaration: &'a
             context.insert_diagnostics_error(extend.span(), "TypeError: type is not interface");
         }
     }
+    for partial_field in interface_declaration.partial_fields() {
+        context.insert_diagnostics_error(partial_field.span, "partial field");
+    }
     for field in interface_declaration.fields() {
         resolve_field_class(
             field,

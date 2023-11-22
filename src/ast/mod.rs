@@ -51,3 +51,4 @@ pub mod operators;
 pub mod named_expression;
 pub mod bracket_expression;
 pub mod empty_dot;
+pub mod partial_field;

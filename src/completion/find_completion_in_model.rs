@@ -6,11 +6,18 @@ use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_decorator::{find_completion_in_decorator, find_completion_in_decorator_with_filter, find_completion_in_empty_decorator};
 use crate::completion::find_completion_in_field::find_completion_in_field;
 use crate::completion::find_completion_in_handler_group::find_completion_in_handler_declaration;
+use crate::completion::find_completion_in_type_expr::{find_completion_for_empty_type_item, TypeExprFilter};
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::traits::has_availability::HasAvailability;
+use crate::traits::info_provider::InfoProvider;
 use crate::utils::top_filter::top_filter_for_any_model_field_decorators;
 
 pub(super) fn find_completion_in_model(schema: &Schema, source: &Source, model: &Model, line_col: (usize, usize)) -> Vec<CompletionItem> {
+    for partial_field in model.partial_fields() {
+        if partial_field.span.contains_line_col(line_col) && !partial_field.identifier().span.contains_line_col(line_col) {
+            return find_completion_for_empty_type_item(schema, source, &model.namespace_str_path(), TypeExprFilter::Model, model.availability());
+        }
+    }
     for field in model.fields() {
         if field.span.contains_line_col(line_col) {
             return find_completion_in_field(schema, source, field, line_col, &vec![]);

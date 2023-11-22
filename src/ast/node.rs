@@ -36,6 +36,7 @@ use crate::ast::model::Model;
 use crate::ast::named_expression::NamedExpression;
 use crate::ast::namespace::Namespace;
 use crate::ast::operators::Operator;
+use crate::ast::partial_field::PartialField;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
 use crate::ast::punctuations::Punctuation;
@@ -126,6 +127,7 @@ pub enum Node {
     Punctuation(Punctuation),
     Operator(Operator),
     EmptyDot(EmptyDot),
+    PartialField(PartialField),
 }
 
 impl Node {
@@ -900,6 +902,17 @@ impl Node {
         }
     }
 
+    pub fn is_partial_field(&self) -> bool {
+        self.as_partial_field().is_some()
+    }
+
+    pub fn as_partial_field(&self) -> Option<&PartialField> {
+        match self {
+            Node::PartialField(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -972,6 +985,7 @@ impl Node {
             Node::Punctuation(n) => n,
             Node::Operator(n) => n,
             Node::EmptyDot(n) => n,
+            Node::PartialField(n) => n,
         }
     }
 

@@ -8,6 +8,7 @@ use crate::ast::handler::HandlerDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::ast::partial_field::PartialField;
 use crate::format::Writer;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
@@ -24,6 +25,7 @@ declare_container_node!(Model, named, availability,
     pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) identifier: usize,
     pub(crate) fields: Vec<usize>,
+    pub(crate) partial_fields: Vec<usize>,
     pub(crate) empty_field_decorator_spans: Vec<Span>,
     pub(crate) unattached_field_decorators: Vec<Decorator>,
     pub(crate) handlers: Vec<usize>,
@@ -36,6 +38,8 @@ node_children_iter!(Model, Decorator, DecoratorsIter, decorators);
 
 node_children_iter!(Model, Field, FieldsIter, fields);
 
+node_children_iter!(Model, PartialField, PartialFieldsIter, partial_fields);
+
 node_children_iter!(Model, HandlerDeclaration, HandlersIter, handlers);
 
 impl Model {
@@ -47,6 +51,8 @@ impl Model {
     node_children_iter_fn!(decorators, DecoratorsIter);
 
     node_children_iter_fn!(fields, FieldsIter);
+
+    node_children_iter_fn!(partial_fields, PartialFieldsIter);
 
     node_children_iter_fn!(handlers, HandlersIter);
 }

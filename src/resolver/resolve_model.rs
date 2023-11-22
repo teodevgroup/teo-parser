@@ -22,6 +22,9 @@ pub(super) fn resolve_model_fields<'a>(model: &'a Model, context: &'a ResolverCo
     for field in model.fields() {
         resolve_field_class(field, FieldParentType::Model, context);
     }
+    for partial_field in model.partial_fields() {
+        context.insert_diagnostics_error(partial_field.span, "partial field");
+    }
     resolve_model_types(model, context);
     model.resolve(ModelResolved {
         enums: indexmap! {},

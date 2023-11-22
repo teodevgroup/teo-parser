@@ -8,6 +8,7 @@ use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_handler_group::parse_handler_declaration;
+use crate::parser::parse_partial_field::parse_partial_field;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
@@ -29,6 +30,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
     let mut unattached_field_decorators = vec![];
     let mut identifier = 0;
     let mut fields = vec![];
+    let mut partial_fields = vec![];
     let mut handlers = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
@@ -60,6 +62,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
             },
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
+            Rule::partial_field => parse_insert!(parse_partial_field(current, context), children, partial_fields),
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handlers),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
@@ -79,6 +82,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
         empty_decorator_spans,
         identifier,
         fields,
+        partial_fields,
         empty_field_decorator_spans,
         unattached_field_decorators,
         handlers,

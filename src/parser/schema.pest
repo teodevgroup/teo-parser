@@ -342,7 +342,7 @@ model_declaration = {
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | handler_declaration | decorator | empty_decorator | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | partial_field | handler_declaration | decorator | empty_decorator | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -355,8 +355,11 @@ field_declaration = {
     ~ identifier
     ~ COLON
     ~ type_expression
-//     ~ double_comment_block?
-//     ~ NEWLINE?
+    ~ double_comment_block?
+}
+
+partial_field = {
+    identifier ~ COLON ~ WHITESPACE?
 }
 
 // #############
@@ -453,7 +456,7 @@ config_declaration = {
   CONFIG_KEYWORD ~
   identifier ~
   BLOCK_OPEN ~
-  (field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  (field_declaration | partial_field | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
   BLOCK_CLOSE
 }
 
@@ -463,7 +466,7 @@ config_declaration = {
 
 interface_declaration = {
     triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA?)? ~ generics_constraint? ~ BLOCK_OPEN
-    ~ (field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | partial_field | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

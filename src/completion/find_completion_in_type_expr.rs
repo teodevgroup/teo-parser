@@ -118,6 +118,13 @@ fn find_completion_in_type_item_identifier_path(schema: &Schema, source: &Source
     results
 }
 
+pub(super) fn find_completion_for_empty_type_item(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
+    let mut results = vec![];
+    results.extend(builtin_types(filter));
+    results.extend(find_completion_for_referenced_types_with_filter(schema, source, namespace_path, &vec![], filter, availability));
+    results
+}
+
 fn find_completion_for_referenced_types_with_filter(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, user_typed_spaces: &Vec<&str>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
     find_top_completion_with_filter(schema, source, namespace_path, user_typed_spaces, &top_filter_for_type_expr_filter(filter), availability)
 }
