@@ -80,14 +80,14 @@ pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &U
                     },
                     ExpressionKind::IntSubscript(_) => {
                         return if let Some(union) = previous_resolved.r#type().as_union() {
-                            completion_items_from_union_types(union)
+                            completion_items_from_tuple_types(union)
                         } else {
                             vec![]
                         };
                     },
                     ExpressionKind::Identifier(_) => {
                         return completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolved(
-                            schema, source, previous_resolved, line_col, namespace_path, availability,
+                            schema, source, previous_resolved, namespace_path, availability,
                         );
                     },
                     _ => unreachable!(),
@@ -100,7 +100,7 @@ pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &U
     if let Some(empty_dot) = unit.empty_dot() {
         if empty_dot.span.contains_line_col(line_col) {
             return completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolved(
-                schema, source, previous_resolved, line_col, namespace_path, availability,
+                schema, source, previous_resolved, namespace_path, availability,
             );
         }
     }
@@ -111,7 +111,6 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolv
     schema: &Schema,
     source: &Source,
     previous_resolved: &ExprInfo,
-    line_col: (usize, usize),
     namespace_path: &Vec<&str>,
     availability: Availability,
 ) -> Vec<CompletionItem> {
@@ -132,7 +131,13 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolv
                     }
                 }).collect()
             }
-            ReferenceType::Constant => vec![],
+            ReferenceType::Constant => completion_items_in_unit_for_identifier_or_int_subscript_with_type(
+                schema,
+                source,
+                previous_resolved.r#type(),
+                namespace_path,
+                availability,
+            ),
             ReferenceType::Enum => {
                 let enum_definition = schema.find_top_by_path(reference_info.reference.path()).unwrap().as_enum().unwrap();
                 enum_definition.members().map(|member| CompletionItem {
@@ -173,18 +178,46 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolv
             _ => vec![]
         }
     } else {
-        if let Some(struct_object) = previous_resolved.r#type().as_struct_object() {
-            vec![]
-        } else if let Some(tuple) = previous_resolved.r#type().as_tuple() {
-            vec![]
-        } else {
-            vec![]
-        }
+        completion_items_in_unit_for_identifier_or_int_subscript_with_type(
+            schema,
+            source,
+            previous_resolved.r#type(),
+            namespace_path,
+            availability,
+        )
     }
 }
 
-fn completion_items_from_union_types(union: &Vec<Type>) -> Vec<CompletionItem> {
-    union.iter().enumerate().map(|(idx, t)| CompletionItem {
+fn completion_items_in_unit_for_identifier_or_int_subscript_with_type(
+    schema: &Schema,
+    source: &Source,
+    r#type: &Type,
+    namespace_path: &Vec<&str>,
+    availability: Availability,
+) -> Vec<CompletionItem> {
+    if let Some((reference, _)) = r#type.as_struct_object() {
+        let struct_declaration = schema.find_top_by_path(reference.path()).unwrap().as_struct_declaration().unwrap();
+        struct_declaration.function_declarations().filter_map(|function| {
+            if !function.r#static {
+                Some(CompletionItem {
+                    label: function.identifier().name().to_owned(),
+                    namespace_path: Some(struct_declaration.str_path().join(".")),
+                    documentation: documentation_from_comment(function.comment()),
+                    detail: None,
+                })
+            } else {
+                None
+            }
+        }).collect()
+    } else if let Some(tuple) = r#type.as_tuple() {
+        completion_items_from_tuple_types(tuple)
+    } else {
+        vec![]
+    }
+}
+
+fn completion_items_from_tuple_types(tuple: &Vec<Type>) -> Vec<CompletionItem> {
+    tuple.iter().enumerate().map(|(idx, t)| CompletionItem {
         label: format!("{}", idx + 1),
         namespace_path: Some(format!("{t}")),
         documentation: None,
