@@ -9,6 +9,7 @@ use crate::completion::collect_argument_list_names::collect_argument_list_names_
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::completion_item_from_top::documentation_from_comment;
 use crate::completion::find_completion_in_argument_list::find_completion_in_argument_list;
+use crate::completion::find_completion_in_enum_variant_literal::find_completion_in_empty_enum_variant_literal;
 use crate::completion::find_completion_in_expression::find_completion_in_expression;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::expr::{ExprInfo, ReferenceType};
@@ -20,6 +21,11 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &Unit, line_col: (usize, usize), namespace_path: &Vec<&str>, expect: &Type, availability: Availability) -> Vec<CompletionItem> {
     if unit.expressions().count() == 0 {
+        if let Some(empty_dot) = unit.empty_dot() {
+            if empty_dot.span.contains_line_col(line_col) {
+                return find_completion_in_empty_enum_variant_literal(schema, source, namespace_path, expect, availability);
+            }
+        }
         return vec![];
     }
     let mut previous_resolved = &ExprInfo::undetermined();

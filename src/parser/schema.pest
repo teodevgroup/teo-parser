@@ -236,6 +236,7 @@ unit = {
     string_literal |
     regex_literal |
     enum_variant_literal |
+    empty_dot |
     tuple_literal |
     array_literal |
     dictionary_literal |

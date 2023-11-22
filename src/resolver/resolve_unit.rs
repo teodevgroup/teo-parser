@@ -28,7 +28,11 @@ pub(super) fn resolve_unit<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
 ) -> ExprInfo {
     if let Some(empty_dot) = unit.empty_dot() {
-        context.insert_diagnostics_error(empty_dot.span, "empty reference");
+        if unit.expressions().count() == 0 {
+            context.insert_diagnostics_error(empty_dot.span, "empty enum variant literal");
+        } else {
+            context.insert_diagnostics_error(empty_dot.span, "empty reference");
+        }
     }
     if unit.expressions.len() == 1 {
         return resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map);
