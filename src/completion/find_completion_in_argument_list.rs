@@ -7,6 +7,7 @@ use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_expression::find_completion_in_expression;
+use crate::r#type::Type;
 use crate::traits::node_trait::NodeTrait;
 
 pub(super) fn find_completion_in_argument_list(schema: &Schema, source: &Source, argument_list: &ArgumentList, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability, names: Vec<Vec<&str>>) -> Vec<CompletionItem> {
@@ -24,8 +25,9 @@ pub(super) fn find_completion_in_argument(schema: &Schema, source: &Source, argu
             return completion_items_from_names(names);
         }
     }
+    let undetermined = Type::Undetermined;
     if argument.value().span().contains_line_col(line_col) {
-        return find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, availability);
+        return find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability);
     }
     vec![]
 }

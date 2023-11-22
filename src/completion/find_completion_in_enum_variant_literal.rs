@@ -17,7 +17,6 @@ use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn find_completion_in_enum_variant_literal(schema: &Schema, source: &Source, enum_variant_literal: &EnumVariantLiteral, line_col: (usize, usize), namespace_path: &Vec<&str>, expect: &Type, availability: Availability) -> Vec<CompletionItem> {
-    println!("see expect: {}", expect);
     if enum_variant_literal.identifier().span.contains_line_col(line_col) {
         match expect {
             Type::EnumVariant(reference) => {

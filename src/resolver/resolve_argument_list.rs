@@ -152,7 +152,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         name: named_argument.name().unwrap().name.clone().to_string(),
                         expect: desired_type.replace_generics(&generics_map),
                     });
-
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name().name()).map(|s| *s).collect();
                 } else {
                     let undetermined = Type::Undetermined;

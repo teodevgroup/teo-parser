@@ -51,6 +51,7 @@ model Song {
   id: Int
   name: String
   @relation(through: Perform, local: .s, foreign: .artist)
+  artists: Artist[]
 }
 
 @id([.songId, .artistId])
