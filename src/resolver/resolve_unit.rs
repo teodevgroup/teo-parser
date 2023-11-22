@@ -35,15 +35,16 @@ pub(super) fn resolve_unit<'a>(
     }
     let mut current: Option<ExprInfo> = None;
     for (index, expression) in unit.expressions().enumerate() {
-        current = Some(resolve_current_item_for_unit(
-            if index == 0 { None } else { Some(unit.expression_at(index - 1).unwrap().span()) },
-            current.as_ref(),
-            expression,
-            context,
-            keywords_map
-        ));
-        if current.as_ref().unwrap().is_undetermined() {
-            return current.as_ref().unwrap().clone();
+        if current.is_some() && current.as_ref().unwrap().is_undetermined_anyway() {
+            expression.resolve(ExprInfo::undetermined());
+        } else {
+            current = Some(resolve_current_item_for_unit(
+                if index == 0 { None } else { Some(unit.expression_at(index - 1).unwrap().span()) },
+                current.as_ref(),
+                expression,
+                context,
+                keywords_map
+            ));
         }
     }
     current.unwrap_or(ExprInfo::undetermined())

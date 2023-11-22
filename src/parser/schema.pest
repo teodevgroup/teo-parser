@@ -241,6 +241,7 @@ unit = {
     dictionary_literal |
     identifier
     ~ (subscript | argument_list | DOT ~ (identifier | int_subscript))*
+    ~ empty_dot?
 }
 
 int_subscript = @{ ASCII_DIGIT+ }

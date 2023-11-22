@@ -31,6 +31,10 @@ impl ExprInfo {
         self.r#type().is_undetermined()
     }
 
+    pub fn is_undetermined_anyway(&self) -> bool {
+        self.r#type().is_undetermined() && self.reference_info().is_none()
+    }
+
     pub fn undetermined() -> Self {
         ExprInfo {
             r#type: Type::Undetermined,

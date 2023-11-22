@@ -1,0 +1,74 @@
+connector {
+  // provider .postgres
+  // url "postgres://localhost:5432/newhellonext"
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+client ts {
+  provider: .typeScript,
+  dest: "../hello-teo-ts-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client swift {
+  provider: .swift,
+  dest: "../hello-teo-swift-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client dart {
+  provider: .dart,
+  dest: "../hello-teo-dart-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+client kotlin {
+  provider: .kotlin,
+  dest: "../hello-teo-kotlin-client/",
+  package: true,
+  host: "http://127.0.0.1:5500",
+  gitCommit: true,
+}
+
+entity {
+  provider: .rust,
+  dest: "./src/entities",
+}
+
+enum Sex {
+  male
+  female
+}
+
+@action(.create | .update | .delete | .copy | .find)
+model User {
+  @id @readonly @autoIncrement @db(.text)
+  id: Int
+  @db(.varChar(181))
+  name: String
+  age: Int?
+  @relation(fields: .id, references: .userId)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  @default(connector.)
+  name: String
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
