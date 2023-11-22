@@ -1,16 +1,22 @@
+use array_tool::vec::Join;
 use crate::ast::expression::ExpressionKind;
+use crate::ast::reference_space::ReferenceSpace;
 use crate::availability::Availability;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::unit::Unit;
 use crate::completion::collect_argument_list_names::collect_argument_list_names_from_argument_list_declaration;
 use crate::completion::completion_item::CompletionItem;
+use crate::completion::completion_item_from_top::documentation_from_comment;
 use crate::completion::find_completion_in_argument_list::find_completion_in_argument_list;
 use crate::completion::find_completion_in_expression::find_completion_in_expression;
+use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::expr::{ExprInfo, ReferenceType};
 use crate::r#type::Type;
+use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &Unit, line_col: (usize, usize), namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
     if unit.expressions().count() == 0 {
@@ -112,32 +118,65 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_previous_resolv
     if let Some(reference_info) = previous_resolved.reference_info() {
         match reference_info.r#type() {
             ReferenceType::Config => {
-                vec![]
+                let config_declaration = schema.find_top_by_path(reference_info.reference.path()).unwrap().as_config().unwrap();
+                config_declaration.dictionary_literal().expressions().filter_map(|named_expression| {
+                    if let Some(key) = named_expression.key().named_key_without_resolving() {
+                        Some(CompletionItem {
+                            label: key.to_string(),
+                            namespace_path: Some(format!("{}", named_expression.value().resolved().r#type())),
+                            documentation: None,
+                            detail: None,
+                        })
+                    } else {
+                        None
+                    }
+                }).collect()
             }
-            ReferenceType::DictionaryField => {}
-            ReferenceType::Constant => {}
-            ReferenceType::Enum => {}
-            ReferenceType::EnumMember => {}
-            ReferenceType::Model => {}
-            ReferenceType::ModelField => {}
-            ReferenceType::Interface => {}
-            ReferenceType::InterfaceField => {}
-            ReferenceType::Middleware => {}
-            ReferenceType::DataSet => {}
-            ReferenceType::DataSetRecord => {}
-            ReferenceType::DecoratorDeclaration => {}
-            ReferenceType::PipelineItemDeclaration => {}
-            ReferenceType::StructDeclaration => {}
-            ReferenceType::StructInstanceFunction => {}
-            ReferenceType::StructStaticFunction => {}
-            ReferenceType::FunctionDeclaration => {}
-            ReferenceType::Namespace => {}
+            ReferenceType::Constant => vec![],
+            ReferenceType::Enum => {
+                let enum_definition = schema.find_top_by_path(reference_info.reference.path()).unwrap().as_enum().unwrap();
+                enum_definition.members().map(|member| CompletionItem {
+                    label: member.name().to_owned(),
+                    namespace_path: Some(enum_definition.str_path().join(".")),
+                    documentation: documentation_from_comment(member.comment()),
+                    detail: None,
+                }).collect()
+            }
+            ReferenceType::Model => {
+                let model_definition = schema.find_top_by_path(reference_info.reference.path()).unwrap().as_model().unwrap();
+                model_definition.fields().map(|field| CompletionItem {
+                    label: field.name().to_owned(),
+                    namespace_path: Some(model_definition.str_path().join(".")),
+                    documentation: documentation_from_comment(field.comment()),
+                    detail: None,
+                }).collect()
+            }
+            ReferenceType::StructDeclaration => {
+                let struct_declaration = schema.find_top_by_path(reference_info.reference.path()).unwrap().as_struct_declaration().unwrap();
+                struct_declaration.function_declarations().filter_map(|function| {
+                    if function.r#static {
+                        Some(CompletionItem {
+                            label: function.identifier().name().to_owned(),
+                            namespace_path: Some(struct_declaration.str_path().join(".")),
+                            documentation: documentation_from_comment(function.comment()),
+                            detail: None,
+                        })
+                    } else {
+                        None
+                    }
+                }).collect()
+            }
+            ReferenceType::Namespace => {
+                let user_typed_spaces = reference_info.reference().str_path();
+                find_top_completion_with_filter(schema, source, namespace_path, &user_typed_spaces, &top_filter_for_reference_type(ReferenceSpace::Default), availability)
+            }
+            _ => vec![]
         }
     } else {
         if let Some(struct_object) = previous_resolved.r#type().as_struct_object() {
-
+            vec![]
         } else if let Some(tuple) = previous_resolved.r#type().as_tuple() {
-
+            vec![]
         } else {
             vec![]
         }

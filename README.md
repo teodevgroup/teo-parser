@@ -5,6 +5,15 @@ Schema parser for Teo schema language
 
 ## Roadmap
 
+### 0.0.58 (Released Nov 7th, 2023)
+
+* Separate from the main project
+* Rewrite and overhaul
+* Schema dumps
+* Code diagnostics
+* Jump to definition
+* Auto completion
+
 ### 0.0.59 (Current)
 
 * File format

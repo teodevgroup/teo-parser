@@ -39,7 +39,7 @@ pub(super) fn completion_item_from_top(top: &Node) -> CompletionItem {
     }
 }
 
-fn documentation_from_comment(comment: Option<&DocComment>) -> Option<String> {
+pub(crate) fn documentation_from_comment(comment: Option<&DocComment>) -> Option<String> {
     comment.map(|c| {
         format!("{}{}", c.name.as_ref().map_or("".to_owned(), |n| format!("**{}**\n", n)), c.desc.as_ref().map_or("", |s| s.as_str()))
     })
