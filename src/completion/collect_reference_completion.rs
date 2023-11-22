@@ -16,13 +16,13 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     let mut result = vec![];
     let mut namespace_path_mut = namespace_path.clone();
     loop {
+        if namespace_path_mut.is_empty() {
+            break
+        }
         let mut combined = namespace_path_mut.clone();
         combined.extend(user_typed_prefix);
         if let Some(namespace) = source.find_child_namespace_by_string_path(&combined) {
             result.extend(collect_reference_completion_in_namespace(namespace, filter));
-        }
-        if namespace_path_mut.is_empty() {
-            break
         }
         namespace_path_mut.pop();
     }
