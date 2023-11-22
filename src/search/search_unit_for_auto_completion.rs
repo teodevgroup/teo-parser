@@ -1,15 +1,9 @@
 use crate::ast::argument_list::ArgumentList;
 use crate::availability::Availability;
-
-
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::ast::subscript::Subscript;
 use crate::ast::unit::Unit;
-
-
-
-
 
 pub fn search_unit_for_auto_completion<HAL, HS, HI, OUTPUT>(
     _schema: &Schema,
