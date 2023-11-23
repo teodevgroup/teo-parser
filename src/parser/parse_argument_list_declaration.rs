@@ -2,6 +2,7 @@ use crate::ast::argument_declaration::{ArgumentDeclaration};
 use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::{parse_insert_punctuation, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_set};
 use crate::parser::parse_identifier::parse_identifier;
+use crate::parser::parse_partial_argument_declaration::parse_partial_argument_declaration;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
@@ -11,12 +12,14 @@ use crate::parser::pest_parser::{Pair, Rule};
 pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &ParserContext) -> ArgumentListDeclaration {
     let (span, path, mut children) = parse_container_node_variables!(pair, context);
     let mut argument_declarations = vec![];
+    let mut partial_argument_declarations = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
             Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
             Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::argument_declaration => parse_insert!(parse_argument_declaration(current, context), children, argument_declarations),
+            Rule::partial_argument_declaration => parse_insert!(parse_partial_argument_declaration(current, context), children, partial_argument_declarations),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -26,6 +29,7 @@ pub(super) fn parse_argument_list_declaration(pair: Pair<'_>, context: &ParserCo
         path,
         children,
         argument_declarations,
+        partial_argument_declarations,
     }
 }
 

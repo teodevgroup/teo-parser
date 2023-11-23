@@ -291,12 +291,13 @@ empty_pipeline = { DOLLAR }
 argument_list_declaration = {
   PAREN_OPEN ~
   (NEWLINE | WHITESPACE)* ~
-  (argument_declaration ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ argument_declaration ~ (NEWLINE | WHITESPACE)*)*)? ~
+  ((argument_declaration | partial_argument_declaration) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument_declaration | partial_argument_declaration) ~ (NEWLINE | WHITESPACE)*)*)? ~
   COMMA? ~
   (NEWLINE | WHITESPACE)* ~
   PAREN_CLOSE
 }
 argument_declaration = { identifier ~ OPTIONAL? ~ COLON ~ type_expression }
+partial_argument_declaration = { identifier ~ OPTIONAL? ~ COLON }
 
 // #############
 // config blocks

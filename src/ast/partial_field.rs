@@ -14,7 +14,8 @@ impl PartialField {
 }
 
 impl Write for PartialField {
+
     fn write<'a>(&'a self, writer: &mut Writer<'a>) {
-        writer.write_content(self, ".");
+        writer.write_children(self, self.children.values());
     }
 }

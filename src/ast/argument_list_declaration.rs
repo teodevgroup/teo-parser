@@ -1,10 +1,14 @@
 use crate::{declare_container_node, impl_container_node_defaults, node_children_iter, node_children_iter_fn};
 use crate::ast::argument_declaration::ArgumentDeclaration;
+use crate::ast::partial_argument_declaration::PartialArgumentDeclaration;
 use crate::format::Writer;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
-declare_container_node!(ArgumentListDeclaration, pub(crate) argument_declarations: Vec<usize>);
+declare_container_node!(ArgumentListDeclaration,
+    pub(crate) argument_declarations: Vec<usize>,
+    pub(crate) partial_argument_declarations: Vec<usize>,
+);
 
 impl_container_node_defaults!(ArgumentListDeclaration);
 
@@ -15,9 +19,18 @@ node_children_iter!(
     argument_declarations
 );
 
+node_children_iter!(
+    ArgumentListDeclaration,
+    PartialArgumentDeclaration,
+    PartialArgumentDeclarationsIter,
+    partial_argument_declarations
+);
+
 impl ArgumentListDeclaration {
 
     node_children_iter_fn!(argument_declarations, ArgumentDeclarationsIter);
+
+    node_children_iter_fn!(partial_argument_declarations, PartialArgumentDeclarationsIter);
 
     pub fn every_argument_is_optional(&self) -> bool {
         for argument_declaration in self.argument_declarations() {

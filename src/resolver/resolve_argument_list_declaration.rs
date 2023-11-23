@@ -13,6 +13,9 @@ pub(super) fn resolve_argument_list_declaration<'a>(
     context: &'a ResolverContext<'a>,
     availability: Availability,
 ) {
+    for partial_argument_declaration in argument_list_declaration.partial_argument_declarations() {
+        context.insert_diagnostics_error(partial_argument_declaration.span, "partial argument declaration");
+    }
     for argument_declaration in argument_list_declaration.argument_declarations() {
         resolve_argument_declaration(argument_declaration, generics_declaration, generics_constraint, context, availability)
     }

@@ -52,3 +52,4 @@ pub mod named_expression;
 pub mod bracket_expression;
 pub mod empty_dot;
 pub mod partial_field;
+pub mod partial_argument_declaration;

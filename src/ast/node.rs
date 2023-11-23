@@ -36,6 +36,7 @@ use crate::ast::model::Model;
 use crate::ast::named_expression::NamedExpression;
 use crate::ast::namespace::Namespace;
 use crate::ast::operators::Operator;
+use crate::ast::partial_argument_declaration::PartialArgumentDeclaration;
 use crate::ast::partial_field::PartialField;
 use crate::ast::pipeline::Pipeline;
 use crate::ast::pipeline_item_declaration::{PipelineItemDeclaration, PipelineItemDeclarationVariant};
@@ -128,6 +129,7 @@ pub enum Node {
     Operator(Operator),
     EmptyDot(EmptyDot),
     PartialField(PartialField),
+    PartialArgumentDeclaration(PartialArgumentDeclaration),
 }
 
 impl Node {
@@ -913,6 +915,17 @@ impl Node {
         }
     }
 
+    pub fn is_partial_argument_declaration(&self) -> bool {
+        self.as_partial_field().is_some()
+    }
+
+    pub fn as_partial_argument_declaration(&self) -> Option<&PartialArgumentDeclaration> {
+        match self {
+            Node::PartialArgumentDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -986,6 +999,7 @@ impl Node {
             Node::Operator(n) => n,
             Node::EmptyDot(n) => n,
             Node::PartialField(n) => n,
+            Node::PartialArgumentDeclaration(n) => n,
         }
     }
 
