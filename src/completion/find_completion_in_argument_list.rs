@@ -43,8 +43,10 @@ pub(super) fn find_completion_in_argument(schema: &Schema, source: &Source, argu
             return find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability);
         }
     } else {
-        let mut results = completion_items_from_names(names);
-        results.extend(find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability));
+        let mut results = find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability);
+        if argument.value().is_single_identifier() {
+            results.extend(completion_items_from_names(names));
+        }
         return results;
     }
     vec![]

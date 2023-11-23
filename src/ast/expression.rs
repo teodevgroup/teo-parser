@@ -285,6 +285,26 @@ impl Expression {
         Self { kind, resolved: RefCell::new(None) }
     }
 
+    pub fn is_single_identifier(&self) -> bool {
+        if self.kind.is_identifier() {
+            return true;
+        }
+        if let Some(arith_expr) = self.kind.as_arith_expr() {
+            return match arith_expr {
+                ArithExpr::Expression(e) => e.is_single_identifier(),
+                _ => false,
+            };
+        }
+        if let Some(unit) = self.kind.as_unit() {
+            return if unit.expressions().count() == 1 {
+                 unit.expression_at(0).unwrap().is_single_identifier()
+            } else {
+                false
+            };
+        }
+        false
+    }
+
     pub fn unwrap_enumerable_enum_member_strings(&self) -> Option<Vec<&str>> {
         self.kind.unwrap_enumerable_enum_member_strings()
     }
