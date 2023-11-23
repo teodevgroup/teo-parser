@@ -9,5 +9,4 @@ mod test {
         let completions = auto_complete_items(&schema, path, (27, 34));
         assert_eq!(completions.iter().find(|c| c.label.as_str() == "references").is_some(), true);
     }
-
 }

@@ -23,7 +23,7 @@ pub(super) fn find_completion_in_unit(schema: &Schema, source: &Source, unit: &U
     if unit.expressions().count() == 0 {
         if let Some(empty_dot) = unit.empty_dot() {
             if empty_dot.span.contains_line_col(line_col) {
-                return find_completion_in_empty_enum_variant_literal(schema, source, namespace_path, expect, availability);
+                return find_completion_in_empty_enum_variant_literal(schema, source, namespace_path, &expect.expect_for_enum_variant_literal(), availability);
             }
         }
         return vec![];

@@ -6,7 +6,6 @@ use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_arith_expr::find_completion_in_arith_expr;
 use crate::completion::find_completion_in_array_literal::find_completion_in_array_literal;
-use crate::completion::find_completion_in_decorator::find_completion_in_decorator;
 use crate::completion::find_completion_in_dictionary_literal::find_completion_in_dictionary_literal;
 use crate::completion::find_completion_in_enum_variant_literal::find_completion_in_enum_variant_literal;
 use crate::completion::find_completion_in_identifier::find_completion_in_identifier;
