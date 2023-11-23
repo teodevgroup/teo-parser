@@ -1,0 +1,15 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  @onSet($self.set(., 3).randomDigits(5))
+  name: String
+}

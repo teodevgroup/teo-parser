@@ -40,10 +40,26 @@ pub(super) fn find_completion_in_argument(schema: &Schema, source: &Source, argu
             return completion_items_from_names(names);
         }
         if argument.value().span().contains_line_col(line_col) {
-            return find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability);
+            return find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() {
+                if argument.resolved().completion_expect.is_some() {
+                    argument.resolved().completion_expect.as_ref().unwrap()
+                } else {
+                    &argument.resolved().expect
+                }
+            } else {
+                &undetermined
+            }, availability);
         }
     } else {
-        let mut results = find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() { &argument.resolved().expect } else { &undetermined }, availability);
+        let mut results = find_completion_in_expression(schema, source, argument.value(), line_col, namespace_path, if argument.is_resolved() {
+            if argument.resolved().completion_expect.is_some() {
+                argument.resolved().completion_expect.as_ref().unwrap()
+            } else {
+                &argument.resolved().expect
+            }
+        } else {
+            &undetermined
+        }, availability);
         if argument.value().is_single_identifier() {
             results.extend(completion_items_from_names(names));
         }

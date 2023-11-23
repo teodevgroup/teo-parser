@@ -56,6 +56,7 @@ impl Argument {
 pub struct ArgumentResolved {
     pub name: String,
     pub expect: Type,
+    pub completion_expect: Option<Type>,
 }
 
 impl Write for Argument {

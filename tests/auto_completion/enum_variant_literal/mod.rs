@@ -53,4 +53,26 @@ mod test {
         assert_eq!(completions.len(), 1);
         assert_eq!(completions.first().unwrap().label.as_str(), "john");
     }
+
+    #[test]
+    fn completion_items_for_self_get_argument() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/enum_variant_literal/schemas/07.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, _) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (13, 21));
+        assert_eq!(completions.len(), 2);
+        assert_eq!(completions.first().unwrap().label.as_str(), "id");
+        assert_eq!(completions.get(1).unwrap().label.as_str(), "name");
+    }
+
+    #[test]
+    fn completion_items_for_self_set_argument() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/enum_variant_literal/schemas/08.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, _) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (13, 21));
+        assert_eq!(completions.len(), 2);
+        assert_eq!(completions.first().unwrap().label.as_str(), "id");
+        assert_eq!(completions.get(1).unwrap().label.as_str(), "name");
+    }
 }

@@ -183,6 +183,11 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     named_argument.resolve(ArgumentResolved {
                         name: named_argument.name().unwrap().name.clone().to_string(),
                         expect: desired_type.replace_generics(&generics_map),
+                        completion_expect: if desired_type_original.is_generic_item() && desired_type.is_field_name() {
+                            figure_out_constraint_type_for_field_name(callable_variant, &desired_type_original, &generics_map)
+                        } else {
+                            None
+                        },
                     });
                     declaration_names = declaration_names.iter().filter(|d| (**d) != argument_declaration.name().name()).map(|s| *s).collect();
                 } else {
@@ -247,6 +252,11 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         unnamed_argument.resolve(ArgumentResolved {
                             name: name.to_string(),
                             expect: desired_type.replace_generics(&generics_map),
+                            completion_expect: if desired_type_original.is_generic_item() && desired_type.is_field_name() {
+                                figure_out_constraint_type_for_field_name(callable_variant, &desired_type_original, &generics_map)
+                            } else {
+                                None
+                            },
                         });
                         declaration_names = declaration_names.iter().filter(|d| *d != name).map(|s| *s).collect();
                     }
@@ -444,4 +454,14 @@ fn matched_callable_variants<'a, 'b>(callable_variants: &'b Vec<CallableVariant<
     } else {
         callable_variants.iter().filter(|f| f.argument_list_declaration.is_none() || f.argument_list_declaration.unwrap().every_argument_is_optional()).collect()
     }
+}
+
+fn figure_out_constraint_type_for_field_name(callable_variant: &CallableVariant, t: &Type, generics_map: &BTreeMap<String, Type>) -> Option<Type> {
+    let gen = t.as_generic_item().unwrap();
+    for constraints in &callable_variant.generics_constraints {
+        if let Some(item) = constraints.items().find(|i| i.identifier().name() == gen) {
+            return Some(item.type_expr().resolved().replace_generics(generics_map).clone());
+        }
+    }
+    None
 }
