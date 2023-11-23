@@ -957,6 +957,48 @@ impl Type {
             _ => vec![]
         }
     }
+
+    pub fn flatten_struct_into_primitive(&self) -> Type {
+        if let Some((reference, types)) = self.as_struct_object() {
+            if reference.str_path() == vec!["std", "Null"] {
+                Type::Null
+            } else if reference.str_path() == vec!["std", "Bool"] {
+                Type::Bool
+            } else if reference.str_path() == vec!["std", "Int"] {
+                Type::Int
+            } else if reference.str_path() == vec!["std", "Int64"] {
+                Type::Int64
+            } else if reference.str_path() == vec!["std", "Float32"] {
+                Type::Float32
+            } else if reference.str_path() == vec!["std", "Float"] {
+                Type::Float
+            } else if reference.str_path() == vec!["std", "Decimal"] {
+                Type::Decimal
+            } else if reference.str_path() == vec!["std", "String"] {
+                Type::String
+            } else if reference.str_path() == vec!["std", "ObjectId"] {
+                Type::ObjectId
+            } else if reference.str_path() == vec!["std", "Date"] {
+                Type::Date
+            } else if reference.str_path() == vec!["std", "DateTime"] {
+                Type::DateTime
+            } else if reference.str_path() == vec!["std", "File"] {
+                Type::File
+            } else if reference.str_path() == vec!["std", "Regex"] {
+                Type::Regex
+            } else if reference.str_path() == vec!["std", "Array"] {
+                Type::Array(Box::new(types.get(0).unwrap().clone()))
+            } else if reference.str_path() == vec!["std", "Dictionary"] {
+                Type::Dictionary(Box::new(types.get(0).unwrap().clone()))
+            } else if reference.str_path() == vec!["std", "Range"] {
+                Type::Range(Box::new(types.get(0).unwrap().clone()))
+            } else {
+                self.clone()
+            }
+        } else {
+            self.clone()
+        }
+    }
 }
 
 impl Display for Type {

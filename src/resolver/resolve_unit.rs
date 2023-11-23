@@ -484,7 +484,6 @@ fn resolve_struct_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-
     let struct_declaration = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
         context.schema,
@@ -516,7 +515,7 @@ fn resolve_struct_reference_for_unit<'a>(
                     context,
                     None
                 );
-                ExprInfo::type_only(Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), types.clone()))
+                ExprInfo::type_only(Type::StructObject(Reference::new(struct_declaration.path.clone(), struct_declaration.string_path.clone()), types.clone()).flatten_struct_into_primitive())
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct initializer not found");
                 ExprInfo::undetermined()
