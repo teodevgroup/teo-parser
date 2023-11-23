@@ -1,22 +1,37 @@
 use crate::availability::Availability;
 use crate::ast::expression::{Expression, ExpressionKind};
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_completion_in_arith_expr::find_completion_in_arith_expr;
 use crate::completion::find_completion_in_array_literal::find_completion_in_array_literal;
+use crate::completion::find_completion_in_decorator::find_completion_in_decorator;
 use crate::completion::find_completion_in_dictionary_literal::find_completion_in_dictionary_literal;
 use crate::completion::find_completion_in_enum_variant_literal::find_completion_in_enum_variant_literal;
 use crate::completion::find_completion_in_identifier::find_completion_in_identifier;
 use crate::completion::find_completion_in_pipeline::{find_completion_in_empty_pipeline, find_completion_in_pipeline};
 use crate::completion::find_completion_in_tuple_literal::find_completion_in_tuple_literal;
 use crate::completion::find_completion_in_unit::find_completion_in_unit;
+use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::r#type::Type;
 use crate::traits::resolved::Resolve;
+use crate::utils::top_filter::top_filter_for_reference_type;
 
 pub(super) fn find_completion_in_expression(schema: &Schema, source: &Source, expression: &Expression, line_col: (usize, usize), namespace_path: &Vec<&str>, expect: &Type, availability: Availability) -> Vec<CompletionItem> {
     let undetermined = Type::Undetermined;
     find_completion_in_expression_kind(schema, source, &expression.kind, line_col, namespace_path, expect, availability)
+}
+
+pub(super) fn find_completion_in_empty_expression(schema: &Schema, source: &Source, namespace_path: &Vec<&str>, availability: Availability) -> Vec<CompletionItem> {
+    find_top_completion_with_filter(
+        schema,
+        source,
+        namespace_path,
+        &vec![],
+        &top_filter_for_reference_type(ReferenceSpace::Default),
+        availability,
+    )
 }
 
 pub(super) fn find_completion_in_expression_kind(schema: &Schema, source: &Source, kind: &ExpressionKind, line_col: (usize, usize), namespace_path: &Vec<&str>, expect: &Type, availability: Availability) -> Vec<CompletionItem> {

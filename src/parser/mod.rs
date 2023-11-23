@@ -44,4 +44,5 @@ mod pest_parser;
 mod parser_context;
 mod parse_partial_field;
 mod parse_partial_argument_declaration;
+mod parse_partial_argument;
 pub(super) mod parse;

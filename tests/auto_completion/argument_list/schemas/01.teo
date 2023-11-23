@@ -1,0 +1,69 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+declare struct ABC {
+  declare function ab(a: String): String
+}
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+enum Sex {
+  male
+  female
+}
+
+@action(.create | .update | .delete | .copy | .find)
+model User {
+  @id @readonly @autoIncrement @db(.text) @db(.binary)
+  id: Int
+  is: Int
+  @db(.varChar(181))
+  name: String
+  age: Int?
+  @default(.male)
+  sex: Sex
+  @relation(fields: [.id, .is], r)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  @std.db(.varChar(101)) @db(.longBlob)
+  name: String
+  userIs: Int
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
+
+model Artist {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .artist, foreign: .song)
+  songs: Song[]
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .song, foreign: .artist)
+  artists: Artist[]
+}
+
+@id([.songId, .artistId])
+model Perform {
+  @relation(fields: .songId, references: .id)
+  song: Song
+  @relation(fields: .artistId, references: .id)
+  artist: Artist
+  @foreignKey
+  songId: Int
+  @foreignKey
+  artistId: Int
+}

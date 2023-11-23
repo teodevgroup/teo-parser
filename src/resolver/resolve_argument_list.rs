@@ -22,6 +22,13 @@ pub(super) fn resolve_argument_list<'a, 'b>(
     context: &'a ResolverContext<'a>,
     pipeline_type_context: Option<&'b TypeInfo>,
 ) -> Option<Type> {
+    // errors for partial argument
+    if let Some(argument_list) = argument_list {
+        for partial_argument in argument_list.partial_arguments() {
+            context.insert_diagnostics_error(partial_argument.span, "partial argument");
+        }
+    }
+    // the main body starts
     let matched_variants = matched_callable_variants(&callable_variants, argument_list);
     let only_to_match = if callable_variants.len() == 1 {
         Some(callable_variants.first().unwrap())

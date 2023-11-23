@@ -36,6 +36,7 @@ use crate::ast::model::Model;
 use crate::ast::named_expression::NamedExpression;
 use crate::ast::namespace::Namespace;
 use crate::ast::operators::Operator;
+use crate::ast::partial_argument::PartialArgument;
 use crate::ast::partial_argument_declaration::PartialArgumentDeclaration;
 use crate::ast::partial_field::PartialField;
 use crate::ast::pipeline::Pipeline;
@@ -130,6 +131,7 @@ pub enum Node {
     EmptyDot(EmptyDot),
     PartialField(PartialField),
     PartialArgumentDeclaration(PartialArgumentDeclaration),
+    PartialArgument(PartialArgument),
 }
 
 impl Node {
@@ -916,12 +918,23 @@ impl Node {
     }
 
     pub fn is_partial_argument_declaration(&self) -> bool {
-        self.as_partial_field().is_some()
+        self.as_partial_argument_declaration().is_some()
     }
 
     pub fn as_partial_argument_declaration(&self) -> Option<&PartialArgumentDeclaration> {
         match self {
             Node::PartialArgumentDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_partial_argument(&self) -> bool {
+        self.as_partial_argument().is_some()
+    }
+
+    pub fn as_partial_argument(&self) -> Option<&PartialArgument> {
+        match self {
+            Node::PartialArgument(c) => Some(c),
             _ => None,
         }
     }
@@ -1000,6 +1013,7 @@ impl Node {
             Node::EmptyDot(n) => n,
             Node::PartialField(n) => n,
             Node::PartialArgumentDeclaration(n) => n,
+            Node::PartialArgument(n) => n,
         }
     }
 

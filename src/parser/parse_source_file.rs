@@ -12,7 +12,7 @@ pub(super) fn parse_source_file(path: impl AsRef<str>, base_path: &str, context:
     };
     let content = match context.read_file(abs_path.as_ref()) {
         Some(content) => content,
-        None => panic!("Cannot read schema file content at '{}'", abs_path)
+        None => panic!("cannot read schema file content at '{}'", abs_path)
     };
     parse_source(&content, abs_path.as_ref(), false, context)
 }

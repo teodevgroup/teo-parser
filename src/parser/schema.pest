@@ -273,8 +273,8 @@ constant_statement = { triple_comment_block? ~ LET_KEYWORD ~ identifier ~ (COLON
 // #############
 // arguments
 // #############
-argument_list = { PAREN_OPEN ~ (NEWLINE | WHITESPACE)* ~ ((argument | empty_argument) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument | empty_argument) ~ (NEWLINE | WHITESPACE)*)*)? ~ COMMA? ~ (NEWLINE | WHITESPACE)* ~ PAREN_CLOSE }
-empty_argument = { identifier ~ COLON }
+argument_list = { PAREN_OPEN ~ (NEWLINE | WHITESPACE)* ~ ((argument | partial_argument) ~ ((NEWLINE | WHITESPACE)* ~ COMMA ~ (NEWLINE | WHITESPACE)* ~ (argument | partial_argument) ~ (NEWLINE | WHITESPACE)*)*)? ~ COMMA? ~ (NEWLINE | WHITESPACE)* ~ PAREN_CLOSE }
+partial_argument = { identifier ~ COLON }
 argument = { (identifier ~ COLON)? ~ expression }
 
 // #############
