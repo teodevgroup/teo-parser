@@ -26,6 +26,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
+use crate::r#type::Type::FieldName;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -305,6 +306,12 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
         ExprInfo {
             r#type: expected.clone(),
+            value: None,
+            reference_info: None,
+        }
+    } else if expected.is_field_name() {
+        ExprInfo {
+            r#type: FieldName(e.identifier().name().to_owned()),
             value: None,
             reference_info: None,
         }

@@ -939,7 +939,7 @@ namespace std {
     }
 
     /// @name Get
-    /// Get the value on object or map
+    /// Get the value on model object, array or dictionary
     declare pipeline item get {
         variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
         variant<T>(key?: String): T{} -> T?

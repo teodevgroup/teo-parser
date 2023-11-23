@@ -135,25 +135,34 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             for named_argument in argument_list.arguments().filter(|a| a.name.is_some()) {
                 if let Some(argument_declaration) = argument_list_declaration.get(named_argument.name().unwrap().name()) {
                     let desired_type_original = argument_declaration.type_expr().resolved();
-                    let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
+                    let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(named_argument.value(), context, &desired_type, keywords_map);
                     if !desired_type.test(named_argument.value().resolved().r#type()) {
                         if !named_argument.value().resolved().r#type.is_undetermined() {
                             errors.push(context.generate_diagnostics_error(named_argument.value().span(), format!("expect {}, found {}", desired_type, named_argument.value().resolved().r#type())))
                         }
-                    } else if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum()) {
-                        generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value().resolved().r#type.clone());
-                    } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
-                        guess_extend_and_check(
-                            callable_span,
-                            callable_variant,
-                            &desired_type,
-                            named_argument.value().resolved().r#type(),
-                            &mut generics_map,
-                            keywords_map,
-                            &mut errors,
-                            context,
-                        );
+                    } else {
+                        if desired_type.is_field_name() {
+                            desired_type = named_argument.value().resolved().r#type().clone();
+                        }
+                        if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
+                            generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value().resolved().r#type.clone());
+                            // generics constraint checking
+                            for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
+                                errors.push(e);
+                            }
+                        } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
+                            guess_extend_and_check(
+                                callable_span,
+                                callable_variant,
+                                &desired_type,
+                                named_argument.value().resolved().r#type(),
+                                &mut generics_map,
+                                keywords_map,
+                                &mut errors,
+                                context,
+                            );
+                        }
                     }
                     named_argument.resolve(ArgumentResolved {
                         name: named_argument.name().unwrap().name.clone().to_string(),
@@ -184,25 +193,35 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                 if let Some(name) = declaration_names.first() {
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type_original = argument_declaration.type_expr().resolved();
-                        let desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
+                        let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
+
                         resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
                         if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
                             if !unnamed_argument.value().resolved().r#type().is_undetermined() {
                                 errors.push(context.generate_diagnostics_error(unnamed_argument.value().span(), format!("expect {}, found {}", desired_type, unnamed_argument.value().resolved().r#type())))
                             }
-                        } else if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum()) {
-                            generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
-                        } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
-                            guess_extend_and_check(
-                                callable_span,
-                                callable_variant,
-                                &desired_type,
-                                unnamed_argument.value().resolved().r#type(),
-                                &mut generics_map,
-                                keywords_map,
-                                &mut errors,
-                                context,
-                            );
+                        } else {
+                            if desired_type.is_field_name() {
+                                desired_type = unnamed_argument.value().resolved().r#type().clone();
+                            }
+                            if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
+                                generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
+                                // generics constraint checking
+                                for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
+                                    errors.push(e);
+                                }
+                            } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
+                                guess_extend_and_check(
+                                    callable_span,
+                                    callable_variant,
+                                    &desired_type,
+                                    unnamed_argument.value().resolved().r#type(),
+                                    &mut generics_map,
+                                    keywords_map,
+                                    &mut errors,
+                                    context,
+                                );
+                            }
                         }
                         unnamed_argument.resolve(ArgumentResolved {
                             name: name.to_string(),
@@ -281,8 +300,13 @@ fn validate_generics_map_with_constraint_info<'a>(
                 if item.identifier().name() == name {
                     let mut generics_map_without_name = generics_map.clone();
                     generics_map_without_name.remove(name);
-                    if !item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map).constraint_test(t) {
-                        results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr().resolved())))
+                    let (test_result, argument_satisfy) = item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map).constraint_test(t, context.schema);
+                    if !test_result {
+                        if argument_satisfy {
+                            context.insert_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)));
+                        } else {
+                            results.push(context.generate_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr().resolved())))
+                        }
                     }
                 }
             }
@@ -300,9 +324,15 @@ fn guess_generics_by_constraints<'a>(
     for constraint in generics_constraints {
         for item in constraint.items() {
             if !generics_map.contains_key(item.identifier().name()) {
-                let new_type = item.type_expr().resolved().replace_keywords(keywords_map).replace_generics(generics_map).flatten();
-                if !new_type.contains_generics() {
-                    retval.insert(item.identifier().name.clone(), new_type);
+                // special handles
+                if item.type_expr().resolved().is_synthesized_enum_reference() {
+                    retval.insert(item.identifier().name.clone(), Type::FieldName("".to_owned()));
+                } else {
+                    // normal handle
+                    let new_type = item.type_expr().resolved().replace_keywords(keywords_map).replace_generics(generics_map).flatten();
+                    if !new_type.contains_generics() {
+                        retval.insert(item.identifier().name.clone(), new_type);
+                    }
                 }
             }
         }
@@ -316,13 +346,19 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
             match container {
                 Type::ModelObject(reference) => {
                     let model = context.schema.find_top_by_path(reference.path()).unwrap().as_model().unwrap();
-                    let field = model.fields().find(|f| f.identifier().name() == field_name).unwrap();
-                    field.type_expr().resolved().clone()
+                    if let Some(field) = model.fields().find(|f| f.identifier().name() == field_name) {
+                        field.type_expr().resolved().clone()
+                    } else {
+                        Type::Undetermined
+                    }
                 },
                 Type::InterfaceObject(reference, _types) => {
                     let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                    let field = interface.fields().find(|f| f.identifier().name() == field_name).unwrap();
-                    field.type_expr().resolved().clone()
+                    if let Some(field) = interface.fields().find(|f| f.identifier().name() == field_name) {
+                        field.type_expr().resolved().clone()
+                    } else {
+                        Type::Undetermined
+                    }
                 },
                 _ => Type::Undetermined
             }

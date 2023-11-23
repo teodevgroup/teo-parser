@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use serde::Serialize;
+use crate::ast::schema::Schema;
 
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
@@ -45,7 +46,7 @@ pub enum Type {
     ///
     FieldType(Box<Type>, Box<Type>),
 
-    /// Field Reference
+    /// Field Name
     ///
     FieldName(String),
 
@@ -856,7 +857,7 @@ impl Type {
             Type::Enumerable(inner) => inner.test(other) || Type::Array(inner.clone()).test(other),
             Type::Optional(inner) => inner.test(other) || (other.is_optional() && inner.test(other.as_optional().unwrap())),
             Type::FieldType(a, b) => other.is_field_type() && a.test(other.as_field_type().unwrap().0) && b.test(other.as_field_type().unwrap().1),
-            Type::FieldName(name) => other.is_field_name() && other.as_field_name().unwrap() == name.as_str(),
+            Type::FieldName(_) => other.is_field_name(),
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
             Type::Null => other.is_null(),
@@ -894,11 +895,20 @@ impl Type {
         }
     }
 
-    pub fn constraint_test(&self, other: &Type) -> bool {
+    pub fn constraint_test(&self, other: &Type, schema: &Schema) -> (bool, bool) {
         if self.is_model() && other.is_model_object() {
-            true
+            (true, true)
+        } else if self.is_synthesized_enum_reference() && other.is_field_name() {
+            let synthesized_enum_reference = self.as_synthesized_enum_reference().unwrap();
+            if let Some(definition) = synthesized_enum_reference.fetch_synthesized_definition(schema) {
+                let result = definition.members.keys().contains(&other.as_field_name().unwrap().to_string());
+                (result, true)
+            } else {
+                (false, true)
+            }
         } else {
-            self.test(other)
+            let result = self.test(other);
+            (result, result)
         }
     }
 
