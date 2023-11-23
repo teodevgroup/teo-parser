@@ -38,7 +38,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
         None
     };
     if let Some(only_to_match) = only_to_match {
-        let (errors, warnings, t) = try_resolve_argument_list_for_callable_variant(
+        let (errors, warnings, t, _) = try_resolve_argument_list_for_callable_variant(
             callable_span,
             argument_list,
             only_to_match,
@@ -55,7 +55,7 @@ pub(super) fn resolve_argument_list<'a, 'b>(
         return t;
     } else {
         for callable_variant in &callable_variants {
-            let (errors, warnings, t) = try_resolve_argument_list_for_callable_variant(
+            let (errors, warnings, t, matched) = try_resolve_argument_list_for_callable_variant(
                 callable_span,
                 argument_list,
                 callable_variant,
@@ -64,6 +64,15 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                 pipeline_type_context,
             );
             if errors.is_empty() {
+                for warning in warnings {
+                    context.insert_diagnostics_warning(*warning.span(), warning.message());
+                }
+                return t;
+            }
+            if matched {
+                for error in errors {
+                    context.insert_diagnostics_error(*error.span(), error.message());
+                }
                 for warning in warnings {
                     context.insert_diagnostics_warning(*warning.span(), warning.message());
                 }
@@ -82,8 +91,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     keywords_map: &BTreeMap<Keyword, Type>,
     context: &'a ResolverContext<'a>,
     type_info: Option<&'b TypeInfo>,
-) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>) {
+) -> (Vec<DiagnosticsError>, Vec<DiagnosticsWarning>, Option<Type>, bool) {
     // declare errors and warnings
+    let mut matched = false;
     let mut errors = vec![];
     let warnings = vec![];
     // collect generics identifiers
@@ -113,6 +123,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         &mut generics_map,
                         keywords_map,
                         &mut errors,
+                        &mut matched,
                         context,
                     );
                 }
@@ -123,7 +134,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
     if let Some(pipeline_input) = &callable_variant.pipeline_input {
         let expected = pipeline_input.replace_keywords(keywords_map).replace_generics(&generics_map);
         let found = passed_in.as_ref().unwrap().replace_generics(&generics_map).replace_keywords(keywords_map);
-        if !expected.test(&found) {
+        if !expected.is_undetermined() && !expected.test(&found) {
             errors.push(context.generate_diagnostics_error(callable_span, format!("unexpected pipeline input: expect {expected}, found {found}")));
         }
     }
@@ -138,7 +149,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
                     resolve_expression(named_argument.value(), context, &desired_type, keywords_map);
                     if !desired_type.test(named_argument.value().resolved().r#type()) {
-                        if !named_argument.value().resolved().r#type.is_undetermined() {
+                        if !desired_type.is_undetermined() && !named_argument.value().resolved().r#type.is_undetermined() {
                             errors.push(context.generate_diagnostics_error(named_argument.value().span(), format!("expect {}, found {}", desired_type, named_argument.value().resolved().r#type())))
                         }
                     } else {
@@ -148,8 +159,12 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value().resolved().r#type.clone());
                             // generics constraint checking
-                            for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
+                            let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
+                            for e in generics_constraint_checking_result.0 {
                                 errors.push(e);
+                            }
+                            if !matched {
+                                matched = generics_constraint_checking_result.1;
                             }
                         } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                             guess_extend_and_check(
@@ -160,6 +175,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                                 &mut generics_map,
                                 keywords_map,
                                 &mut errors,
+                                &mut matched,
                                 context,
                             );
                         }
@@ -197,7 +213,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
 
                         resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
                         if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
-                            if !unnamed_argument.value().resolved().r#type().is_undetermined() {
+                            if !desired_type.is_undetermined() && !unnamed_argument.value().resolved().r#type().is_undetermined() {
                                 errors.push(context.generate_diagnostics_error(unnamed_argument.value().span(), format!("expect {}, found {}", desired_type, unnamed_argument.value().resolved().r#type())))
                             }
                         } else {
@@ -207,8 +223,12 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
                                 generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
                                 // generics constraint checking
-                                for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
+                                let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
+                                for e in generics_constraint_checking_result.0 {
                                     errors.push(e);
+                                }
+                                if !matched {
+                                    matched = generics_constraint_checking_result.1;
                                 }
                             } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
                                 guess_extend_and_check(
@@ -219,6 +239,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                                     &mut generics_map,
                                     keywords_map,
                                     &mut errors,
+                                    &mut matched,
                                     context,
                                 );
                             }
@@ -249,7 +270,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             }
         }
     }
-    (errors, warnings, callable_variant.pipeline_output.clone().map(|t| flatten_field_type_reference(t.replace_keywords(keywords_map).replace_generics(&generics_map), context)))
+    (errors, warnings, callable_variant.pipeline_output.clone().map(|t| flatten_field_type_reference(t.replace_keywords(keywords_map).replace_generics(&generics_map), context)), matched)
 }
 
 fn guess_generics_by_pipeline_input_and_passed_in<'a>(unresolved: &'a Type, explicit: &'a Type) -> Result<BTreeMap<String, Type>, String> {
@@ -292,7 +313,8 @@ fn validate_generics_map_with_constraint_info<'a>(
     keywords_map: &BTreeMap<Keyword, Type>,
     generics_constraints: &Vec<&GenericsConstraint>,
     context: &'a ResolverContext<'a>,
-) -> Vec<DiagnosticsError> {
+) -> (Vec<DiagnosticsError>, bool) {
+    let mut matched = false;
     let mut results = vec![];
     for (name, t) in generics_map {
         for constraint in generics_constraints {
@@ -301,6 +323,9 @@ fn validate_generics_map_with_constraint_info<'a>(
                     let mut generics_map_without_name = generics_map.clone();
                     generics_map_without_name.remove(name);
                     let (test_result, argument_satisfy) = item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map).constraint_test(t, context.schema);
+                    if argument_satisfy {
+                        matched = true;
+                    }
                     if !test_result {
                         if argument_satisfy {
                             context.insert_diagnostics_error(span, format!("type {} doesn't satisfy {}", t, item.type_expr().resolved().replace_generics(&generics_map_without_name).replace_keywords(keywords_map)));
@@ -312,7 +337,7 @@ fn validate_generics_map_with_constraint_info<'a>(
             }
         }
     }
-    results
+    (results, matched)
 }
 
 fn guess_generics_by_constraints<'a>(
@@ -376,6 +401,7 @@ fn guess_extend_and_check<'a>(
     generics_map: &mut BTreeMap<String, Type>,
     keywords_map: &BTreeMap<Keyword, Type>,
     errors: &mut Vec<DiagnosticsError>,
+    matched: &mut bool,
     context: &'a ResolverContext<'a>,
 ) {
     match guess_generics_by_pipeline_input_and_passed_in(unresolved, explicit) {
@@ -387,8 +413,12 @@ fn guess_extend_and_check<'a>(
         }
     }
     // generics constraint checking
-    for e in validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context) {
+    let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
+    for e in generics_constraint_checking_result.0 {
         errors.push(e);
+    }
+    if !*matched {
+        *matched = generics_constraint_checking_result.1;
     }
     // guessing more by constraints
     generics_map.extend(guess_generics_by_constraints(&generics_map, keywords_map, &callable_variant.generics_constraints));
