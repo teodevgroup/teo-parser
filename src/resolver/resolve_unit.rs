@@ -35,7 +35,11 @@ pub(super) fn resolve_unit<'a>(
         }
     }
     if unit.expressions.len() == 1 {
-        return resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map);
+        return unit_type_coerce(
+            &resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map),
+            expected,
+            context
+        );
     }
     let mut current: Option<ExprInfo> = None;
     for (index, expression) in unit.expressions().enumerate() {
@@ -51,7 +55,11 @@ pub(super) fn resolve_unit<'a>(
             ));
         }
     }
-    current.unwrap_or(ExprInfo::undetermined())
+    if let Some(current) = current {
+        unit_type_coerce(&current, expected, context)
+    } else {
+        ExprInfo::undetermined()
+    }
 }
 
 fn resolve_current_item_for_unit<'a>(
@@ -695,4 +703,24 @@ fn resolve_namespace_reference_for_unit<'a>(
             ExprInfo::undetermined()
         }
     })
+}
+
+fn unit_type_coerce<'a>(resolved: &ExprInfo, expected: &Type, context: &'a ResolverContext<'a>) -> ExprInfo {
+    if expected.test(resolved.r#type()) {
+        resolved.clone()
+    } else {
+        if resolved.r#type().can_coerce_to(expected) {
+            ExprInfo {
+                r#type: expected.clone(),
+                value: if let Some(value) = resolved.value() {
+                    resolved.r#type().coerce_value_to(value, expected)
+                } else {
+                    None
+                },
+                reference_info: resolved.reference_info().cloned()
+            }
+        } else {
+            resolved.clone()
+        }
+    }
 }

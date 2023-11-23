@@ -18,19 +18,27 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a ConstantDeclaration,
     context.push_dependency(constant.path.clone());
     let resolved = resolve_expression(constant.expression(), context, constant.type_expr().map_or(&undetermined, |t| t.resolved()), &btreemap! {});
     if let Some(type_expr) = constant.type_expr() {
-        if resolved.r#type().can_coerce_to(type_expr.resolved()) {
+        if type_expr.resolved().test(resolved.r#type()) {
             constant.resolve(ExprInfo {
                 r#type: type_expr.resolved().clone(),
-                value: if let Some(value) = resolved.value() {
-                    resolved.r#type().coerce_value_to(value, type_expr.resolved())
-                } else {
-                    None
-                },
+                value: resolved.value().cloned(),
                 reference_info: resolved.reference_info().cloned(),
             });
         } else {
-            context.insert_diagnostics_error(constant.expression().span(), format!("expect {}, found {}", type_expr.resolved(), resolved.r#type()));
-            constant.resolve(resolved.type_altered(type_expr.resolved().clone()));
+            if resolved.r#type().can_coerce_to(type_expr.resolved()) {
+                constant.resolve(ExprInfo {
+                    r#type: type_expr.resolved().clone(),
+                    value: if let Some(value) = resolved.value() {
+                        resolved.r#type().coerce_value_to(value, type_expr.resolved())
+                    } else {
+                        None
+                    },
+                    reference_info: resolved.reference_info().cloned(),
+                });
+            } else {
+                context.insert_diagnostics_error(constant.expression().span(), format!("expect {}, found {}", type_expr.resolved(), resolved.r#type()));
+                constant.resolve(resolved.type_altered(type_expr.resolved().clone()));
+            }
         }
     } else {
         constant.resolve(resolved);
