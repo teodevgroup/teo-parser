@@ -10,7 +10,6 @@ mod test {
     //     let path = "/Users/victor/Developer/teo-namespace-example/part.teo";
     //     let (schema, _) = parse(path, None, None);
     //     let definitions = jump_to_definition(&schema, path, (8, 17));
-    //     println!("{:?}", definitions)
     // }
     //
     // use backtrace_on_stack_overflow;

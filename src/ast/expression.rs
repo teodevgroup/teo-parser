@@ -297,7 +297,7 @@ impl Expression {
         }
         if let Some(unit) = self.kind.as_unit() {
             return if unit.expressions().count() == 1 {
-                 unit.expression_at(0).unwrap().is_single_identifier()
+                 unit.expression_at(0).unwrap().is_single_identifier() && unit.empty_dot().is_none()
             } else {
                 false
             };

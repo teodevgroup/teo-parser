@@ -16,20 +16,22 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     let mut result = vec![];
     let mut namespace_path_mut = namespace_path.clone();
     loop {
-        if namespace_path_mut.is_empty() {
-            break
-        }
         let mut combined = namespace_path_mut.clone();
         combined.extend(user_typed_prefix);
         if let Some(namespace) = source.find_child_namespace_by_string_path(&combined) {
             result.extend(collect_reference_completion_in_namespace(namespace, filter, availability));
         }
+        if namespace_path_mut.is_empty() {
+            break
+        }
         namespace_path_mut.pop();
     }
     for top in source.children() {
         if let Some(namespace) = top.as_namespace() {
-            if namespace.children.values().find(|t| filter(t)).is_some() {
-                result.push(namespace.path.clone());
+            if user_typed_prefix.is_empty() {
+                if namespace.children.values().find(|t| filter(t)).is_some() {
+                    result.push(namespace.path.clone());
+                }
             }
         } else if let Some(import) = top.as_import() {
             if !examined_sources.contains(&import.file_path.as_str()) {
@@ -45,9 +47,13 @@ fn collect_reference_completion_in_source_internal<'a>(schema: &'a Schema, sourc
     }
     for builtin_source in schema.builtin_sources() {
         if !examined_sources.contains(&builtin_source.file_path.as_str()) {
-            result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, user_typed_prefix, filter, examined_sources, availability));
-            if let Some(namespace) = builtin_source.find_child_namespace_by_string_path(&vec!["std"]) {
-                result.extend(collect_reference_completion_in_namespace(namespace, filter, availability));
+            if user_typed_prefix.is_empty() {
+                result.extend(collect_reference_completion_in_source_internal(schema, builtin_source, namespace_path, user_typed_prefix, filter, examined_sources, availability));
+            }
+            if user_typed_prefix.is_empty() || user_typed_prefix == &vec!["std"] {
+                if let Some(namespace) = builtin_source.find_child_namespace_by_string_path(&vec!["std"]) {
+                    result.extend(collect_reference_completion_in_namespace(namespace, filter, availability));
+                }
             }
         }
     }
