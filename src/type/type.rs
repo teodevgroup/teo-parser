@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use serde::Serialize;
+use teo_teon::Value;
 use crate::ast::schema::Schema;
 
 use crate::r#type::reference::Reference;
@@ -955,6 +956,40 @@ impl Type {
             Type::StructObject(_, types) => types.clone(),
             Type::Pipeline(input, output) => vec![input.as_ref().clone(), output.as_ref().clone()],
             _ => vec![]
+        }
+    }
+
+    pub fn can_coerce_to(&self, other: &Type) -> bool {
+        if self == other {
+            true
+        } else if self.is_int() && other.is_int64() {
+            true
+        } else if self.is_int64() && other.is_int() {
+            true
+        } else if self.is_float32() && other.is_float() {
+            true
+        } else if self.is_float() && other.is_float32() {
+            true
+        } else if self.is_int_32_or_64() && other.is_float_32_or_64() {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn coerce_value_to(&self, value: &Value, other: &Type) -> Option<Value> {
+        if self == other {
+            Some(value.clone())
+        } else if other.is_float() {
+            value.to_float().map(|f| Value::Float(f))
+        } else if other.is_float32() {
+            value.to_float32().map(|f| Value::Float32(f))
+        } else if other.is_int() {
+            value.to_int().map(|f| Value::Int(f))
+        } else if other.is_int64() {
+            value.to_int64().map(|f| Value::Int64(f))
+        } else {
+            None
         }
     }
 

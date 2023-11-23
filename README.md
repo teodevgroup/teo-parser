@@ -5,7 +5,7 @@ Schema parser for Teo schema language
 
 ## Roadmap
 
-### 0.0.58 (Released Nov 7th, 2023)
+### 0.0.58 (Released on Nov 7th, 2023)
 
 * Separate from the main project
 * Rewrite and overhaul
@@ -18,7 +18,10 @@ Schema parser for Teo schema language
 
 * File format
 * Trigger auto completions by `"."`, `":"` and `"$"`
-* Improved jump to definition and auto completion
+* Auto completion for enum variant literals
+* Jump to definition for enum variant literals
+* Convert struct objects to primitive types
+* Improved callable variant matching mechanics
 
 ### 0.0.60
 
