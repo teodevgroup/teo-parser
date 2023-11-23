@@ -972,21 +972,31 @@ impl Type {
             true
         } else if self.is_int_32_or_64() && other.is_float_32_or_64() {
             true
+        } else if !self.is_optional() && other.is_optional() {
+            self.can_coerce_to(other.as_optional().unwrap())
+        } else if self.is_optional() && other.is_optional() {
+            self.as_optional().unwrap().can_coerce_to(other.as_optional().unwrap())
+        } else if self.is_enumerable() && other.is_enumerable() {
+            self.as_enumerable().unwrap().can_coerce_to(other.as_enumerable().unwrap())
+        } else if self.is_array() && other.is_enumerable() {
+            self.as_array().unwrap().can_coerce_to(other.as_enumerable().unwrap())
+        } else if !self.is_enumerable() && other.is_enumerable() {
+            self.can_coerce_to(other.as_enumerable().unwrap())
         } else {
             false
         }
     }
 
     pub fn coerce_value_to(&self, value: &Value, other: &Type) -> Option<Value> {
-        if self == other {
+        if self == other || other.test(self) {
             Some(value.clone())
-        } else if other.is_float() {
+        } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_float() {
             value.to_float().map(|f| Value::Float(f))
-        } else if other.is_float32() {
+        } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_float32() {
             value.to_float32().map(|f| Value::Float32(f))
-        } else if other.is_int() {
+        } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_int() {
             value.to_int().map(|f| Value::Int(f))
-        } else if other.is_int64() {
+        } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_int64() {
             value.to_int64().map(|f| Value::Int64(f))
         } else {
             None
