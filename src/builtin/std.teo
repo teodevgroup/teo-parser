@@ -22,19 +22,19 @@ namespace std {
     }
 
     declare struct Int {
-        declare static function new(from?: String): Self
+        declare static function new(from?: String | Int64): Self
     }
 
     declare struct Int64 {
-        declare static function new(from?: String): Self
+        declare static function new(from?: String | Int): Self
     }
 
     declare struct Float32 {
-        declare static function new(from?: String): Self
+        declare static function new(from?: String | Float): Self
     }
 
     declare struct Float {
-        declare static function new(from?: String): Self
+        declare static function new(from?: String | Float32): Self
     }
 
     declare struct Decimal {

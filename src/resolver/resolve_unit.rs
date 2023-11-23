@@ -19,7 +19,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
-use crate::resolver::resolve_identifier::resolve_identifier_path_names_with_filter_to_expr_info;
+use crate::resolver::resolve_identifier::{resolve_identifier_path_names_with_filter_to_expr_info, resolve_identifier_path_names_with_filter_to_top};
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
@@ -249,8 +249,11 @@ fn resolve_enum_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let enum_declaration = context.source().find_node_by_string_path(
+    let enum_declaration = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
@@ -339,8 +342,11 @@ fn resolve_config_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let config = context.source().find_node_by_string_path(
+    let config = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_config().unwrap();
@@ -365,8 +371,11 @@ fn resolve_model_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let model = context.source().find_node_by_string_path(
+    let model = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_model().unwrap();
@@ -400,8 +409,11 @@ fn resolve_interface_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let interface = context.source().find_node_by_string_path(
+    let interface = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_interface_declaration().unwrap();
@@ -436,8 +448,11 @@ fn resolve_interface_object_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let interface = context.source().find_node_by_string_path(
+    let interface = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_interface_declaration().unwrap();
@@ -469,8 +484,12 @@ fn resolve_struct_reference_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_node_by_string_path(
+
+    let struct_declaration = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
@@ -516,8 +535,11 @@ fn resolve_struct_object_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let struct_declaration = context.source().find_node_by_string_path(
+    let struct_declaration = resolve_identifier_path_names_with_filter_to_top(
         &reference.str_path(),
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_struct_declaration().unwrap();
