@@ -36,11 +36,21 @@ mod test {
 
     #[test]
     fn completion_items_for_data_set_record_inside_array() {
-
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/enum_variant_literal/schemas/06.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, _) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (42, 18));
+        assert_eq!(completions.len(), 1);
+        assert_eq!(completions.first().unwrap().label.as_str(), "a");
     }
 
     #[test]
     fn completion_items_for_data_set_record() {
-
+        let path_buf = std::env::current_dir().unwrap().join("tests/auto_completion/enum_variant_literal/schemas/05.teo");
+        let path = path_buf.to_str().unwrap();
+        let (schema, _) = parse(path, None, None);
+        let completions = auto_complete_items(&schema, path, (48, 16));
+        assert_eq!(completions.len(), 1);
+        assert_eq!(completions.first().unwrap().label.as_str(), "john");
     }
 }

@@ -35,6 +35,13 @@ pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a Re
     t
 }
 
+pub(super) fn resolve_expression_for_data_set_record<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
+    let mut t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);
+    t.r#type = expected.clone();
+    expression.resolve(t.clone());
+    t
+}
+
 fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     match &expression {
         ExpressionKind::Group(e) => resolve_group(e, context, expected, keywords_map),

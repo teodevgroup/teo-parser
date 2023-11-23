@@ -1,0 +1,51 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/oct22",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+enum Sex {
+  male
+  female
+}
+
+@action(.create | .update | .delete | .copy | .find)
+model User {
+  @id @readonly @autoIncrement @db(.text)
+  id: Int
+  @db(.varChar(181))
+  name: String
+  age: Int?
+  @relation(fields: .id, references: .userId)
+  posts: Post[]
+}
+
+model Post {
+  @id @readonly @autoIncrement
+  id: Int
+  @std.db(.varChar(101))
+  name: String
+  @foreignKey
+  userId: Int
+  @relation(fields: .userId, references: .id)
+  user: User
+}
+
+dataset default {
+  group User {
+    record john {
+      "name": "dd",
+      "age": 5,
+      "posts": [.]
+    }
+  }
+  group Post {
+    record a {
+      "name": "Post 1",
+      "user": .john
+    }
+  }
+}

@@ -3,7 +3,7 @@ use crate::ast::data_set::{DataSet, DataSetGroup};
 use crate::expr::ReferenceType;
 use crate::r#type::reference::Reference;
 use crate::r#type::Type;
-use crate::resolver::resolve_expression::{resolve_expression, resolve_expression_for_named_expression_key};
+use crate::resolver::resolve_expression::{resolve_expression, resolve_expression_for_data_set_record, resolve_expression_for_named_expression_key};
 use crate::resolver::resolve_identifier::resolve_identifier_path_with_filter;
 use crate::resolver::resolve_model_shapes::{has_property_setter, is_field_readonly};
 use crate::resolver::resolver_context::{ExaminedDataSetRecord, ResolverContext};
@@ -64,6 +64,7 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
         };
         let model = context.schema.find_top_by_path(group.resolved().path()).unwrap().as_model().unwrap();
         for record in group.records() {
+            *record.actual_availability.borrow_mut() = context.current_availability();
             let mut used_keys = vec![];
             for named_expression in record.dictionary().expressions() {
                 let key_expression = named_expression.key();
@@ -105,14 +106,14 @@ pub(super) fn resolve_data_set_records<'a>(data_set: &'a DataSet, context: &'a R
                             );
                             if field.type_expr().resolved().unwrap_optional().is_array() {
                                 // to many relation
-                                resolve_expression(value_expression, context, &expect.wrap_in_array(), &btreemap! {});
+                                resolve_expression_for_data_set_record(value_expression, context, &expect.wrap_in_array(), &btreemap! {});
                             } else {
                                 // to one relation
                                 if field.type_expr().resolved().is_optional() {
                                     // allow null
-                                    resolve_expression(value_expression, context, &expect.wrap_in_optional(), &btreemap! {});
+                                    resolve_expression_for_data_set_record(value_expression, context, &expect.wrap_in_optional(), &btreemap! {});
                                 } else {
-                                    resolve_expression(value_expression, context, &expect, &btreemap! {});
+                                    resolve_expression_for_data_set_record(value_expression, context, &expect, &btreemap! {});
                                 }
                             }
                         } else {
