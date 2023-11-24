@@ -19,4 +19,13 @@ mod test {
         assert_eq!(diagnostics.errors().len(), 1);
         assert_eq!(diagnostics.errors().first().unwrap().message(), "expect Int, found Int64?");
     }
+
+    #[test]
+    fn works_for_synthesized_enum_reference() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/parse/type_coerce/schemas/03.teo");
+        let path = path_buf.to_str().unwrap();
+        let (_, diagnostics) = parse(path, None, None);
+        assert_eq!(diagnostics.errors().len(), 1);
+        assert_eq!(diagnostics.errors().first().unwrap().message(), "expect ModelSerializableScalarFields<Perform>, found other fields");
+    }
 }

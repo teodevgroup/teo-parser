@@ -22,6 +22,10 @@ impl Unit {
     pub fn expression_at(&self, idx: usize) -> Option<&Expression> {
         self.expressions.get(idx).map(|idx| self.children.get(idx)).flatten().map(|n| n.as_expression()).flatten()
     }
+
+    pub fn last_expression(&self) -> Option<&Expression> {
+        self.expressions.last().map(|idx| self.children.get(idx)).flatten().map(|n| n.as_expression()).flatten()
+    }
 }
 
 impl Write for Unit {

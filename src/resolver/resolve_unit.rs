@@ -36,6 +36,7 @@ pub(super) fn resolve_unit<'a>(
     }
     if unit.expressions.len() == 1 {
         return unit_type_coerce(
+            unit.expression_at(0).unwrap().span(),
             &resolve_expression(unit.expression_at(0).unwrap(), context, expected, keywords_map),
             expected,
             context
@@ -56,7 +57,7 @@ pub(super) fn resolve_unit<'a>(
         }
     }
     if let Some(current) = current {
-        unit_type_coerce(&current, expected, context)
+        unit_type_coerce(unit.last_expression().unwrap().span(), &current, expected, context)
     } else {
         ExprInfo::undetermined()
     }
@@ -705,7 +706,34 @@ fn resolve_namespace_reference_for_unit<'a>(
     })
 }
 
-fn unit_type_coerce<'a>(resolved: &ExprInfo, expected: &Type, context: &'a ResolverContext<'a>) -> ExprInfo {
+fn unit_type_coerce<'a>(expression_span: Span, resolved: &ExprInfo, expected: &Type, context: &'a ResolverContext<'a>) -> ExprInfo {
+    if expected.unwrap_optional().unwrap_enumerable().unwrap_optional().is_synthesized_enum_reference() && resolved.reference_info.is_some() && resolved.reference_info().unwrap().r#type() == ReferenceType::ModelField {
+        let synthesized_enum_reference = expected.unwrap_optional().unwrap_enumerable().unwrap_optional().as_synthesized_enum_reference().unwrap();
+        let model_path = resolved.reference_info().unwrap().reference.path_without_last(1);
+        let field_name = *resolved.reference_info().unwrap().reference.str_path().last().unwrap();
+        let model = context.schema.find_top_by_path(&model_path).unwrap().as_model().unwrap();
+        if let Some(target_model_reference) = synthesized_enum_reference.owner.as_model_object() {
+            if target_model_reference.path() == &model_path {
+                let definition = synthesized_enum_reference.fetch_synthesized_definition(context.schema).unwrap();
+                if definition.keys.contains(&field_name.to_owned()) {
+                    return ExprInfo {
+                        r#type: expected.unwrap_optional().unwrap_enumerable().unwrap_optional().clone(),
+                        value: Some(Value::EnumVariant(EnumVariant {
+                            value: field_name.to_owned(),
+                            args: None,
+                        })),
+                        reference_info: resolved.reference_info.clone()
+                    };
+                } else {
+                    context.insert_diagnostics_error(expression_span, format!("expect {}, found other fields", synthesized_enum_reference));
+                    return resolved.clone();
+                }
+            } else {
+                context.insert_diagnostics_error(expression_span, format!("expect {}, found fields of {}", synthesized_enum_reference, model.name()));
+                return resolved.clone();
+            }
+        }
+    }
     if expected.test(resolved.r#type()) {
         resolved.clone()
     } else {

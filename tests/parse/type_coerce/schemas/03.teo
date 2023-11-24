@@ -1,0 +1,36 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/nov24",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+model Artist {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: Perform.artist, foreign: .song)
+  songs: Song[]
+}
+
+model Song {
+  @id @readonly @autoIncrement
+  id: Int
+  name: String
+  @relation(through: Perform, local: .song, foreign: .artist)
+  artists: Artist[]
+}
+
+@id([.songId, .artistId])
+model Perform {
+  @relation(fields: Perform.song, references: .id)
+  song: Song
+  @relation(fields: .artistId, references: .id)
+  artist: Artist
+  @foreignKey
+  songId: Int
+  @foreignKey
+  artistId: Int
+}
