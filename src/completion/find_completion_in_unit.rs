@@ -13,6 +13,7 @@ use crate::completion::find_completion_in_enum_variant_literal::find_completion_
 use crate::completion::find_completion_in_expression::find_completion_in_expression;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::expr::{ExprInfo, ReferenceType};
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
@@ -218,6 +219,18 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_type(
         }).collect()
     } else if let Some(tuple) = r#type.as_tuple() {
         completion_items_from_tuple_types(tuple)
+    } else if let Some(synthesized_shape) = r#type.as_synthesized_shape() {
+        completion_items_in_unit_for_synthesized_shape(synthesized_shape)
+    } else if let Some(synthesized_shape_reference) = r#type.as_synthesized_shape_reference() {
+        if let Some(definition) = synthesized_shape_reference.fetch_synthesized_definition(schema) {
+            if let Some(synthesized_shape) = definition.as_synthesized_shape() {
+                completion_items_in_unit_for_synthesized_shape(synthesized_shape)
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        }
     } else {
         vec![]
     }
@@ -227,6 +240,17 @@ fn completion_items_from_tuple_types(tuple: &Vec<Type>) -> Vec<CompletionItem> {
     tuple.iter().enumerate().map(|(idx, t)| CompletionItem {
         label: format!("{}", idx + 1),
         namespace_path: Some(format!("{t}")),
+        documentation: None,
+        detail: None,
+    }).collect()
+}
+
+fn completion_items_in_unit_for_synthesized_shape(
+    synthesized_shape: &SynthesizedShape,
+) -> Vec<CompletionItem> {
+    synthesized_shape.iter().map(|(k, v)| CompletionItem {
+        label: k.to_string(),
+        namespace_path: Some(format!("{}", v)),
         documentation: None,
         detail: None,
     }).collect()

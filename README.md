@@ -14,7 +14,7 @@ Schema parser for Teo schema language
 * Jump to definition
 * Auto completion
 
-### 0.0.59 (Current)
+### 0.0.59 (Current Developing)
 
 * File format
 * Trigger auto completions by `"."`, `":"` and `"$"`
@@ -22,6 +22,7 @@ Schema parser for Teo schema language
 * Jump to definition for enum variant literals
 * Convert struct objects to primitive types
 * Improved callable variant matching mechanics
+* Object literal syntax
 
 ### 0.0.60
 
@@ -49,10 +50,6 @@ Schema parser for Teo schema language
 ### 0.4.0
 
 * diagnostic code
-
-### 0.5.0
-
-* Full set of unit tests
 
 ### 1.0.0
 
