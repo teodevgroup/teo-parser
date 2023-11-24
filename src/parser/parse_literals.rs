@@ -14,6 +14,7 @@ use crate::parser::parse_named_expression::parse_named_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
+use crate::traits::identifiable::Identifiable;
 
 pub(super) fn parse_string_literal(pair: &Pair<'_>, context: &ParserContext) -> StringLiteral {
     let (span, path) = parse_node_variables!(pair, context);
@@ -147,10 +148,15 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext, 
         mut children,
     ) = parse_container_node_variables!(pair, context);
     let mut expressions: Vec<usize> = vec![];
+    let mut close_block = 0;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
-            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
+            Rule::BLOCK_CLOSE => {
+                let punc = crate::ast::punctuations::Punctuation::new("}", parse_span(&current), context.next_path());
+                close_block = punc.id();
+                children.insert(Identifiable::id(&punc), punc.into());
+            },
             Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
@@ -167,5 +173,6 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext, 
         children,
         path,
         is_config_field,
+        close_block,
     }
 }

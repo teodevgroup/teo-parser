@@ -5,6 +5,7 @@ use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, declare_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::named_expression::NamedExpression;
+use crate::ast::punctuations::Punctuation;
 use crate::format::Writer;
 use crate::traits::write::Write;
 
@@ -142,6 +143,7 @@ declare_container_node!(DictionaryLiteral,
     pub(crate) expressions: Vec<usize>,
     pub(crate) namespace_path: Vec<usize>,
     pub(crate) is_config_field: bool,
+    pub(crate) close_block: usize,
 );
 
 impl_container_node_defaults!(DictionaryLiteral);
@@ -151,6 +153,9 @@ node_children_iter!(DictionaryLiteral, NamedExpression, DictionaryLiteralExpress
 impl DictionaryLiteral {
 
     node_children_iter_fn!(expressions, DictionaryLiteralExpressionsIter);
+
+    node_child_fn!(close_block, Punctuation);
+
 }
 
 impl Write for DictionaryLiteral {

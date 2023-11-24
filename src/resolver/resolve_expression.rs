@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
-use indexmap::IndexMap;
+use array_tool::vec::Join;
+use indexmap::{IndexMap, indexmap};
 use maplit::{btreemap, hashset};
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::range::Range;
@@ -26,6 +27,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type::FieldName;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
@@ -414,6 +416,109 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
 }
 
 pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
+    if expected.is_dictionary() {
+        resolve_dictionary_literal_as_dictionary_type(a, context, expected, keywords_map)
+    } else if let Some(shape_reference_type) = expected.as_synthesized_shape_reference() {
+        resolve_dictionary_literal_as_shape_type(a, context, if let Some(definition) = shape_reference_type.fetch_synthesized_definition(context.schema) {
+            if let Some(d) = definition.as_synthesized_shape() {
+                Some(d)
+            } else {
+                None
+            }
+        } else {
+            None
+        }, keywords_map, expected)
+    } else if let Some(object_type) = expected.as_synthesized_shape() {
+        resolve_dictionary_literal_as_shape_type(a, context, Some(object_type), keywords_map, expected)
+    } else {
+        resolve_dictionary_literal_as_shape_type(a, context, None, keywords_map, expected)
+    }
+}
+
+pub(super) fn resolve_dictionary_literal_as_shape_type<'a>(literal: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, type_shape: Option<&SynthesizedShape>, keywords_map: &BTreeMap<Keyword, Type>, source_type: &Type) -> ExprInfo {
+    let mut resolved_map = indexmap! {};
+    let mut value_should_be_none = false;
+    let mut resolved_values: IndexMap<String, Value> = indexmap! {};
+    let mut required_keys = vec![];
+    let mut all_keys = vec![];
+    if let Some(type_shape) = type_shape {
+        for (k, v) in type_shape.iter() {
+            if !v.is_optional() {
+                required_keys.push(k.as_str());
+            }
+            all_keys.push(k.as_str());
+        }
+    }
+    let undetermined = Type::Undetermined;
+    for named_expression in literal.expressions() {
+        *named_expression.actual_availability.borrow_mut() = context.current_availability();
+        if named_expression.is_available() {
+            let mut this_entry_is_undefined = false;
+            let key_expr_info = resolve_expression_for_named_expression_key(named_expression.key(), context, &Type::String, keywords_map);
+            if !key_expr_info.r#type.is_string() {
+                context.insert_diagnostics_error(named_expression.key().span(), "object key is not string");
+                value_should_be_none = true;
+            } else if key_expr_info.value().is_none() {
+                value_should_be_none = true;
+                context.insert_diagnostics_error(named_expression.key().span(), "cannot infer object key");
+            } else if !all_keys.contains(&key_expr_info.value().unwrap().as_str().unwrap()) {
+                this_entry_is_undefined = true;
+                context.insert_diagnostics_error(named_expression.key().span(), "undefined object key");
+            } else if required_keys.contains(&key_expr_info.value().unwrap().as_str().unwrap()) {
+                required_keys = required_keys.iter().filter(|k| **k != key_expr_info.value().unwrap().as_str().unwrap()).map(|k| *k).collect()
+            }
+            let value_type_expected = if let Some(type_shape) = type_shape {
+                if let Some(key_value) = key_expr_info.value() {
+                    if let Some(str_key_value) = key_value.as_str() {
+                        type_shape.get(str_key_value).unwrap_or(&undetermined)
+                    } else {
+                        &undetermined
+                    }
+                } else {
+                    &undetermined
+                }
+            } else {
+                &undetermined
+            };
+            let value_expr_info = resolve_expression(named_expression.value(), context, value_type_expected, keywords_map);
+            if value_expr_info.value().is_none() {
+                value_should_be_none = true;
+            }
+            if !value_type_expected.is_undetermined() && !value_type_expected.test(value_expr_info.r#type()) {
+                context.insert_diagnostics_error(named_expression.value().span(), format!("expect {}, found {}", value_type_expected, value_expr_info.r#type()));
+            }
+            if !this_entry_is_undefined && !value_should_be_none {
+                resolved_values.insert(key_expr_info.value().unwrap().as_str().unwrap().to_owned(), value_expr_info.r#type().coerce_value_to(value_expr_info.value().unwrap(), value_type_expected).unwrap_or(Value::Null));
+            }
+            if key_expr_info.r#type.is_string() && !key_expr_info.value().is_none() {
+                resolved_map.insert(key_expr_info.value().unwrap().as_str().unwrap().to_owned(), if value_type_expected.is_undetermined() {
+                    value_expr_info.r#type().clone()
+                } else {
+                    value_type_expected.clone()
+                });
+            }
+        }
+    }
+    if !required_keys.is_empty() {
+        context.insert_diagnostics_error(literal.close_block().span, format!("missing required keys: {}", required_keys.join(", ")));
+    }
+    let resolved_shape = SynthesizedShape::new(resolved_map);
+    ExprInfo {
+        r#type: if type_shape.is_some() {
+            source_type.clone()
+        } else {
+            Type::SynthesizedShape(resolved_shape)
+        },
+        value: if value_should_be_none {
+            None
+        } else {
+            Some(Value::Dictionary(resolved_values))
+        },
+        reference_info: None,
+    }
+}
+
+pub(super) fn resolve_dictionary_literal_as_dictionary_type<'a>(a: &'a DictionaryLiteral, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>,) -> ExprInfo {
     let undetermined = Type::Undetermined;
     let r#type = if let Some(v) = expected.as_dictionary() {
         v
@@ -431,7 +536,11 @@ pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: 
                 context.insert_diagnostics_error(named_expression.key().span(), "dictionary key is not string");
             }
             let v_value = resolve_expression(named_expression.value(), context, r#type, keywords_map);
-            retval.insert(v_value.r#type.clone());
+            if r#type.test(v_value.r#type()) {
+                retval.insert(r#type.clone());
+            } else {
+                retval.insert(v_value.r#type.clone());
+            }
             if k_value.value.is_none() || v_value.value.is_none() {
                 unresolved = true;
             } else {
@@ -451,7 +560,6 @@ pub(super) fn resolve_dictionary_literal<'a>(a: &'a DictionaryLiteral, context: 
         r#type: new_type,
         value: if unresolved { None } else { Some(Value::Dictionary(retval_values)) },
         reference_info: None,
-
     }
 }
 
