@@ -19,6 +19,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::utils::top_filter::top_filter_for_reference_type;
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::resolver::resolve_identifier::{resolve_identifier_path_names_with_filter_to_expr_info, resolve_identifier_path_names_with_filter_to_top};
 
 pub(super) fn resolve_unit<'a>(
@@ -134,6 +135,16 @@ fn resolve_current_item_type_for_unit<'a>(
         Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
         Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
         Type::StructObject(reference, types) => resolve_struct_object_for_unit(reference, types, expression, context),
+        Type::SynthesizedShape(synthesized_shape) => resolve_synthesized_shape_for_unit(synthesized_shape, current.value(), expression, context),
+        Type::SynthesizedShapeReference(synthesized_shape_reference) => if let Some(definition) = synthesized_shape_reference.fetch_synthesized_definition(context.schema) {
+            if let Some(synthesized_shape) = definition.as_synthesized_shape() {
+                resolve_synthesized_shape_for_unit(synthesized_shape, current.value(), expression, context)
+            } else {
+                ExprInfo::undetermined()
+            }
+        } else {
+            ExprInfo::undetermined()
+        }
         _ => ExprInfo::undetermined(),
     }
 }
@@ -750,5 +761,49 @@ fn unit_type_coerce<'a>(expression_span: Span, resolved: &ExprInfo, expected: &T
         } else {
             resolved.clone()
         }
+    }
+}
+
+fn resolve_synthesized_shape_for_unit<'a>(
+    synthesized_shape: &SynthesizedShape,
+    value: Option<&Value>,
+    expression: &'a Expression,
+    context: &'a ResolverContext<'a>,
+) -> ExprInfo {
+    expression.resolve_and_return(match &expression.kind {
+        ExpressionKind::Identifier(identifier) => {
+            resolve_synthesized_shape_result_for_unit(context, identifier.span(), synthesized_shape, identifier.name(), value)
+        },
+        ExpressionKind::Subscript(subscript) => {
+            resolve_expression(subscript.expression(), context, &Type::String, &btreemap! {});
+            if !subscript.expression().resolved().r#type().is_string() {
+                context.insert_diagnostics_error(subscript.expression().span(), "expect string key");
+            }
+            if subscript.expression().resolved().value().is_none() {
+                context.insert_diagnostics_error(subscript.expression().span(), "cannot infer object key");
+            }
+            resolve_synthesized_shape_result_for_unit(context, subscript.expression().span(), synthesized_shape, subscript.expression().resolved().value().unwrap().as_str().unwrap(), value)
+        },
+        _ => {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            ExprInfo::undetermined()
+        }
+    })
+}
+
+fn resolve_synthesized_shape_result_for_unit<'a>(context: &'a ResolverContext<'a>, span: Span, synthesized_shape: &SynthesizedShape, name: &str, value: Option<&Value>) -> ExprInfo {
+    if let Some(field) = synthesized_shape.get(name) {
+        ExprInfo {
+            r#type: field.clone(),
+            value: if let Some(value) = value {
+                value.as_dictionary().map(|d| d.get(name)).flatten().cloned()
+            } else {
+                None
+            },
+            reference_info: None
+        }
+    } else {
+        context.insert_diagnostics_error(span, "identifier not found");
+        ExprInfo::undetermined()
     }
 }
