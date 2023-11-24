@@ -77,6 +77,12 @@ pub(super) fn resolve_namespace_references<'a>(namespace: &'a Namespace, context
 
 pub(super) fn resolve_namespace_consumers<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
     context.push_namespace(namespace);
+    for decorator in namespace.empty_decorators() {
+        context.insert_diagnostics_error(decorator.span, "empty decorator");
+    }
+    for decorator in namespace.unattached_decorators() {
+        context.insert_diagnostics_error(decorator.span, "unattached decorator");
+    }
     for node in namespace.children.values() {
         match node {
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),

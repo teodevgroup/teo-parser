@@ -3,6 +3,8 @@ use std::sync::Arc;
 use maplit::btreeset;
 use crate::availability::Availability;
 use crate::ast::config::Config;
+use crate::ast::decorator::Decorator;
+use crate::ast::empty_decorator::EmptyDecorator;
 use crate::ast::import::Import;
 use crate::ast::namespace::Namespace;
 use crate::ast::node::Node;
@@ -42,12 +44,24 @@ impl Source {
         self.references.namespaces.iter().map(|m| self.get_namespace(*m).unwrap()).collect()
     }
 
+    pub fn unattached_decorators(&self) -> Vec<&Decorator> {
+        self.references.unattached_decorators.iter().map(|m| self.get_unattached_decorator(*m).unwrap()).collect()
+    }
+
+    pub fn empty_decorators(&self) -> Vec<&EmptyDecorator> {
+        self.references.empty_decorators.iter().map(|m| self.children.get(m).unwrap().as_empty_decorator().unwrap()).collect()
+    }
+
     pub fn get_connector(&self) -> Option<&Config> {
         self.references.connector.map(|id| self.children.get(&id).unwrap().as_config().unwrap())
     }
 
     pub fn get_namespace(&self, id: usize) -> Option<&Namespace> {
         self.children.get(&id).unwrap().as_namespace()
+    }
+
+    pub fn get_unattached_decorator(&self, id: usize) -> Option<&Decorator> {
+        self.children.get(&id).unwrap().as_decorator()
     }
 
     pub fn find_top_by_id(&self, id: usize) -> Option<&Node> {
@@ -155,6 +169,8 @@ pub struct SourceReferences {
     pub middlewares: BTreeSet<usize>,
     pub handler_groups: BTreeSet<usize>,
     pub use_middlewares_block: Option<usize>,
+    pub empty_decorators: BTreeSet<usize>,
+    pub unattached_decorators: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -176,6 +192,8 @@ impl SourceReferences {
             middlewares: btreeset!{},
             handler_groups: btreeset!{},
             use_middlewares_block: None,
+            empty_decorators: btreeset! {},
+            unattached_decorators: btreeset! {},
         }
     }
 }

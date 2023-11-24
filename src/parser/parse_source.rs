@@ -11,8 +11,10 @@ use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
+use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
+use crate::parser::parse_empty_decorator::parse_empty_decorator;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
@@ -112,7 +114,7 @@ pub(super) fn parse_source(
                 references.namespaces.insert(namespace.id());
                 context.schema_references_mut().namespaces.push(namespace.path.clone());
                 children.insert(namespace.id(), Node::Namespace(namespace));
-            }
+            },
             // declares
             Rule::config_declaration => {
                 let config_declaration = parse_config_declaration(current, context);
@@ -152,6 +154,16 @@ pub(super) fn parse_source(
             }
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
+            Rule::empty_decorator => {
+                let empty_decorator = parse_empty_decorator(current, context);
+                references.empty_decorators.insert(empty_decorator.id());
+                children.insert(empty_decorator.id(), Node::EmptyDecorator(empty_decorator));
+            },
+            Rule::decorator => {
+                let unattached_decorator = parse_decorator(current, context);
+                references.unattached_decorators.insert(unattached_decorator.id());
+                children.insert(unattached_decorator.id(), Node::Decorator(unattached_decorator));
+            },
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             Rule::EOI => (),
             _ => context.insert_unparsed(parse_span(&current)),

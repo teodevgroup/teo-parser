@@ -12,7 +12,9 @@ use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
 use crate::parser::parse_data_set_declaration::parse_data_set_declaration;
+use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
+use crate::parser::parse_empty_decorator::parse_empty_decorator;
 use crate::parser::parse_enum::parse_enum_declaration;
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
@@ -158,6 +160,16 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namesp
             },
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
+            Rule::empty_decorator => {
+                let empty_decorator = parse_empty_decorator(current, context);
+                references.empty_decorators.insert(empty_decorator.id());
+                children.insert(empty_decorator.id(), Node::EmptyDecorator(empty_decorator));
+            },
+            Rule::decorator => {
+                let unattached_decorator = parse_decorator(current, context);
+                references.unattached_decorators.insert(unattached_decorator.id());
+                children.insert(unattached_decorator.id(), Node::Decorator(unattached_decorator));
+            },
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             _ => (),
         }

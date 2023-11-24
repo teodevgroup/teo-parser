@@ -17,6 +17,7 @@ use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::ast::data_set::{DataSet, DataSetGroup, DataSetRecord};
 use crate::ast::decorator::Decorator;
 use crate::ast::decorator_declaration::{DecoratorDeclaration, DecoratorDeclarationVariant};
+use crate::ast::empty_decorator::EmptyDecorator;
 use crate::ast::empty_dot::EmptyDot;
 use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::ast::expression::Expression;
@@ -132,6 +133,7 @@ pub enum Node {
     PartialField(PartialField),
     PartialArgumentDeclaration(PartialArgumentDeclaration),
     PartialArgument(PartialArgument),
+    EmptyDecorator(EmptyDecorator),
 }
 
 impl Node {
@@ -939,6 +941,17 @@ impl Node {
         }
     }
 
+    pub fn is_empty_decorator(&self) -> bool {
+        self.as_empty_decorator().is_some()
+    }
+
+    pub fn as_empty_decorator(&self) -> Option<&EmptyDecorator> {
+        match self {
+            Node::EmptyDecorator(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1014,6 +1027,7 @@ impl Node {
             Node::PartialField(n) => n,
             Node::PartialArgumentDeclaration(n) => n,
             Node::PartialArgument(n) => n,
+            Node::EmptyDecorator(n) => n,
         }
     }
 

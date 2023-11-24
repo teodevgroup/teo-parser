@@ -11,6 +11,8 @@ use crate::ast::r#enum::Enum;
 use crate::ast::identifier::Identifier;
 use crate::ast::doc_comment::DocComment;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_optional_child_fn};
+use crate::ast::decorator::Decorator;
+use crate::ast::empty_decorator::EmptyDecorator;
 use crate::ast::node::Node;
 use crate::format::Writer;
 use crate::traits::node_trait::NodeTrait;
@@ -78,6 +80,14 @@ impl Namespace {
         self.references.data_sets.iter().map(|m| self.get_data_set(*m).unwrap()).collect()
     }
 
+    pub fn empty_decorators(&self) -> Vec<&EmptyDecorator> {
+        self.references.empty_decorators.iter().map(|m| self.children.get(m).unwrap().as_empty_decorator().unwrap()).collect()
+    }
+
+    pub fn unattached_decorators(&self) -> Vec<&Decorator> {
+        self.references.unattached_decorators.iter().map(|m| self.children.get(m).unwrap().as_decorator().unwrap()).collect()
+    }
+
     pub fn find_top_by_name(&self, name: &str, filter: &Arc<dyn Fn(&Node) -> bool>, availability: Availability) -> Option<&Node> {
         self.children.values().find(|t| {
             if let Some(n) = t.name() {
@@ -139,6 +149,8 @@ pub struct NamespaceReferences {
     pub handler_groups: BTreeSet<usize>,
     pub struct_declarations: BTreeSet<usize>,
     pub use_middlewares_block: Option<usize>,
+    pub empty_decorators: BTreeSet<usize>,
+    pub unattached_decorators: BTreeSet<usize>,
 }
 
 impl NamespaceReferences {
@@ -160,6 +172,8 @@ impl NamespaceReferences {
             handler_groups: btreeset!{},
             struct_declarations: btreeset!{},
             use_middlewares_block: None,
+            empty_decorators: btreeset! {},
+            unattached_decorators: btreeset! {},
         }
     }
 }

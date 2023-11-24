@@ -45,4 +45,5 @@ mod parser_context;
 mod parse_partial_field;
 mod parse_partial_argument_declaration;
 mod parse_partial_argument;
+mod parse_empty_decorator;
 pub(super) mod parse;

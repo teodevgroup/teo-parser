@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -478,7 +478,7 @@ namespace = {
     triple_comment_block? ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

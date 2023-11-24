@@ -68,6 +68,12 @@ pub(super) fn resolve_source_references<'a>(context: &'a ResolverContext<'a>) {
 }
 
 pub(super) fn resolve_source_consumers<'a>(context: &'a ResolverContext<'a>) {
+    for decorator in context.source().empty_decorators() {
+        context.insert_diagnostics_error(decorator.span, "empty decorator");
+    }
+    for decorator in context.source().unattached_decorators() {
+        context.insert_diagnostics_error(decorator.span, "unattached decorator");
+    }
     for node in context.source().children.values() {
         match node {
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),

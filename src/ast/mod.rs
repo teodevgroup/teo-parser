@@ -54,3 +54,4 @@ pub mod empty_dot;
 pub mod partial_field;
 pub mod partial_argument_declaration;
 pub mod partial_argument;
+pub mod empty_decorator;
