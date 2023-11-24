@@ -1,0 +1,25 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/nov24",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+let a = {
+  equals: "dd"
+}
+
+model Cat {
+  @id @readonly @autoIncrement
+  id: Int
+  @default(a.equals)
+  name1: String
+  @default(a["equals"])
+  name2: String
+  @default(a.d)
+  name3: String
+  @default(a["d"])
+  name4: String
+}
