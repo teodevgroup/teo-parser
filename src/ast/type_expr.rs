@@ -6,6 +6,7 @@ use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, impl_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::ast::identifier::Identifier;
 use crate::ast::node::Node;
 use crate::format::Writer;
 use crate::r#type::r#type::Type;
@@ -163,6 +164,65 @@ impl Write for TypeGenerics {
     }
 }
 
+declare_container_node!(TypedEnum,
+    pub(crate) members: Vec<usize>,
+);
+
+impl_container_node_defaults!(TypedEnum);
+
+node_children_iter!(TypedEnum, EnumVariantLiteral, TypedEnumMembersIter, members);
+
+impl TypedEnum {
+
+    node_children_iter_fn!(members, TypedEnumMembersIter);
+}
+
+impl Write for TypedEnum {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
+        writer.write_children(self, self.children.values());
+    }
+}
+
+declare_container_node!(TypedShapeItem,
+    pub(crate) identifier: usize,
+    pub(crate) type_expr: usize,
+);
+
+impl_container_node_defaults!(TypedShapeItem);
+
+impl TypedShapeItem {
+    node_child_fn!(identifier, Identifier);
+    node_child_fn!(type_expr, TypeExpr);
+}
+
+impl Write for TypedShapeItem {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
+        writer.write_children(self, self.children.values());
+    }
+}
+
+declare_container_node!(TypedShape,
+    pub(crate) items: Vec<usize>,
+    pub arity: Arity,
+    pub item_optional: bool,
+    pub collection_optional: bool,
+);
+
+impl_container_node_defaults!(TypedShape);
+
+node_children_iter!(TypedShape, TypedShapeItem, TypedShapeItemsIter, items);
+
+impl TypedShape {
+
+    node_children_iter_fn!(items, TypedShapeItemsIter);
+}
+
+impl Write for TypedShape {
+    fn write<'a>(&'a self, writer: &mut Writer<'a>) {
+        writer.write_children(self, self.children.values());
+    }
+}
+
 #[derive(Debug)]
 pub enum TypeExprKind {
     Expr(Box<TypeExprKind>),
@@ -172,6 +232,8 @@ pub enum TypeExprKind {
     TypeTuple(TypeTuple),
     TypeSubscript(TypeSubscript),
     FieldName(EnumVariantLiteral),
+    TypedEnum(TypedEnum),
+    TypedShape(TypedShape),
 }
 
 impl TypeExprKind {
@@ -185,6 +247,8 @@ impl TypeExprKind {
             TypeExprKind::TypeTuple(n) => n,
             TypeExprKind::TypeSubscript(n) => n,
             TypeExprKind::FieldName(n) => n,
+            TypeExprKind::TypedEnum(n) => n,
+            TypeExprKind::TypedShape(n) => n,
         }
     }
 

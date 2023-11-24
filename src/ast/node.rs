@@ -47,7 +47,7 @@ use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::subscript::Subscript;
-use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeGenerics, TypeGroup, TypeItem, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypedEnum, TypedShape, TypedShapeItem, TypeExpr, TypeGenerics, TypeGroup, TypeItem, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
 use crate::availability::Availability;
@@ -134,6 +134,9 @@ pub enum Node {
     PartialArgumentDeclaration(PartialArgumentDeclaration),
     PartialArgument(PartialArgument),
     EmptyDecorator(EmptyDecorator),
+    TypedEnum(TypedEnum),
+    TypedShape(TypedShape),
+    TypedShapeItem(TypedShapeItem),
 }
 
 impl Node {
@@ -952,6 +955,39 @@ impl Node {
         }
     }
 
+    pub fn is_typed_enum(&self) -> bool {
+        self.as_typed_enum().is_some()
+    }
+
+    pub fn as_typed_enum(&self) -> Option<&TypedEnum> {
+        match self {
+            Node::TypedEnum(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_typed_shape(&self) -> bool {
+        self.as_typed_shape().is_some()
+    }
+
+    pub fn as_typed_shape(&self) -> Option<&TypedShape> {
+        match self {
+            Node::TypedShape(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_typed_shape_item(&self) -> bool {
+        self.as_typed_shape_item().is_some()
+    }
+
+    pub fn as_typed_shape_item(&self) -> Option<&TypedShapeItem> {
+        match self {
+            Node::TypedShapeItem(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1028,6 +1064,9 @@ impl Node {
             Node::PartialArgumentDeclaration(n) => n,
             Node::PartialArgument(n) => n,
             Node::EmptyDecorator(n) => n,
+            Node::TypedEnum(n) => n,
+            Node::TypedShape(n) => n,
+            Node::TypedShapeItem(n) => n,
         }
     }
 

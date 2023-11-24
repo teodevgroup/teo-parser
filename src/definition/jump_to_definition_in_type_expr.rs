@@ -3,8 +3,9 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::type_expr::{TypeExprKind, TypeItem};
+use crate::ast::type_expr::{TypedShape, TypeExprKind, TypeItem};
 use crate::definition::definition::Definition;
+use crate::definition::jump_to_definition_in_model::jump_to_definition_in_model;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_path};
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
@@ -113,8 +114,43 @@ pub(super) fn jump_to_definition_in_type_expr_kind(
             line_col,
             generics_declarations,
             availability
+        ),
+        TypeExprKind::TypedEnum(_) => vec![],
+        TypeExprKind::TypedShape(typed_shape) => jump_to_definition_in_typed_shape(
+            schema,
+            source,
+            typed_shape,
+            namespace_path,
+            line_col,
+            generics_declarations,
+            availability,
         )
     }
+}
+
+fn jump_to_definition_in_typed_shape(
+    schema: &Schema,
+    source: &Source,
+    typed_shape: &TypedShape,
+    namespace_path: &Vec<&str>,
+    line_col: (usize, usize),
+    generics_declarations: &Vec<&GenericsDeclaration>,
+    availability: Availability,
+) -> Vec<Definition> {
+    for item in typed_shape.items() {
+        if item.type_expr().span().contains_line_col(line_col) {
+            return jump_to_definition_in_type_expr_kind(
+                schema,
+                source,
+                &item.type_expr().kind,
+                namespace_path,
+                line_col,
+                generics_declarations,
+                availability,
+            );
+        }
+    }
+    vec![]
 }
 
 fn jump_to_definition_in_type_item(

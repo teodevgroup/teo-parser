@@ -1,5 +1,7 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
+use indexmap::indexmap;
+use maplit::{btreemap, btreeset};
 use crate::ast::arity::Arity;
 use crate::availability::Availability;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
@@ -9,7 +11,9 @@ use crate::ast::span::Span;
 use crate::expr::ReferenceType;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
@@ -161,6 +165,52 @@ fn resolve_type_expr_kind<'a>(
         }
         TypeExprKind::FieldName(r) => {
             Type::FieldName(r.identifier().name().to_string())
+        }
+        TypeExprKind::TypedShape(typed_shape) => {
+            let mut map = indexmap! {};
+            let mut used_keys: BTreeSet<&str> = btreeset!{};
+            for item in typed_shape.items() {
+                if used_keys.contains(&item.identifier().name()) {
+                    context.insert_diagnostics_error(item.identifier().span, "duplicated object key");
+                } else {
+                    resolve_type_expr(item.type_expr(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+                    if !item.type_expr().resolved().is_undetermined() {
+                        map.insert(item.identifier().name().to_owned(), item.type_expr().resolved().clone());
+                    }
+                    used_keys.insert(item.identifier().name());
+                }
+            }
+            let mut result = Type::SynthesizedShape(SynthesizedShape::new(map));
+            if typed_shape.item_optional {
+                result = Type::Optional(Box::new(result));
+            }
+            if !typed_shape.arity.is_scalar() {
+                match typed_shape.arity {
+                    Arity::Array => result = Type::Array(Box::new(result)),
+                    Arity::Dictionary => result = Type::Dictionary(Box::new(result)),
+                    _ => ()
+                };
+                if typed_shape.collection_optional {
+                    result = Type::Optional(Box::new(result));
+                }
+            }
+            result
+        }
+        TypeExprKind::TypedEnum(typed_enum) => {
+            let mut members = vec![];
+            let mut used_keys: BTreeSet<&str> = btreeset!{};
+            for member in typed_enum.members() {
+                if used_keys.contains(&member.identifier().name()) {
+                    context.insert_diagnostics_error(member.span, "duplicated enum member name");
+                } else {
+                    members.push(SynthesizedEnumMember {
+                        name: member.identifier().name().to_owned(),
+                        comment: None,
+                    });
+                    used_keys.insert(member.identifier().name());
+                }
+            }
+            Type::SynthesizedEnum(SynthesizedEnum::new(members))
         }
     }
 }

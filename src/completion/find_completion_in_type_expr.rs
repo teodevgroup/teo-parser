@@ -4,7 +4,7 @@ use crate::ast::generics::GenericsDeclaration;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::schema::Schema;
 use crate::ast::source::Source;
-use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeItem, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypedShape, TypeExpr, TypeExprKind, TypeItem, TypeSubscript, TypeTuple};
 use crate::completion::completion_item::CompletionItem;
 use crate::completion::find_top_completion_with_filter::find_top_completion_with_filter;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
@@ -56,6 +56,8 @@ fn find_completion_in_type_expr_kind(schema: &Schema, source: &Source, kind: &Ty
         TypeExprKind::TypeTuple(tuple) => find_completion_in_type_tuple(schema, source, tuple, line_col, namespace_path, generics, filter, availability),
         TypeExprKind::TypeSubscript(subscript) => find_completion_in_type_subscript(schema, source, subscript, line_col, namespace_path, generics, filter, availability),
         TypeExprKind::FieldName(_) => vec![],
+        TypeExprKind::TypedEnum(_) => vec![],
+        TypeExprKind::TypedShape(typed_shape) => find_completion_in_typed_shape(schema, source, typed_shape, line_col, namespace_path, generics, filter, availability),
     }
 }
 
@@ -73,6 +75,15 @@ fn find_completion_in_type_tuple(schema: &Schema, source: &Source, tuple: &TypeT
     for kind in tuple.items() {
         if kind.span().contains_line_col(line_col) {
             return find_completion_in_type_expr_kind(schema, source, &kind.kind, line_col, namespace_path, generics, filter, availability);
+        }
+    }
+    vec![]
+}
+
+fn find_completion_in_typed_shape(schema: &Schema, source: &Source, typed_shape: &TypedShape, line_col: (usize, usize), namespace_path: &Vec<&str>, generics: &Vec<&GenericsDeclaration>, filter: TypeExprFilter, availability: Availability) -> Vec<CompletionItem> {
+    for item in typed_shape.items() {
+        if item.type_expr().span().contains_line_col(line_col) {
+            return find_completion_in_type_expr(schema, source, item.type_expr(), line_col, namespace_path, generics, filter, availability);
         }
     }
     vec![]

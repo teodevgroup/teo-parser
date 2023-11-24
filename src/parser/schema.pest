@@ -82,6 +82,7 @@ DOLLAR = { "$" }
 ARITY_ARRAY = { "[]" }
 ARITY_DICTIONARY = { "{}" }
 ARROW = { "->" }
+BAR = { "|" }
 
 // #############
 // identifier
@@ -92,7 +93,7 @@ identifier_path = { identifier ~ (DOT ~ identifier)* ~ empty_dot? }
 // #############
 // type
 // #############
-type_expression = { (type_subscript | type_item | type_group | type_tuple | type_reference) ~ (BI_OR ~ (type_subscript | type_item | type_group | type_tuple | type_reference))* }
+type_expression = { (type_subscript | type_item | type_group | type_tuple | typed_shape | typed_enum | type_reference) ~ ((BI_OR) ~ (type_subscript | type_item | type_group | type_tuple | typed_shape | typed_enum | type_reference))* }
 type_item = { identifier_path ~ type_generics? ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_generics = { CHEVRON_OPEN ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA? ~ CHEVRON_CLOSE }
 arity = { ARITY_ARRAY | ARITY_DICTIONARY }
@@ -100,6 +101,13 @@ type_group = { PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~
 type_tuple = { PAREN_OPEN ~ type_expression ~ COMMA ~ type_expression? ~ (COMMA ~ type_expression)* ~ COMMA? ~ PAREN_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_subscript = { type_item ~ BRACKET_OPEN ~ type_expression ~ BRACKET_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL? }
 type_reference = { enum_variant_literal }
+typed_shape_item = { identifier ~ COLON ~ type_expression }
+typed_shape = {
+  BLOCK_OPEN ~
+  (typed_shape_item ~ (COMMA ~ typed_shape_item)* ~ COMMA?)? ~
+  BLOCK_CLOSE ~ OPTIONAL? ~ arity? ~ OPTIONAL?
+}
+typed_enum = { enum_variant_literal ~ BAR ~ enum_variant_literal ~ (BAR ~ enum_variant_literal)* }
 
 // #############
 // generics

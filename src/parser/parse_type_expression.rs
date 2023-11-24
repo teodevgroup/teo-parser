@@ -1,10 +1,11 @@
-use crate::ast::type_expr::{TypeBinaryOperation, TypeExpr, TypeExprKind, TypeGenerics, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
+use crate::ast::type_expr::{TypeBinaryOperation, TypedEnum, TypedShape, TypedShapeItem, TypeExpr, TypeExprKind, TypeGenerics, TypeGroup, TypeItem, TypeOperator, TypeSubscript, TypeTuple};
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule, TYPE_PRATT_PARSER};
 use crate::ast::arity::Arity;
 use crate::ast::literals::EnumVariantLiteral;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_container_node_variables_without_span, parse_insert, parse_insert_operator, parse_insert_punctuation, parse_set, parse_set_optional};
+use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_identifier_path::parse_identifier_path;
 use crate::parser::parse_literals::parse_enum_variant_literal;
 use crate::traits::identifiable::Identifiable;
@@ -17,6 +18,8 @@ pub(super) fn parse_type_expression(pair: Pair<'_>, context: &ParserContext) -> 
         Rule::type_tuple => TypeExpr::new(TypeExprKind::TypeTuple(parse_type_tuple(primary, context))),
         Rule::type_subscript => TypeExpr::new(TypeExprKind::TypeSubscript(parse_type_subscript(primary, context))),
         Rule::type_reference => TypeExpr::new(TypeExprKind::FieldName(parse_type_reference(primary, context))),
+        Rule::typed_shape => TypeExpr::new(TypeExprKind::TypedShape(parse_typed_shape(primary, context))),
+        Rule::typed_enum => TypeExpr::new(TypeExprKind::TypedEnum(parse_typed_enum(primary, context))),
         _ => {
             context.insert_unparsed(parse_span(&primary));
             unreachable!()
@@ -193,6 +196,97 @@ fn parse_type_generics(pair: Pair<'_>, context: &ParserContext) -> TypeGenerics 
         children,
         path,
         type_exprs,
+    }
+}
+
+fn parse_typed_shape(pair: Pair<'_>, context: &ParserContext) -> TypedShape {
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut items = vec![];
+    let mut item_optional = false;
+    let mut arity = Arity::Scalar;
+    let mut collection_optional = false;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::BLOCK_OPEN => parse_insert_punctuation!(context, current, children, "{"),
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
+            Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
+            Rule::typed_shape_item => parse_insert!(parse_typed_shape_item(current, context), children, items),
+            Rule::arity => if current.as_str() == "[]" {
+                arity = Arity::Array;
+                parse_insert_punctuation!(context, current, children, "[]");
+            } else {
+                arity = Arity::Dictionary;
+                parse_insert_punctuation!(context, current, children, "{}");
+            },
+            Rule::OPTIONAL => {
+                if arity == Arity::Scalar { item_optional = true; } else { collection_optional = true; }
+                parse_insert_punctuation!(context, current, children, "?");
+            },
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    parse_container_node_variables_cleanup!(context);
+    TypedShape {
+        span,
+        children,
+        path,
+        items,
+        arity,
+        item_optional,
+        collection_optional,
+    }
+}
+
+fn parse_typed_shape_item(pair: Pair<'_>, context: &ParserContext) -> TypedShapeItem {
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut identifier = 0;
+    let mut type_expr = 0;
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
+            Rule::identifier => parse_set!(parse_identifier(&current, context), children, identifier),
+            Rule::type_expression => parse_set!(parse_type_expression(current, context), children, type_expr),
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    parse_container_node_variables_cleanup!(context);
+    TypedShapeItem {
+        span,
+        children,
+        path,
+        identifier,
+        type_expr,
+    }
+}
+
+fn parse_typed_enum(pair: Pair<'_>, context: &ParserContext) -> TypedEnum {
+    let (
+        span,
+        path,
+        mut children,
+    ) = parse_container_node_variables!(pair, context);
+    let mut members = vec![];
+    for current in pair.into_inner() {
+        match current.as_rule() {
+            Rule::BAR => parse_insert_punctuation!(context, current, children, "|"),
+            Rule::enum_variant_literal => parse_insert!(parse_enum_variant_literal(current, context), children, members),
+            _ => context.insert_unparsed(parse_span(&current)),
+        }
+    }
+    parse_container_node_variables_cleanup!(context);
+    TypedEnum {
+        span,
+        children,
+        path,
+        members,
     }
 }
 
