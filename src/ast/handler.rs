@@ -5,6 +5,7 @@ use crate::ast::type_expr::{TypeExpr};
 use crate::ast::identifier::Identifier;
 use crate::ast::span::Span;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
+use crate::ast::empty_decorator::EmptyDecorator;
 use crate::format::Writer;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
@@ -14,11 +15,20 @@ declare_container_node!(HandlerGroupDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) identifier: usize,
     pub(crate) handler_declarations: Vec<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorators: Vec<usize>,
+    pub(crate) unattached_decorators: Vec<usize>,
 );
 
 impl_container_node_defaults!(HandlerGroupDeclaration, named, availability);
 
 node_children_iter!(HandlerGroupDeclaration, HandlerDeclaration, HandlerDeclarationsIter, handler_declarations);
+
+node_children_iter!(HandlerGroupDeclaration, Decorator, GroupDecoratorsIter, decorators);
+
+node_children_iter!(HandlerGroupDeclaration, Decorator, GroupUnattachedDecoratorsIter, unattached_decorators);
+
+node_children_iter!(HandlerGroupDeclaration, EmptyDecorator, GroupEmptyDecoratorsIter, empty_decorators);
 
 impl HandlerGroupDeclaration {
 
@@ -27,6 +37,12 @@ impl HandlerGroupDeclaration {
     node_child_fn!(identifier, Identifier);
 
     node_children_iter_fn!(handler_declarations, HandlerDeclarationsIter);
+
+    node_children_iter_fn!(decorators, GroupDecoratorsIter);
+
+    node_children_iter_fn!(empty_decorators, GroupEmptyDecoratorsIter);
+
+    node_children_iter_fn!(unattached_decorators, GroupUnattachedDecoratorsIter);
 }
 
 impl InfoProvider for HandlerGroupDeclaration {
@@ -38,7 +54,7 @@ impl InfoProvider for HandlerGroupDeclaration {
 declare_container_node!(HandlerDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) decorators: Vec<usize>,
-    pub(crate) empty_decorators_spans: Vec<Span>,
+    pub(crate) empty_decorators: Vec<usize>,
     pub(crate) identifier: usize,
     pub(crate) input_type: usize,
     pub(crate) output_type: usize,
@@ -49,11 +65,15 @@ impl_container_node_defaults!(HandlerDeclaration, named, availability);
 
 node_children_iter!(HandlerDeclaration, Decorator, DecoratorsIter, decorators);
 
+node_children_iter!(HandlerDeclaration, EmptyDecorator, EmptyDecoratorsIter, empty_decorators);
+
 impl HandlerDeclaration {
 
     node_optional_child_fn!(comment, DocComment);
 
     node_children_iter_fn!(decorators, DecoratorsIter);
+
+    node_children_iter_fn!(empty_decorators, EmptyDecoratorsIter);
 
     node_child_fn!(identifier, Identifier);
 

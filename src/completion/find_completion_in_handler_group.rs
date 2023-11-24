@@ -30,8 +30,8 @@ pub(super) fn find_completion_in_handler_declaration(schema: &Schema, source: &S
             return find_completion_in_decorator(schema, source, decorator, &handler_declaration.namespace_str_path(), line_col, ReferenceSpace::HandlerDecorator, handler_declaration.availability());
         }
     }
-    for empty_decorator_span in &handler_declaration.empty_decorators_spans {
-        if empty_decorator_span.contains_line_col(line_col) {
+    for empty_decorator in handler_declaration.empty_decorators() {
+        if empty_decorator.span.contains_line_col(line_col) {
             return find_completion_in_empty_decorator(schema, source, &handler_declaration.namespace_str_path(), ReferenceSpace::HandlerDecorator, handler_declaration.availability());
         }
     }

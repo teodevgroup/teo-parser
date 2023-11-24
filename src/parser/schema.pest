@@ -432,7 +432,7 @@ pipeline_item_variant_declaration = {
 
 handler_group_declaration = {
     triple_comment_block? ~ DECLARE_KEYWORD ~ HANDLER_KEYWORD ~ GROUP_KEYWORD ~ identifier ~ BLOCK_OPEN
-    ~ (triple_comment_block | double_comment_block | handler_declaration | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (handler_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 

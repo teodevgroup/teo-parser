@@ -3,6 +3,7 @@ use crate::{parse_append, parse_container_node_variables, parse_container_node_v
 use crate::parser::parse_code_comment::parse_code_comment;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
+use crate::parser::parse_empty_decorator::parse_empty_decorator;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_type_expression::parse_type_expression;
 use crate::parser::parser_context::ParserContext;
@@ -21,6 +22,9 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserCo
     let mut identifier = 0;
     let mut handler_declarations = vec![];
     let mut inside_block = false;
+    let mut empty_decorators = vec![];
+    let mut unattached_decorators = vec![];
+    let mut decorators = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
@@ -41,6 +45,12 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserCo
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handler_declarations),
+            Rule::decorator => if inside_block {
+                parse_insert!(parse_decorator(current, context), children, unattached_decorators)
+            } else {
+                parse_insert!(parse_decorator(current, context), children, decorators)
+            },
+            Rule::empty_decorator => parse_insert!(parse_empty_decorator(current, context), children, empty_decorators),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -55,6 +65,9 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserCo
         comment,
         identifier,
         handler_declarations,
+        empty_decorators,
+        unattached_decorators,
+        decorators,
     }
 }
 
@@ -69,12 +82,12 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
     let mut decorators = vec![];
-    let mut empty_decorators_spans = vec![];
     let mut identifier = 0;
     let mut input_type = 0;
     let mut output_type = 0;
     let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
     let mut inside_block = false;
+    let mut empty_decorators = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => {
@@ -100,8 +113,6 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
             Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
             Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
-            Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
-            Rule::empty_decorator => empty_decorators_spans.push(parse_span(&current)),
             Rule::USING_KEYWORD => parse_insert_keyword!(context, current, children, "using"),
             Rule::req_type => if current.as_str() == "form" {
                 input_format = HandlerInputFormat::Form;
@@ -109,6 +120,8 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
             } else {
                 parse_insert_keyword!(context, current, children, "json")
             },
+            Rule::decorator => parse_insert!(parse_decorator(current, context), children, decorators),
+            Rule::empty_decorator => parse_insert!(parse_empty_decorator(current, context), children, empty_decorators),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -122,7 +135,7 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
         actual_availability,
         comment,
         decorators,
-        empty_decorators_spans,
+        empty_decorators,
         identifier,
         input_type,
         output_type,
