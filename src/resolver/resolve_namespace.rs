@@ -7,7 +7,7 @@ use crate::resolver::resolve_constant::resolve_constant_references;
 use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
-use crate::resolver::resolve_interface::resolve_interface_declaration_types;
+use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
 use crate::resolver::resolve_model_shapes::resolve_model_shapes;
@@ -50,6 +50,18 @@ pub(super) fn resolve_namespace_types<'a>(namespace: &'a Namespace, context: &'a
             Node::Namespace(namespace) => resolve_namespace_types(namespace, context),
             Node::ConfigDeclaration(config_declaration) => resolve_config_declaration_types(config_declaration, context),
             Node::StructDeclaration(s) => resolve_struct_declaration_types(s, context),
+            _ => (),
+        }
+    }
+    context.pop_namespace();
+}
+
+pub(super) fn resolve_namespace_interface_shapes<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+    context.push_namespace(namespace);
+    for node in namespace.children.values() {
+        match node {
+            Node::InterfaceDeclaration(interface) => resolve_interface_declaration_shapes(interface, context),
+            Node::Namespace(namespace) => resolve_namespace_interface_shapes(namespace, context),
             _ => (),
         }
     }

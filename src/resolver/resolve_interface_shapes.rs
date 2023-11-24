@@ -37,7 +37,7 @@ pub(super) fn resolve_shape_cache_for_interface_declaration<'a>(
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-pub(super) fn calculate_generics_map<'a>(
+pub(crate) fn calculate_generics_map<'a>(
     generics_declaration: Option<&'a GenericsDeclaration>,
     types: &'a Vec<Type>,
 ) -> BTreeMap<String, Type> {

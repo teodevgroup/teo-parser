@@ -478,10 +478,10 @@ fn resolve_interface_object_for_unit<'a>(
     ).unwrap().as_interface_declaration().unwrap();
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
-            if let Some(item) = interface.fields().find(|item| item.identifier().name() == identifier.name()) {
+            if let Some((_, t)) = interface.resolved().shape().iter().find(|(k, t)| k.as_str() == identifier.name()) {
                 let map = calculate_generics_map(interface.generics_declaration(), types);
                 ExprInfo::new(
-                    item.type_expr().resolved().replace_generics(&map),
+                    t.replace_generics(&map),
                     current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
                     None,
                 )

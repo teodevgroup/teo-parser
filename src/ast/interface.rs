@@ -9,6 +9,7 @@ use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::partial_field::PartialField;
 use crate::format::Writer;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
@@ -51,11 +52,11 @@ impl InterfaceDeclaration {
     node_children_iter_fn!(partial_fields, PartialFieldsIter);
 
     pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
-        self.resolved().map.get(generics)
+        self.resolved().caches.get(generics)
     }
 
     pub fn set_shape(&self, generics: Vec<Type>, input: Type) {
-        self.resolved_mut().map.insert(generics, input);
+        self.resolved_mut().caches.insert(generics, input);
     }
 }
 
@@ -73,7 +74,20 @@ impl Resolve<InterfaceDeclarationResolved> for InterfaceDeclaration {
 
 #[derive(Debug, Clone)]
 pub struct InterfaceDeclarationResolved {
-    pub map: IndexMap<Vec<Type>, Type>,
+    pub base_shape: SynthesizedShape,
+    pub shape: Option<SynthesizedShape>,
+    pub caches: IndexMap<Vec<Type>, Type>,
+}
+
+impl InterfaceDeclarationResolved {
+
+    pub fn base_shape(&self) -> &SynthesizedShape {
+        &self.base_shape
+    }
+
+    pub fn shape(&self) -> &SynthesizedShape {
+        self.shape.as_ref().unwrap()
+    }
 }
 
 #[derive(Serialize)]
@@ -85,7 +99,7 @@ pub struct InterfaceDeclarationShapeResolvedItemRef<'a> {
 impl Serialize for InterfaceDeclarationResolved {
 
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.collect_seq(self.map.iter().map(|(key, value)| InterfaceDeclarationShapeResolvedItemRef {
+        serializer.collect_seq(self.caches.iter().map(|(key, value)| InterfaceDeclarationShapeResolvedItemRef {
             key,
             value
         }))
@@ -94,9 +108,11 @@ impl Serialize for InterfaceDeclarationResolved {
 
 impl InterfaceDeclarationResolved {
 
-    pub fn new() -> Self {
+    pub fn new(base_shape: SynthesizedShape) -> Self {
         Self {
-            map: indexmap! {}
+            base_shape,
+            shape: None,
+            caches: indexmap! {}
         }
     }
 }

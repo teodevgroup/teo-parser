@@ -6,11 +6,11 @@ use crate::resolver::resolve_constant::resolve_constant_references;
 use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
-use crate::resolver::resolve_interface::resolve_interface_declaration_types;
+use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
 use crate::resolver::resolve_model_shapes::resolve_model_shapes;
-use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_model_fields, resolve_namespace_model_shapes, resolve_namespace_references, resolve_namespace_types};
+use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_interface_shapes, resolve_namespace_model_fields, resolve_namespace_model_shapes, resolve_namespace_references, resolve_namespace_types};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
@@ -45,6 +45,16 @@ pub(super) fn resolve_source_types<'a>(context: &'a ResolverContext<'a>) {
             Node::Namespace(namespace) => resolve_namespace_types(namespace, context),
             Node::ConfigDeclaration(config_declaration) => resolve_config_declaration_types(config_declaration, context),
             Node::StructDeclaration(s) => resolve_struct_declaration_types(s, context),
+            _ => (),
+        }
+    }
+}
+
+pub(super) fn resolve_source_interface_shapes<'a>(context: &'a ResolverContext<'a>) {
+    for node in context.source().children.values() {
+        match node {
+            Node::InterfaceDeclaration(interface) => resolve_interface_declaration_shapes(interface, context),
+            Node::Namespace(namespace) => resolve_namespace_interface_shapes(namespace, context),
             _ => (),
         }
     }

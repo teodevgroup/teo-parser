@@ -73,6 +73,6 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &ParserContex
         extends,
         fields,
         partial_fields,
-        resolved: RefCell::new(Some(InterfaceDeclarationResolved::new())),
+        resolved: RefCell::new(None),
     }
 }
