@@ -462,8 +462,10 @@ pub(super) fn resolve_dictionary_literal_as_shape_type<'a>(literal: &'a Dictiona
                 value_should_be_none = true;
                 context.insert_diagnostics_error(named_expression.key().span(), "cannot infer object key");
             } else if !all_keys.contains(&key_expr_info.value().unwrap().as_str().unwrap()) {
-                this_entry_is_undefined = true;
-                context.insert_diagnostics_error(named_expression.key().span(), "undefined object key");
+                if type_shape.is_some() {
+                    this_entry_is_undefined = true;
+                    context.insert_diagnostics_error(named_expression.key().span(), "undefined object key");
+                }
             } else if required_keys.contains(&key_expr_info.value().unwrap().as_str().unwrap()) {
                 required_keys = required_keys.iter().filter(|k| **k != key_expr_info.value().unwrap().as_str().unwrap()).map(|k| *k).collect()
             }
