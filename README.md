@@ -23,6 +23,8 @@ Schema parser for Teo schema language
 * Convert struct objects to primitive types
 * Improved callable variant matching mechanics
 * Object literal syntax
+* Declare enum in type
+* Declare object in type
 
 ### 0.0.60
 
