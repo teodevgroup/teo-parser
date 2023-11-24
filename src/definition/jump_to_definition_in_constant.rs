@@ -20,7 +20,7 @@ pub(super) fn jump_to_definition_in_constant<'a>(
     let availability = search_availability(schema, source, &namespace_path);
     if let Some(type_expr) = constant.type_expr() {
         if type_expr.span().contains_line_col(line_col) {
-            jump_to_definition_in_type_expr_kind(
+            return jump_to_definition_in_type_expr_kind(
                 schema,
                 source,
                 &type_expr.kind,
@@ -28,11 +28,10 @@ pub(super) fn jump_to_definition_in_constant<'a>(
                 line_col,
                 &vec![],
                 availability,
-            )
-        } else {
-            vec![]
+            );
         }
-    } else if constant.expression().span().contains_line_col(line_col) {
+    }
+    if constant.expression().span().contains_line_col(line_col) {
         let undetermined = Type::Undetermined;
         return jump_to_definition_in_expression(
             schema,
