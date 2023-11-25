@@ -3,7 +3,7 @@ use crate::ast::node::Node;
 use crate::resolver::resolve_handler_group::{resolve_handler_group_decorators, resolve_handler_group_references};
 use crate::resolver::resolve_config::resolve_config_references;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration_types;
-use crate::resolver::resolve_constant::resolve_constant_references;
+use crate::resolver::resolve_constant::{resolve_constant_check, resolve_constant_references};
 use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
@@ -102,6 +102,18 @@ pub(super) fn resolve_namespace_consumers<'a>(namespace: &'a Namespace, context:
             Node::Model(model) => resolve_model_decorators(model, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
+            _ => (),
+        }
+    }
+    context.pop_namespace();
+}
+
+pub(super) fn resolve_namespace_constant_used_check<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+    context.push_namespace(namespace);
+    for node in namespace.children.values() {
+        match node {
+            Node::ConstantDeclaration(constant) => resolve_constant_check(constant, context),
+            Node::Namespace(namespace) => resolve_namespace_constant_used_check(namespace, context),
             _ => (),
         }
     }

@@ -45,3 +45,9 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a ConstantDeclaration,
     }
     context.pop_dependency();
 }
+
+pub(super) fn resolve_constant_check<'a>(constant: &'a ConstantDeclaration, context: &'a ResolverContext<'a>) {
+    if constant.use_count.get() == 0 {
+        context.insert_diagnostics_warning(constant.identifier().span(), "unused constant");
+    }
+}

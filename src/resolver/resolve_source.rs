@@ -2,7 +2,7 @@ use crate::ast::node::Node;
 use crate::resolver::resolve_handler_group::{resolve_handler_group_decorators, resolve_handler_group_references};
 use crate::resolver::resolve_config::resolve_config_references;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration_types;
-use crate::resolver::resolve_constant::resolve_constant_references;
+use crate::resolver::resolve_constant::{resolve_constant_check, resolve_constant_references};
 use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_data_set_records};
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
@@ -10,7 +10,7 @@ use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, r
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
 use crate::resolver::resolve_model_shapes::resolve_model_shapes;
-use crate::resolver::resolve_namespace::{resolve_namespace_consumers, resolve_namespace_interface_shapes, resolve_namespace_model_fields, resolve_namespace_model_shapes, resolve_namespace_references, resolve_namespace_types};
+use crate::resolver::resolve_namespace::{resolve_namespace_constant_used_check, resolve_namespace_consumers, resolve_namespace_interface_shapes, resolve_namespace_model_fields, resolve_namespace_model_shapes, resolve_namespace_references, resolve_namespace_types};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
@@ -91,6 +91,16 @@ pub(super) fn resolve_source_consumers<'a>(context: &'a ResolverContext<'a>) {
             Node::Model(model) => resolve_model_decorators(model, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
+            _ => (),
+        }
+    }
+}
+
+pub(super) fn resolve_source_constant_used_check<'a>(context: &'a ResolverContext<'a>) {
+    for node in context.source().children.values() {
+        match node {
+            Node::ConstantDeclaration(constant_declaration) => resolve_constant_check(constant_declaration, context),
+            Node::Namespace(namespace) => resolve_namespace_constant_used_check(namespace, context),
             _ => (),
         }
     }

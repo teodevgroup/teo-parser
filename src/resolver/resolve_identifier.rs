@@ -276,20 +276,48 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
                 }
             }
         }
-        Node::ConstantDeclaration(c) => if c.is_resolved() {
-            ExprInfo {
-                r#type: c.resolved().r#type.clone(),
-                value: c.resolved().value.clone(),
-                reference_info: Some(ReferenceInfo::new(
-                    ReferenceType::Constant,
-                    Reference::new(c.path.clone(), c.string_path.clone()),
-                    None)
-                ),
+        Node::ConstantDeclaration(c) => {
+            if resolver_context.is_some() {
+                c.use_count.set(c.use_count.get() + 1);
             }
-        } else {
-            if let Some(resolver_context) = resolver_context {
-                if resolver_context.has_dependency(c.path()) {
-                    resolver_context.insert_diagnostics_error(c.identifier().span, "circular reference detected");
+            if c.is_resolved() {
+                ExprInfo {
+                    r#type: c.resolved().r#type.clone(),
+                    value: c.resolved().value.clone(),
+                    reference_info: Some(ReferenceInfo::new(
+                        ReferenceType::Constant,
+                        Reference::new(c.path.clone(), c.string_path.clone()),
+                        None)
+                    ),
+                }
+            } else {
+                if let Some(resolver_context) = resolver_context {
+                    if resolver_context.has_dependency(c.path()) {
+                        resolver_context.insert_diagnostics_error(c.identifier().span, "circular reference detected");
+                        ExprInfo {
+                            r#type: Type::Undetermined,
+                            value: None,
+                            reference_info: Some(ReferenceInfo::new(
+                                ReferenceType::Constant,
+                                Reference::new(c.path.clone(), c.string_path.clone()),
+                                None)
+                            ),
+                        }
+                    } else {
+                        resolver_context.alter_state_and_restore(c.source_id(), &c.namespace_path(), |ctx| {
+                            resolve_constant_references(c, resolver_context);
+                        });
+                        ExprInfo {
+                            r#type: c.resolved().r#type.clone(),
+                            value: c.resolved().value.clone(),
+                            reference_info: Some(ReferenceInfo::new(
+                                ReferenceType::Constant,
+                                Reference::new(c.path.clone(), c.string_path.clone()),
+                                None)
+                            ),
+                        }
+                    }
+                } else {
                     ExprInfo {
                         r#type: Type::Undetermined,
                         value: None,
@@ -299,29 +327,6 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
                             None)
                         ),
                     }
-                } else {
-                    resolver_context.alter_state_and_restore(c.source_id(), &c.namespace_path(), |ctx| {
-                        resolve_constant_references(c, resolver_context);
-                    });
-                    ExprInfo {
-                        r#type: c.resolved().r#type.clone(),
-                        value: c.resolved().value.clone(),
-                        reference_info: Some(ReferenceInfo::new(
-                            ReferenceType::Constant,
-                            Reference::new(c.path.clone(), c.string_path.clone()),
-                            None)
-                        ),
-                    }
-                }
-            } else {
-                ExprInfo {
-                    r#type: Type::Undetermined,
-                    value: None,
-                    reference_info: Some(ReferenceInfo::new(
-                        ReferenceType::Constant,
-                        Reference::new(c.path.clone(), c.string_path.clone()),
-                        None)
-                    ),
                 }
             }
         }

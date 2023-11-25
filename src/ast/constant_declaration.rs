@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use crate::ast::expression::Expression;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
@@ -16,6 +16,7 @@ declare_container_node!(ConstantDeclaration, named, availability,
     pub(crate) identifier: usize,
     pub(crate) type_expr: Option<usize>,
     pub(crate) expression: usize,
+    pub(crate) use_count: Cell<usize>,
     pub(crate) resolved: RefCell<Option<ExprInfo >>,
 );
 

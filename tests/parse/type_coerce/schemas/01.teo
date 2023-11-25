@@ -8,11 +8,11 @@ server {
 }
 
 let a: Int64 = 5
-let b = a
+let b: Int = Int(a)
 
 model Song {
   @id @readonly @autoIncrement
   id: Int
-  @onSet($self.get(.name).randomDigits(Int64(5)))
+  @onSet($self.get(.name).randomDigits(Int64(b)))
   name: String
 }

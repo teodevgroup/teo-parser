@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use crate::ast::constant_declaration::ConstantDeclaration;
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_doc_comment::parse_doc_comment;
@@ -45,6 +45,7 @@ pub(super) fn parse_constant_statement(pair: Pair<'_>, context: &ParserContext) 
         identifier,
         type_expr,
         expression,
+        use_count: Cell::new(0),
         resolved: RefCell::new(None),
     }
 }
