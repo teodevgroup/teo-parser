@@ -12,7 +12,6 @@ use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
 use crate::resolver::resolve_argument_list::{resolve_argument_list};
 use crate::resolver::resolve_expression::resolve_expression;
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
@@ -215,7 +214,11 @@ fn resolve_struct_instance_for_unit<'a>(
             if argument_list_declaration.argument_declarations.len() != 1 {
                 return expression.resolve_and_return(ExprInfo::undetermined());
             }
-            let mut map = calculate_generics_map(struct_definition.generics_declaration(), &current.r#type.generic_types());
+            let mut map = if let Some(generics_declaration) = struct_definition.generics_declaration() {
+                generics_declaration.calculate_generics_map(&current.r#type.generic_types())
+            } else {
+                btreemap! {}
+            };
             let argument_declaration = argument_list_declaration.argument_declarations().next().unwrap();
             let expected_type = argument_declaration.type_expr().resolved().replace_generics(&map);
             resolve_expression(subscript.expression(), context, &Type::Undetermined, &btreemap! {});
@@ -479,7 +482,7 @@ fn resolve_interface_object_for_unit<'a>(
     expression.resolve_and_return(match &expression.kind {
         ExpressionKind::Identifier(identifier) => {
             if let Some((_, t)) = interface.resolved().shape().iter().find(|(k, t)| k.as_str() == identifier.name()) {
-                let map = calculate_generics_map(interface.generics_declaration(), types);
+                let map = interface.calculate_generics_map(types);
                 ExprInfo::new(
                     t.replace_generics(&map),
                     current.value().map(|value| value.as_dictionary().map(|d| d.get(&identifier.name).cloned())).flatten().flatten(),
@@ -605,7 +608,11 @@ fn resolve_struct_static_function_reference_for_unit<'a>(
                     context,
                     None
                 );
-                let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
+                let map = if let Some(generics_declaration) = struct_declaration.generics_declaration() {
+                    generics_declaration.calculate_generics_map(types)
+                } else {
+                    btreemap! {}
+                };
                 ExprInfo::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct static function not found");
@@ -642,7 +649,11 @@ fn resolve_struct_instance_function_reference_for_unit<'a>(
                     context,
                     None
                 );
-                let map = calculate_generics_map(struct_declaration.generics_declaration(), types);
+                let map = if let Some(generics_declaration) = struct_declaration.generics_declaration() {
+                    generics_declaration.calculate_generics_map(types)
+                } else {
+                    btreemap! {}
+                };
                 ExprInfo::type_only(function.return_type().resolved().replace_generics(&map))
             } else {
                 context.insert_diagnostics_error(expression.span(), "struct instance function not found");

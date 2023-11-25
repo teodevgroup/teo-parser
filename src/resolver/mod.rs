@@ -27,4 +27,3 @@ mod resolve_function_declaration;
 mod resolve_unit;
 mod resolve_use_middlewares_block;
 mod resolve_model_shapes;
-pub(crate) mod resolve_interface_shapes;

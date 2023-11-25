@@ -15,7 +15,6 @@ use crate::completion::find_top_completion_with_filter::find_top_completion_with
 use crate::expr::{ExprInfo, ReferenceType};
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
@@ -234,7 +233,7 @@ fn completion_items_in_unit_for_identifier_or_int_subscript_with_type(
         }
     } else if let Some((reference, types)) = r#type.as_interface_object() {
         let interface_declaration = schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-        completion_items_in_unit_for_synthesized_shape(&interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), types)))
+        completion_items_in_unit_for_synthesized_shape(&interface_declaration.shape_from_generics(types))
     } else {
         vec![]
     }

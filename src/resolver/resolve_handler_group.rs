@@ -5,7 +5,6 @@ use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::r#type::r#type::Type;
 use crate::resolver::resolve_decorator::resolve_decorator;
-use crate::resolver::resolve_interface_shapes::{collect_inputs_from_interface_declaration_shape_cache, resolve_shape_cache_for_interface_declaration};
 use crate::resolver::resolve_type_expr::{resolve_type_expr};
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
@@ -44,18 +43,6 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     }
     resolve_type_expr(handler_declaration.input_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     resolve_type_expr(handler_declaration.output_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
-    if let Some((reference, generics)) = handler_declaration.input_type().resolved().as_interface_object() {
-        let interface_declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-        if interface_declaration.shape(generics).is_none() {
-            interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
-        }
-    }
-    if let Some((reference, generics)) = handler_declaration.output_type().resolved().as_interface_object() {
-        let interface_declaration = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-        if interface_declaration.shape(generics).is_none() {
-            interface_declaration.set_shape(generics.clone(), resolve_shape_cache_for_interface_declaration(interface_declaration, generics, context));
-        }
-    }
     match handler_declaration.input_format {
         HandlerInputFormat::Form => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_form_input_type),
         HandlerInputFormat::Json => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_json_input_type),
@@ -78,20 +65,18 @@ fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a Resolver
         Type::Any => (),
         Type::InterfaceObject(reference, gen) => {
             let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-            let input = collect_inputs_from_interface_declaration_shape_cache(interface, gen, context);
-            for shape in &input {
-                for (_, t) in shape.iter() {
-                    if let Some(e) = t.as_enum_variant() {
-                        let enum_declaration = context.schema.find_top_by_path(e.path()).unwrap().as_enum().unwrap();
-                        if enum_declaration.interface || enum_declaration.option {
-                            context.insert_diagnostics_error(span, "interface or option enum is disallowed");
-                            break
-                        }
-                    } else {
-                        if let Some(msg) = f(t) {
-                            context.insert_diagnostics_error(span, msg);
-                            break
-                        }
+            let shape = interface.shape_from_generics(gen);
+            for (_, t) in shape.iter() {
+                if let Some(e) = t.as_enum_variant() {
+                    let enum_declaration = context.schema.find_top_by_path(e.path()).unwrap().as_enum().unwrap();
+                    if enum_declaration.interface || enum_declaration.option {
+                        context.insert_diagnostics_error(span, "interface or option enum is disallowed");
+                        break
+                    }
+                } else {
+                    if let Some(msg) = f(t) {
+                        context.insert_diagnostics_error(span, msg);
+                        break
                     }
                 }
             }

@@ -1,5 +1,7 @@
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use indexmap::{IndexMap, indexmap};
+use maplit::btreemap;
 use serde::{Serialize, Serializer};
 use crate::ast::doc_comment::DocComment;
 use crate::ast::field::Field;
@@ -51,12 +53,17 @@ impl InterfaceDeclaration {
 
     node_children_iter_fn!(partial_fields, PartialFieldsIter);
 
-    pub fn shape(&self, generics: &Vec<Type>) -> Option<&Type> {
-        self.resolved().caches.get(generics)
+    pub fn shape_from_generics(&self, generics: &Vec<Type>) -> SynthesizedShape {
+        let map = self.calculate_generics_map(generics);
+        self.resolved().shape().replace_generics(&map)
     }
 
-    pub fn set_shape(&self, generics: Vec<Type>, input: Type) {
-        self.resolved_mut().caches.insert(generics, input);
+    pub fn calculate_generics_map(&self, types: &Vec<Type>) -> BTreeMap<String, Type> {
+        if let Some(generics_declaration) = self.generics_declaration() {
+            generics_declaration.calculate_generics_map(types)
+        } else {
+            btreemap!{}
+        }
     }
 }
 
@@ -72,11 +79,11 @@ impl Resolve<InterfaceDeclarationResolved> for InterfaceDeclaration {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct InterfaceDeclarationResolved {
     pub base_shape: SynthesizedShape,
+    #[serde(skip)]
     pub shape: Option<SynthesizedShape>,
-    pub caches: IndexMap<Vec<Type>, Type>,
 }
 
 impl InterfaceDeclarationResolved {
@@ -90,29 +97,12 @@ impl InterfaceDeclarationResolved {
     }
 }
 
-#[derive(Serialize)]
-pub struct InterfaceDeclarationShapeResolvedItemRef<'a> {
-    key: &'a Vec<Type>,
-    value: &'a Type,
-}
-
-impl Serialize for InterfaceDeclarationResolved {
-
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.collect_seq(self.caches.iter().map(|(key, value)| InterfaceDeclarationShapeResolvedItemRef {
-            key,
-            value
-        }))
-    }
-}
-
 impl InterfaceDeclarationResolved {
 
     pub fn new(base_shape: SynthesizedShape) -> Self {
         Self {
             base_shape,
             shape: None,
-            caches: indexmap! {}
         }
     }
 }

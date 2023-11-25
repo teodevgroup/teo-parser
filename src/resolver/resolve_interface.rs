@@ -8,7 +8,6 @@ use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_types};
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::named_identifiable::NamedIdentifiable;
@@ -101,7 +100,7 @@ fn insert_extend_into_interface_map<'a>(error_span: Span, extend: &'a TypeExpr, 
         } else {
             extending_dependencies.insert(reference.str_path());
             let interface_for_extending = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-            let generics_map = calculate_generics_map(interface_for_extending.generics_declaration(), types);
+            let generics_map = interface_for_extending.calculate_generics_map(types);
             generics_maps.push(generics_map);
             for extend_extend in interface_for_extending.extends() {
                 insert_extend_into_interface_map(error_span, extend_extend, context, map, existing_keys, extending_dependencies, generics_maps.clone());

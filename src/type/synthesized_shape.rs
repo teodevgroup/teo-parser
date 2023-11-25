@@ -8,7 +8,6 @@ use serde::Serialize;
 use crate::ast::schema::Schema;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
@@ -99,7 +98,7 @@ impl SynthesizedShape {
             true
         } else if let Some((reference, types)) = other.as_interface_object() {
             let interface_declaration = schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-            let shape = interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), types));
+            let shape = interface_declaration.shape_from_generics(types);
             self.can_coerce_to_shape(&shape)
         } else if let Some(synthesized_shape) = other.as_synthesized_shape() {
             self.can_coerce_to_shape(synthesized_shape)

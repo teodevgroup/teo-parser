@@ -17,7 +17,6 @@ use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::resolver::resolve_identifier::resolve_identifier_path;
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
@@ -386,7 +385,7 @@ fn type_item_builtin_match<'a>(
                 }
             } else if let Some((reference, interface_generics)) = inner_type.as_interface_object() {
                 let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                let map = calculate_generics_map(interface.generics_declaration(), interface_generics);
+                let map = interface.calculate_generics_map(interface_generics);
                 if let Some(field) = interface.fields().find(|f| f.identifier().name() == field_ref.identifier().name()) {
                     Some(field.type_expr().resolved().replace_generics(&map))
                 } else {

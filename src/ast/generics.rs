@@ -1,7 +1,10 @@
+use std::collections::BTreeMap;
+use maplit::btreemap;
 use crate::ast::identifier::Identifier;
 use crate::ast::type_expr::TypeExpr;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn};
 use crate::format::Writer;
+use crate::r#type::Type;
 use crate::traits::write::Write;
 
 declare_container_node!(GenericsDeclaration,
@@ -18,6 +21,13 @@ impl GenericsDeclaration {
 
     pub fn names(&self) -> Vec<&str> {
         self.identifiers().map(|i| i.name()).collect()
+    }
+
+    pub fn calculate_generics_map(&self, types: &Vec<Type>) -> BTreeMap<String, Type> {
+        if self.identifiers.len() == types.len() {
+            return self.identifiers().enumerate().map(|(index, identifier)| (identifier.name().to_owned(), types.get(index).unwrap().clone())).collect();
+        }
+        btreemap!{}
     }
 }
 

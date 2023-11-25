@@ -12,7 +12,6 @@ use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::traits::resolved::Resolve;
-use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
@@ -988,7 +987,7 @@ impl Type {
             }
         } else if self.is_interface_object() && other.is_dictionary_representable() {
             let interface_declaration = schema.find_top_by_path(self.as_interface_object().unwrap().0.path()).unwrap().as_interface_declaration().unwrap();
-            let shape = interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), self.as_interface_object().unwrap().1));
+            let shape = interface_declaration.shape_from_generics(self.as_interface_object().unwrap().1);
             shape.can_coerce_to(other, schema)
         } else if !self.is_optional() && other.is_optional() {
             self.can_coerce_to(other.as_optional().unwrap(), schema)
