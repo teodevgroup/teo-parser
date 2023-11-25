@@ -38,7 +38,7 @@ impl Config {
     }
 
     pub fn get_item(&self, name: impl AsRef<str>) -> Option<&Expression> {
-        self.dictionary_literal().expressions().find(|item| item.key().resolved().value().unwrap().as_str().unwrap() == name.as_ref() && item.is_available()).map(|item| item.value())
+        self.dictionary_literal().expressions().find(|item| item.key().named_key_without_resolving().is_some() && item.key().named_key_without_resolving().unwrap() == name.as_ref() && item.is_available()).map(|item| item.value())
     }
 
     pub fn items(&self) -> Vec<(&Expression, &Expression)> {
