@@ -28,4 +28,12 @@ mod test {
         assert_eq!(diagnostics.errors().len(), 1);
         assert_eq!(diagnostics.errors().first().unwrap().message(), "expect ModelSerializableScalarFields<Perform>, found other fields");
     }
+
+    #[test]
+    fn coerce_synthesized_shape_to_interface() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/parse/type_coerce/schemas/04.teo");
+        let path = path_buf.to_str().unwrap();
+        let (_, diagnostics) = parse(path, None, None);
+        assert_eq!(diagnostics.errors().len(), 0);
+    }
 }

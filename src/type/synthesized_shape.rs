@@ -122,8 +122,10 @@ impl SynthesizedShape {
             if !v.is_optional() && self.get(k).is_none() {
                 return false;
             }
-            if !v.test(self.get(k).unwrap()) {
-                return false;
+            if let Some(self_v) = self.get(k) {
+                if !v.test(self_v) {
+                    return false;
+                }
             }
         }
         true

@@ -978,15 +978,15 @@ impl Type {
             true
         } else if self.is_int_32_or_64() && other.is_float_32_or_64() {
             true
-        } else if self.is_synthesized_shape() && other.is_dictionary() {
+        } else if self.is_synthesized_shape() && other.is_dictionary_representable() {
             self.as_synthesized_shape().unwrap().can_coerce_to(other, schema)
-        } else if self.is_synthesized_shape_reference() && other.is_dictionary() {
+        } else if self.is_synthesized_shape_reference() && other.is_dictionary_representable() {
             if let Some(t) = self.as_synthesized_shape_reference().unwrap().fetch_synthesized_definition(schema) {
                 t.can_coerce_to(other, schema)
             } else {
                 false
             }
-        } else if self.is_interface_object() && other.is_dictionary() {
+        } else if self.is_interface_object() && other.is_dictionary_representable() {
             let interface_declaration = schema.find_top_by_path(self.as_interface_object().unwrap().0.path()).unwrap().as_interface_declaration().unwrap();
             let shape = interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), self.as_interface_object().unwrap().1));
             shape.can_coerce_to(other, schema)
@@ -1111,9 +1111,9 @@ impl Display for Type {
                 f.write_str(&format!("{}[]", inner))
             },
             Type::Dictionary(inner) => if inner.is_union() {
-                f.write_str(&format!("({}){{}}", inner))
+                f.write_str(&format!("({}){{}}", inner.as_ref()))
             } else {
-                f.write_str(&format!("{}{{}}", inner))
+                f.write_str(&format!("{}{{}}", inner.as_ref()))
             }
             Type::Tuple(types) => {
                 f.write_str("(")?;

@@ -1,0 +1,28 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/nov24",
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+interface A<T> {
+  a: T
+}
+
+interface B<U> extends A<U> { // T: U
+  b: U
+}
+
+interface C<Q> extends B<Q> { // U: Q
+  c: Q
+}
+
+interface D extends C<String> { // Q: String
+  d: String
+}
+
+let a: A<String> = {
+  a: "dd"
+}
