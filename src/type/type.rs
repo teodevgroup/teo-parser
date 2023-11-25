@@ -670,6 +670,10 @@ impl Type {
         self.is_any_int_or_float() || self.is_decimal()
     }
 
+    pub fn is_dictionary_representable(&self) -> bool {
+        self.is_dictionary() || self.is_synthesized_shape_reference() || self.is_synthesized_shape() || self.is_interface_object()
+    }
+
     pub fn expect_for_literal(&self) -> Type {
         self.unwrap_optional().clone()
     }
@@ -1004,6 +1008,10 @@ impl Type {
     pub fn coerce_value_to(&self, value: &Value, other: &Type) -> Option<Value> {
         if self == other || other.test(self) {
             Some(value.clone())
+        } else if self.is_optional() && other.is_optional() {
+            self.unwrap_optional().coerce_value_to(value, other.unwrap_optional())
+        } else if !self.is_optional() && other.is_optional() {
+            self.coerce_value_to(value, other.unwrap_optional())
         } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_float() {
             value.to_float().map(|f| Value::Float(f))
         } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_float32() {
@@ -1012,6 +1020,8 @@ impl Type {
             value.to_int().map(|f| Value::Int(f))
         } else if other.unwrap_optional().unwrap_enumerable().unwrap_optional().is_int64() {
             value.to_int64().map(|f| Value::Int64(f))
+        } else if self.is_dictionary_representable() && other.is_dictionary_representable() {
+            Some(value.clone())
         } else {
             None
         }
