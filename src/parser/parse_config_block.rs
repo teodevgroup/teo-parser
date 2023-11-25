@@ -65,5 +65,9 @@ pub(super) fn parse_config_block(pair: Pair<'_>, context: &ParserContext) -> Con
 
 fn parse_config_keyword(pair: Pair<'_>, context: &ParserContext) -> Keyword {
     let (span, path) = parse_node_variables!(pair, context);
-    Keyword { span, path, name: pair.as_str().to_owned() }
+    let name = pair.as_str().to_owned();
+    if name.as_str() == "server" && path.len() > 3 {
+        context.insert_error(span, "server should be placed at main namespace");
+    }
+    Keyword { span, path, name }
 }
