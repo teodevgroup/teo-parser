@@ -4,6 +4,7 @@ use maplit::btreemap;
 use crate::ast::config::Config;
 use crate::resolver::resolve_expression::resolve_expression;
 use crate::resolver::resolver_context::ResolverContext;
+use crate::traits::has_availability::HasAvailability;
 use crate::traits::identifiable::Identifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
@@ -16,8 +17,12 @@ pub(super) fn resolve_config_references<'a>(config: &'a Config, context: &'a Res
     }
     context.push_dependency(config.path.clone());
     if let Some(config_declaration) = context.schema.find_config_declaration_by_name(config.keyword().name(), availability) {
+        // set availability
+        config.dictionary_literal().expressions().for_each(|named_expression| {
+            *named_expression.actual_availability.borrow_mut() = context.current_availability();
+        });
         // error for non constant keys
-        config.items().iter().for_each(|(k, _)| {
+        config.items().iter().for_each(|(k, v)| {
             if k.named_key_without_resolving().is_none() {
                 context.insert_diagnostics_error(k.span(), "config item key is not constant");
             }
@@ -38,13 +43,13 @@ pub(super) fn resolve_config_references<'a>(config: &'a Config, context: &'a Res
         let mut missing_names = vec![];
         // check each field
         for field in config_declaration.fields() {
-            if let Some((_, item)) = config.items().iter().find(|(k, v)| k.named_key_without_resolving().is_some() && k.named_key_without_resolving().unwrap() == field.identifier().name()) {
-                context.push_dependency(item.path().clone());
-                resolve_expression(item, context, field.type_expr().resolved(), &btreemap! {});
-                let r#type = item.resolved().r#type();
+            if let Some(named_expression) = config.dictionary_literal().expressions().find(|named_expression| named_expression.key().named_key_without_resolving().is_some() && named_expression.key().named_key_without_resolving().unwrap() == field.identifier().name() && named_expression.is_available()) {
+                context.push_dependency(named_expression.value().path().clone());
+                resolve_expression(named_expression.value(), context, field.type_expr().resolved(), &btreemap! {});
+                let r#type = named_expression.value().resolved().r#type();
                 if !r#type.is_undetermined() {
                     if !field.type_expr().resolved().test(r#type) {
-                        context.insert_diagnostics_error(item.span(), format!("expect {}, found {}", field.type_expr().resolved(), r#type));
+                        context.insert_diagnostics_error(named_expression.value().span(), format!("expect {}, found {}", field.type_expr().resolved(), r#type));
                     }
                 }
                 context.pop_dependency();
