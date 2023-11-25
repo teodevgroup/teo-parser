@@ -5,8 +5,11 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use maplit::btreemap;
 use serde::Serialize;
+use crate::ast::schema::Schema;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
+use crate::resolver::resolve_interface_shapes::calculate_generics_map;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedShape {
@@ -86,6 +89,46 @@ impl SynthesizedShape {
         self.fields.values().any(|v| v.contains_keywords())
     }
 
+    pub fn can_coerce_to(&self, other: &Type, schema: &Schema) -> bool {
+        if let Some(field_type) = other.as_dictionary() {
+            for (_, v) in self.iter() {
+                if !field_type.test(v) {
+                    return false;
+                }
+            }
+            true
+        } else if let Some((reference, types)) = other.as_interface_object() {
+            let interface_declaration = schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
+            let shape = interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), types));
+            self.can_coerce_to_shape(&shape)
+        } else if let Some(synthesized_shape) = other.as_synthesized_shape() {
+            self.can_coerce_to_shape(synthesized_shape)
+        } else if let Some(synthesized_shape_reference) = other.as_synthesized_shape_reference() {
+            if let Some(t) = synthesized_shape_reference.fetch_synthesized_definition(schema) {
+                self.can_coerce_to(t, schema)
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    fn can_coerce_to_shape(&self, shape: &SynthesizedShape) -> bool {
+        if self.all_keys().difference(&shape.all_keys()).count() > 0 {
+            return false;
+        }
+        for (k, v) in shape.iter() {
+            if !v.is_optional() && self.get(k).is_none() {
+                return false;
+            }
+            if !v.test(self.get(k).unwrap()) {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn test(&self, other: &SynthesizedShape) -> bool {
         let self_keys: BTreeSet<String> = self.fields.keys().cloned().collect();
         let other_keys: BTreeSet<String> = other.keys().cloned().collect();
@@ -104,6 +147,14 @@ impl SynthesizedShape {
             }
         }
         true
+    }
+
+    pub fn required_keys(&self) -> BTreeSet<&str> {
+        self.iter().filter_map(|(k, v)| if !v.is_optional() { Some(k.as_str()) } else { None }).collect()
+    }
+
+    pub fn all_keys(&self) -> BTreeSet<&str> {
+        self.keys().into_iter().map(|k| k.as_str()).collect()
     }
 }
 

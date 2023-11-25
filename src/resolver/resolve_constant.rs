@@ -25,7 +25,7 @@ pub(super) fn resolve_constant_references<'a>(constant: &'a ConstantDeclaration,
                 reference_info: resolved.reference_info().cloned(),
             });
         } else {
-            if resolved.r#type().can_coerce_to(type_expr.resolved()) {
+            if resolved.r#type().can_coerce_to(type_expr.resolved(), context.schema) {
                 constant.resolve(ExprInfo {
                     r#type: type_expr.resolved().clone(),
                     value: if let Some(value) = resolved.value() {

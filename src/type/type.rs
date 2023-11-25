@@ -11,6 +11,8 @@ use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
+use crate::traits::resolved::Resolve;
+use crate::resolver::resolve_interface_shapes::calculate_generics_map;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
@@ -959,7 +961,7 @@ impl Type {
         }
     }
 
-    pub fn can_coerce_to(&self, other: &Type) -> bool {
+    pub fn can_coerce_to(&self, other: &Type, schema: &Schema) -> bool {
         if self == other {
             true
         } else if self.is_int() && other.is_int64() {
@@ -972,16 +974,28 @@ impl Type {
             true
         } else if self.is_int_32_or_64() && other.is_float_32_or_64() {
             true
+        } else if self.is_synthesized_shape() && other.is_dictionary() {
+            self.as_synthesized_shape().unwrap().can_coerce_to(other, schema)
+        } else if self.is_synthesized_shape_reference() && other.is_dictionary() {
+            if let Some(t) = self.as_synthesized_shape_reference().unwrap().fetch_synthesized_definition(schema) {
+                t.can_coerce_to(other, schema)
+            } else {
+                false
+            }
+        } else if self.is_interface_object() && other.is_dictionary() {
+            let interface_declaration = schema.find_top_by_path(self.as_interface_object().unwrap().0.path()).unwrap().as_interface_declaration().unwrap();
+            let shape = interface_declaration.resolved().shape().replace_generics(&calculate_generics_map(interface_declaration.generics_declaration(), self.as_interface_object().unwrap().1));
+            shape.can_coerce_to(other, schema)
         } else if !self.is_optional() && other.is_optional() {
-            self.can_coerce_to(other.as_optional().unwrap())
+            self.can_coerce_to(other.as_optional().unwrap(), schema)
         } else if self.is_optional() && other.is_optional() {
-            self.as_optional().unwrap().can_coerce_to(other.as_optional().unwrap())
+            self.as_optional().unwrap().can_coerce_to(other.as_optional().unwrap(), schema)
         } else if self.is_enumerable() && other.is_enumerable() {
-            self.as_enumerable().unwrap().can_coerce_to(other.as_enumerable().unwrap())
+            self.as_enumerable().unwrap().can_coerce_to(other.as_enumerable().unwrap(), schema)
         } else if self.is_array() && other.is_enumerable() {
-            self.as_array().unwrap().can_coerce_to(other.as_enumerable().unwrap())
+            self.as_array().unwrap().can_coerce_to(other.as_enumerable().unwrap(), schema)
         } else if !self.is_enumerable() && other.is_enumerable() {
-            self.can_coerce_to(other.as_enumerable().unwrap())
+            self.can_coerce_to(other.as_enumerable().unwrap(), schema)
         } else {
             false
         }

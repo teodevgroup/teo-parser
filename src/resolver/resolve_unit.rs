@@ -748,7 +748,7 @@ fn unit_type_coerce<'a>(expression_span: Span, resolved: &ExprInfo, expected: &T
     if expected.test(resolved.r#type()) {
         resolved.clone()
     } else {
-        if resolved.r#type().can_coerce_to(expected) {
+        if resolved.r#type().can_coerce_to(expected, context.schema) {
             ExprInfo {
                 r#type: expected.clone(),
                 value: if let Some(value) = resolved.value() {
