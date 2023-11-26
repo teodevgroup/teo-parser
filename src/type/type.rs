@@ -10,6 +10,8 @@ use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
+use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
+use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReference;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::traits::resolved::Resolve;
 
@@ -151,6 +153,15 @@ pub enum Type {
     /// Synthesized Enum Reference
     ///
     SynthesizedEnumReference(SynthesizedEnumReference),
+
+    /// Synthesized Interface Enum Definition
+    ///
+    SynthesizedInterfaceEnum(SynthesizedInterfaceEnum),
+
+    /// Synthesized Interface Enum Reference
+    ///
+    SynthesizedInterfaceEnumReference(SynthesizedInterfaceEnumReference),
+
 
     /// Model
     ///
@@ -485,6 +496,28 @@ impl Type {
     pub fn as_synthesized_enum_reference(&self) -> Option<&SynthesizedEnumReference> {
         match self {
             Type::SynthesizedEnumReference(e) => Some(e),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_interface_enum(&self) -> bool {
+        self.as_synthesized_interface_enum().is_some()
+    }
+
+    pub fn as_synthesized_interface_enum(&self) -> Option<&SynthesizedInterfaceEnum> {
+        match self {
+            Type::SynthesizedInterfaceEnum(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_interface_enum_reference(&self) -> bool {
+        self.as_synthesized_interface_enum_reference().is_some()
+    }
+
+    pub fn as_synthesized_interface_enum_reference(&self) -> Option<&SynthesizedInterfaceEnumReference> {
+        match self {
+            Type::SynthesizedInterfaceEnumReference(e) => Some(e),
             _ => None,
         }
     }
@@ -888,6 +921,8 @@ impl Type {
             Type::EnumVariant(r) => other.is_enum_variant() && r == other.as_enum_variant().unwrap(),
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
+            Type::SynthesizedInterfaceEnum(s) => other.is_synthesized_interface_enum() && s.members == other.as_synthesized_interface_enum().unwrap().members,
+            Type::SynthesizedInterfaceEnumReference(r) => other.is_synthesized_interface_enum_reference() && r == other.as_synthesized_interface_enum_reference().unwrap(),
             Type::Model => other.is_model(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
@@ -1134,6 +1169,8 @@ impl Display for Type {
             Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}", r)),
+            Type::SynthesizedInterfaceEnum(e) => Display::fmt(e, f),
+            Type::SynthesizedInterfaceEnumReference(r) => f.write_str(&format!("{}", r)),
             Type::Model => f.write_str("Model"),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
             Type::InterfaceObject(r, t) => if t.is_empty() {

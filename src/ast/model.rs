@@ -12,6 +12,8 @@ use crate::ast::partial_field::PartialField;
 use crate::format::Writer;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
+use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
+use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
@@ -60,6 +62,7 @@ impl Model {
 #[derive(Debug, Serialize, Clone)]
 pub struct ModelResolved {
     pub enums: IndexMap<SynthesizedEnumReferenceKind, SynthesizedEnum>,
+    pub interface_enums: IndexMap<SynthesizedInterfaceEnumReferenceKind, SynthesizedInterfaceEnum>,
     pub shapes: IndexMap<(SynthesizedShapeReferenceKind, Option<String>), Type>,
 }
 
@@ -68,6 +71,7 @@ impl ModelResolved {
     pub fn new() -> Self {
         Self {
             enums: Default::default(),
+            interface_enums: Default::default(),
             shapes: Default::default(),
         }
     }

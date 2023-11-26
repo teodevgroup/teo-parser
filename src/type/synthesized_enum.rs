@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
+use indexmap::IndexMap;
 use itertools::Itertools;
 use serde::Serialize;
 use crate::ast::doc_comment::DocComment;

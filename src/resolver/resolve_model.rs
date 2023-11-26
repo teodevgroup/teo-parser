@@ -1,4 +1,3 @@
-use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::model::{Model, ModelResolved};
 use crate::ast::reference_space::ReferenceSpace;
@@ -26,10 +25,7 @@ pub(super) fn resolve_model_fields<'a>(model: &'a Model, context: &'a ResolverCo
         context.insert_diagnostics_error(partial_field.span, "partial field");
     }
     resolve_model_types(model, context);
-    model.resolve(ModelResolved {
-        enums: indexmap! {},
-        shapes: indexmap! {},
-    });
+    model.resolve(ModelResolved::new());
     context.add_examined_default_path(model.string_path.clone(), model.define_availability);
     for decorator in &model.unattached_field_decorators {
         context.insert_diagnostics_error(decorator.span, "unattached field decorator");
