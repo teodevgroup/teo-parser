@@ -15,6 +15,8 @@ use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
+use crate::r#type::synthesized_interface_enum::{SynthesizedInterfaceEnum, SynthesizedInterfaceEnumMember};
+use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReferenceKind;
 use crate::r#type::Type;
 use crate::r#type::synthesized_shape_reference::{SynthesizedShapeReference, SynthesizedShapeReferenceKind};
 use crate::resolver::resolve_identifier::resolve_identifier;
@@ -30,6 +32,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
         return
     }
     let mut enums = IndexMap::new();
+    let mut interface_enums = IndexMap::new();
     let mut shapes = IndexMap::new();
     let mut shape_available_context = ShapeAvailableContext::new();
 
@@ -48,6 +51,9 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
 
     // indirect relations
     enums.insert(SynthesizedEnumReferenceKind::ModelIndirectRelations, resolve_model_indirect_relations(model));
+
+    // field indexes
+    interface_enums.insert(SynthesizedInterfaceEnumReferenceKind::ModelFieldIndexes, resolve_model_field_indexes(model, context));
 
     // select
     shapes.insert((SynthesizedShapeReferenceKind::Select, None), resolve_model_select_shape(model));
@@ -438,6 +444,38 @@ fn resolve_model_indirect_relations(model: &Model) -> SynthesizedEnum {
         }
     }
     SynthesizedEnum::new(members)
+}
+
+fn resolve_model_field_indexes(model: &Model, context: &ResolverContext) -> SynthesizedInterfaceEnum {
+    let mut members = vec![];
+    let sort = context.schema.std_source().find_node_by_string_path(&vec!["std", "Sort"], &top_filter_for_reference_type(ReferenceSpace::Default), Availability::default()).unwrap().as_enum().unwrap();
+    let sort_type = Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone()));
+    for field in model.fields() {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped && !is_field_writeonly(field) && !is_field_virtual(field) {
+                members.push(SynthesizedInterfaceEnumMember::new(
+                    field.name().to_owned(),
+                    field.comment().cloned(),
+                    indexmap! {
+                        "sort".to_owned() => sort_type.wrap_in_optional(),
+                        "len".to_owned() => Type::Int.wrap_in_optional(),
+                    }
+                ));
+            }
+        } else if let Some(settings) = field.resolved().class.as_model_property() {
+            if settings.cached {
+                members.push(SynthesizedInterfaceEnumMember::new(
+                    field.name().to_owned(),
+                    field.comment().cloned(),
+                    indexmap! {
+                        "sort".to_owned() => sort_type.wrap_in_optional(),
+                        "len".to_owned() => Type::Int.wrap_in_optional(),
+                    }
+                ));
+            }
+        }
+    }
+    SynthesizedInterfaceEnum::new(members)
 }
 
 fn resolve_model_serializable_scalar_fields(model: &Model) -> SynthesizedEnum {

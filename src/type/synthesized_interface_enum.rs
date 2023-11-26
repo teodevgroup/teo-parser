@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
+use indexmap::IndexMap;
 use itertools::Itertools;
 use serde::Serialize;
 use crate::ast::doc_comment::DocComment;
@@ -25,9 +26,21 @@ impl SynthesizedInterfaceEnum {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedInterfaceEnumMember {
     pub name: String,
-    pub arg_keys: Vec<String>,
+    pub keys: Vec<String>,
     pub args: BTreeMap<String, Type>,
     pub comment: Option<DocComment>,
+}
+
+impl SynthesizedInterfaceEnumMember {
+
+    pub fn new(name: String, comment: Option<DocComment>, args: IndexMap<String, Type>) -> Self {
+        Self {
+            name,
+            comment,
+            keys: args.keys().map(|k| k.to_owned()).collect(),
+            args: args.into_iter().collect(),
+        }
+    }
 }
 
 impl Display for SynthesizedInterfaceEnumMember {
