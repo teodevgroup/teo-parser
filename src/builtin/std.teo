@@ -343,15 +343,15 @@ namespace std {
 
     /// @name Id
     /// Specify the model's primary index
-    declare unique model decorator id(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
+    declare unique model decorator id(fields?: SerializableScalarFields<Self>[], map?: String?)
 
     /// @name Index
     /// Add an index to the model
-    declare model decorator index(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
+    declare model decorator index(fields?: SerializableScalarFields<Self>[], map?: String?)
 
     /// @name Unique
     /// Add a unique constraint to the model
-    declare model decorator unique(fields?: ModelSerializableScalarFields<Self>[], map?: String?)
+    declare model decorator unique(fields?: SerializableScalarFields<Self>[], map?: String?)
 
     /// @name Migration
     /// Specify the migration operations for the model
@@ -468,11 +468,11 @@ namespace std {
 
     /// @name Present With
     /// Specify when some other field are not null, this field is required
-    declare unique model field decorator presentWith(fields?: Enumerable<ModelScalarFields<Self>>)
+    declare unique model field decorator presentWith(fields?: Enumerable<ScalarFields<Self>>)
 
     /// @name Present Without
     /// Specify when some other field are null, this field is required
-    declare unique model field decorator presentWithout(fields?: Enumerable<ModelScalarFields<Self>>)
+    declare unique model field decorator presentWithout(fields?: Enumerable<ScalarFields<Self>>)
 
     /// @name Present If
     /// Specify when some condition passes, this field is required
@@ -591,9 +591,9 @@ namespace std {
     /// Define a model relation
     declare unique model relation decorator relation {
         /// Define a normal relation
-        variant(fields: Enumerable<ModelSerializableScalarFields<Self>>, references: Enumerable<ModelSerializableScalarFields<ThisFieldType>>)
+        variant(fields: Enumerable<SerializableScalarFields<Self>>, references: Enumerable<SerializableScalarFields<ThisFieldType>>)
         /// Define a through relation
-        variant<T>(through: T, local: ModelDirectRelations<T>, foreign: ModelDirectRelations<T>) where T: Model
+        variant<T>(through: T, local: DirectRelations<T>, foreign: DirectRelations<T>) where T: Model
     }
 
     /// @name Getter
@@ -610,7 +610,7 @@ namespace std {
 
     /// @name Dependencies
     /// Define dependencies for a cached property
-    declare unique model property decorator deps(deps?: Enumerable<ModelSerializableScalarFields<Self>>)
+    declare unique model property decorator deps(deps?: Enumerable<SerializableScalarFields<Self>>)
 
     /// @name Index
     /// Define index for this cached property
@@ -933,7 +933,7 @@ namespace std {
     /// @name Set
     /// Set the value on object or map
     declare pipeline item set {
-        variant<T, K>(key?: K, value?: T[K]): T -> T where K: ModelScalarFields<T>, T: Model
+        variant<T, K>(key?: K, value?: T[K]): T -> T where K: ScalarFields<T>, T: Model
         variant<T>(key?: String, value?: T): T{} -> T{}
         variant<T>(key?: Int): T[] -> T[]
     }
@@ -941,18 +941,18 @@ namespace std {
     /// @name Get
     /// Get the value on model object, array or dictionary
     declare pipeline item get {
-        variant<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
+        variant<T, K>(key?: K): T -> T[K]? where K: ScalarFields<T>, T: Model
         variant<T>(key?: String): T{} -> T?
         variant<T>(key?: Int): T[] -> T?
     }
 
     /// @name Previous
     /// Get the previous object value
-    declare pipeline item previous<T, K>(key?: K): T -> T[K]? where K: ModelScalarFields<T>, T: Model
+    declare pipeline item previous<T, K>(key?: K): T -> T[K]? where K: ScalarFields<T>, T: Model
 
     /// @name Assign
     /// Assign value to key on context object
-    declare pipeline item assign<T, K>(key?: K, value?: T[K] | Pipeline<T, T[K]>): T -> T where K: ModelScalarFields<Self>
+    declare pipeline item assign<T, K>(key?: K, value?: T[K] | Pipeline<T, T[K]>): T -> T where K: ScalarFields<Self>
 
     /// @name Equal
     /// Valid if input is equal to rhs
