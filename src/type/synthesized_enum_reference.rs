@@ -14,11 +14,11 @@ use crate::traits::resolved::Resolve;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Display, EnumString, AsRefStr, EnumIter)]
 pub enum SynthesizedEnumReferenceKind {
-    ModelScalarFields,
-    ModelSerializableScalarFields,
-    ModelRelations,
-    ModelDirectRelations,
-    ModelIndirectRelations,
+    ScalarFields,
+    SerializableScalarFields,
+    Relations,
+    DirectRelations,
+    IndirectRelations,
 }
 
 #[derive(Debug, Clone, Eq, Serialize)]
@@ -33,35 +33,35 @@ impl SynthesizedEnumReference {
 
     pub fn model_scalar_fields(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedEnumReferenceKind::ModelScalarFields,
+            kind: SynthesizedEnumReferenceKind::ScalarFields,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }
 
     pub fn model_serializable_scalar_fields(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedEnumReferenceKind::ModelSerializableScalarFields,
+            kind: SynthesizedEnumReferenceKind::SerializableScalarFields,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }
 
     pub fn model_relations(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedEnumReferenceKind::ModelRelations,
+            kind: SynthesizedEnumReferenceKind::Relations,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }
 
     pub fn model_direct_relations(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedEnumReferenceKind::ModelDirectRelations,
+            kind: SynthesizedEnumReferenceKind::DirectRelations,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }
 
     pub fn model_indirect_relations(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedEnumReferenceKind::ModelIndirectRelations,
+            kind: SynthesizedEnumReferenceKind::IndirectRelations,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }

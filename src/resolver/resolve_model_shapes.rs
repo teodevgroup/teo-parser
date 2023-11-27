@@ -37,20 +37,20 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     let mut shape_available_context = ShapeAvailableContext::new();
 
     // scalar field
-    enums.insert(SynthesizedEnumReferenceKind::ModelScalarFields, resolve_model_scalar_fields(model));
+    enums.insert(SynthesizedEnumReferenceKind::ScalarFields, resolve_model_scalar_fields(model));
 
     // serializable scalar field
-    enums.insert(SynthesizedEnumReferenceKind::ModelSerializableScalarFields, resolve_model_serializable_scalar_fields(model));
+    enums.insert(SynthesizedEnumReferenceKind::SerializableScalarFields, resolve_model_serializable_scalar_fields(model));
     shape_available_context.has_serializable_scalar_fields = true;
 
     // relations
-    enums.insert(SynthesizedEnumReferenceKind::ModelRelations, resolve_model_relations(model));
+    enums.insert(SynthesizedEnumReferenceKind::Relations, resolve_model_relations(model));
 
     // direct relations
-    enums.insert(SynthesizedEnumReferenceKind::ModelDirectRelations, resolve_model_direct_relations(model));
+    enums.insert(SynthesizedEnumReferenceKind::DirectRelations, resolve_model_direct_relations(model));
 
     // indirect relations
-    enums.insert(SynthesizedEnumReferenceKind::ModelIndirectRelations, resolve_model_indirect_relations(model));
+    enums.insert(SynthesizedEnumReferenceKind::IndirectRelations, resolve_model_indirect_relations(model));
 
     // field indexes
     interface_enums.insert(SynthesizedInterfaceEnumReferenceKind::ModelFieldIndexes, resolve_model_field_indexes(model, context));

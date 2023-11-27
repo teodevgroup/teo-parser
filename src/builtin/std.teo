@@ -107,7 +107,7 @@ namespace std {
 
     /// @name Sort Order
     /// Represents the sort order
-    interface enum Sort {
+    enum Sort {
         asc
         desc
     }
