@@ -1,12 +1,14 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Sub};
 use array_tool::vec::Join;
 use indexmap::{IndexMap, indexmap};
+use itertools::Itertools;
 use maplit::{btreemap, hashset};
 use teo_teon::types::enum_variant::EnumVariant;
 use teo_teon::types::range::Range;
 use teo_teon::Value;
 use teo_teon::types::option_variant::OptionVariant;
+use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::{ArithExpr, ArithExprOperator};
 use crate::ast::bracket_expression::BracketExpression;
 use crate::ast::callable_variant::CallableVariant;
@@ -27,6 +29,7 @@ use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::{Resolve, ResolveAndClone};
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
+use crate::r#type::synthesized_interface_enum::{SynthesizedInterfaceEnum, SynthesizedInterfaceEnumMember};
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type::FieldName;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
@@ -282,6 +285,17 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 reference_info: None,
             }
         }
+    } else if let Some(reference) = expected.as_synthesized_interface_enum_reference() {
+        if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
+            resolve_enum_variant_literal_from_synthesized_interface_enum(e, synthesized_enum, context, expected)
+        } else {
+            context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier().name()));
+            ExprInfo {
+                r#type: Type::SynthesizedInterfaceEnumReference(reference.clone()),
+                value: None,
+                reference_info: None,
+            }
+        }
     } else if let Some((data_set_object, that_model)) = expected.as_data_set_record() {
         let string_path = data_set_object.as_data_set_object().unwrap();
         for data_set in search_identifier_path_names_with_filter_to_top_multiple(
@@ -340,6 +354,91 @@ fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral
         }
     } else {
         context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_enum, e.identifier().name()));
+        ExprInfo {
+            r#type: source.clone(),
+            value: None,
+            reference_info: None,
+        }
+    }
+}
+
+fn check_and_build_args_for_interface_enum_variant_literal<'a>(argument_list: &'a ArgumentList, member_definition: &'a SynthesizedInterfaceEnumMember, context: &'a ResolverContext<'a>) -> BTreeMap<String, Value> {
+    let mut result = BTreeMap::new();
+    let mut required_names: BTreeSet<&str> = member_definition.args.iter().filter_map(|(k, t)| if !t.is_optional() { Some(k.as_str()) } else { None }).collect();
+    for argument in argument_list.arguments() {
+        if let Some(name) = argument.name() {
+            if let Some(t) = member_definition.args.get(name.name()) {
+                resolve_expression(argument.value(), context, t, &btreemap! {});
+                if !t.test(argument.value().resolved().r#type()) {
+                    context.insert_diagnostics_error(argument.value().span(), format!("expect {}, found {}", t, argument.value().resolved().r#type()));
+                } else {
+                    if let Some(value) = argument.value().resolved().value() {
+                        result.insert(name.name().to_owned(), value.clone());
+                    }
+                }
+                required_names.remove(name.name());
+            } else {
+                context.insert_diagnostics_error(name.span, "undefined argument");
+            }
+        } else {
+            context.insert_diagnostics_error(argument.span, "argument name required");
+        }
+    }
+    if !required_names.is_empty() {
+        context.insert_diagnostics_error(argument_list.span, format!("missing argument {}", required_names.iter().join(", ")));
+    }
+    result
+}
+
+fn resolve_enum_variant_literal_from_synthesized_interface_enum<'a>(e: &'a EnumVariantLiteral, synthesized_interface_enum: &'a SynthesizedInterfaceEnum, context: &'a ResolverContext<'a>, source: &Type) -> ExprInfo {
+    if synthesized_interface_enum.keys.contains(&e.identifier().name) {
+        let member_definition = synthesized_interface_enum.members.get(&e.identifier().name).unwrap();
+        if let Some(argument_list) = e.argument_list() {
+            if !member_definition.args.is_empty() {
+                let args = check_and_build_args_for_interface_enum_variant_literal(argument_list, member_definition, context);
+                ExprInfo {
+                    r#type: source.clone(),
+                    value: Some(Value::EnumVariant(EnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: Some(args),
+                    })),
+                    reference_info: None,
+                }
+            } else {
+                context.insert_diagnostics_error(argument_list.span, "unexpected argument list");
+                ExprInfo {
+                    r#type: source.clone(),
+                    value: Some(Value::EnumVariant(EnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
+                    reference_info: None,
+                }
+            }
+        } else {
+            if member_definition.args.is_empty() || member_definition.all_arguments_are_optional() {
+                ExprInfo {
+                    r#type: source.clone(),
+                    value: Some(Value::EnumVariant(EnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
+                    reference_info: None,
+                }
+            } else {
+                context.insert_diagnostics_error(e.span, "expect argument list");
+                ExprInfo {
+                    r#type: source.clone(),
+                    value: Some(Value::EnumVariant(EnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
+                    reference_info: None,
+                }
+            }
+        }
+    } else {
+        context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", synthesized_interface_enum, e.identifier().name()));
         ExprInfo {
             r#type: source.clone(),
             value: None,

@@ -41,6 +41,10 @@ impl SynthesizedInterfaceEnumMember {
             args: args.into_iter().collect(),
         }
     }
+
+    pub fn all_arguments_are_optional(&self) -> bool {
+        self.args.values().all(|t| t.is_optional())
+    }
 }
 
 impl Display for SynthesizedInterfaceEnumMember {
