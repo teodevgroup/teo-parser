@@ -377,7 +377,7 @@ namespace std {
     declare unique model decorator canRead(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Can Mutate
-    declare unique model decorator canWrite(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator canMutate(pipeline?: Pipeline<Self, Ignored>)
 
     /// @name Action
     /// Specify disabled actions
@@ -860,13 +860,13 @@ namespace std {
 
     declare pipeline item regexMatch(regex?: Regex): String -> String
 
-    declare pipeline item identity: Ignored -> Any?
+    // declare pipeline item identity: Ignored -> Any?
 
     declare pipeline item print<T>(label?: String?): T -> T
 
-    declare pipeline item bcryptSalt: String -> String
+    // declare pipeline item bcryptSalt: String -> String
 
-    declare pipeline item bcryptVerify(pipeline?: Pipeline<String, String>): String -> String
+    // declare pipeline item bcryptVerify(pipeline?: Pipeline<String, String>): String -> String
 
     declare pipeline item presents<T>: T? -> T
 
