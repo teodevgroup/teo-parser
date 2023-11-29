@@ -225,6 +225,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
 
     model.resolved_mut().enums = enums;
     model.resolved_mut().shapes = shapes;
+    model.resolved_mut().interface_enums = interface_enums;
 }
 
 fn resolve_model_select_shape(model: &Model) -> Type {
