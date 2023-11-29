@@ -12,7 +12,7 @@ use crate::traits::resolved::Resolve;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Serialize, Display, EnumString, AsRefStr, EnumIter)]
 pub enum SynthesizedInterfaceEnumReferenceKind {
-    ModelFieldIndexes,
+    FieldIndexes,
 }
 
 #[derive(Debug, Clone, Eq, Serialize)]
@@ -27,7 +27,7 @@ impl SynthesizedInterfaceEnumReference {
 
     pub fn model_field_indexes(reference: Reference) -> Self {
         Self {
-            kind: SynthesizedInterfaceEnumReferenceKind::ModelFieldIndexes,
+            kind: SynthesizedInterfaceEnumReferenceKind::FieldIndexes,
             owner: Box::new(Type::ModelObject(reference)),
         }
     }

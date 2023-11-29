@@ -13,6 +13,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
 use crate::r#type::synthesized_enum_reference::{SynthesizedEnumReference, SynthesizedEnumReferenceKind};
+use crate::r#type::synthesized_interface_enum_reference::{SynthesizedInterfaceEnumReference, SynthesizedInterfaceEnumReferenceKind};
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
@@ -236,6 +237,22 @@ fn resolve_type_item<'a>(
                     if resolved_type.is_model_object() || resolved_type.is_keyword() || resolved_type.is_generic_item() {
                         Some(Type::SynthesizedEnumReference(SynthesizedEnumReference {
                             kind: enum_reference_kind,
+                            owner: Box::new(resolved_type)
+                        }))
+                    } else {
+                        Some(Type::Undetermined)
+                    }
+                } else {
+                    Some(Type::Undetermined)
+                }
+            } else if let Ok(interface_enum_reference_kind) = SynthesizedInterfaceEnumReferenceKind::from_str(name) {
+                check_generics_amount(1, type_item, context);
+                if type_item.generic_items().len() == 1 {
+                    let argument = *type_item.generic_items().first().unwrap();
+                    let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
+                    if resolved_type.is_model_object() || resolved_type.is_keyword() || resolved_type.is_generic_item() {
+                        Some(Type::SynthesizedInterfaceEnumReference(SynthesizedInterfaceEnumReference {
+                            kind: interface_enum_reference_kind,
                             owner: Box::new(resolved_type)
                         }))
                     } else {

@@ -53,7 +53,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     enums.insert(SynthesizedEnumReferenceKind::IndirectRelations, resolve_model_indirect_relations(model));
 
     // field indexes
-    interface_enums.insert(SynthesizedInterfaceEnumReferenceKind::ModelFieldIndexes, resolve_model_field_indexes(model, context));
+    interface_enums.insert(SynthesizedInterfaceEnumReferenceKind::FieldIndexes, resolve_model_field_indexes(model, context));
 
     // select
     shapes.insert((SynthesizedShapeReferenceKind::Select, None), resolve_model_select_shape(model));
@@ -458,7 +458,7 @@ fn resolve_model_field_indexes(model: &Model, context: &ResolverContext) -> Synt
                     field.comment().cloned(),
                     indexmap! {
                         "sort".to_owned() => sort_type.wrap_in_optional(),
-                        "len".to_owned() => Type::Int.wrap_in_optional(),
+                        "length".to_owned() => Type::Int.wrap_in_optional(),
                     }
                 ));
             }
@@ -469,7 +469,7 @@ fn resolve_model_field_indexes(model: &Model, context: &ResolverContext) -> Synt
                     field.comment().cloned(),
                     indexmap! {
                         "sort".to_owned() => sort_type.wrap_in_optional(),
-                        "len".to_owned() => Type::Int.wrap_in_optional(),
+                        "length".to_owned() => Type::Int.wrap_in_optional(),
                     }
                 ));
             }
