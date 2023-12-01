@@ -1021,6 +1021,17 @@ namespace std {
         meta: U
     }
 
+    interface PagingInfo {
+        count: Int64
+        numberOfPages: Int64?
+    }
+
+    interface ResponseError {
+        type: String
+        message: String
+        fields: String{} | Null
+    }
+
     #if available(database)
 
     interface BoolFilter {
