@@ -207,13 +207,13 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // copy args
     shapes.insert((SynthesizedShapeReferenceKind::CopyArgs, None), resolve_copy_args_type(model, &shape_available_context));
     // delete args
-    shapes.insert((SynthesizedShapeReferenceKind::DeleteArgs, None), resolve_delete_args_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::DeleteArgs, None), resolve_delete_args_type(model, &shape_available_context));
     // create many args
     shapes.insert((SynthesizedShapeReferenceKind::CreateManyArgs, None), resolve_create_many_args_type(model, &shape_available_context));
     // update many args
     shapes.insert((SynthesizedShapeReferenceKind::UpdateManyArgs, None), resolve_update_many_args_type(model, &shape_available_context));
     // delete many args
-    shapes.insert((SynthesizedShapeReferenceKind::DeleteManyArgs, None), resolve_delete_many_args_type(model));
+    shapes.insert((SynthesizedShapeReferenceKind::DeleteManyArgs, None), resolve_delete_many_args_type(model, &shape_available_context));
     // copy many args
     shapes.insert((SynthesizedShapeReferenceKind::CopyManyArgs, None), resolve_copy_many_args_type(model, &shape_available_context));
     // count args
@@ -1092,9 +1092,15 @@ fn resolve_copy_args_type(model: &Model, availability: &ShapeAvailableContext) -
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_delete_args_type(model: &Model) -> Type {
+fn resolve_delete_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))));
+    if availability.has_select {
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
@@ -1136,9 +1142,15 @@ fn resolve_copy_many_args_type(model: &Model, availability: &ShapeAvailableConte
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
-fn resolve_delete_many_args_type(model: &Model) -> Type {
+fn resolve_delete_many_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
+    if availability.has_select {
+        map.insert("select".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::select(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    }
+    if availability.has_include {
+        map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    }
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
