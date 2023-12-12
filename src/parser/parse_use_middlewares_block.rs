@@ -10,8 +10,8 @@ use crate::parser::pest_parser::{Pair, Rule};
 
 pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &ParserContext) -> UseMiddlewaresBlock {
     let span = parse_span(&pair);
-    let path = context.next_path();
-    let string_path = context.next_string_path("useMiddlewares");
+    let path = context.next_parent_path();
+    let string_path = context.next_parent_string_path("useMiddlewares");
     let mut children = BTreeMap::new();
     let mut array_literal = 0;
     for current in pair.into_inner() {
@@ -21,6 +21,8 @@ pub(super) fn parse_use_middlewares_block(pair: Pair<'_>, context: &ParserContex
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    context.pop_parent_id();
+    context.pop_string_path();
     UseMiddlewaresBlock {
         span,
         path,

@@ -1,5 +1,5 @@
 use crate::ast::middleware::MiddlewareDeclaration;
-use crate::{parse_container_node_variables, parse_insert_keyword, parse_set_identifier_and_string_path, parse_set_optional};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_span::parse_span;
@@ -28,6 +28,7 @@ pub(super) fn parse_middleware_declaration(pair: Pair<'_>, context: &ParserConte
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context, named);
     MiddlewareDeclaration {
         span,
         path,
