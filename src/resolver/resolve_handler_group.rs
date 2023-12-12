@@ -63,6 +63,27 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
 fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
     match r#type {
         Type::Any => (),
+        Type::SynthesizedShapeReference(shape_reference) => {
+            let t = shape_reference.fetch_synthesized_definition(context.schema).unwrap();
+            if let Some(shape) = t.as_synthesized_shape() {
+                for (_, t) in shape.iter() {
+                    if let Some(e) = t.as_enum_variant() {
+                        let enum_declaration = context.schema.find_top_by_path(e.path()).unwrap().as_enum().unwrap();
+                        if enum_declaration.interface || enum_declaration.option {
+                            context.insert_diagnostics_error(span, "interface or option enum is disallowed");
+                            break
+                        }
+                    } else {
+                        if let Some(msg) = f(t) {
+                            context.insert_diagnostics_error(span, msg);
+                            break
+                        }
+                    }
+                }
+            } else {
+                context.insert_diagnostics_error(span, "handler argument type should be interface or any");
+            }
+        }
         Type::InterfaceObject(reference, gen) => {
             let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
             let shape = interface.shape_from_generics(gen);
