@@ -355,7 +355,7 @@ namespace std {
 
     /// @name Migration
     /// Specify the migration operations for the model
-    declare unique model decorator migration(renamed: (String | Array<String>)?, version: String?, drop: Bool?)
+    declare unique model decorator migration(renamed: Enumerable<String>?, version: String?, drop: Bool?)
 
     /// @name Before Save
     /// Specify the action to trigger before an object is saved
