@@ -122,56 +122,56 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, None), resolve_create_nested_one_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInput, Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedOneInputWithout, Some(field.name().to_owned())), resolve_create_nested_one_input_type(model, Some(field.name())));
         }
     }
     // create nested many input
     shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, None), resolve_create_nested_many_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInput, Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::CreateNestedManyInputWithout, Some(field.name().to_owned())), resolve_create_nested_many_input_type(model, Some(field.name())));
         }
     }
     // update nested one input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, None), resolve_update_nested_one_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInput, Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedOneInputWithout, Some(field.name().to_owned())), resolve_update_nested_one_input_type(model, Some(field.name())));
         }
     }
     // update nested many input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, None), resolve_update_nested_many_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInput, Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateNestedManyInputWithout, Some(field.name().to_owned())), resolve_update_nested_many_input_type(model, Some(field.name())));
         }
     }
     // connect or create input
     shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, None), resolve_connect_or_create_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInput, Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::ConnectOrCreateInputWithout, Some(field.name().to_owned())), resolve_connect_or_create_input_type(model, Some(field.name())));
         }
     }
     // update with where unique input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, None), resolve_update_with_where_unique_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInput, Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateWithWhereUniqueInputWithout, Some(field.name().to_owned())), resolve_update_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // upsert with where unique input
     shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, None), resolve_upsert_with_where_unique_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInput, Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpsertWithWhereUniqueInputWithout, Some(field.name().to_owned())), resolve_upsert_with_where_unique_input_type(model, Some(field.name())));
         }
     }
     // update many with where input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, None), resolve_update_many_with_where_input_type(model, None));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInput, Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateManyWithWhereInputWithout, Some(field.name().to_owned())), resolve_update_many_with_where_input_type(model, Some(field.name())));
         }
     }
     // result
