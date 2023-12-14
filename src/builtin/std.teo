@@ -888,10 +888,10 @@ namespace std {
     }
 
     declare pipeline item hasLength {
-        variant(len?: Int): String -> Int
-        variant(range?: Range<Int>): String -> Int
-        variant<T>(len?: Int): T[] -> Int
-        variant<T>(range?: Range<Int>): T[] -> Int
+        variant(len?: Int): String -> String
+        variant(range?: Range<Int>): String -> String
+        variant<T>(len?: Int): T[] -> T[]
+        variant<T>(range?: Range<Int>): T[] -> T[]
     }
 
     declare pipeline item reverse {
