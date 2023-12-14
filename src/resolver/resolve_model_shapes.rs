@@ -253,13 +253,19 @@ fn resolve_model_include_shape(model: &Model) -> Type {
                     // many
                     map.insert(
                         field.name().to_owned(),
-                        Type::SynthesizedShapeReference(SynthesizedShapeReference::find_many_args(related_reference.clone())).wrap_in_optional()
+                        Type::Union(vec![
+                            Type::SynthesizedShapeReference(SynthesizedShapeReference::find_many_args(related_reference.clone())),
+                            Type::Bool,
+                        ]).wrap_in_optional()
                     );
                 } else {
                     // single
                     map.insert(
                         field.name().to_owned(),
-                        Type::SynthesizedShapeReference(SynthesizedShapeReference::args(related_reference.clone())).wrap_in_optional()
+                        Type::Union(vec![
+                            Type::SynthesizedShapeReference(SynthesizedShapeReference::args(related_reference.clone())),
+                            Type::Bool,
+                        ]).wrap_in_optional()
                     );
                 }
             }
@@ -587,7 +593,7 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
-                let optional = is_field_input_omissible(field) || field_has_on_save(field) || field_has_default(field);
+                let optional = is_field_input_omissible(field) || field_has_on_save(field) || field_has_default(field) || field_is_foreign_key(field);
                 let mut t = field.type_expr().resolved().clone();
                 if optional {
                     t = t.wrap_in_optional();
@@ -1310,6 +1316,10 @@ pub(super) fn is_field_output_omissible(field: &Field) -> bool {
 
 pub(super) fn field_has_default(field: &Field) -> bool {
     field_has_decorator_name(field, "default")
+}
+
+pub(super) fn field_is_foreign_key(field: &Field) -> bool {
+    field_has_decorator_name(field, "foreignKey")
 }
 
 pub(super) fn field_has_on_save(field: &Field) -> bool {
