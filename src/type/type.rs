@@ -814,7 +814,7 @@ impl Type {
     }
 
     pub fn replace_generics(&self, map: &BTreeMap<String, Type>) -> Self {
-        match self {
+        let result = match self {
             Type::GenericItem(name) => if let Some(t) = map.get(name) {
                 t.clone()
             } else {
@@ -847,11 +847,12 @@ impl Type {
                 Box::new(b.replace_generics(map)),
             ),
             _ => self.clone(),
-        }
+        };
+        result.flatten()
     }
 
     pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
-        match self {
+        let result = match self {
             Type::Keyword(name) => if let Some(t) = map.get(name) {
                 t.clone()
             } else {
@@ -884,7 +885,8 @@ impl Type {
                 Box::new(b.replace_keywords(map)),
             ),
             _ => self.clone(),
-        }
+        };
+        result.flatten()
     }
 
     /// Return `true` if `other` satisfies `self`
