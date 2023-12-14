@@ -49,7 +49,6 @@ MIDDLEWARE_KEYWORD = { "middleware" }
 MIDDLEWARES_KEYWORD = { "middlewares" }
 DECORATOR_KEYWORD = { "decorator" }
 HANDLER_KEYWORD = { "handler" }
-USING_KEYWORD = { "using" }
 JSON_KEYWORD = { "json" }
 FORM_KEYWORD = { "form" }
 INTERFACE_KEYWORD = { "interface" }
@@ -451,8 +450,8 @@ req_type = {
 handler_declaration = {
     triple_comment_block? ~
     (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
-    DECLARE_KEYWORD ~ HANDLER_KEYWORD ~
-    identifier ~ PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ COLON ~ type_expression ~ (USING_KEYWORD ~ req_type)?
+    DECLARE_KEYWORD ~ req_type? ~ HANDLER_KEYWORD ~
+    identifier ~ PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ COLON ~ type_expression
 }
 
 middleware_declaration = {

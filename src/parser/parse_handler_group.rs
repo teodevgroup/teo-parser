@@ -113,7 +113,6 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
             Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
             Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
-            Rule::USING_KEYWORD => parse_insert_keyword!(context, current, children, "using"),
             Rule::req_type => if current.as_str() == "form" {
                 input_format = HandlerInputFormat::Form;
                 parse_insert_keyword!(context, current, children, "form")
