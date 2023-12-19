@@ -30,9 +30,13 @@ Schema parser for Teo schema language
 
 * Rewrite syntax highlight with yaml and precise rules
 
-### 0.0.61 (Currently Developing)
+### 0.0.61 (Released on Dec 20th, 2023)
 
-* Fix `import` keyword is unrecognized bug
+* Allow doc comment in dictionary literals
+
+### 0.0.62 (Currently Developing)
+
+* Fix `import` keyword is unrecognized bug**
 
 ### 0.1.0 (Currently Developing)
 
