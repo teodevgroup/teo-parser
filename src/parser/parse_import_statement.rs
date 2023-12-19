@@ -17,6 +17,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::string_literal => source = Some(parse_string_literal(&current, context)),
+            Rule::IMPORT_KEYWORD => (),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

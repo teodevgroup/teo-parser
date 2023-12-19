@@ -30,14 +30,16 @@ Schema parser for Teo schema language
 
 * Rewrite syntax highlight with yaml and precise rules
 
+### 0.0.61 (Currently Developing)
+
+* Fix `import` keyword is unrecognized bug
+
 ### 0.1.0 (Currently Developing)
 
 * Improve stability
-* Optimizations
-* Improve performance
-* Accept indentation settings argument in format
 
 ### 0.2.0
+* Accept indentation settings argument in format
 * Add `linter` config declaration
 * Separate `fix` command and `format` command
 * Expand auto completion candidates for callables into snippets
