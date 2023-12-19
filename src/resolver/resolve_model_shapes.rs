@@ -108,14 +108,14 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     shapes.insert((SynthesizedShapeReferenceKind::CreateInput, None), resolve_create_input_type(model, None, context));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::CreateInput, Some(field.name().to_owned())), resolve_create_input_type(model, Some(field.name()), context));
+            shapes.insert((SynthesizedShapeReferenceKind::CreateInputWithout, Some(field.name().to_owned())), resolve_create_input_type(model, Some(field.name()), context));
         }
     }
     // update input
     shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, None), resolve_update_input_type(model, None, context));
     for field in model.fields() {
         if field.resolved().class.as_model_relation().is_some() {
-            shapes.insert((SynthesizedShapeReferenceKind::UpdateInput, Some(field.name().to_owned())), resolve_update_input_type(model, Some(field.name()), context));
+            shapes.insert((SynthesizedShapeReferenceKind::UpdateInputWithout, Some(field.name().to_owned())), resolve_update_input_type(model, Some(field.name()), context));
         }
     }
     // create nested one input
