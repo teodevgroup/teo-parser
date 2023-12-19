@@ -8,6 +8,7 @@ use crate::parser::parse_argument::parse_argument_list;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
+use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_expression::{parse_expression};
 use crate::parser::parse_identifier::parse_identifier;
 use crate::parser::parse_named_expression::parse_named_expression;
@@ -160,6 +161,7 @@ pub(super) fn parse_dictionary_literal(pair: Pair<'_>, context: &ParserContext, 
             Rule::COMMA => parse_insert_punctuation!(context, current, children, ","),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
+            Rule::triple_comment_block => parse_append!(parse_doc_comment(current, context), children),
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::named_expression => parse_insert!(parse_named_expression(current, context, is_config_field), children, expressions),
             _ => context.insert_unparsed(parse_span(&current)),
