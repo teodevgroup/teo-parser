@@ -14,7 +14,7 @@ Schema parser for Teo schema language
 * Jump to definition
 * Auto completion
 
-### 0.0.59 (Current Developing)
+### 0.0.59 (Released on Nov 30th, 2023)
 
 * File format
 * Trigger auto completions by `"."`, `":"` and `"$"`
@@ -26,16 +26,16 @@ Schema parser for Teo schema language
 * Declare enum in type
 * Declare object in type
 
-### 0.0.60
+### 0.0.60 (Released on Dec 17th, 2023)
 
 * Rewrite syntax highlight with yaml and precise rules
-* Accept indentation settings argument in format 
 
-### 0.1.0
+### 0.1.0 (Currently Developing)
 
 * Improve stability
 * Optimizations
 * Improve performance
+* Accept indentation settings argument in format
 
 ### 0.2.0
 * Add `linter` config declaration
