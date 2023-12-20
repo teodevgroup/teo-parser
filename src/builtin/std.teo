@@ -622,13 +622,9 @@ namespace std {
 
     #end
 
-    /// @name Method
-    /// Specify an HTTP method for this handler
-    declare unique handler decorator method(method?: Method)
-
-    /// @name Path
-    /// Specify a path for this handler
-    declare unique handler decorator path(path?: String, ignorePrefix: Bool?)
+    /// @name Map
+    /// Specify HTTP method and request path for this handler
+    declare unique handler decorator map(method?: Method?, path?: String?, ignorePrefix: Bool?)
 
     #if available(database)
 

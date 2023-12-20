@@ -6,7 +6,7 @@ use crate::parse_append;
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
-use crate::parser::parse_handler_group::parse_handler_group_declaration;
+use crate::parser::parse_handler_group::{parse_handler_declaration, parse_handler_group_declaration};
 use crate::parser::parse_config_block::parse_config_block;
 use crate::parser::parse_config_declaration::parse_config_declaration;
 use crate::parser::parse_constant_statement::parse_constant_statement;
@@ -139,6 +139,12 @@ pub(super) fn parse_source(
                 references.middlewares.insert(middleware_declaration.id());
                 context.schema_references_mut().middlewares.push(middleware_declaration.path.clone());
                 children.insert(middleware_declaration.id(), Node::MiddlewareDeclaration(middleware_declaration));
+            },
+            Rule::handler_declaration => {
+                let handler_declaration = parse_handler_declaration(current, context);
+                references.handlers.insert(handler_declaration.id());
+                context.schema_references_mut().handlers.push(handler_declaration.path().clone());
+                children.insert(handler_declaration.id(), Node::HandlerDeclaration(handler_declaration));
             },
             Rule::handler_group_declaration => {
                 let handler_group_declaration = parse_handler_group_declaration(current, context);

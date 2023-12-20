@@ -1,5 +1,5 @@
 use crate::ast::node::Node;
-use crate::resolver::resolve_handler_group::{resolve_handler_group_decorators, resolve_handler_group_references};
+use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types, resolve_handler_group_decorators, resolve_handler_group_references};
 use crate::resolver::resolve_config::resolve_config_references;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration_types;
 use crate::resolver::resolve_constant::{resolve_constant_check, resolve_constant_references};
@@ -68,6 +68,7 @@ pub(super) fn resolve_source_references<'a>(context: &'a ResolverContext<'a>) {
             Node::MiddlewareDeclaration(middleware) => resolve_middleware_references(middleware, context),
             Node::Namespace(namespace) => resolve_namespace_references(namespace, context),
             Node::Model(model) => resolve_model_references(model, context),
+            Node::HandlerDeclaration(handler_declaration) => resolve_handler_declaration_types(handler_declaration, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_references(handler_group, context),
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration_references(d, context),
             Node::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration_references(p, context),
@@ -89,6 +90,7 @@ pub(super) fn resolve_source_consumers<'a>(context: &'a ResolverContext<'a>) {
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Node::Namespace(namespace) => resolve_namespace_consumers(namespace, context),
             Node::Model(model) => resolve_model_decorators(model, context),
+            Node::HandlerDeclaration(handler_declaration) => resolve_handler_declaration_decorators(handler_declaration, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
             _ => (),
