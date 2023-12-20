@@ -41,11 +41,15 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     } else {
         context.add_examined_field(handler_declaration.identifier().name.clone());
     }
-    resolve_type_expr(handler_declaration.input_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+    if let Some(input_type) = handler_declaration.input_type() {
+        resolve_type_expr(input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+    }
     resolve_type_expr(handler_declaration.output_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
-    match handler_declaration.input_format {
-        HandlerInputFormat::Form => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_form_input_type),
-        HandlerInputFormat::Json => validate_form_type(&handler_declaration.input_type().resolved(), handler_declaration.input_type().span(), context, is_valid_json_input_type),
+    if let Some(input_type) = handler_declaration.input_type() {
+        match handler_declaration.input_format {
+            HandlerInputFormat::Form => validate_form_type(input_type.resolved(), input_type.span(), context, is_valid_form_input_type),
+            HandlerInputFormat::Json => validate_form_type(input_type.resolved(), input_type.span(), context, is_valid_json_input_type),
+        }
     }
     validate_form_type(&handler_declaration.output_type().resolved(), handler_declaration.output_type().span(), context, is_valid_json_output_type);
 }

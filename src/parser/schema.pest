@@ -44,6 +44,7 @@ NOTRACK_KEYWORD = { "notrack" }
 GROUP_KEYWORD = { "group" }
 RECORD_KEYWORD = { "record" }
 DECLARE_KEYWORD = { "declare" }
+NONAPI_KEYWORD = { "nonapi" }
 CONFIG_KEYWORD = { "config" }
 MIDDLEWARE_KEYWORD = { "middleware" }
 MIDDLEWARES_KEYWORD = { "middlewares" }
@@ -450,8 +451,8 @@ req_type = {
 handler_declaration = {
     triple_comment_block? ~
     (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
-    DECLARE_KEYWORD ~ req_type? ~ HANDLER_KEYWORD ~
-    identifier ~ PAREN_OPEN ~ type_expression ~ PAREN_CLOSE ~ COLON ~ type_expression
+    DECLARE_KEYWORD ~ NONAPI_KEYWORD? ~ req_type? ~ HANDLER_KEYWORD ~
+    identifier ~ PAREN_OPEN ~ double_comment_block? ~ type_expression? ~ double_comment_block? ~ PAREN_CLOSE ~ COLON ~ type_expression
 }
 
 middleware_declaration = {

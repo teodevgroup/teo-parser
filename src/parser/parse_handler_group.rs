@@ -83,11 +83,13 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
     let mut comment = None;
     let mut decorators = vec![];
     let mut identifier = 0;
-    let mut input_type = 0;
+    let mut input_type = None;
     let mut output_type = 0;
     let mut input_format: HandlerInputFormat = HandlerInputFormat::Json;
     let mut inside_block = false;
+    let mut inside_paren = false;
     let mut empty_decorators = vec![];
+    let mut nonapi = false;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::BLOCK_OPEN => {
@@ -96,6 +98,10 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
             },
             Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
+            Rule::NONAPI_KEYWORD => {
+                nonapi = true;
+                parse_insert_keyword!(context, current, children, "nonapi");
+            },
             Rule::HANDLER_KEYWORD => parse_insert_keyword!(context, current, children, "handler"),
             Rule::triple_comment_block => if !inside_block {
                 parse_set_optional!(parse_doc_comment(current, context), children, comment)
@@ -105,13 +111,19 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
             },
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
-            Rule::type_expression => if input_type != 0 {
+            Rule::type_expression => if !inside_paren {
                 parse_set!(parse_type_expression(current, context), children, output_type);
             } else {
-                parse_set!(parse_type_expression(current, context), children, input_type);
+                parse_set_optional!(parse_type_expression(current, context), children, input_type);
             },
-            Rule::PAREN_OPEN => parse_insert_punctuation!(context, current, children, "("),
-            Rule::PAREN_CLOSE => parse_insert_punctuation!(context, current, children, ")"),
+            Rule::PAREN_OPEN => {
+                inside_paren = true;
+                parse_insert_punctuation!(context, current, children, "(");
+            },
+            Rule::PAREN_CLOSE => {
+                inside_paren = false;
+                parse_insert_punctuation!(context, current, children, ")");
+            },
             Rule::COLON => parse_insert_punctuation!(context, current, children, ":"),
             Rule::req_type => if current.as_str() == "form" {
                 input_format = HandlerInputFormat::Form;
@@ -139,5 +151,6 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
         input_type,
         output_type,
         input_format,
+        nonapi,
     }
 }

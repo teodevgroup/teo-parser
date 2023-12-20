@@ -11,16 +11,18 @@ pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source:
     namespace_path.pop();
     namespace_path.pop();
     let availability = search_availability(schema, source, &namespace_path);
-    if handler_declaration.input_type().span().contains_line_col(line_col) {
-        return jump_to_definition_in_type_expr_kind(
-            schema,
-            source,
-            &handler_declaration.input_type().kind,
-            &namespace_path,
-            line_col,
-            &vec![],
-            availability
-        );
+    if let Some(input_type) = handler_declaration.input_type() {
+        if input_type.span().contains_line_col(line_col) {
+            return jump_to_definition_in_type_expr_kind(
+                schema,
+                source,
+                &input_type.kind,
+                &namespace_path,
+                line_col,
+                &vec![],
+                availability
+            );
+        }
     }
     if handler_declaration.output_type().span().contains_line_col(line_col) {
         return jump_to_definition_in_type_expr_kind(

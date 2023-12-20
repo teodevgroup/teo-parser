@@ -56,9 +56,10 @@ declare_container_node!(HandlerDeclaration, named, availability,
     pub(crate) decorators: Vec<usize>,
     pub(crate) empty_decorators: Vec<usize>,
     pub(crate) identifier: usize,
-    pub(crate) input_type: usize,
+    pub(crate) input_type: Option<usize>,
     pub(crate) output_type: usize,
     pub input_format: HandlerInputFormat,
+    pub nonapi: bool,
 );
 
 impl_container_node_defaults!(HandlerDeclaration, named, availability);
@@ -77,7 +78,7 @@ impl HandlerDeclaration {
 
     node_child_fn!(identifier, Identifier);
 
-    node_child_fn!(input_type, TypeExpr);
+    node_optional_child_fn!(input_type, TypeExpr);
 
     node_child_fn!(output_type, TypeExpr);
 }
