@@ -147,7 +147,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namesp
                 children.insert(middleware_declaration.id(), Node::MiddlewareDeclaration(middleware_declaration));
             },
             Rule::handler_declaration => {
-                let handler_declaration = parse_handler_declaration(current, context);
+                let handler_declaration = parse_handler_declaration(current, context, false);
                 references.handlers.insert(handler_declaration.id());
                 context.schema_references_mut().handlers.push(handler_declaration.path().clone());
                 children.insert(handler_declaration.id(), Node::HandlerDeclaration(handler_declaration));

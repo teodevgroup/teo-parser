@@ -44,7 +44,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserCo
             },
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
-            Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handler_declarations),
+            Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context, true), children, handler_declarations),
             Rule::decorator => if inside_block {
                 parse_insert!(parse_decorator(current, context), children, unattached_decorators)
             } else {
@@ -71,7 +71,7 @@ pub(super) fn parse_handler_group_declaration(pair: Pair<'_>, context: &ParserCo
     }
 }
 
-pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext) -> HandlerDeclaration {
+pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext, inside_group: bool) -> HandlerDeclaration {
     let (
         span,
         path,
@@ -152,5 +152,6 @@ pub(super) fn parse_handler_declaration(pair: Pair<'_>, context: &ParserContext)
         output_type,
         input_format,
         nonapi,
+        inside_group,
     }
 }

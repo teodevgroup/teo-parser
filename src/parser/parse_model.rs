@@ -63,7 +63,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::partial_field => parse_insert!(parse_partial_field(current, context), children, partial_fields),
-            Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context), children, handlers),
+            Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context, true), children, handlers),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
             _ => context.insert_unparsed(parse_span(&current)),

@@ -60,6 +60,7 @@ declare_container_node!(HandlerDeclaration, named, availability,
     pub(crate) output_type: usize,
     pub input_format: HandlerInputFormat,
     pub nonapi: bool,
+    pub inside_group: bool,
 );
 
 impl_container_node_defaults!(HandlerDeclaration, named, availability);
@@ -108,7 +109,11 @@ impl HandlerInputFormat {
 
 impl InfoProvider for HandlerDeclaration {
     fn namespace_skip(&self) -> usize {
-        2
+        if self.inside_group {
+            2
+        } else {
+            1
+        }
     }
 }
 
