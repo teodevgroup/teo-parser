@@ -4,7 +4,7 @@ use crate::ast::config::Config;
 use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
-use crate::ast::handler::HandlerGroupDeclaration;
+use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration};
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
@@ -140,6 +140,10 @@ impl Schema {
 
     pub fn middleware_declarations(&self) -> Vec<&MiddlewareDeclaration> {
         self.references.middlewares.iter().map(|path| self.find_top_by_path(path).unwrap().as_middleware_declaration().unwrap()).collect()
+    }
+
+    pub fn handler_declarations(&self) -> Vec<&HandlerDeclaration> {
+        self.references.handlers.iter().map(|path| self.find_top_by_path(path).unwrap().as_handler_declaration().unwrap()).collect()
     }
 
     pub fn handler_group_declarations(&self) -> Vec<&HandlerGroupDeclaration> {
