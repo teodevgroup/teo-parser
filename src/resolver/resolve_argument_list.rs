@@ -220,74 +220,59 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         // match unnamed arguments
         if let Some(argument_list) = argument_list {
             let unnamed_arguments: Vec<&Argument> = argument_list.arguments().filter(|a| a.name.is_none()).collect();
-            let mut cur_index = 0;
-            loop {
-                if let Some(unnamed_argument) = unnamed_arguments.get(cur_index) {
-                    let mut next_cur_index = true;
-                    if declaration_names.len() > 1 {
-                        let name_owned = declaration_names.first().unwrap().to_string();
-                        let name = name_owned.as_str();
-                        if let Some(argument_declaration) = argument_list_declaration.get(name) {
-                            let desired_type_original = argument_declaration.type_expr().resolved();
-                            let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
-
-                            resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
-                            if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
-                                if !desired_type.is_undetermined() && !unnamed_argument.value().resolved().r#type().is_undetermined() {
-                                    if argument_declaration.type_expr().resolved().is_optional() {
-                                        // just pass through this argument
-                                        next_cur_index = false;
-                                    } else {
-                                        errors.push(context.generate_diagnostics_error(unnamed_argument.value().span(), format!("expect {}, found {}", desired_type, unnamed_argument.value().resolved().r#type())))
-                                    }
-                                }
-                            } else {
-                                if desired_type.is_field_name() {
-                                    desired_type = unnamed_argument.value().resolved().r#type().clone();
-                                }
-                                if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
-                                    generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
-                                    // generics constraint checking
-                                    let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
-                                    for e in generics_constraint_checking_result.0 {
-                                        errors.push(e);
-                                    }
-                                    if !matched {
-                                        matched = generics_constraint_checking_result.1;
-                                    }
-                                } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
-                                    guess_extend_and_check(
-                                        callable_span,
-                                        callable_variant,
-                                        &desired_type,
-                                        unnamed_argument.value().resolved().r#type(),
-                                        &mut generics_map,
-                                        keywords_map,
-                                        &mut errors,
-                                        &mut matched,
-                                        context,
-                                    );
-                                }
+            for unnamed_argument in unnamed_arguments {
+                if declaration_names.len() > 1 {
+                    let name_owned = declaration_names.first().unwrap().to_string();
+                    let name = name_owned.as_str();
+                    if let Some(argument_declaration) = argument_list_declaration.get(name) {
+                        let desired_type_original = argument_declaration.type_expr().resolved();
+                        let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
+                        resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
+                        if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
+                            if !desired_type.is_undetermined() && !unnamed_argument.value().resolved().r#type().is_undetermined() {
+                                errors.push(context.generate_diagnostics_error(unnamed_argument.value().span(), format!("expect {}, found {}", desired_type, unnamed_argument.value().resolved().r#type())))
                             }
-                            unnamed_argument.resolve(ArgumentResolved {
-                                name: name.to_string(),
-                                expect: desired_type.replace_generics(&generics_map),
-                                completion_expect: if desired_type_original.is_generic_item() && desired_type.is_field_name() {
-                                    figure_out_constraint_type_for_field_name(callable_variant, &desired_type_original, &generics_map)
-                                } else {
-                                    None
-                                },
-                            });
-                            declaration_names = declaration_names.iter().filter(|d| **d != name).map(|s| *s).collect();
+                        } else {
+                            if desired_type.is_field_name() {
+                                desired_type = unnamed_argument.value().resolved().r#type().clone();
+                            }
+                            if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
+                                generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
+                                // generics constraint checking
+                                let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
+                                for e in generics_constraint_checking_result.0 {
+                                    errors.push(e);
+                                }
+                                if !matched {
+                                    matched = generics_constraint_checking_result.1;
+                                }
+                            } else if desired_type_original.contains_generics() && desired_type.contains_generics() {
+                                guess_extend_and_check(
+                                    callable_span,
+                                    callable_variant,
+                                    &desired_type,
+                                    unnamed_argument.value().resolved().r#type(),
+                                    &mut generics_map,
+                                    keywords_map,
+                                    &mut errors,
+                                    &mut matched,
+                                    context,
+                                );
+                            }
                         }
-                        if next_cur_index {
-                            cur_index += 1;
-                        }
-                    } else {
-                        errors.push(context.generate_diagnostics_error(unnamed_argument.span, "Redundant argument"));
+                        unnamed_argument.resolve(ArgumentResolved {
+                            name: name.to_string(),
+                            expect: desired_type.replace_generics(&generics_map),
+                            completion_expect: if desired_type_original.is_generic_item() && desired_type.is_field_name() {
+                                figure_out_constraint_type_for_field_name(callable_variant, &desired_type_original, &generics_map)
+                            } else {
+                                None
+                            },
+                        });
+                        declaration_names = declaration_names.iter().filter(|d| **d != name).map(|s| *s).collect();
                     }
                 } else {
-                    break
+                    errors.push(context.generate_diagnostics_error(unnamed_argument.span, "redundant argument"));
                 }
             }
         }

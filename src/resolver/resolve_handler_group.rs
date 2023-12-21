@@ -8,7 +8,7 @@ use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
 use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
-use crate::resolver::resolve_type_expr::{resolve_type_expr};
+use crate::resolver::resolve_type_expr::resolve_type_expr;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
