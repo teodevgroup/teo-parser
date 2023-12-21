@@ -37,7 +37,6 @@ pub(super) fn resolve_source_model_shapes<'a>(context: &'a ResolverContext<'a>) 
 }
 
 pub(super) fn resolve_source_types<'a>(context: &'a ResolverContext<'a>) {
-    println!("resolve source types");
     for node in context.source().children.values() {
         match node {
             Node::Enum(r#enum) => resolve_enum_types(r#enum, context),

@@ -1,8 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
-use array_tool::vec::Shift;
 use itertools::Itertools;
 use maplit::{btreemap, btreeset};
-use crate::ast::argument::{Argument, ArgumentResolved};
+use crate::ast::argument::ArgumentResolved;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::callable_variant::CallableVariant;
 use crate::ast::generics::GenericsConstraint;
@@ -219,14 +218,12 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
         }
         // match unnamed arguments
         if let Some(argument_list) = argument_list {
-            let unnamed_arguments: Vec<&Argument> = argument_list.arguments().filter(|a| a.name.is_none()).collect();
-            for unnamed_argument in unnamed_arguments {
-                if declaration_names.len() > 1 {
-                    let name_owned = declaration_names.first().unwrap().to_string();
-                    let name = name_owned.as_str();
+            for unnamed_argument in argument_list.arguments().filter(|a| a.name.is_none()) {
+                if let Some(name) = declaration_names.first() {
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type_original = argument_declaration.type_expr().resolved();
                         let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
+
                         resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
                         if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
                             if !desired_type.is_undetermined() && !unnamed_argument.value().resolved().r#type().is_undetermined() {
@@ -269,7 +266,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                                 None
                             },
                         });
-                        declaration_names = declaration_names.iter().filter(|d| **d != name).map(|s| *s).collect();
+                        declaration_names = declaration_names.iter().filter(|d| *d != name).map(|s| *s).collect();
                     }
                 } else {
                     errors.push(context.generate_diagnostics_error(unnamed_argument.span, "redundant argument"));
