@@ -42,7 +42,7 @@ mod test {
         assert_eq!(diagnostics.errors().len(), 2);
         let first_error = diagnostics.errors().first().unwrap();
         let second_error = diagnostics.errors().get(1).unwrap();
-        assert_eq!(first_error.message(), "type .kyo doesn't satisfy ModelScalarFields<Song>");
+        assert_eq!(first_error.message(), "type .kyo doesn't satisfy ScalarFields<Song>");
         assert_eq!(second_error.message(), "unexpected pipeline output: expect String?, found Undetermined?");
     }
 
@@ -77,6 +77,6 @@ mod test {
         assert_eq!(diagnostics.has_warnings(), false);
         assert_eq!(diagnostics.errors().len(), 1);
         let first_error = diagnostics.errors().first().unwrap();
-        assert_eq!(first_error.message(), "type .iori doesn't satisfy ModelScalarFields<Song>");
+        assert_eq!(first_error.message(), "type .iori doesn't satisfy ScalarFields<Song>");
     }
 }

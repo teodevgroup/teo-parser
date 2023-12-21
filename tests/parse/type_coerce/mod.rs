@@ -26,7 +26,7 @@ mod test {
         let path = path_buf.to_str().unwrap();
         let (_, diagnostics) = parse(path, None, None);
         assert_eq!(diagnostics.errors().len(), 1);
-        assert_eq!(diagnostics.errors().first().unwrap().message(), "expect ModelSerializableScalarFields<Perform>, found other fields");
+        assert_eq!(diagnostics.errors().first().unwrap().message(), "expect SerializableScalarFields<Perform>, found other fields");
     }
 
     #[test]

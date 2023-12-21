@@ -1,0 +1,18 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/myhandler",
+
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+declare handler helloWorldPost(): Any
+
+@map(.patch, "/")
+declare handler helloWorldPatch(): Any
+
+declare middleware timing
+
+middlewares [timing]
