@@ -101,7 +101,7 @@ pub(super) fn resolve_namespace_consumers<'a>(namespace: &'a Namespace, context:
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Node::Namespace(namespace) => resolve_namespace_consumers(namespace, context),
             Node::Model(model) => resolve_model_decorators(model, context),
-            Node::HandlerDeclaration(handler) => resolve_handler_declaration_decorators(handler, context),
+            Node::HandlerDeclaration(handler) => resolve_handler_declaration_decorators(handler, context, None),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
             _ => (),

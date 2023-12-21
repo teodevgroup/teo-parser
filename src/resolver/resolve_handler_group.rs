@@ -1,9 +1,12 @@
 use maplit::btreemap;
 use crate::availability::Availability;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration, HandlerInputFormat};
+use crate::ast::model::Model;
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::r#type::Type;
+use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_type_expr::{resolve_type_expr};
 use crate::resolver::resolver_context::ResolverContext;
@@ -28,7 +31,7 @@ pub(super) fn resolve_handler_group_decorators<'a>(
     context: &'a ResolverContext<'a>
 ) {
     for handler_declaration in handler_group.handler_declarations() {
-        resolve_handler_declaration_decorators(handler_declaration, context)
+        resolve_handler_declaration_decorators(handler_declaration, context, None)
     }
 }
 
@@ -36,11 +39,10 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     handler_declaration: &'a HandlerDeclaration,
     context: &'a ResolverContext<'a>,
 ) {
-    if context.has_examined_field(&handler_declaration.identifier().name().to_owned()) {
-        context.insert_diagnostics_error(handler_declaration.identifier().span, "DefinitionError: duplicated definition of handler");
-    } else {
-        context.add_examined_field(handler_declaration.identifier().name.clone());
+    if context.has_examined_default_path(&handler_declaration.string_path, Availability::default()) {
+        context.insert_duplicated_identifier(handler_declaration.identifier().span);
     }
+    context.add_examined_default_path(handler_declaration.string_path.clone(), Availability::default());
     if let Some(input_type) = handler_declaration.input_type() {
         resolve_type_expr(input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     }
@@ -57,10 +59,45 @@ pub(super) fn resolve_handler_declaration_types<'a>(
 pub(super) fn resolve_handler_declaration_decorators<'a>(
     handler_declaration: &'a HandlerDeclaration,
     context: &'a ResolverContext<'a>,
+    model: Option<&'a Model>,
 ) {
+    let mut keywords_map = btreemap!{};
+    if let Some(model) = model {
+        keywords_map.insert(Keyword::SelfIdentifier, Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone())));
+    }
     for decorator in handler_declaration.decorators() {
-        resolve_decorator(decorator, context, &btreemap!{
-        }, ReferenceSpace::HandlerDecorator);
+        resolve_decorator(decorator, context, &keywords_map, ReferenceSpace::HandlerDecorator);
+    }
+    let is_get_or_delete = if let Some(decorator) = handler_declaration.decorators().find(|d| d.identifier_path().identifiers().last().unwrap().name() == "map") {
+        if let Some(argument_list) = decorator.argument_list() {
+            if let Some(first_argument) = argument_list.arguments().next() {
+                if first_argument.resolved().name.as_str() == "method" {
+                    if let Some(value) = first_argument.value().resolved().value() {
+                        if let Some(enum_variant) = value.as_enum_variant() {
+                            enum_variant.value.as_str() == "get" || enum_variant.value.as_str() == "delete"
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+    if is_get_or_delete && handler_declaration.input_type().is_some() {
+        context.insert_diagnostics_error(handler_declaration.input_type().unwrap().span(), "get or delete handler requires no input type");
+    }
+    if !is_get_or_delete && handler_declaration.input_type().is_none() {
+        context.insert_diagnostics_error(handler_declaration.identifier().span(), "handler requires input type");
     }
 }
 

@@ -59,6 +59,6 @@ pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a Resolv
     }
     // handlers
     for handler in model.handlers() {
-        resolve_handler_declaration_decorators(handler, context);
+        resolve_handler_declaration_decorators(handler, context, Some(model));
     }
 }

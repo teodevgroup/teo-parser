@@ -37,6 +37,7 @@ pub(super) fn resolve_source_model_shapes<'a>(context: &'a ResolverContext<'a>) 
 }
 
 pub(super) fn resolve_source_types<'a>(context: &'a ResolverContext<'a>) {
+    println!("resolve source types");
     for node in context.source().children.values() {
         match node {
             Node::Enum(r#enum) => resolve_enum_types(r#enum, context),
@@ -90,7 +91,7 @@ pub(super) fn resolve_source_consumers<'a>(context: &'a ResolverContext<'a>) {
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Node::Namespace(namespace) => resolve_namespace_consumers(namespace, context),
             Node::Model(model) => resolve_model_decorators(model, context),
-            Node::HandlerDeclaration(handler_declaration) => resolve_handler_declaration_decorators(handler_declaration, context),
+            Node::HandlerDeclaration(handler_declaration) => resolve_handler_declaration_decorators(handler_declaration, context, None),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
             _ => (),
