@@ -624,7 +624,7 @@ namespace std {
 
     /// @name Map
     /// Specify HTTP method and request path for this handler
-    declare unique handler decorator map(method?: Method?, path?: String?, ignorePrefix: Bool?)
+    declare unique handler decorator map(method?: Method?, path?: String?, ignorePrefix: Bool?, interface: String?)
 
     #if available(database)
 
