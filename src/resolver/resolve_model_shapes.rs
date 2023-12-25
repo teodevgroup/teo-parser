@@ -846,15 +846,16 @@ fn resolve_result_type(model: &Model) -> Type {
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             let optional = field.type_expr().resolved().is_optional();
             let vec = field.type_expr().resolved().unwrap_optional().is_array();
-            let reference = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object().unwrap();
-            let mut return_type = Type::SynthesizedShapeReference(SynthesizedShapeReference::result(reference.clone()));
-            if vec {
-                return_type = Type::Array(Box::new(return_type));
+            if let Some(reference) = field.type_expr().resolved().unwrap_optional().unwrap_array().unwrap_optional().as_model_object() {
+                let mut return_type = Type::SynthesizedShapeReference(SynthesizedShapeReference::result(reference.clone()));
+                if vec {
+                    return_type = Type::Array(Box::new(return_type));
+                }
+                if optional {
+                    return_type = Type::Optional(Box::new(return_type));
+                }
+                map.insert(field.name().to_owned(), return_type);
             }
-            if optional {
-                return_type = Type::Optional(Box::new(return_type));
-            }
-            map.insert(field.name().to_owned(), return_type);
         }
     }
     Type::SynthesizedShape(SynthesizedShape::new(map))
