@@ -548,10 +548,6 @@ namespace std {
     /// Specify a virtual field
     declare unique model field decorator virtual
 
-    /// @name Record Previous
-    /// Record the previous value for this field
-    declare unique model field decorator recordPrevious
-
     /// @name Input Omissible
     /// When generating clients, the input is always optional
     declare unique model field decorator inputOmissible
@@ -639,7 +635,7 @@ namespace std {
         /// Define a normal relation
         variant(fields: Enumerable<SerializableScalarFields<Self>>, references: Enumerable<SerializableScalarFields<ThisFieldType>>, onUpdate: Update?, onDelete: Delete?)
         /// Define a through relation
-        variant<T>(through: T, local: DirectRelations<T>, foreign: DirectRelations<T>) where T: Model
+        variant<T>(through: T, local: DirectRelations<T>, foreign: DirectRelations<T>, onUpdate: Update?, onDelete: Delete?) where T: Model
     }
 
     /// @name Getter
