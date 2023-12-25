@@ -299,6 +299,9 @@ namespace std {
         /// @name Update
         /// If related record is updated, update the foreign key.
         update
+        /// @name Delete
+        /// If related record is updated, delete this record.
+        delete
         /// @name Deny
         /// Deny foreign key value of related record to be updated.
         deny
