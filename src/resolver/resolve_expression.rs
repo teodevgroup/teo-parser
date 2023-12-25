@@ -289,7 +289,6 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         if let Some(synthesized_enum) = reference.fetch_synthesized_definition(context.schema) {
             resolve_enum_variant_literal_from_synthesized_interface_enum(e, synthesized_enum, context, expected)
         } else {
-            println!("here comes");
             context.insert_diagnostics_error(e.span, format!("expect {}, found .{}", reference, e.identifier().name()));
             ExprInfo {
                 r#type: Type::SynthesizedInterfaceEnumReference(reference.clone()),

@@ -11,7 +11,7 @@ repository = "https://github.com/teocloud/teo-parser"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-teo-teon = "0.0.63"
+teo-teon = "0.0.64"
 pest = "2.7.5"
 pest_derive = "2.7.5"
 colored = "2.1.0"
