@@ -644,11 +644,11 @@ fn resolve_update_input_type<'a>(model: &'a Model, without: Option<&str>, contex
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && !is_field_readonly(field) {
-                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), is_field_atomic(field), context));
+                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), is_field_atomic(field), context).wrap_in_optional());
             }
         } else if let Some(_) = field.resolved().class.as_model_property() {
             if has_property_setter(field) {
-                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), false, context));
+                map.insert(field.name().to_owned(), resolve_static_update_input_for_type(field.type_expr().resolved(), false, context).wrap_in_optional());
             }
         } else if let Some(_) = field.resolved().class.as_model_relation() {
             if let Some(without) = without {
