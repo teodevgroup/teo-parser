@@ -1249,3 +1249,6 @@ impl Write for Node {
         self.as_dyn_node_trait().wrap(content, available_length)
     }
 }
+
+unsafe impl Send for Node { }
+unsafe impl Sync for Node { }
