@@ -34,13 +34,13 @@ Schema parser for Teo schema language
 
 * Allow doc comment in dictionary literals
 
-### 0.0.62 (Currently Developing)
+### 0.0.62 (Released on Dec 21st, 2023)
 
 * Fix `import` keyword is unrecognized bug**
 
 ### 0.1.0 (Currently Developing)
 
-* Improve stability
+* Support Node.js
 
 ### 0.2.0
 * Accept indentation settings argument in format
