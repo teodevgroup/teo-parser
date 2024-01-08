@@ -223,6 +223,9 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // group by args
     shapes.insert((SynthesizedShapeReferenceKind::GroupByArgs, None), resolve_group_by_args_type(model, &shape_available_context));
 
+    // scalar update input
+    shapes.insert((SynthesizedShapeReferenceKind::ScalarUpdateInput, None), resolve_scalar_update_input(model));
+
     model.resolved_mut().enums = enums;
     model.resolved_mut().shapes = shapes;
     model.resolved_mut().interface_enums = interface_enums;
@@ -633,6 +636,18 @@ fn resolve_create_input_type<'a>(model: &'a Model, without: Option<&str>, contex
                         map.insert(field.name().to_owned(), t);
                     }
                 }
+            }
+        }
+    }
+    Type::SynthesizedShape(SynthesizedShape::new(map))
+}
+
+fn resolve_scalar_update_input(model: &Model) -> Type {
+    let mut map = indexmap! {};
+    for field in model.fields() {
+        if let Some(settings) = field.resolved().class.as_model_primitive_field() {
+            if !settings.dropped {
+                map.insert(field.name().to_owned(), field.type_expr().resolved().wrap_in_optional());
             }
         }
     }

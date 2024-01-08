@@ -68,6 +68,7 @@ pub enum SynthesizedShapeReferenceKind {
     MaxAggregateResult,
     AggregateResult,
     GroupByResult,
+    ScalarUpdateInput,
 }
 
 impl SynthesizedShapeReferenceKind {
