@@ -7,6 +7,7 @@ use crate::r#type::Type;
 use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
+use crate::r#type::synthesized_enum_reference::SynthesizedEnumReference;
 use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
 use crate::traits::resolved::Resolve;
 
@@ -30,6 +31,10 @@ impl SynthesizedInterfaceEnumReference {
             kind: SynthesizedInterfaceEnumReferenceKind::FieldIndexes,
             owner: Box::new(Type::ModelObject(reference)),
         }
+    }
+
+    pub fn build_generics_map(&self, map: &mut BTreeMap<String, Type>, expect: &SynthesizedInterfaceEnumReference) {
+        self.owner.build_generics_map(map, expect.owner.as_ref());
     }
 
     pub fn contains_generics(&self) -> bool {

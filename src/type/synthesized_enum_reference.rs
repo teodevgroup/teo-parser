@@ -8,6 +8,7 @@ use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
+use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::traits::resolved::Resolve;
 
 
@@ -63,6 +64,10 @@ impl SynthesizedEnumReference {
             kind: SynthesizedEnumReferenceKind::IndirectRelations,
             owner: Box::new(Type::ModelObject(reference)),
         }
+    }
+
+    pub fn build_generics_map(&self, map: &mut BTreeMap<String, Type>, expect: &SynthesizedEnumReference) {
+        self.owner.build_generics_map(map, expect.owner.as_ref());
     }
 
     pub fn contains_generics(&self) -> bool {

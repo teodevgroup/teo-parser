@@ -656,6 +656,14 @@ impl Type {
         }
     }
 
+    pub fn unwrap_range(&self) -> &Type {
+        if self.is_range() {
+            self.as_range().unwrap()
+        } else {
+            self
+        }
+    }
+
     pub fn unwrap_enumerable(&self) -> &Type {
         if self.is_enumerable() {
             self.as_enumerable().unwrap()
@@ -869,6 +877,33 @@ impl Type {
             _ => self.clone(),
         };
         result.flatten()
+    }
+
+    pub fn build_generics_map(&self, map: &mut BTreeMap<String, Type>, expect: &Type) {
+        let undetermined = Type::Undetermined;
+        match self {
+            Type::GenericItem(name) => { map.insert(name.clone(), expect.clone()); },
+            Type::Enumerable(inner) => inner.build_generics_map(map, expect.unwrap_enumerable()),
+            Type::Optional(inner) => inner.build_generics_map(map, expect.unwrap_optional()),
+            Type::Array(inner) => inner.build_generics_map(map, expect.unwrap_array()),
+            Type::Dictionary(inner) => inner.build_generics_map(map, expect.unwrap_dictionary()),
+            Type::Tuple(types) => types.iter().enumerate().for_each(|(index, inner)| inner.build_generics_map(map, expect.unwrap_tuple_index(index).unwrap_or(&undetermined))),
+            Type::Range(inner) => inner.build_generics_map(map, expect.unwrap_range()),
+            Type::SynthesizedEnumReference(enum_reference) => if let Some(expect) = expect.as_synthesized_enum_reference() {
+                enum_reference.build_generics_map(map, expect);
+            },
+            Type::SynthesizedInterfaceEnumReference(interface_enum_reference) => if let Some(expect) = expect.as_synthesized_interface_enum_reference() {
+                interface_enum_reference.build_generics_map(map, expect);
+            },
+            Type::SynthesizedShapeReference(shape_reference) => if let Some(expect) = expect.as_synthesized_shape_reference() {
+                shape_reference.build_generics_map(map, expect);
+            },
+            Type::Pipeline(a, b) => if let Some(pipeline) = expect.as_pipeline() {
+                a.as_ref().build_generics_map(map, pipeline.0);
+                b.as_ref().build_generics_map(map, pipeline.1);
+            }
+            _ => (),
+        };
     }
 
     pub fn replace_keywords(&self, map: &BTreeMap<Keyword, Type>) -> Self {
