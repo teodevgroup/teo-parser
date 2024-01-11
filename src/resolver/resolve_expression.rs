@@ -66,7 +66,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
         ExpressionKind::Subscript(_) => unreachable!(),
         ExpressionKind::IntSubscript(_) => unreachable!(),
         ExpressionKind::Unit(u) => resolve_unit(u, context, expected, keywords_map),
-        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, expected, keywords_map),
+        ExpressionKind::Pipeline(p) => resolve_pipeline(p, context, &expected.expect_for_pipeline(), keywords_map),
         ExpressionKind::EmptyPipeline(p) => {
             context.insert_diagnostics_error(p.span, "empty pipeline");
             ExprInfo::type_only(Type::Undetermined)

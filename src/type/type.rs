@@ -771,6 +771,26 @@ impl Type {
         return result.clone()
     }
 
+    pub fn expect_for_pipeline(&self) -> Type {
+        let mut result = self;
+        let undetermined = Type::Undetermined;
+        if result.is_optional() {
+            result = result.unwrap_optional();
+        }
+        if let Some(types) = result.as_union() {
+            let retval = types.iter().find_map(|t| if t.is_pipeline() {
+                Some(t.clone())
+            } else {
+                None
+            }).unwrap_or(undetermined);
+            return retval
+        }
+        if result.is_pipeline() {
+            return result.clone()
+        }
+        return undetermined
+    }
+
     pub fn contains_generics(&self) -> bool {
         match self {
             Type::GenericItem(_) => true,
