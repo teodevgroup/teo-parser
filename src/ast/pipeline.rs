@@ -28,6 +28,12 @@ pub struct PipelineResolved {
     pub items_resolved: Vec<PipelineItemResolved>,
 }
 
+impl PipelineResolved {
+    pub fn new() -> Self {
+        Self { items_resolved: vec![] }
+    }
+}
+
 #[derive(Debug)]
 pub struct PipelineItemResolved {
     pub input_type: Type,

@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use crate::expr::{ExprInfo, ReferenceType};
-use crate::ast::pipeline::Pipeline;
+use crate::ast::pipeline::{Pipeline, PipelineItemResolved, PipelineResolved};
 use crate::ast::span::Span;
 use crate::ast::type_info::TypeInfo;
 use crate::ast::unit::Unit;
@@ -10,6 +10,7 @@ use crate::resolver::resolve_argument_list::resolve_argument_list;
 use crate::resolver::resolve_identifier::resolve_identifier_path_names_with_filter_to_expr_info;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_pipeline;
 
 pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a ResolverContext<'a>, mut expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
@@ -28,10 +29,13 @@ pub(super) fn resolve_pipeline<'a>(pipeline: &'a Pipeline, context: &'a Resolver
     } else {
         &undetermined
     };
-    ExprInfo::type_only(resolve_pipeline_unit(pipeline.span, pipeline.unit(), context, r#type, keywords_map))
+    let (resolved, t) = resolve_pipeline_unit(pipeline.span, pipeline.unit(), context, r#type, keywords_map);
+    pipeline.resolve(resolved);
+    ExprInfo::type_only(t)
 }
 
-pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> Type {
+pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> (PipelineResolved, Type) {
+    let mut resolved = PipelineResolved::new();
     if let Some(empty_dot) = unit.empty_dot() {
         context.insert_diagnostics_error(empty_dot.span, "empty reference");
     }
@@ -67,7 +71,12 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
                             passed_in: current_input_type.clone()
                         };
                         let argument_list = unit.expression_at(index + 1).map(|e| e.kind.as_argument_list()).flatten();
+                        let previous_current_input_type = current_input_type;
                         current_input_type = resolve_argument_list(identifier.span, argument_list, pipeline_item_declaration.callable_variants(), keywords_map, context, Some(&pipeline_type_context)).unwrap();
+                        resolved.items_resolved.push(PipelineItemResolved {
+                            input_type: previous_current_input_type,
+                            output_type: current_input_type.clone(),
+                        });
                         current_space = vec![];
                     }
                     _ => ()
@@ -86,11 +95,12 @@ pub(super) fn resolve_pipeline_unit<'a>(span: Span, unit: &'a Unit, context: &'a
             has_errors = true;
         }
     }
-    if has_errors {
+    let t = if has_errors {
         expected.clone()
     } else if let Some((input, _output)) = expected.as_pipeline() {
         Type::Pipeline(Box::new(input.clone()), Box::new(current_input_type))
     } else {
         Type::Undetermined
-    }
+    };
+    (resolved, t)
 }
