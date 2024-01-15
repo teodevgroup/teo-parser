@@ -1227,7 +1227,7 @@ fn resolve_aggregate_args_type(model: &Model, availability: &ShapeAvailableConte
 fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContext) -> Type {
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
-    map.insert("by".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("by".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     map.insert("having".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::scalar_where_with_aggregates_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
         map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
