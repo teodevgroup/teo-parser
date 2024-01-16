@@ -41,6 +41,7 @@ Schema parser for Teo schema language
 ### 0.1.0 (Currently Developing)
 
 * Support Node.js
+* Fix VSCode extension crashing when typing struct class functions 
 
 ### 0.2.0
 * Accept indentation settings argument in format
