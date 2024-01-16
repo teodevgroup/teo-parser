@@ -38,10 +38,9 @@ Schema parser for Teo schema language
 
 * Fix `import` keyword is unrecognized bug**
 
-### 0.1.0 (Currently Developing)
+### 0.1.0 (Released on Jan 17th, 2023)
 
 * Support Node.js
-* Fix VSCode extension crashing when typing struct class functions 
 
 ### 0.2.0
 * Accept indentation settings argument in format
