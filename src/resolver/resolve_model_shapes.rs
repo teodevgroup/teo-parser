@@ -387,15 +387,15 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
             if !settings.dropped && is_field_sortable(field) && !is_field_writeonly(field) {
-                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())));
+                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())).wrap_in_optional());
             }
         } else if let Some(settings) = field.resolved().class.as_model_property() {
             if settings.cached && is_field_sortable(field) {
-                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())));
+                map.insert(field.name().to_owned(), Type::EnumVariant(Reference::new(sort.path.clone(), sort.string_path.clone())).wrap_in_optional());
             }
         }
     }
-    Type::SynthesizedShape(SynthesizedShape::new(map))
+    Type::Enumerable(Box::new(Type::SynthesizedShape(SynthesizedShape::new(map))))
 }
 
 fn resolve_model_scalar_fields(model: &Model) -> SynthesizedEnum {
