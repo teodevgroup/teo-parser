@@ -395,7 +395,7 @@ fn resolve_model_order_by_input_shape<'a>(model: &'a Model, context: &'a Resolve
             }
         }
     }
-    Type::Enumerable(Box::new(Type::SynthesizedShape(SynthesizedShape::new(map))))
+    Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_model_scalar_fields(model: &Model) -> SynthesizedEnum {
@@ -1045,7 +1045,7 @@ fn resolve_find_first_args_type(model: &Model, availability: &ShapeAvailableCont
         map.insert("include".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::include(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     }
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     }
     map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_serializable_scalar_fields {
@@ -1180,7 +1180,7 @@ fn resolve_count_args_type(model: &Model, availability: &ShapeAvailableContext) 
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     }
     if availability.has_serializable_scalar_fields {
         map.insert("distinct".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
@@ -1198,7 +1198,7 @@ fn resolve_aggregate_args_type(model: &Model, availability: &ShapeAvailableConte
     let mut map = indexmap! {};
     map.insert("where".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     }
     if availability.has_serializable_scalar_fields {
         map.insert("distinct".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
@@ -1230,7 +1230,7 @@ fn resolve_group_by_args_type(model: &Model, availability: &ShapeAvailableContex
     map.insert("by".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable());
     map.insert("having".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::scalar_where_with_aggregates_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     if availability.has_order_by {
-        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+        map.insert("orderBy".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::order_by_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     }
     map.insert("distinct".to_owned(), Type::SynthesizedEnumReference(SynthesizedEnumReference::model_serializable_scalar_fields(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("cursor".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
