@@ -368,16 +368,16 @@ fn resolve_model_where_unique_input_shape(model: &Model) -> Type {
 
 fn resolve_model_relation_filter(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("is".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
-    map.insert("isNot".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("is".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("isNot".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
 fn resolve_model_list_relation_filter(model: &Model) -> Type {
     let mut map = indexmap! {};
-    map.insert("every".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
-    map.insert("some".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
-    map.insert("none".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))));
+    map.insert("every".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("some".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
+    map.insert("none".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     Type::SynthesizedShape(SynthesizedShape::new(map))
 }
 
