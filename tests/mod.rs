@@ -2,6 +2,7 @@ pub mod parse;
 pub mod jump_to_definition;
 pub mod auto_completion;
 pub mod format;
+pub mod file_splitting;
 
 mod test {
 

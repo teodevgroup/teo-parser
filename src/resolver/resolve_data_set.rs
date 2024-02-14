@@ -32,8 +32,12 @@ fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, co
     if let Some(expr_info) = resolve_identifier_path_with_filter(group.identifier_path(), context, &top_filter_for_model(), context.current_availability()) {
         if let Some(reference_info) = expr_info.reference_info() {
             if reference_info.r#type == ReferenceType::Model {
-                let model = context.schema.find_top_by_path(reference_info.reference().path()).unwrap().as_model().unwrap();
-                group.resolve(Reference::new(model.path.clone(), model.string_path.clone()));
+                if let Some(node) = context.schema.find_top_by_path(reference_info.reference().path()) {
+                    let model = node.as_model().unwrap();
+                    group.resolve(Reference::new(model.path.clone(), model.string_path.clone()));
+                } else {
+                    context.insert_diagnostics_error(group.identifier_path().span(), "model not found, please import the file in which it's defined");
+                }
             } else {
                 context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
             }
@@ -44,16 +48,18 @@ fn resolve_data_set_group<'a>(data_set: &'a DataSet, group: &'a DataSetGroup, co
         context.insert_diagnostics_error(group.identifier_path().span(), "model not found");
     }
     // record each record names
-    for record in group.records() {
-        let examined = ExaminedDataSetRecord {
-            data_set: data_set.string_path.clone(),
-            group: group.resolved().string_path().clone(),
-            record: record.identifier().name().to_owned(),
-        };
-        if context.has_examined_data_set_record(&examined) {
-            context.insert_diagnostics_error(record.identifier().span, "duplicated record");
+    if group.is_resolved() {
+        for record in group.records() {
+            let examined = ExaminedDataSetRecord {
+                data_set: data_set.string_path.clone(),
+                group: group.resolved().string_path().clone(),
+                record: record.identifier().name().to_owned(),
+            };
+            if context.has_examined_data_set_record(&examined) {
+                context.insert_diagnostics_error(record.identifier().span, "duplicated record");
+            }
+            context.add_examined_data_set_record(examined);
         }
-        context.add_examined_data_set_record(examined);
     }
 }
 

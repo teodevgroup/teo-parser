@@ -42,7 +42,7 @@ Schema parser for Teo schema language
 
 * Support Node.js
 
-### 0.2.0
+### 0.3.0
 * Accept indentation settings argument in format
 * Add `linter` config declaration
 * Separate `fix` command and `format` command
@@ -51,11 +51,11 @@ Schema parser for Teo schema language
 * Add `import "..." use namespace.{identifier1, identifier2 as alias2}` syntax
 * Add `use namespace.{identifier1, identifier2 as alias2}` syntax
 
-### 0.3.0
+### 0.4.0
 
 * Refactor variable names in place
 
-### 0.4.0
+### 0.5.0
 
 * diagnostic code
 
