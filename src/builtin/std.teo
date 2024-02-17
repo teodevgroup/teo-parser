@@ -237,7 +237,7 @@ namespace std {
         decimal
         blob
     }
-    #end    
+    #end
 
     #if available(mongo)
     interface enum MongoDBDatabaseType {
@@ -250,7 +250,7 @@ namespace std {
         timestamp
         binData
     }
-    #end 
+    #end
 
     interface enum ResetDatasets {
         auto
@@ -405,25 +405,25 @@ namespace std {
 
     /// @name Before Save
     /// Specify the action to trigger before an object is saved
-    declare unique model decorator beforeSave(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator beforeSave(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name After Save
     /// Specify the action to trigger after an object is saved
-    declare unique model decorator afterSave(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator afterSave(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name Before Delete
     /// Specify the action to trigger before an object is deleted
-    declare unique model decorator beforeDelete(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator beforeDelete(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name After Delete
     /// Specify the action to trigger after an object is deleted
-    declare unique model decorator afterDelete(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator afterDelete(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name Can Read
-    declare unique model decorator canRead(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator canRead(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name Can Mutate
-    declare unique model decorator canMutate(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model decorator canMutate(pipeline?: Pipeline<Null, Ignored>)
 
     /// @name Action
     /// Specify disabled actions
