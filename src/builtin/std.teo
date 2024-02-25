@@ -311,6 +311,17 @@ namespace std {
         default
     }
 
+    /// @name Client Host
+    /// The connection URL to the server for the client
+    interface enum ClientHost {
+        /// @name string
+        /// A constant string value.
+        string(value?: String)
+        /// @name inject
+        /// The value is injected into the generated code.
+        inject(value?: String)
+    }
+
     /// @name Connector
     /// Represents the database connection
     declare config connector {
@@ -358,7 +369,7 @@ namespace std {
         package: Bool?
         /// @name Host
         /// The host for the generated client
-        host: String
+        host: ClientHost
         /// @name Object Name
         /// The main object name for the generated package
         objectName: String?
