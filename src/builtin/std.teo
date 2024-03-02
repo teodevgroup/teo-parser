@@ -129,15 +129,26 @@ namespace std {
         sqlite
     }
 
+    /// @name TypeScript HTTP Provider
+    /// Specify the API which provides HTTP request functionality.
+    interface enum TypeScriptHTTPProvider {
+        /// @name Fetch
+        /// Use the fetch API. This is the default value
+        fetch
+        /// @name Taro
+        /// Use the Taro's API
+        taro
+        /// @name WeChat
+        /// Use the WeChat's API
+        wechat
+    }
+
     /// @name Client Language
     /// The programming langauge of the generated client
     interface enum ClientLanguage {
-        /// @name javaScript
-        /// The javaScript programming language
-        javaScript
         /// @name TypeScript
         /// The TypeScript programming language
-        typeScript
+        typeScript(httpProvider: TypeScriptHTTPProvider?)
         /// @name Swift
         /// The Swift programming language
         swift
