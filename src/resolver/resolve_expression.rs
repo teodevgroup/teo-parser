@@ -228,11 +228,13 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                     None
                 );
             } else {
-                context.insert_diagnostics_error(e.span, format!("expect argument list"));
-                return ExprInfo {
-                    r#type: Type::EnumVariant(enum_reference.clone()),
-                    value: None,
-                    reference_info: None,
+                if !argument_list_declaration.every_argument_is_optional() {
+                    context.insert_diagnostics_error(e.span, format!("expect argument list"));
+                    return ExprInfo {
+                        r#type: Type::EnumVariant(enum_reference.clone()),
+                        value: None,
+                        reference_info: None,
+                    }
                 }
             }
         }
@@ -265,6 +267,8 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                             args.insert(argument.resolved_name().unwrap().to_owned(), argument.value().resolved().value().unwrap().clone());
                         }
                         if has_runtime_value { None } else { Some(args) }
+                    } else if member.argument_list_declaration().is_some() {
+                        Some(btreemap! {})
                     } else {
                         None
                     },
