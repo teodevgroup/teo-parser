@@ -929,7 +929,7 @@ namespace std {
 
     /// @name Assign
     /// Assign value to key on context object
-    declare pipeline item assign<T, K>(key?: K, value?: T[K] | Pipeline<T, T[K]>): T -> T where K: ScalarFields<Self>
+    declare pipeline item assign<T, K>(key?: K, value?: Self[K] | Pipeline<T, Self[K]>): T -> T where K: ScalarFields<Self>
 
     /// @name Equal
     /// Valid if input is equal to rhs

@@ -17,7 +17,7 @@ model GeneralExamination {
     heightInM: Float
     @writeOnce
     weight: Float
-    @getter($self.get(.weight).presents.div($self.get(.height).presents.div(100.0).pow))
+    @getter($self.get(.weight).presents.div($self.get(.height).presents.div(100.0).pow(2.0)))
     @cached @deps([.weight, .height])
     bodyMassIndex: Float
     @onSave($when(.create, $now))
