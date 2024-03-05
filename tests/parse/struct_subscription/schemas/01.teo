@@ -1,0 +1,4 @@
+connector {
+    provider: .postgres,
+    url: ENV["DATABASE_URL"]!
+}

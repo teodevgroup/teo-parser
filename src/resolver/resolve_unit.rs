@@ -133,7 +133,6 @@ fn resolve_current_item_type_for_unit<'a>(
         Type::Range(inner) => resolve_builtin_struct_instance_for_unit("Range", &vec![inner.as_ref()], current, last_span, expression, context, keywords_map),
         Type::EnumVariant(_) => resolve_enum_variant_for_unit(last_span.unwrap(), current, expression, context),
         Type::InterfaceObject(reference, types) => resolve_interface_object_for_unit(reference, current, types, expression, context),
-        Type::StructObject(reference, types) => resolve_struct_object_for_unit(reference, types, expression, context),
         Type::SynthesizedShape(synthesized_shape) => resolve_synthesized_shape_for_unit(synthesized_shape, current.value(), expression, context),
         Type::SynthesizedShapeReference(synthesized_shape_reference) => if let Some(definition) = synthesized_shape_reference.fetch_synthesized_definition(context.schema) {
             if let Some(synthesized_shape) = definition.as_synthesized_shape() {
@@ -144,6 +143,7 @@ fn resolve_current_item_type_for_unit<'a>(
         } else {
             ExprInfo::undetermined()
         }
+        Type::StructObject(reference, types) => resolve_struct_instance_for_unit(&reference.str_path(), &types.iter().collect(), current, last_span, expression, context, keywords_map),
         _ => ExprInfo::undetermined(),
     }
 }
@@ -177,8 +177,11 @@ fn resolve_struct_instance_for_unit<'a>(
     context: &'a ResolverContext<'a>,
     _keywords_map: &BTreeMap<Keyword, Type>,
 ) -> ExprInfo {
-    let Some(struct_definition) = context.source().find_node_by_string_path(
-        struct_path,
+    let Some(struct_definition) = resolve_identifier_path_names_with_filter_to_top(
+        &struct_path,
+        context.schema,
+        context.source(),
+        &context.current_namespace_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).map(|top| top.as_struct_declaration()).flatten() else {
@@ -544,40 +547,6 @@ fn resolve_struct_reference_for_unit<'a>(
                 ExprInfo::undetermined()
             }
         }
-        _ => {
-            context.insert_diagnostics_error(expression.span(), "invalid expression");
-            ExprInfo::undetermined()
-        }
-    })
-}
-
-fn resolve_struct_object_for_unit<'a>(
-    reference: &Reference,
-    types: &Vec<Type>,
-    expression: &'a Expression,
-    context: &'a ResolverContext<'a>,
-) -> ExprInfo {
-    let struct_declaration = resolve_identifier_path_names_with_filter_to_top(
-        &reference.str_path(),
-        context.schema,
-        context.source(),
-        &context.current_namespace_path(),
-        &top_filter_for_reference_type(ReferenceSpace::Default),
-        context.current_availability()
-    ).unwrap().as_struct_declaration().unwrap();
-    expression.resolve_and_return(match &expression.kind {
-        ExpressionKind::Identifier(identifier) => {
-            if let Some(function) = struct_declaration.instance_function(identifier.name()) {
-                ExprInfo::reference_only(ReferenceInfo::new(
-                    ReferenceType::StructInstanceFunction,
-                    Reference::new(function.path.clone(), function.string_path.clone()),
-                    Some(types.clone()),
-                ))
-            } else {
-                context.insert_diagnostics_error(expression.span(), "struct instance function not found");
-                ExprInfo::undetermined()
-            }
-        },
         _ => {
             context.insert_diagnostics_error(expression.span(), "invalid expression");
             ExprInfo::undetermined()

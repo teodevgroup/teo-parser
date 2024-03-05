@@ -707,7 +707,7 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                             reference_info: None,
                         },
                         _ => {
-                            context.insert_diagnostics_error(unary.span, "ValueError: invalid expression");
+                            context.insert_diagnostics_error(unary.span, "invalid expression");
                             ExprInfo {
                                 r#type: Type::Undetermined,
                                 value: None,
@@ -783,13 +783,13 @@ fn resolve_arith_expr<'a>(arith_expr: &'a ArithExpr, context: &'a ResolverContex
                     ArithExprOperator::RangeOpen => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
                         result
                     } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        context.insert_diagnostics_error(binary.span, "invalid expression");
                         Type::Undetermined
                     }
                     ArithExprOperator::RangeClose => if let Some(result) = build_range(lhs.r#type(), rhs.r#type()) {
                         result
                     } else {
-                        context.insert_diagnostics_error(binary.span, "ValueError: invalid expression");
+                        context.insert_diagnostics_error(binary.span, "invalid expression");
                         Type::Undetermined
                     }
                     _ => unreachable!()
