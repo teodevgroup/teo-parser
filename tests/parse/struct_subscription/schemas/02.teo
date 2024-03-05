@@ -1,0 +1,8 @@
+connector {
+    provider: .postgres,
+    url: ENV["DATABASE_URL"]!
+}
+
+server {
+  bind: ("0.0.0.0", 5688)
+}

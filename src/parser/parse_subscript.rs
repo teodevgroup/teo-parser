@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use crate::ast::int_subscript::IntSubscript;
 use crate::ast::subscript::Subscript;
-use crate::{parse_container_node_variables, parse_insert_punctuation, parse_node_variables, parse_set};
+use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_punctuation, parse_node_variables, parse_set};
 use crate::parser::parse_expression::parse_expression;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -22,6 +22,7 @@ pub(super) fn parse_subscript(pair: Pair<'_>, context: &ParserContext) -> Subscr
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     Subscript { span, children, path, expression }
 }
 

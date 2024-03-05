@@ -666,7 +666,7 @@ namespace std {
 
     /// @name Setter
     /// Define a property with setter
-    declare unique model property decorator setter(pipeline?: Pipeline<Self, Ignored>)
+    declare unique model property decorator setter(pipeline?: Pipeline<ThisFieldType, Ignored>)
 
     /// @name Cache
     /// Define a cached property, a cached property is saved into the database
