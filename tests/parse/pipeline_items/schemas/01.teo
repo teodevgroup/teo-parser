@@ -1,0 +1,27 @@
+connector {
+    provider: .postgres,
+    url: ENV["DATABASE_URL"]!
+}
+
+server {
+    bind: ("0.0.0.0", 5688)
+}
+
+model GeneralExamination {
+    @id @readonly @autoIncrement
+    id: Int
+    @inputOmissible @writeOnce
+    height: Float
+    @setter($assign(.height, $mul(100.0)))
+    @getter($self.get(.height).presents.div(100.0))
+    heightInM: Float
+    @writeOnce
+    weight: Float
+    @getter($self.get(.weight).presents.div($self.get(.height).presents.div(100.0).pow))
+    @cached @deps([.weight, .height])
+    bodyMassIndex: Float
+    @onSave($when(.create, $now))
+    createdAt: DateTime
+    @onSave($now)
+    updatedAt: DateTime
+}

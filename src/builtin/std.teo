@@ -693,155 +693,72 @@ namespace std {
     #if available(database)
 
     /// @name Add
-    /// Add a new numeric value 
-    declare pipeline item add {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    /// Add a new numeric value
+    declare pipeline item add<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Sub
-    /// Subtract a numeric value 
-    declare pipeline item sub {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    /// Subtract a numeric value
+    declare pipeline item sub<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Mul
-    /// Multiply a numeric value 
-    declare pipeline item mul {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    /// Multiply a numeric value
+    declare pipeline item mul<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Div
-    /// Divide a numeric value 
-    declare pipeline item div {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    /// Divide a numeric value
+    declare pipeline item div<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Mod
-    /// Mod a numeric value 
-    declare pipeline item mod {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-    }
+    /// Mod a numeric value
+    declare pipeline item mod<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64
 
     /// @name Floor
     /// Get the floor value
-    declare pipeline item floor {
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item floor<T>: T -> T where T: Float32 | Float | Decimal
 
     /// @name Ceil
     /// Get the ceil value
-    declare pipeline item ceil {
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item ceil<T>: T -> T where T: Float32 | Float | Decimal
 
     /// @name Round
     /// Get the rounded value
-    declare pipeline item round {
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item round<T>: T -> T where T: Float32 | Float | Decimal
 
     /// @name Square Root
     /// Get the square root value
-    declare pipeline item sqrt {
-        variant: Int -> Int
-        variant: Int64 -> Int64
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item sqrt<T>: T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Cube Root
     /// Get the cube root value
-    declare pipeline item cbrt {
-        variant: Int -> Int
-        variant: Int64 -> Int64
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item cbrt<T>: T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Absolute Value
     /// Get the absolute value
-    declare pipeline item abs {
-        variant: Int -> Int
-        variant: Int64 -> Int64
-        variant: Float32 -> Float32
-        variant: Float -> Float
-        variant: Decimal -> Decimal
-    }
+    declare pipeline item abs<T>: T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Power
     /// Get the power value
-    declare pipeline item pow {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int | Pipeline<Int64, Int>): Int64 -> Int64
-        variant(value?: Int | Pipeline<Float32, Int>): Float32 -> Float32
-        variant(value?: Int | Pipeline<Float, Int>): Float -> Float
-    }
+    declare pipeline item pow<T>(value?: T | Pipeline<T, Int>): T -> T where T: Int | Int64 | Float32 | Float
 
     /// @name Root
     /// Get the root value
-    declare pipeline item root {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int | Pipeline<Int64, Int>): Int64 -> Int64
-    }
+    declare pipeline item root<T>(value?: T | Pipeline<T, Int>): T -> T where T: Int | Int64
 
     /// @name Min
     /// If current value is less than `value`, set the value to `value`
-    declare pipeline item min {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    declare pipeline item min<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Max
     /// If current value is greater than `value`, set the value to `value`
-    declare pipeline item max {
-        variant(value?: Int | Pipeline<Int, Int>): Int -> Int
-        variant(value?: Int64 | Pipeline<Int64, Int64>): Int64 -> Int64
-        variant(value?: Float32 | Pipeline<Float32, Float32>): Float32 -> Float32
-        variant(value?: Float | Pipeline<Float, Float>): Float -> Float
-        variant(value?: Decimal | Pipeline<Decimal, Decimal>): Decimal -> Decimal
-    }
+    declare pipeline item max<T>(value?: T | Pipeline<T, T>): T -> T where T: Int | Int64 | Float32 | Float | Decimal
 
     /// @name Is Even
     /// throws if current value is not even
-    declare pipeline item isEven {
-        variant: Int -> Int
-        variant: Int64 -> Int64
-    }
+    declare pipeline item isEven<T>: T -> T where T: Int | Int64
 
     /// @name Is Odd
     /// throws if current value is not odd
-    declare pipeline item isOdd {
-        variant: Int -> Int
-        variant: Int64 -> Int64
-    }
+    declare pipeline item isOdd<T>: T -> T where T: Int | Int64
 
     /// @name randomInt
     /// generate a random integer
