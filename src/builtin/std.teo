@@ -571,11 +571,11 @@ namespace std {
     declare unique model field decorator virtual
 
     /// @name Input Omissible
-    /// When generating clients, the input is always optional
+    /// When type checking and generating clients, the input is always optional
     declare unique model field decorator inputOmissible
 
-    /// @name Outout Omissible
-    /// When generating clients, the outout is always optional
+    /// @name Output Omissible
+    /// When generating clients, the output is always optional
     declare unique model field decorator outputOmissible
 
     #if available(mongo)
@@ -683,6 +683,14 @@ namespace std {
     /// @name Unique
     /// Define unique index for this cached property
     declare unique model property decorator unique(sort: Sort?, length: Int?, map: String?)
+
+    /// @name Input Omissible
+    /// When type checking and generating clients, the input is always optional
+    declare unique model property decorator inputOmissible
+
+    /// @name Output Omissible
+    /// When generating clients, the output is always optional
+    declare unique model property decorator outputOmissible
 
     #end
 
