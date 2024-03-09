@@ -856,10 +856,6 @@ namespace std {
 
     declare pipeline item print<T>(label?: String?): T -> T
 
-    // declare pipeline item bcryptSalt: String -> String
-
-    // declare pipeline item bcryptVerify(pipeline?: Pipeline<String, String>): String -> String
-
     declare pipeline item presents<T>: T? -> T
 
     declare pipeline item when<T, U>(action?: Action, pipeline?: Pipeline<T, U>): T -> U
@@ -1278,4 +1274,17 @@ namespace std {
     }
 
     #end
+}
+
+/// @name Bcrypt
+/// Bcrypt related pipeline items
+namespace bcrypt {
+
+    /// @name Salt
+    /// Transform this string value with Bcrypt salt
+    declare pipeline item salt: String -> String
+
+    /// @name Verify
+    /// Verify with Bcrypt verify
+    declare pipeline item verify(pipeline?: Pipeline<String, String>): String -> String
 }
