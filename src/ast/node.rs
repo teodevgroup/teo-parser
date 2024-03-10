@@ -47,6 +47,8 @@ use crate::ast::r#enum::{Enum, EnumMember};
 use crate::ast::span::Span;
 use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::subscript::Subscript;
+use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
+use crate::ast::synthesized_shape_field_declaration::SynthesizedShapeFieldDeclaration;
 use crate::ast::type_expr::{TypeBinaryOperation, TypedEnum, TypedShape, TypedShapeItem, TypeExpr, TypeGenerics, TypeGroup, TypeItem, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
@@ -137,6 +139,8 @@ pub enum Node {
     TypedEnum(TypedEnum),
     TypedShape(TypedShape),
     TypedShapeItem(TypedShapeItem),
+    SynthesizedShapeDeclaration(SynthesizedShapeDeclaration),
+    SynthesizedShapeFieldDeclaration(SynthesizedShapeFieldDeclaration),
 }
 
 impl Node {
@@ -988,6 +992,28 @@ impl Node {
         }
     }
 
+    pub fn is_synthesized_shape_declaration(&self) -> bool {
+        self.as_synthesized_shape_declaration().is_some()
+    }
+
+    pub fn as_synthesized_shape_declaration(&self) -> Option<&SynthesizedShapeDeclaration> {
+        match self {
+            Node::SynthesizedShapeDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
+    pub fn is_synthesized_shape_field_declaration(&self) -> bool {
+        self.as_synthesized_shape_field_declaration().is_some()
+    }
+
+    pub fn as_synthesized_shape_field_declaration(&self) -> Option<&SynthesizedShapeFieldDeclaration> {
+        match self {
+            Node::SynthesizedShapeFieldDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1067,6 +1093,8 @@ impl Node {
             Node::TypedEnum(n) => n,
             Node::TypedShape(n) => n,
             Node::TypedShapeItem(n) => n,
+            Node::SynthesizedShapeDeclaration(n) => n,
+            Node::SynthesizedShapeFieldDeclaration(n) => n,
         }
     }
 
@@ -1085,6 +1113,7 @@ impl Node {
             Node::DecoratorDeclaration(d) => Some(d.identifier().span()),
             Node::PipelineItemDeclaration(p) => Some(p.identifier().span()),
             Node::StructDeclaration(s) => Some(s.identifier().span()),
+            Node::SynthesizedShapeDeclaration(s) => Some(s.identifier().span()),
             _ => None,
         }
     }
@@ -1099,6 +1128,7 @@ impl Node {
             Node::DecoratorDeclaration(t) => t.define_availability().contains(availability),
             Node::PipelineItemDeclaration(t) => t.define_availability().contains(availability),
             Node::StructDeclaration(t) => t.define_availability().contains(availability),
+            Node::SynthesizedShapeDeclaration(s) => s.define_availability().contains(availability),
             _ => true,
         }
     }
@@ -1118,6 +1148,7 @@ impl Node {
             Node::DecoratorDeclaration(d) => Some(d.string_path()),
             Node::PipelineItemDeclaration(p) => Some(p.string_path()),
             Node::StructDeclaration(s) => Some(s.string_path()),
+            Node::SynthesizedShapeDeclaration(s) => Some(s.string_path()),
             _ => None,
         }
     }
@@ -1137,6 +1168,7 @@ impl Node {
             Node::DecoratorDeclaration(d) => Some(d.str_path()),
             Node::PipelineItemDeclaration(p) => Some(p.str_path()),
             Node::StructDeclaration(s) => Some(s.str_path()),
+            Node::SynthesizedShapeDeclaration(s) => Some(s.str_path()),
             _ => None,
         }
     }
@@ -1156,6 +1188,7 @@ impl Node {
             Node::DecoratorDeclaration(d) => Some(d.identifier().name()),
             Node::PipelineItemDeclaration(p) => Some(p.identifier().name()),
             Node::StructDeclaration(s) => Some(s.identifier().name()),
+            Node::SynthesizedShapeDeclaration(s) => Some(s.identifier().name()),
             _ => None,
         }
     }

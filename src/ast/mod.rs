@@ -55,3 +55,7 @@ pub mod partial_field;
 pub mod partial_argument_declaration;
 pub mod partial_argument;
 pub mod empty_decorator;
+pub mod synthesized_shape_declaration;
+pub mod synthesized_shape_field_declaration;
+pub mod handler_template_declaration;
+pub mod include_handler_from_template;

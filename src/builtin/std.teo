@@ -1308,7 +1308,7 @@ namespace std {
 
         declare model field decorator companion
 
-        declare synthesized shape SignInArgs<T> where T: Model {
+        declare synthesized shape SignInArgs {
             declare optional synthesized field with @identity.id
             declare optional synthesized field with @identity.checker
             declare optional synthesized field with @identity.companion

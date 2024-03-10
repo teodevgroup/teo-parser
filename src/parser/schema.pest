@@ -557,15 +557,11 @@ synthesized_shape_declaration = {
   SYNTHESIZED_KEYWORD ~
   SHAPE_KEYWORD ~
   identifier ~
-  generics_declaration? ~
-  generics_constraint? ~
-  synthesized_shape_block?
-}
-
-synthesized_shape_block = {
-  BLOCK_OPEN ~
-  (field_declaration | partial_field | synthesized_shape_field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
-  BLOCK_CLOSE
+  (
+    BLOCK_OPEN ~
+    (field_declaration | partial_field | synthesized_shape_field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+    BLOCK_CLOSE
+  )?
 }
 
 synthesized_shape_field_declaration = {
