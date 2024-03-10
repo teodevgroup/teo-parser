@@ -565,13 +565,14 @@ synthesized_shape_declaration = {
 }
 
 synthesized_shape_field_declaration = {
-  DECLARE_KEYWORD ~ (REQUIRED_KEYWORD | OPTIONAL_KEYWORD)? ~ SYNTHESIZED_KEYWORD ~ FIELD_KEYWORD ~ WITH_KEYWORD ~ AT ~ identifier_path
+  triple_comment_block? ~ DECLARE_KEYWORD ~ (REQUIRED_KEYWORD | OPTIONAL_KEYWORD)? ~ SYNTHESIZED_KEYWORD ~ FIELD_KEYWORD ~ WITH_KEYWORD ~ AT ~ identifier_path
 }
 
 // #############
 // include template for model handler group
 // #############
 include_handler_from_template = {
+  triple_comment_block? ~
   INCLUDE_KEYWORD ~ HANDLER_KEYWORD ~ identifier_path ~ (AS_KEYWORD ~ identifier)?
 }
 
@@ -579,6 +580,7 @@ include_handler_from_template = {
 // handler template declaration
 // #############
 handler_template_declaration = {
+  triple_comment_block? ~
   DECLARE_KEYWORD ~
   HANDLER_KEYWORD ~
   TEMPLATE_KEYWORD ~

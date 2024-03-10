@@ -26,6 +26,7 @@ use crate::ast::function_declaration::FunctionDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsConstraintItem, GenericsDeclaration};
 use crate::ast::group::Group;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration};
+use crate::ast::handler_template_declaration::HandlerTemplateDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::import::Import;
@@ -141,6 +142,7 @@ pub enum Node {
     TypedShapeItem(TypedShapeItem),
     SynthesizedShapeDeclaration(SynthesizedShapeDeclaration),
     SynthesizedShapeFieldDeclaration(SynthesizedShapeFieldDeclaration),
+    HandlerTemplateDeclaration(HandlerTemplateDeclaration),
 }
 
 impl Node {
@@ -1014,6 +1016,17 @@ impl Node {
         }
     }
 
+    pub fn is_handler_template_declaration(&self) -> bool {
+        self.as_handler_template_declaration().is_some()
+    }
+
+    pub fn as_handler_template_declaration(&self) -> Option<&HandlerTemplateDeclaration> {
+        match self {
+            Node::HandlerTemplateDeclaration(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1095,6 +1108,7 @@ impl Node {
             Node::TypedShapeItem(n) => n,
             Node::SynthesizedShapeDeclaration(n) => n,
             Node::SynthesizedShapeFieldDeclaration(n) => n,
+            Node::HandlerTemplateDeclaration(n) => n,
         }
     }
 
