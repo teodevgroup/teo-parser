@@ -26,7 +26,7 @@ pub fn top_filter_for_reference_type(reference_type: ReferenceSpace) -> Arc<dyn 
             top.as_middleware_declaration().is_some()
         }),
         ReferenceSpace::Default => Arc::new(|top: &Node| {
-            top.is_enum() || top.is_model() || top.is_interface_declaration() || top.is_struct_declaration() || top.is_config() || top.is_constant_declaration() || top.is_namespace() || top.is_data_set()
+            top.is_enum() || top.is_model() || top.is_interface_declaration() || top.is_struct_declaration() || top.is_config() || top.is_constant_declaration() || top.is_namespace() || top.is_data_set() || top.is_synthesized_shape_declaration()
         }),
     }
 }

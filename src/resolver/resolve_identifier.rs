@@ -366,6 +366,15 @@ pub(crate) fn top_to_expr_info<'a>(top: &'a Node, resolver_context: Option<&'a R
                 None
             ))
         },
+        Node::SynthesizedShapeDeclaration(r) => ExprInfo {
+            r#type: Type::Undetermined,
+            value: None,
+            reference_info: Some(ReferenceInfo::new(
+                ReferenceType::DeclaredSynthesizedShape,
+                Reference::new(r.path.clone(), r.string_path.clone()),
+                None,
+            ))
+        },
         Node::InterfaceDeclaration(i) => ExprInfo {
             r#type: Type::Undetermined,
             value: None,
