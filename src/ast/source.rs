@@ -172,6 +172,8 @@ pub struct SourceReferences {
     pub use_middlewares_block: Option<usize>,
     pub empty_decorators: BTreeSet<usize>,
     pub unattached_decorators: BTreeSet<usize>,
+    pub synthesized_shape_declarations: BTreeSet<usize>,
+    pub handler_template_declarations: BTreeSet<usize>,
 }
 
 impl SourceReferences {
@@ -196,6 +198,8 @@ impl SourceReferences {
             use_middlewares_block: None,
             empty_decorators: btreeset! {},
             unattached_decorators: btreeset! {},
+            synthesized_shape_declarations: btreeset! {},
+            handler_template_declarations: btreeset! {},
         }
     }
 }

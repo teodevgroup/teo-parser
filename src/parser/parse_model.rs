@@ -8,6 +8,7 @@ use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_decorator::parse_decorator;
 use crate::parser::parse_field::parse_field;
 use crate::parser::parse_handler_group::parse_handler_declaration;
+use crate::parser::parse_include_handler_from_template::parse_include_handler_from_template;
 use crate::parser::parse_partial_field::parse_partial_field;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -32,13 +33,11 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
     let mut fields = vec![];
     let mut partial_fields = vec![];
     let mut handlers = vec![];
+    let mut handler_inclusions = vec![];
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::MODEL_KEYWORD => parse_insert_keyword!(context, current, children, "model"),
-
-            Rule::BLOCK_CLOSE => {
-                parse_insert_punctuation!(context, current, children, "}");
-            }
+            Rule::BLOCK_CLOSE => parse_insert_punctuation!(context, current, children, "}"),
             Rule::BLOCK_OPEN => {
                 parse_insert_punctuation!(context, current, children, "{");
                 inside_block = true;
@@ -66,6 +65,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
             Rule::handler_declaration => parse_insert!(parse_handler_declaration(current, context, true), children, handlers),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
             Rule::availability_end => parse_append!(parse_availability_end(current, context), children),
+            Rule::include_handler_from_template => parse_insert!(parse_include_handler_from_template(current, context), children, handler_inclusions),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -86,6 +86,7 @@ pub(super) fn parse_model_declaration(pair: Pair<'_>, context: &ParserContext) -
         empty_field_decorator_spans,
         unattached_field_decorators,
         handlers,
+        handler_inclusions,
         resolved: RefCell::new(None),
     }
 }

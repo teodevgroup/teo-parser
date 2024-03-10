@@ -16,6 +16,7 @@ use crate::parser::parse_decorator_declaration::parse_decorator_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
 use crate::parser::parse_empty_decorator::parse_empty_decorator;
 use crate::parser::parse_enum::parse_enum_declaration;
+use crate::parser::parse_handler_template_declaration::parse_handler_template_declaration;
 use crate::parser::parse_import_statement::parse_import_statement;
 use crate::parser::parse_interface_declaration::parse_interface_declaration;
 use crate::parser::parse_middleware_declaration::parse_middleware_declaration;
@@ -24,6 +25,7 @@ use crate::parser::parse_namespace::parse_namespace;
 use crate::parser::parse_pipeline_item_declaration::parse_pipeline_item_declaration;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_struct_declaration::parse_struct_declaration;
+use crate::parser::parse_synthesized_shape_declaration::parse_synthesized_shape_declaration;
 use crate::parser::parse_use_middlewares_block::parse_use_middlewares_block;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::SchemaParser;
@@ -170,6 +172,16 @@ pub(super) fn parse_source(
                 references.unattached_decorators.insert(unattached_decorator.id());
                 children.insert(unattached_decorator.id(), Node::Decorator(unattached_decorator));
             },
+            Rule::synthesized_shape_declaration => {
+                let synthesized_shape_declaration = parse_synthesized_shape_declaration(current, context);
+                references.synthesized_shape_declarations.insert(synthesized_shape_declaration.id());
+                children.insert(synthesized_shape_declaration.id(), Node::SynthesizedShapeDeclaration(synthesized_shape_declaration));
+            },
+            Rule::handler_template_declaration => {
+                let handler_template_declaration = parse_handler_template_declaration(current, context);
+                references.handler_template_declarations.insert(handler_template_declaration.id());
+                children.insert(handler_template_declaration.id(), Node::HandlerTemplateDeclaration(handler_template_declaration));
+            }
             Rule::CATCH_ALL => context.insert_unparsed(parse_span(&current)),
             Rule::EOI => (),
             _ => context.insert_unparsed(parse_span(&current)),

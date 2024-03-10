@@ -46,4 +46,7 @@ mod parse_partial_field;
 mod parse_partial_argument_declaration;
 mod parse_partial_argument;
 mod parse_empty_decorator;
+mod parse_include_handler_from_template;
+mod parse_handler_template_declaration;
+mod parse_synthesized_shape_declaration;
 pub(super) mod parse;
