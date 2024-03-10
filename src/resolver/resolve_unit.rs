@@ -93,6 +93,7 @@ fn resolve_current_item_for_unit<'a>(
                 ReferenceType::FunctionDeclaration => todo!(),
                 ReferenceType::DataSetRecord => todo!(),
                 ReferenceType::Namespace => resolve_namespace_reference_for_unit(reference_info.reference().string_path(), expression, context),
+                ReferenceType::DeclaredSynthesizedShape => todo!(),
             }
         } else {
             resolve_current_item_type_for_unit(last_span, current, expression, context, keywords_map)

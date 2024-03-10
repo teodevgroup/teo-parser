@@ -321,6 +321,16 @@ fn resolve_type_item<'a>(
                     } else {
                         vec![]
                     })),
+                    ReferenceType::DeclaredSynthesizedShape => if let Some(generics) = type_item.generics() {
+                        let gens: Vec<Type> = generics.type_exprs().map(|t| resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)).collect();
+                        if gens.len() == 1 {
+                            Some(Type::DeclaredSynthesizedShape(reference_info.reference.clone(), Box::new(gens.get(0).unwrap().clone())))
+                        } else {
+                            Some(Type::Undetermined)
+                        }
+                    } else {
+                        Some(Type::Undetermined)
+                    },
                     _ => None,
                 };
             }

@@ -19,4 +19,5 @@ pub enum ReferenceType {
     StructStaticFunction,
     FunctionDeclaration,
     Namespace,
+    DeclaredSynthesizedShape,
 }

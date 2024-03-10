@@ -142,6 +142,10 @@ pub enum Type {
     ///
     SynthesizedShapeReference(SynthesizedShapeReference),
 
+    /// Declared Synthesized Shape
+    ///
+    DeclaredSynthesizedShape(Reference, Box<Type>),
+
     /// Enum Variant
     ///
     EnumVariant(Reference),
@@ -463,6 +467,17 @@ impl Type {
     pub fn as_synthesized_shape_reference(&self) -> Option<&SynthesizedShapeReference> {
         match self {
             Type::SynthesizedShapeReference(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn is_declared_shape_reference(&self) -> bool {
+        self.as_declared_shape_reference().is_some()
+    }
+
+    pub fn as_declared_shape_reference(&self) -> Option<(&Reference, &Type)> {
+        match self {
+            Type::DeclaredSynthesizedShape(shape, inner) => Some((shape, inner)),
             _ => None,
         }
     }
@@ -977,6 +992,7 @@ impl Type {
             Type::Range(inner) => other.is_range() && inner.as_ref().test(other.as_range().unwrap()),
             Type::SynthesizedShape(shape) => other.is_synthesized_shape() && shape.test(other.as_synthesized_shape().unwrap()),
             Type::SynthesizedShapeReference(r) => other.is_synthesized_shape_reference() && r == other.as_synthesized_shape_reference().unwrap(),
+            Type::DeclaredSynthesizedShape(r, t) => other.is_declared_shape_reference() && t.as_ref() == other.as_declared_shape_reference().unwrap().1 && r == other.as_declared_shape_reference().unwrap().0,
             Type::EnumVariant(r) => other.is_enum_variant() && r == other.as_enum_variant().unwrap(),
             Type::SynthesizedEnum(s) => other.is_synthesized_enum() && s.members.keys().collect::<BTreeSet<&String>>() == other.as_synthesized_enum().unwrap().members.keys().collect::<BTreeSet<&String>>(),
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
@@ -1225,6 +1241,7 @@ impl Display for Type {
             Type::Range(inner) => f.write_str(&format!("Range<{}>", inner)),
             Type::SynthesizedShape(shape) => Display::fmt(shape, f),
             Type::SynthesizedShapeReference(r) => Display::fmt(r, f),
+            Type::DeclaredSynthesizedShape(r, t) => f.write_str(&format!("{}<{}>", r.str_path().join("."), t)),
             Type::EnumVariant(r) => f.write_str(&r.string_path().join(".")),
             Type::SynthesizedEnum(e) => Display::fmt(e, f),
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}", r)),
