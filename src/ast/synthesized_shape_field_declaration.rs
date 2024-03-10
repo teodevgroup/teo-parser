@@ -7,6 +7,7 @@ use crate::traits::write::Write;
 declare_container_node!(SynthesizedShapeFieldDeclaration, availability,
     pub(crate) comment: Option<usize>,
     pub(crate) decorator_identifier_path: usize,
+    pub(crate) optional: bool,
 );
 
 impl_container_node_defaults!(SynthesizedShapeFieldDeclaration, availability);
