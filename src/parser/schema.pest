@@ -1,6 +1,6 @@
 schema = {
     SOI
-    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | handler_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | CATCH_ALL)*
+    ~ (namespace | import_statement | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | config_declaration | decorator_declaration | pipeline_item_declaration | handler_group_declaration | handler_declaration | handler_template_declaration | synthesized_shape_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | CATCH_ALL)*
     ~ EOI
 }
 
@@ -44,12 +44,21 @@ NOTRACK_KEYWORD = { "notrack" }
 GROUP_KEYWORD = { "group" }
 RECORD_KEYWORD = { "record" }
 DECLARE_KEYWORD = { "declare" }
+BUILTIN_KEYWORD = { "builtin" }
+SYNTHESIZED_KEYWORD = { "synthesized" }
+SHAPE_KEYWORD = { "shape" }
+OPTIONAL_KEYWORD = { "optional" }
+REQUIRED_KEYWORD = { "required" }
+WITH_KEYWORD = { "with" }
 NONAPI_KEYWORD = { "nonapi" }
 CONFIG_KEYWORD = { "config" }
 MIDDLEWARE_KEYWORD = { "middleware" }
 MIDDLEWARES_KEYWORD = { "middlewares" }
 DECORATOR_KEYWORD = { "decorator" }
 HANDLER_KEYWORD = { "handler" }
+TEMPLATE_KEYWORD = { "template" }
+INCLUDE_KEYWORD = { "include" }
+AS_KEYWORD = { "as" }
 JSON_KEYWORD = { "json" }
 FORM_KEYWORD = { "form" }
 INTERFACE_KEYWORD = { "interface" }
@@ -351,7 +360,7 @@ model_declaration = {
     ~ MODEL_KEYWORD
     ~ identifier
     ~ BLOCK_OPEN
-    ~ (field_declaration | partial_field | handler_declaration | decorator | empty_decorator | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (field_declaration | partial_field | handler_declaration | include_handler_from_template | decorator | empty_decorator | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -486,7 +495,7 @@ namespace = {
     triple_comment_block? ~
     NAMESPACE_KEYWORD ~ identifier
     ~ BLOCK_OPEN
-    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | handler_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
+    ~ (namespace | config_block | use_middlewares_block | struct_declaration | enum_declaration | model_declaration | constant_statement | dataset_declaration | interface_declaration | middleware_declaration | decorator_declaration | config_declaration | pipeline_item_declaration | handler_group_declaration | handler_declaration | handler_template_declaration | synthesized_shape_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | decorator | empty_decorator | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }
 
@@ -535,4 +544,52 @@ function_declaration = {
   COLON ~
   type_expression ~
   generics_constraint?
+}
+
+// #############
+// synthesized shape declaration
+// #############
+
+synthesized_shape_declaration = {
+  triple_comment_block? ~
+  DECLARE_KEYWORD ~
+  BUILTIN_KEYWORD? ~
+  SYNTHESIZED_KEYWORD ~
+  SHAPE_KEYWORD ~
+  identifier ~
+  generics_declaration? ~
+  generics_constraint? ~
+  synthesized_shape_block?
+}
+
+synthesized_shape_block = {
+  BLOCK_OPEN ~
+  (field_declaration | partial_field | synthesized_shape_field_declaration | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)* ~
+  BLOCK_CLOSE
+}
+
+synthesized_shape_field_declaration = {
+  DECLARE_KEYWORD ~ (REQUIRED_KEYWORD | OPTIONAL_KEYWORD)? ~ SYNTHESIZED_KEYWORD ~ FIELD_KEYWORD ~ WITH_KEYWORD ~ AT ~ identifier_path
+}
+
+// #############
+// include template for model handler group
+// #############
+include_handler_from_template = {
+  INCLUDE_KEYWORD ~ HANDLER_KEYWORD ~ identifier_path ~ (AS_KEYWORD ~ identifier)?
+}
+
+// #############
+// handler template declaration
+// #############
+handler_template_declaration = {
+  DECLARE_KEYWORD ~
+  HANDLER_KEYWORD ~
+  TEMPLATE_KEYWORD ~
+  identifier ~
+  PAREN_OPEN ~
+  type_expression? ~
+  PAREN_CLOSE ~
+  COLON ~
+  type_expression
 }

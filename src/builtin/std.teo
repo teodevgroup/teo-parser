@@ -412,6 +412,8 @@ namespace std {
 
     #if available(database)
 
+    declare builtin synthesized shape BlaBlaBla
+
     /// @name Map
     /// Specify an underlying database table name for the model
     declare unique model decorator map(tableName?: String)
@@ -996,6 +998,10 @@ namespace std {
 
     #end
 
+    /// @name Empty
+    /// The empty interface
+    interface Empty { }
+
     /// @name Data
     /// This interface is common for action output
     interface Data<T> {
@@ -1274,17 +1280,48 @@ namespace std {
     }
 
     #end
+
+    /// @name Bcrypt
+    /// Bcrypt related pipeline items
+    namespace bcrypt {
+
+        /// @name Salt
+        /// Transform this string value with Bcrypt salt
+        declare pipeline item salt: String -> String
+
+        /// @name Verify
+        /// Verify with Bcrypt verify
+        declare pipeline item verify(pipeline?: Pipeline<String, String>): String -> String
+    }
+
+    /// @name Identity
+    /// Identity and user session
+    namespace identity {
+
+        interface TokenInfo {
+            token: String
+        }
+
+        declare model field decorator id
+
+        declare model field decorator checker
+
+        declare model field decorator companion
+
+        declare synthesized shape SignInArgs<T> where T: Model {
+            declare optional synthesized field with @identity.id
+            declare optional synthesized field with @identity.checker
+            declare optional synthesized field with @identity.companion
+        }
+
+        interface SignInInput<T> where T: Model {
+            credentials: SignInArgs<T>
+            select: Select<T>?
+            include: Include<T>?
+        }
+
+        declare handler template signIn(SignInInput<Self>): DataMeta<Result<Self>, TokenInfo>
+        declare handler template identity(Empty): Data<Result<Self>>
+    }    
 }
 
-/// @name Bcrypt
-/// Bcrypt related pipeline items
-namespace bcrypt {
-
-    /// @name Salt
-    /// Transform this string value with Bcrypt salt
-    declare pipeline item salt: String -> String
-
-    /// @name Verify
-    /// Verify with Bcrypt verify
-    declare pipeline item verify(pipeline?: Pipeline<String, String>): String -> String
-}
