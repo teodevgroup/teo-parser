@@ -573,6 +573,7 @@ synthesized_shape_field_declaration = {
 // #############
 include_handler_from_template = {
   triple_comment_block? ~
+  (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
   INCLUDE_KEYWORD ~ HANDLER_KEYWORD ~ identifier_path ~ (AS_KEYWORD ~ identifier)?
 }
 
@@ -581,7 +582,10 @@ include_handler_from_template = {
 // #############
 handler_template_declaration = {
   triple_comment_block? ~
+  (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
   DECLARE_KEYWORD ~
+  NONAPI_KEYWORD? ~
+  req_type? ~
   HANDLER_KEYWORD ~
   TEMPLATE_KEYWORD ~
   identifier ~
