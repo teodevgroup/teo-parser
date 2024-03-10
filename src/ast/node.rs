@@ -30,6 +30,7 @@ use crate::ast::handler_template_declaration::HandlerTemplateDeclaration;
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;
 use crate::ast::import::Import;
+use crate::ast::include_handler_from_template::IncludeHandlerFromTemplate;
 use crate::ast::int_subscript::IntSubscript;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
@@ -143,6 +144,7 @@ pub enum Node {
     SynthesizedShapeDeclaration(SynthesizedShapeDeclaration),
     SynthesizedShapeFieldDeclaration(SynthesizedShapeFieldDeclaration),
     HandlerTemplateDeclaration(HandlerTemplateDeclaration),
+    IncludeHandlerFromTemplate(IncludeHandlerFromTemplate),
 }
 
 impl Node {
@@ -1027,6 +1029,17 @@ impl Node {
         }
     }
 
+    pub fn is_include_handler_from_template(&self) -> bool {
+        self.as_include_handler_from_template().is_some()
+    }
+
+    pub fn as_include_handler_from_template(&self) -> Option<&IncludeHandlerFromTemplate> {
+        match self {
+            Node::IncludeHandlerFromTemplate(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1109,6 +1122,7 @@ impl Node {
             Node::SynthesizedShapeDeclaration(n) => n,
             Node::SynthesizedShapeFieldDeclaration(n) => n,
             Node::HandlerTemplateDeclaration(n) => n,
+            Node::IncludeHandlerFromTemplate(n) => n,
         }
     }
 
