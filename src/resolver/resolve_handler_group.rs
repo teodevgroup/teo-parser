@@ -101,7 +101,7 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
     }
 }
 
-fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
+pub(super) fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
     match r#type {
         Type::Any => (),
         Type::SynthesizedShapeReference(shape_reference) => {
@@ -148,7 +148,7 @@ fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a Resolver
     }
 }
 
-fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
+pub(super) fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
@@ -186,7 +186,7 @@ fn is_valid_form_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     }
 }
 
-fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
+pub(super) fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
@@ -229,7 +229,7 @@ fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     }
 }
 
-fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
+pub(super) fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static str> {
     match r#type {
         Type::Any => None,
         Type::Null => None,
