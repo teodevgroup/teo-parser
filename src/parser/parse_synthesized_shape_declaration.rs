@@ -1,8 +1,9 @@
 use std::cell::RefCell;
+use indexmap::indexmap;
 use maplit::btreemap;
 use crate::ast::synthesized_shape_declaration::{SynthesizedShapeDeclaration, SynthesizedShapeDeclarationResolved};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
-use crate::ast::synthesized_shape_field_declaration::SynthesizedShapeFieldDeclaration;
+use crate::ast::synthesized_shape_field_declaration::{SynthesizedShapeFieldDeclaration, SynthesizedShapeFieldDeclarationResolved};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -74,7 +75,10 @@ pub(super) fn parse_synthesized_shape_declaration(pair: Pair<'_>, context: &Pars
         partial_static_fields,
         dynamic_fields,
         builtin,
-        resolved: RefCell::new(Some(SynthesizedShapeDeclarationResolved { caches: btreemap! {} }))
+        resolved: RefCell::new(Some(SynthesizedShapeDeclarationResolved {
+            caches: btreemap! {},
+            base_shape: indexmap! {},
+        }))
     }
 }
 
@@ -116,5 +120,6 @@ fn parse_shape_field_declaration(pair: Pair<'_>, context: &ParserContext) -> Syn
         comment,
         decorator_identifier_path,
         optional,
+        resolved: RefCell::new(Some(SynthesizedShapeFieldDeclarationResolved { decorator_full_path: None }))
     }
 }

@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use indexmap::IndexMap;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::doc_comment::DocComment;
 use crate::ast::field::Field;
@@ -60,5 +61,6 @@ impl Write for SynthesizedShapeDeclaration {
 
 #[derive(Debug)]
 pub struct SynthesizedShapeDeclarationResolved {
-    pub caches: BTreeMap<Vec<String>, BTreeMap<String, Type>>
+    pub caches: BTreeMap<Vec<String>, BTreeMap<String, Type>>,
+    pub base_shape: IndexMap<String, Type>,
 }

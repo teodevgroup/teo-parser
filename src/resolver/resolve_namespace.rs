@@ -5,6 +5,7 @@ use crate::resolver::resolve_config::resolve_config_references;
 use crate::resolver::resolve_config_declaration::resolve_config_declaration_types;
 use crate::resolver::resolve_constant::{resolve_constant_check, resolve_constant_references};
 use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_data_set_records};
+use crate::resolver::resolve_declared_synthesized_shape::resolve_declared_synthesized_shape;
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
 use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
@@ -47,6 +48,7 @@ pub(super) fn resolve_namespace_types<'a>(namespace: &'a Namespace, context: &'a
             Node::Enum(r#enum) => resolve_enum_types(r#enum, context),
             Node::Model(model) => (),
             Node::InterfaceDeclaration(interface) => resolve_interface_declaration_types(interface, context),
+            Node::SynthesizedShapeDeclaration(synthesized_shape_declaration) => resolve_declared_synthesized_shape(synthesized_shape_declaration, context),
             Node::Namespace(namespace) => resolve_namespace_types(namespace, context),
             Node::ConfigDeclaration(config_declaration) => resolve_config_declaration_types(config_declaration, context),
             Node::StructDeclaration(s) => resolve_struct_declaration_types(s, context),
