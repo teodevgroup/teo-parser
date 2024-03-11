@@ -7,6 +7,7 @@ use crate::r#type::reference::Reference;
 use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_decorators, resolve_field_types};
 use crate::resolver::resolve_handler_group::{resolve_handler_declaration_decorators, resolve_handler_declaration_types};
+use crate::resolver::resolve_include_handler_from_template::resolve_include_handler_from_template_decorators;
 use crate::resolver::resolver_context::ResolverContext;
 use crate::traits::resolved::Resolve;
 
@@ -60,5 +61,9 @@ pub(super) fn resolve_model_decorators<'a>(model: &'a Model, context: &'a Resolv
     // handlers
     for handler in model.handlers() {
         resolve_handler_declaration_decorators(handler, context, Some(model));
+    }
+    // include handler templates
+    for handler_inclusion in model.handler_inclusions() {
+        resolve_include_handler_from_template_decorators(handler_inclusion, context, model);
     }
 }

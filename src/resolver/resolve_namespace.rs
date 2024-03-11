@@ -8,6 +8,7 @@ use crate::resolver::resolve_data_set::{resolve_data_set_references, resolve_dat
 use crate::resolver::resolve_declared_synthesized_shape::resolve_declared_synthesized_shape;
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
+use crate::resolver::resolve_handler_template_declaration::{resolve_handler_template_declaration_decorators, resolve_handler_template_declaration_types};
 use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
@@ -80,6 +81,7 @@ pub(super) fn resolve_namespace_references<'a>(namespace: &'a Namespace, context
             Node::Namespace(namespace) => resolve_namespace_references(namespace, context),
             Node::Model(model) => resolve_model_references(model, context),
             Node::HandlerDeclaration(handler) => resolve_handler_declaration_types(handler, context),
+            Node::HandlerTemplateDeclaration(handler_template) => resolve_handler_template_declaration_types(handler_template, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_references(handler_group, context),
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration_references(d, context),
             Node::PipelineItemDeclaration(p) => resolve_pipeline_item_declaration_references(p, context),
@@ -104,6 +106,7 @@ pub(super) fn resolve_namespace_consumers<'a>(namespace: &'a Namespace, context:
             Node::Namespace(namespace) => resolve_namespace_consumers(namespace, context),
             Node::Model(model) => resolve_model_decorators(model, context),
             Node::HandlerDeclaration(handler) => resolve_handler_declaration_decorators(handler, context, None),
+            Node::HandlerTemplateDeclaration(handler_template) => resolve_handler_template_declaration_decorators(handler_template, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
             Node::UseMiddlewaresBlock(u) => resolve_use_middlewares_block(u, context),
             _ => (),

@@ -28,3 +28,5 @@ mod resolve_unit;
 mod resolve_use_middlewares_block;
 mod resolve_model_shapes;
 mod resolve_declared_synthesized_shape;
+mod resolve_handler_template_declaration;
+mod resolve_include_handler_from_template;
