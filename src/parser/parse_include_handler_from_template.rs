@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::ast::include_handler_from_template::IncludeHandlerFromTemplate;
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_set, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_code_comment::parse_code_comment;
@@ -52,5 +53,6 @@ pub(super) fn parse_include_handler_from_template(pair: Pair<'_>, context: &Pars
         identifier_path,
         decorators,
         empty_decorators,
+        resolved: RefCell::new(None),
     }
 }

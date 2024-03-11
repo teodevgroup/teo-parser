@@ -54,6 +54,12 @@ pub fn top_filter_for_middleware() -> Arc<dyn Fn(&Node) -> bool> {
     })
 }
 
+pub fn top_filter_for_handler_template() -> Arc<dyn Fn(&Node) -> bool> {
+    Arc::new(|top: &Node| {
+        top.is_handler_template_declaration()
+    })
+}
+
 pub fn top_filter_for_model() -> Arc<dyn Fn(&Node) -> bool> {
     Arc::new(|top: &Node| {
         top.is_model()

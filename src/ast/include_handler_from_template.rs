@@ -1,12 +1,15 @@
+use std::cell::RefCell;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::decorator::Decorator;
 use crate::ast::identifier::Identifier;
 use crate::{declare_container_node, impl_container_node_defaults, node_child_fn, node_children_iter, node_children_iter_fn, node_optional_child_fn};
 use crate::ast::identifier_path::IdentifierPath;
 use crate::format::Writer;
+use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::named_identifiable::NamedIdentifiable;
+use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
 declare_container_node!(IncludeHandlerFromTemplate, named, availability,
@@ -15,6 +18,7 @@ declare_container_node!(IncludeHandlerFromTemplate, named, availability,
     pub(crate) as_identifier: Option<usize>,
     pub(crate) decorators: Vec<usize>,
     pub(crate) empty_decorators: Vec<usize>,
+    pub(crate) resolved: RefCell<Option<IncludeHandlerFromTemplateResolved>>,
 );
 
 impl_container_node_defaults!(IncludeHandlerFromTemplate, availability);
@@ -65,4 +69,16 @@ impl Write for IncludeHandlerFromTemplate {
     fn is_block_level_element(&self) -> bool {
         true
     }
+}
+
+impl Resolve<IncludeHandlerFromTemplateResolved> for IncludeHandlerFromTemplate {
+    fn resolved_ref_cell(&self) -> &RefCell<Option<IncludeHandlerFromTemplateResolved>> {
+        &self.resolved
+    }
+}
+
+#[derive(Debug)]
+pub struct IncludeHandlerFromTemplateResolved {
+    pub input_type: Option<Type>,
+    pub output_type: Type,
 }
