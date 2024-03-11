@@ -7,7 +7,8 @@ use crate::definition::jump_to_definition_in_constant::jump_to_definition_in_con
 use crate::definition::jump_to_definition_in_declared_synthesized_shape::jump_to_definition_in_declared_synthesized_shape;
 use crate::definition::jump_to_definition_in_decorator_declaration::jump_to_definition_in_decorator_declaration;
 use crate::definition::jump_to_definition_in_enum_declaration::jump_to_definition_in_enum_declaration;
-use crate::definition::jump_to_definition_in_handler_declaration::jump_to_definition_in_handler_group_declaration;
+use crate::definition::jump_to_definition_in_handler_declaration::{jump_to_definition_in_handler_declaration, jump_to_definition_in_handler_group_declaration};
+use crate::definition::jump_to_definition_in_handler_template_declaration::jump_to_definition_in_handler_template_declaration;
 use crate::definition::jump_to_definition_in_import::jump_to_definition_in_import;
 use crate::definition::jump_to_definition_in_interface::jump_to_definition_in_interface;
 use crate::definition::jump_to_definition_in_middleware_declaration::jump_to_definition_in_middleware_declaration;
@@ -33,6 +34,8 @@ pub fn jump_to_definition(schema: &Schema, file_path: &str, line_col: (usize, us
                 Node::Enum(e) => jump_to_definition_in_enum_declaration(schema, source, e, line_col),
                 Node::MiddlewareDeclaration(m) => jump_to_definition_in_middleware_declaration(schema, source, m, line_col),
                 Node::SynthesizedShapeDeclaration(f) => jump_to_definition_in_declared_synthesized_shape(schema, source, f, line_col),
+                Node::HandlerDeclaration(h) => jump_to_definition_in_handler_declaration(schema, source, h, line_col, true),
+                Node::HandlerTemplateDeclaration(h) => jump_to_definition_in_handler_template_declaration(schema, source, h, line_col),
                 Node::DataSet(_) => vec![],
                 Node::Namespace(_) => vec![],
                 Node::UseMiddlewaresBlock(_) => vec![],

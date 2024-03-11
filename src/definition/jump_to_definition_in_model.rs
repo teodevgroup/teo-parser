@@ -35,6 +35,7 @@ pub(super) fn jump_to_definition_in_model(schema: &Schema, source: &Source, mode
                 source,
                 handler_declaration,
                 line_col,
+                false,
             );
         }
     }

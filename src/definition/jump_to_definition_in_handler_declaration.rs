@@ -6,10 +6,12 @@ use crate::definition::jump_to_definition_in_type_expr::jump_to_definition_in_ty
 use crate::search::search_availability::search_availability;
 use crate::traits::node_trait::NodeTrait;
 
-pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source: &Source, handler_declaration: &HandlerDeclaration, line_col: (usize, usize)) -> Vec<Definition> {
+pub(super) fn jump_to_definition_in_handler_declaration(schema: &Schema, source: &Source, handler_declaration: &HandlerDeclaration, line_col: (usize, usize), ns_level: bool) -> Vec<Definition> {
     let mut namespace_path: Vec<_> = handler_declaration.string_path.iter().map(|s| s.as_str()).collect();
     namespace_path.pop();
-    namespace_path.pop();
+    if !ns_level {
+        namespace_path.pop();
+    }
     let availability = search_availability(schema, source, &namespace_path);
     if let Some(input_type) = handler_declaration.input_type() {
         if input_type.span().contains_line_col(line_col) {
@@ -46,6 +48,7 @@ pub(super) fn jump_to_definition_in_handler_group_declaration(schema: &Schema, s
                 source,
                 handler_declaration,
                 line_col,
+                false,
             );
         }
     }
