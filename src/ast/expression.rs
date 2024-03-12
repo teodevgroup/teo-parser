@@ -4,7 +4,6 @@ use std::fmt::{Display, Formatter};
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::ArithExpr;
 use crate::ast::bracket_expression::BracketExpression;
-use crate::ast::empty_dot::EmptyDot;
 use crate::ast::empty_pipeline::EmptyPipeline;
 use crate::ast::group::Group;
 use crate::ast::pipeline::Pipeline;

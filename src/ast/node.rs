@@ -1217,6 +1217,8 @@ impl Node {
             Node::PipelineItemDeclaration(p) => Some(p.identifier().name()),
             Node::StructDeclaration(s) => Some(s.identifier().name()),
             Node::SynthesizedShapeDeclaration(s) => Some(s.identifier().name()),
+            Node::HandlerDeclaration(h) => Some(h.identifier().name()),
+            Node::HandlerTemplateDeclaration(h) => Some(h.identifier().name()),
             _ => None,
         }
     }

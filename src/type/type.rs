@@ -13,7 +13,6 @@ use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
 use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReference;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
-use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {

@@ -8,7 +8,6 @@ use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_enum::SynthesizedEnum;
-use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
 use crate::traits::resolved::Resolve;
 
 

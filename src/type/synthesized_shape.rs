@@ -8,7 +8,6 @@ use serde::Serialize;
 use crate::ast::schema::Schema;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::Type;
-use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SynthesizedShape {

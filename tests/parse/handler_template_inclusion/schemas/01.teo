@@ -1,0 +1,19 @@
+connector {
+  provider: .mysql,
+  url: "mysql://localhost:3306/myhandler",
+
+}
+
+server {
+  bind: ("0.0.0.0", 5500),
+}
+
+model User {
+  @id @autoIncrement @readonly
+  id: Int
+  @identity.id
+  email: String
+  password: String
+
+  include handler identity.signIn as signIn
+}
