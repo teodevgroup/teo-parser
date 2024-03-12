@@ -5,6 +5,7 @@ use crate::ast::config_declaration::ConfigDeclaration;
 use crate::ast::data_set::DataSet;
 use crate::ast::decorator_declaration::DecoratorDeclaration;
 use crate::ast::handler::{HandlerDeclaration, HandlerGroupDeclaration};
+use crate::ast::handler_template_declaration::HandlerTemplateDeclaration;
 use crate::ast::interface::InterfaceDeclaration;
 use crate::ast::middleware::MiddlewareDeclaration;
 use crate::ast::model::Model;
