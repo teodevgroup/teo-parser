@@ -1395,5 +1395,7 @@ namespace std {
         declare handler template signIn(SignInInput<Self>): DataMeta<Result<Self>, TokenInfo>
 
         declare handler template identity(Empty): Data<Result<Self>>
+
+        declare middleware identityFromJwt(secret: String)
     }
 }
