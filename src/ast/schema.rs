@@ -146,6 +146,10 @@ impl Schema {
         self.references.handlers.iter().map(|path| self.find_top_by_path(path).unwrap().as_handler_declaration().unwrap()).collect()
     }
 
+    pub fn handler_template_declarations(&self) -> Vec<&HandlerTemplateDeclaration> {
+        self.references.handler_templates.iter().map(|path| self.find_top_by_path(path).unwrap().as_handler_template_declaration().unwrap()).collect()
+    }
+
     pub fn handler_group_declarations(&self) -> Vec<&HandlerGroupDeclaration> {
         self.references.handler_groups.iter().map(|path| self.find_top_by_path(path).unwrap().as_handler_group_declaration().unwrap()).collect()
     }
