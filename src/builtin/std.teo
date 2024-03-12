@@ -1380,9 +1380,11 @@ namespace std {
             declare optional synthesized field with @identity.companion
         }
 
-        declare model decorator tokenIssuer(pipeline?: Pipeline<Self, String>)
+        declare unique model decorator tokenIssuer(pipeline?: Pipeline<Self, String>)
 
-        declare model decorator validateAccount(pipeline?: Pipeline<Self, Ignored>)
+        declare unique model decorator validateAccount(pipeline?: Pipeline<Self, Ignored>)
+
+        declare unique model decorator jwtSecret(secret?: String)
 
         declare model field decorator id
 

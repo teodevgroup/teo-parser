@@ -186,6 +186,7 @@ pub(super) fn parse_namespace(pair: Pair<'_>, context: &ParserContext) -> Namesp
             Rule::handler_template_declaration => {
                 let handler_template_declaration = parse_handler_template_declaration(current, context);
                 references.handler_template_declarations.insert(handler_template_declaration.id());
+                context.schema_references_mut().handler_templates.push(handler_template_declaration.path().clone());
                 children.insert(handler_template_declaration.id(), Node::HandlerTemplateDeclaration(handler_template_declaration));
             },
             Rule::BLOCK_LEVEL_CATCH_ALL => context.insert_unparsed(parse_span(&current)),
