@@ -412,7 +412,64 @@ namespace std {
 
     #if available(database)
 
-    declare builtin synthesized shape BlaBlaBla
+    declare builtin synthesized shape Args
+    declare builtin synthesized shape FindManyArgs
+    declare builtin synthesized shape FindFirstArgs
+    declare builtin synthesized shape FindUniqueArgs
+    declare builtin synthesized shape CreateArgs
+    declare builtin synthesized shape UpdateArgs
+    declare builtin synthesized shape UpsertArgs
+    declare builtin synthesized shape CopyArgs
+    declare builtin synthesized shape DeleteArgs
+    declare builtin synthesized shape CreateManyArgs
+    declare builtin synthesized shape UpdateManyArgs
+    declare builtin synthesized shape CopyManyArgs
+    declare builtin synthesized shape DeleteManyArgs
+    declare builtin synthesized shape CountArgs
+    declare builtin synthesized shape AggregateArgs
+    declare builtin synthesized shape GroupByArgs
+    declare builtin synthesized shape RelationFilter
+    declare builtin synthesized shape ListRelationFilter
+    declare builtin synthesized shape WhereInput
+    declare builtin synthesized shape WhereUniqueInput
+    declare builtin synthesized shape ScalarWhereWithAggregatesInput
+    declare builtin synthesized shape CountAggregateInputType
+    declare builtin synthesized shape SumAggregateInputType
+    declare builtin synthesized shape AvgAggregateInputType
+    declare builtin synthesized shape MaxAggregateInputType
+    declare builtin synthesized shape MinAggregateInputType
+    declare builtin synthesized shape CreateInput
+    declare builtin synthesized shape CreateInputWithout
+    declare builtin synthesized shape CreateNestedOneInput
+    declare builtin synthesized shape CreateNestedOneInputWithout
+    declare builtin synthesized shape CreateNestedManyInput
+    declare builtin synthesized shape CreateNestedManyInputWithout
+    declare builtin synthesized shape UpdateInput
+    declare builtin synthesized shape UpdateInputWithout
+    declare builtin synthesized shape UpdateNestedOneInput
+    declare builtin synthesized shape UpdateNestedOneInputWithout
+    declare builtin synthesized shape UpdateNestedManyInput
+    declare builtin synthesized shape UpdateNestedManyInputWithout
+    declare builtin synthesized shape ConnectOrCreateInput
+    declare builtin synthesized shape ConnectOrCreateInputWithout
+    declare builtin synthesized shape UpdateWithWhereUniqueInput
+    declare builtin synthesized shape UpdateWithWhereUniqueInputWithout
+    declare builtin synthesized shape UpsertWithWhereUniqueInput
+    declare builtin synthesized shape UpsertWithWhereUniqueInputWithout
+    declare builtin synthesized shape UpdateManyWithWhereInput
+    declare builtin synthesized shape UpdateManyWithWhereInputWithout
+    declare builtin synthesized shape Select
+    declare builtin synthesized shape Include
+    declare builtin synthesized shape OrderByInput
+    declare builtin synthesized shape Result
+    declare builtin synthesized shape CountAggregateResult
+    declare builtin synthesized shape SumAggregateResult
+    declare builtin synthesized shape AvgAggregateResult
+    declare builtin synthesized shape MinAggregateResult
+    declare builtin synthesized shape MaxAggregateResult
+    declare builtin synthesized shape AggregateResult
+    declare builtin synthesized shape GroupByResult
+    declare builtin synthesized shape ScalarUpdateInput    
 
     /// @name Map
     /// Specify an underlying database table name for the model
@@ -1324,4 +1381,3 @@ namespace std {
         declare handler template identity(Empty): Data<Result<Self>>
     }
 }
-
