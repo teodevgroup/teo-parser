@@ -28,3 +28,4 @@ pub(crate) mod jump_to_definition_in_enum_declaration;
 pub(crate) mod jump_to_definition_in_middleware_declaration;
 pub(crate) mod jump_to_definition_in_declared_synthesized_shape;
 pub(crate) mod jump_to_definition_in_handler_template_declaration;
+pub(crate) mod jump_to_definition_in_include_handler_from_template;

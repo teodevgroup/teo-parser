@@ -286,7 +286,7 @@ fn resolve_type_item<'a>(
                 } else if !shape_reference_kind.requires_without() && type_item.generic_items().len() == 1 {
                     let argument = *type_item.generic_items().first().unwrap();
                     let resolved_type = resolve_type_expr(argument, generics_declaration, generics_constraint, keywords_map, context, availability);
-                    if resolved_type.is_model_object() {
+                    if resolved_type.is_model_object() || resolved_type.is_keyword() || resolved_type.is_generic_item() {
                         Some(Type::SynthesizedShapeReference(SynthesizedShapeReference {
                             kind: shape_reference_kind,
                             owner: Box::new(resolved_type),
