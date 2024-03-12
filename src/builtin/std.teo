@@ -1368,11 +1368,21 @@ namespace std {
             companions: M
         }
 
+        interface SignInInput<T> where T: Model {
+            credentials: SignInArgs<T>
+            select: Select<T>?
+            include: Include<T>?
+        }
+
         declare synthesized shape SignInArgs {
             declare optional synthesized field with @identity.id
             declare optional synthesized field with @identity.checker
             declare optional synthesized field with @identity.companion
         }
+
+        declare model decorator tokenIssuer(pipeline?: Pipeline<Self, String>)
+
+        declare model decorator validateAccount(pipeline?: Pipeline<Self, Ignored>)
 
         declare model field decorator id
 
@@ -1380,13 +1390,10 @@ namespace std {
 
         declare model field decorator companion
 
-        interface SignInInput<T> where T: Model {
-            credentials: SignInArgs<T>
-            select: Select<T>?
-            include: Include<T>?
-        }
+        declare pipeline item jwt(secret: String, expired: (Int64 | Pipeline<Self, Int64>)?): Self -> String
 
         declare handler template signIn(SignInInput<Self>): DataMeta<Result<Self>, TokenInfo>
+
         declare handler template identity(Empty): Data<Result<Self>>
     }
 }
