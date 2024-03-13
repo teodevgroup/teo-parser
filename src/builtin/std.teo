@@ -1003,27 +1003,27 @@ namespace std {
 
     /// @name Equal
     /// Valid if input is equal to rhs
-    declare pipeline item eq<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item eq<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name Greater Than
     /// Valid if input is greater than rhs
-    declare pipeline item gt<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item gt<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name Greater Than Or Equal
     /// Valid if input is greater than or equal to rhs
-    declare pipeline item gte<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item gte<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name less Than
     /// Valid if input is less than rhs
-    declare pipeline item lt<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item lt<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name less Than Or Equal
     /// Valid if input is less than or equal to rhs
-    declare pipeline item lte<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item lte<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name Not Equal
     /// Valid if input is not equal to rhs
-    declare pipeline item neq<T>(rhs: T | Pipeline<T, T>): T -> T
+    declare pipeline item neq<T>(rhs?: T | Pipeline<T, T>): T -> T
 
     /// @name Is False
     /// Valid if input is false
