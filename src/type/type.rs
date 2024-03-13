@@ -13,6 +13,7 @@ use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
 use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReference;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReference;
+use crate::traits::resolved::Resolve;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Type {
@@ -1066,7 +1067,11 @@ impl Type {
                 Type::DeclaredSynthesizedShape(synthesized_shape_reference, inner) => {
                     if let Some(model_reference) = inner.as_model_object() {
                         let model = schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
-                        (false, false)
+                        if let Some(shape) = model.resolved().get_declared(synthesized_shape_reference.string_path()) {
+                            (shape.get(field_name).is_some(), true)
+                        } else {
+                            (false, true)
+                        }
                     } else {
                         (false, true)
                     }
