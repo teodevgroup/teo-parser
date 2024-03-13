@@ -15,6 +15,7 @@ use crate::r#type::synthesized_enum::SynthesizedEnum;
 use crate::r#type::synthesized_enum_reference::SynthesizedEnumReferenceKind;
 use crate::r#type::synthesized_interface_enum::SynthesizedInterfaceEnum;
 use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReferenceKind;
+use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::Type;
 use crate::traits::has_availability::HasAvailability;
@@ -70,6 +71,7 @@ pub struct ModelResolved {
     pub enums: IndexMap<SynthesizedEnumReferenceKind, SynthesizedEnum>,
     pub interface_enums: IndexMap<SynthesizedInterfaceEnumReferenceKind, SynthesizedInterfaceEnum>,
     pub shapes: IndexMap<(SynthesizedShapeReferenceKind, Option<String>), Type>,
+    pub declared_shapes: IndexMap<Vec<String>, SynthesizedShape>,
 }
 
 impl ModelResolved {
@@ -79,6 +81,7 @@ impl ModelResolved {
             enums: Default::default(),
             interface_enums: Default::default(),
             shapes: Default::default(),
+            declared_shapes: Default::default(),
         }
     }
 
@@ -88,6 +91,14 @@ impl ModelResolved {
 
     pub fn get_without(&self, key: SynthesizedShapeReferenceKind, without: &str) -> Option<&Type> {
         self.shapes.get(&(key, Some(without.to_owned())))
+    }
+
+    pub fn get_declared(&self, path: &Vec<String>) -> Option<&SynthesizedShape> {
+        self.declared_shapes.get(path)
+    }
+
+    pub fn set_declared(&mut self, path: Vec<String>, shape: SynthesizedShape) {
+        self.declared_shapes.insert(path, shape);
     }
 }
 

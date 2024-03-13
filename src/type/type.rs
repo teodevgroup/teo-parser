@@ -53,6 +53,10 @@ pub enum Type {
     ///
     FieldName(String),
 
+    /// Shape Field
+    ///
+    ShapeField(Box<Type>),
+
     /// Generic Item
     ///
     GenericItem(String),
@@ -165,6 +169,9 @@ pub enum Type {
     ///
     SynthesizedInterfaceEnumReference(SynthesizedInterfaceEnumReference),
 
+    /// Shape
+    ///
+    Shape,
 
     /// Model
     ///
@@ -269,6 +276,17 @@ impl Type {
     pub fn as_field_type(&self) -> Option<(&Type, &Type)> {
         match self {
             Self::FieldType(path, field) => Some((path, field)),
+            _ => None,
+        }
+    }
+
+    pub fn is_shape_field(&self) -> bool {
+        self.as_shape_field().is_some()
+    }
+
+    pub fn as_shape_field(&self) -> Option<&Type> {
+        match self {
+            Self::ShapeField(inner) => Some(inner.as_ref()),
             _ => None,
         }
     }
@@ -533,6 +551,13 @@ impl Type {
         match self {
             Type::SynthesizedInterfaceEnumReference(e) => Some(e),
             _ => None,
+        }
+    }
+
+    pub fn is_shape(&self) -> bool {
+        match self {
+            Type::Shape => true,
+            _ => false,
         }
     }
 
@@ -819,6 +844,7 @@ impl Type {
             Type::Union(types) => types.iter().any(|t| t.contains_generics()),
             Type::Enumerable(inner) => inner.contains_generics(),
             Type::Optional(inner) => inner.contains_generics(),
+            Type::ShapeField(inner) => inner.contains_generics(),
             Type::FieldType(a, b) => a.contains_generics() || b.contains_generics(),
             Type::Array(inner) => inner.contains_generics(),
             Type::Dictionary(inner) => inner.contains_generics(),
@@ -840,6 +866,7 @@ impl Type {
             Type::Union(types) => types.iter().any(|t| t.contains_keywords()),
             Type::Enumerable(inner) => inner.contains_keywords(),
             Type::Optional(inner) => inner.contains_keywords(),
+            Type::ShapeField(inner) => inner.contains_generics(),
             Type::FieldType(a, b) => a.contains_keywords() || b.contains_keywords(),
             Type::Array(inner) => inner.contains_keywords(),
             Type::Dictionary(inner) => inner.contains_keywords(),
@@ -865,6 +892,7 @@ impl Type {
             Type::Union(types) => Type::Union(types.iter().map(|t| t.replace_generics(map)).collect()),
             Type::Enumerable(inner) => Type::Enumerable(Box::new(inner.replace_generics(map))),
             Type::Optional(inner) => Type::Optional(Box::new(inner.replace_generics(map))),
+            Type::ShapeField(inner) => Type::ShapeField(Box::new(inner.replace_generics(map))),
             Type::FieldType(a, b) => Type::FieldType(
                 Box::new(a.replace_generics(map)),
                 Box::new(b.replace_generics(map)),
@@ -935,6 +963,7 @@ impl Type {
                 Box::new(a.replace_keywords(map)),
                 Box::new(b.replace_keywords(map)),
             ),
+            Type::ShapeField(inner) => Type::ShapeField(Box::new(inner.replace_keywords(map))),
             Type::Array(inner) => Type::Array(Box::new(inner.replace_keywords(map))),
             Type::Dictionary(inner) => Type::Dictionary(Box::new(inner.replace_keywords(map))),
             Type::Tuple(types) => Type::Tuple(types.iter().map(|t| t.replace_keywords(map)).collect()),
@@ -971,6 +1000,7 @@ impl Type {
             Type::Enumerable(inner) => inner.test(other) || Type::Array(inner.clone()).test(other),
             Type::Optional(inner) => inner.test(other) || (other.is_optional() && inner.test(other.as_optional().unwrap())),
             Type::FieldType(a, b) => other.is_field_type() && a.test(other.as_field_type().unwrap().0) && b.test(other.as_field_type().unwrap().1),
+            Type::ShapeField(inner) => other.is_shape_field() && other.as_shape_field().unwrap() == inner.as_ref(),
             Type::FieldName(_) => other.is_field_name(),
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
@@ -999,6 +1029,7 @@ impl Type {
             Type::SynthesizedEnumReference(r) => other.is_synthesized_enum_reference() && r == other.as_synthesized_enum_reference().unwrap(),
             Type::SynthesizedInterfaceEnum(s) => other.is_synthesized_interface_enum() && s.members == other.as_synthesized_interface_enum().unwrap().members,
             Type::SynthesizedInterfaceEnumReference(r) => other.is_synthesized_interface_enum_reference() && r == other.as_synthesized_interface_enum_reference().unwrap(),
+            Type::Shape => other.is_shape(),
             Type::Model => other.is_model(),
             Type::ModelObject(r) => other.is_model_object() && r == other.as_model_object().unwrap(),
             Type::InterfaceObject(r, types) => other.is_interface_object() && r == other.as_interface_object().unwrap().0 && other.as_interface_object().unwrap().1.len() == types.len() && types.iter().enumerate().all(|(index, t)| t.test(other.as_interface_object().unwrap().1.get(index).unwrap())),
@@ -1015,6 +1046,38 @@ impl Type {
     pub fn constraint_test(&self, other: &Type, schema: &Schema) -> (bool, bool) {
         if self.is_model() && other.is_model_object() {
             (true, true)
+        } else if self.is_shape() {
+            let result = other.is_synthesized_shape_reference() || other.is_synthesized_shape() || other.is_interface_object() || other.is_declared_shape_reference();
+            (result, result)
+        } else if self.is_shape_field() && other.is_field_name() {
+            let shape = self.as_shape_field().unwrap();
+            let field_name = other.as_field_name().unwrap();
+            match shape {
+                Type::SynthesizedShape(shape) => {
+                    (shape.get(field_name).is_some(), true)
+                },
+                Type::SynthesizedShapeReference(shape_reference) => {
+                    if let Some(definition) = shape_reference.fetch_synthesized_definition(schema) {
+                        definition.constraint_test(other, schema)
+                    } else {
+                        (false, true)
+                    }
+                },
+                Type::DeclaredSynthesizedShape(synthesized_shape_reference, inner) => {
+                    if let Some(model_reference) = inner.as_model_object() {
+                        let model = schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
+                        (false, false)
+                    } else {
+                        (false, true)
+                    }
+                },
+                Type::InterfaceObject(reference, types) => {
+                    let interface = schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
+                    let shape = interface.shape_from_generics(types);
+                    (shape.get(field_name).is_some(), true)
+                },
+                _ => ((false, false))
+            }
         } else if self.is_synthesized_enum_reference() && other.is_field_name() {
             let synthesized_enum_reference = self.as_synthesized_enum_reference().unwrap();
             if let Some(definition) = synthesized_enum_reference.fetch_synthesized_definition(schema) {
@@ -1199,6 +1262,7 @@ impl Display for Type {
             } else {
                 f.write_str(&format!("{}[{}]", a, b))
             },
+            Type::ShapeField(inner) => f.write_str(&format!("ShapeField<{}>", inner)),
             Type::FieldName(name) => f.write_str(&format!(".{}", name)),
             Type::GenericItem(name) => f.write_str(name),
             Type::Keyword(k) => Display::fmt(k, f),
@@ -1248,6 +1312,7 @@ impl Display for Type {
             Type::SynthesizedEnumReference(r) => f.write_str(&format!("{}", r)),
             Type::SynthesizedInterfaceEnum(e) => Display::fmt(e, f),
             Type::SynthesizedInterfaceEnumReference(r) => f.write_str(&format!("{}", r)),
+            Type::Shape => f.write_str("Shape"),
             Type::Model => f.write_str("Model"),
             Type::ModelObject(r) => f.write_str(&r.string_path().join(".")),
             Type::InterfaceObject(r, t) => if t.is_empty() {
