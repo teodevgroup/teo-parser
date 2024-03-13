@@ -31,7 +31,6 @@ use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_interface_enum::{SynthesizedInterfaceEnum, SynthesizedInterfaceEnumMember};
 use crate::r#type::synthesized_shape::SynthesizedShape;
-use crate::r#type::Type::FieldName;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
 
@@ -331,9 +330,136 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
         }
     } else if expected.is_field_name() {
         ExprInfo {
-            r#type: FieldName(e.identifier().name().to_owned()),
+            r#type: Type::FieldName(e.identifier().name().to_owned()),
             value: None,
             reference_info: None,
+        }
+    } else if expected.is_shape_field() {
+        let shape_field = expected.as_shape_field().unwrap();
+        match shape_field {
+            Type::InterfaceObject(references, gens) => {
+                let interface_declaration = context.schema.find_top_by_path(references.path()).unwrap().as_interface_declaration().unwrap();
+                let shape = interface_declaration.shape_from_generics(gens);
+                if shape.get(e.identifier().name()).is_some() {
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: Some(Value::EnumVariant(EnumVariant {
+                            value: e.identifier().name().to_string(),
+                            args: None,
+                        })),
+                        reference_info: None,
+                    }
+                } else {
+                    context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: None,
+                        reference_info: None,
+                    }
+                }
+            }
+            Type::SynthesizedShape(shape) => {
+                if shape.get(e.identifier().name()).is_some() {
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: Some(Value::EnumVariant(EnumVariant {
+                            value: e.identifier().name().to_string(),
+                            args: None,
+                        })),
+                        reference_info: None,
+                    }
+                } else {
+                    context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: None,
+                        reference_info: None,
+                    }
+                }
+            }
+            Type::SynthesizedShapeReference(s) => {
+                if let Some(shape) = s.fetch_synthesized_definition(context.schema) {
+                    if let Some(shape) = shape.as_synthesized_shape() {
+                        if shape.get(e.identifier().name()).is_some() {
+                            ExprInfo {
+                                r#type: expected.clone(),
+                                value: Some(Value::EnumVariant(EnumVariant {
+                                    value: e.identifier().name().to_string(),
+                                    args: None,
+                                })),
+                                reference_info: None,
+                            }
+                        } else {
+                            context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                            ExprInfo {
+                                r#type: expected.clone(),
+                                value: None,
+                                reference_info: None,
+                            }
+                        }
+                    } else {
+                        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                        ExprInfo {
+                            r#type: expected.clone(),
+                            value: None,
+                            reference_info: None,
+                        }
+                    }
+                } else {
+                    context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: None,
+                        reference_info: None,
+                    }
+                }
+            }
+            Type::DeclaredSynthesizedShape(reference, t) => {
+                if let Some(model) = t.as_model_object() {
+                    let model = context.schema.find_top_by_path(model.path()).unwrap().as_model().unwrap();
+                    if let Some(shape) = model.resolved().declared_shapes.get(reference.string_path()) {
+                        if shape.get(e.identifier().name()).is_some() {
+                            ExprInfo {
+                                r#type: expected.clone(),
+                                value: Some(Value::EnumVariant(EnumVariant {
+                                    value: e.identifier().name().to_string(),
+                                    args: None,
+                                })),
+                                reference_info: None,
+                            }
+                        } else {
+                            context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                            ExprInfo {
+                                r#type: expected.clone(),
+                                value: None,
+                                reference_info: None,
+                            }
+                        }
+                    } else {
+                        context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                        ExprInfo {
+                            r#type: expected.clone(),
+                            value: None,
+                            reference_info: None,
+                        }
+                    }
+                } else {
+                    context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                    ExprInfo {
+                        r#type: expected.clone(),
+                        value: None,
+                        reference_info: None,
+                    }
+                }
+            }
+            _ => {
+                context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
+                ExprInfo {
+                    r#type: expected.clone(),
+                    value: None,
+                    reference_info: None,
+                }
+            }
         }
     } else {
         context.insert_diagnostics_error(e.span, format!("expected {}, found .{}", expected, e.identifier().name()));
