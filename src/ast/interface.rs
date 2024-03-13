@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
-use indexmap::{IndexMap, indexmap};
 use maplit::btreemap;
 use serde::{Serialize, Serializer};
 use crate::ast::doc_comment::DocComment;

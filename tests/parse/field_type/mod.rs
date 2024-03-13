@@ -79,4 +79,14 @@ mod test {
         let first_error = diagnostics.errors().first().unwrap();
         assert_eq!(first_error.message(), "type .iori doesn't satisfy ScalarFields<Song>");
     }
+
+    #[test]
+    fn shape_get_correct_field_type_should_be_no_errors() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/parse/field_type/schemas/07.teo");
+        let path = path_buf.to_str().unwrap();
+        let (_, diagnostics) = parse(path, None, None);
+        print_diagnostics(&diagnostics, true);
+        assert_eq!(diagnostics.has_errors(), false);
+        assert_eq!(diagnostics.has_warnings(), false);
+    }
 }

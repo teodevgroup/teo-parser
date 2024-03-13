@@ -390,6 +390,16 @@ fn type_item_builtin_match<'a>(
                 resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
             }))))
         },
+        "Shape" => {
+            check_generics_amount(0, type_item, context);
+            Some(Type::Shape)
+        },
+        "ShapeField" => {
+            check_generics_amount(1, type_item, context);
+            Some(Type::ShapeField(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
+            }))))
+        }
         "FieldType" => {
             check_generics_amount(2, type_item, context);
             if type_item.generic_items().len() != 2 {

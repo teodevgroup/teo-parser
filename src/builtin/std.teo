@@ -981,7 +981,7 @@ namespace std {
     /// Set the value on object or map
     declare pipeline item set {
         variant<T, K>(key?: K, value?: T[K]): T -> T where K: ScalarFields<T>, T: Model
-        variant<T, K>(key?: K, value?: T[K]): T -> T where K: Field<T>, T: Shape
+        variant<T, K>(key?: K, value?: T[K]): T -> T where K: ShapeField<T>, T: Shape
         variant<T>(key?: String, value?: T): T{} -> T{}
         variant<T>(key?: Int): T[] -> T[]
     }

@@ -1,0 +1,29 @@
+connector {
+    provider: .postgres,
+    url: "postgres://127.0.0.1:5432/anydemo"
+}
+
+server {
+    bind: ("0.0.0.0", 5688)
+}
+
+entity {
+    provider: .python,
+    dest: "./entities"
+}
+
+client {
+    provider: .typeScript,
+    dest: "../client",
+    package: false,
+    host: .string("http://localhost:5688")
+}
+
+model User {
+    @id @readonly @autoIncrement
+    id: Int
+    @identity.id
+    email: String
+    @identity.checker($get(.value).eq($self.get(.password)))
+    password: String
+}

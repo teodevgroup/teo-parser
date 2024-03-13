@@ -1081,7 +1081,7 @@ impl Type {
                     let shape = interface.shape_from_generics(types);
                     (shape.get(field_name).is_some(), true)
                 },
-                _ => ((false, false))
+                _ => (false, false)
             }
         } else if self.is_synthesized_enum_reference() && other.is_field_name() {
             let synthesized_enum_reference = self.as_synthesized_enum_reference().unwrap();

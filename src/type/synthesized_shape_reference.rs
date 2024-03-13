@@ -6,7 +6,6 @@ use strum_macros::{Display, EnumString, AsRefStr, EnumIter};
 use crate::ast::schema::Schema;
 use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
-use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnumReference;
 
 use crate::traits::resolved::Resolve;
 
