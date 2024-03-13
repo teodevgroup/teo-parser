@@ -252,11 +252,11 @@ impl TypeExprKind {
         }
     }
 
-    pub fn is_field_reference(&self) -> bool {
-        self.as_field_reference().is_some()
+    pub fn is_field_name(&self) -> bool {
+        self.as_field_name().is_some()
     }
 
-    pub fn as_field_reference(&self) -> Option<&EnumVariantLiteral> {
+    pub fn as_field_name(&self) -> Option<&EnumVariantLiteral> {
         match self {
             Self::FieldName(e) => Some(e),
             _ => None,

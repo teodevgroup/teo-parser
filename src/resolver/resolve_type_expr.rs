@@ -407,7 +407,7 @@ fn type_item_builtin_match<'a>(
             }
             let t = *type_item.generic_items().get(0).unwrap();
             let f = *type_item.generic_items().get(1).unwrap();
-            let Some(field_ref) = f.kind.as_field_reference() else {
+            let Some(field_ref) = f.kind.as_field_name() else {
                 context.insert_diagnostics_error(f.span(), "type is not field reference");
                 return Some(Type::Undetermined);
             };

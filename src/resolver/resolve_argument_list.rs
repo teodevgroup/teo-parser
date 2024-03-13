@@ -158,7 +158,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                         if desired_type.is_field_name() {
                             desired_type = named_argument.value().resolved().r#type().clone();
                         }
-                        if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
+                        if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name() || desired_type.is_shape_field()) {
                             generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), named_argument.value().resolved().r#type.clone());
                             // generics constraint checking
                             let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
@@ -227,7 +227,7 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                             if desired_type.is_field_name() {
                                 desired_type = unnamed_argument.value().resolved().r#type().clone();
                             }
-                            if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name()) {
+                            if desired_type_original.is_generic_item() && (desired_type.is_synthesized_enum_reference() || desired_type.is_synthesized_enum() || desired_type.is_field_name() || desired_type.is_shape_field()) {
                                 generics_map.insert(desired_type_original.as_generic_item().unwrap().to_owned(), unnamed_argument.value().resolved().r#type().clone());
                                 // generics constraint checking
                                 let generics_constraint_checking_result = validate_generics_map_with_constraint_info(callable_span, &generics_map, keywords_map, &callable_variant.generics_constraints, context);
@@ -364,6 +364,8 @@ fn guess_generics_by_constraints<'a>(
                 // special handles
                 if item.type_expr().resolved().is_synthesized_enum_reference() {
                     retval.insert(item.identifier().name.clone(), Type::FieldName("".to_owned()));
+                } else if item.type_expr().resolved().is_shape_field() {
+                    retval.insert(item.identifier().name.clone(), Type::FieldName("".to_owned()));
                 } else {
                     // normal handle
                     let new_type = item.type_expr().resolved().replace_keywords(keywords_map).replace_generics(generics_map).flatten();
@@ -398,6 +400,7 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
                     }
                 },
                 _ => Type::Undetermined
+
             }
         } else {
             Type::Undetermined
