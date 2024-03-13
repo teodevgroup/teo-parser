@@ -43,6 +43,7 @@ Schema parser for Teo schema language
 * Support Node.js
 
 ### 0.5.0
+
 * Accept indentation settings argument in format
 * Add `linter` config declaration
 * Separate `fix` command and `format` command
