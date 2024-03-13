@@ -15,6 +15,7 @@ use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::source::Source;
 use crate::ast::struct_declaration::StructDeclaration;
+use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
 use crate::traits::identifiable::Identifiable;
 
 #[derive(Debug)]
@@ -158,6 +159,10 @@ impl Schema {
     pub fn struct_declarations(&self) -> Vec<&StructDeclaration> {
         self.references.struct_declarations.iter().map(|path| self.find_top_by_path(path).unwrap().as_struct_declaration().unwrap()).collect()
     }
+
+    pub fn declared_shapes(&self) -> Vec<&SynthesizedShapeDeclaration> {
+        self.references.declared_shapes.iter().map(|path| self.find_top_by_path(path).unwrap().as_synthesized_shape_declaration().unwrap()).collect()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -185,6 +190,7 @@ pub struct SchemaReferences {
     pub handler_templates: Vec<Vec<usize>>,
     pub handler_groups: Vec<Vec<usize>>,
     pub struct_declarations: Vec<Vec<usize>>,
+    pub declared_shapes: Vec<Vec<usize>>,
     pub use_middlewares_blocks: Vec<Vec<usize>>,
 }
 
@@ -215,6 +221,7 @@ impl SchemaReferences {
             handler_templates: vec![],
             handler_groups: vec![],
             struct_declarations: vec![],
+            declared_shapes: vec![],
             use_middlewares_blocks: vec![],
         }
     }

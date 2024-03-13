@@ -175,6 +175,7 @@ pub(super) fn parse_source(
             Rule::synthesized_shape_declaration => {
                 let synthesized_shape_declaration = parse_synthesized_shape_declaration(current, context);
                 references.synthesized_shape_declarations.insert(synthesized_shape_declaration.id());
+                context.schema_references_mut().declared_shapes.push(synthesized_shape_declaration.path().clone());
                 children.insert(synthesized_shape_declaration.id(), Node::SynthesizedShapeDeclaration(synthesized_shape_declaration));
             },
             Rule::handler_template_declaration => {

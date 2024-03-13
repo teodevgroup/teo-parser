@@ -61,6 +61,5 @@ impl Write for SynthesizedShapeDeclaration {
 
 #[derive(Debug)]
 pub struct SynthesizedShapeDeclarationResolved {
-    pub caches: BTreeMap<Vec<String>, BTreeMap<String, Type>>,
     pub base_shape: IndexMap<String, Type>,
 }

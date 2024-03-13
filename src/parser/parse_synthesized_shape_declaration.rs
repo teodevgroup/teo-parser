@@ -76,7 +76,6 @@ pub(super) fn parse_synthesized_shape_declaration(pair: Pair<'_>, context: &Pars
         dynamic_fields,
         builtin,
         resolved: RefCell::new(Some(SynthesizedShapeDeclarationResolved {
-            caches: btreemap! {},
             base_shape: indexmap! {},
         }))
     }

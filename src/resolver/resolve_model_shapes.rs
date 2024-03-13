@@ -9,6 +9,7 @@ use crate::ast::field::Field;
 use crate::ast::identifier::Identifier;
 use crate::ast::model::{Model};
 use crate::ast::reference_space::ReferenceSpace;
+use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
 use crate::ast::unit::Unit;
 use crate::expr::ReferenceType;
 use crate::r#type::reference::Reference;
@@ -35,6 +36,7 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     let mut interface_enums = IndexMap::new();
     let mut shapes = IndexMap::new();
     let mut shape_available_context = ShapeAvailableContext::new();
+    let mut declared_shapes = IndexMap::new();
 
     // scalar field
     enums.insert(SynthesizedEnumReferenceKind::ScalarFields, resolve_model_scalar_fields(model));
@@ -226,9 +228,17 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // scalar update input
     shapes.insert((SynthesizedShapeReferenceKind::ScalarUpdateInput, None), resolve_scalar_update_input(model));
 
+    // declared
+    for declared_shape in context.schema.declared_shapes() {
+        if !declared_shape.builtin {
+            declared_shapes.insert(declared_shape.string_path.clone(), resolve_declared_shape(declared_shape, model));
+        }
+    }
+
     model.resolved_mut().enums = enums;
     model.resolved_mut().shapes = shapes;
     model.resolved_mut().interface_enums = interface_enums;
+    model.resolved_mut().declared_shapes = declared_shapes;
 }
 
 fn resolve_model_select_shape(model: &Model) -> Type {
@@ -1294,6 +1304,10 @@ pub(super) fn field_has_decorator_name(field: &Field, name: &str) -> bool {
     field_has_decorator(field, |names| names == vec![name])
 }
 
+pub(super) fn field_has_decorator_names(field: &Field, names: Vec<&str>) -> bool {
+    field_has_decorator(field, |ns| ns == names)
+}
+
 pub(super) fn field_has_decorator<F>(field: &Field, f: F) -> bool where F: Fn(Vec<&str>) -> bool {
     for decorator in field.decorators() {
         let names = if *decorator.identifier_path().names().first().unwrap() == "std" {
@@ -1652,4 +1666,16 @@ pub(crate) fn resolve_static_update_input_for_type<'a>(t: &Type, atomic: bool, c
     } else {
         t.clone()
     }
+}
+
+pub(crate) fn resolve_declared_shape(declared_shape: &SynthesizedShapeDeclaration, model: &Model) -> SynthesizedShape {
+    let mut map = indexmap! {};
+    for field_rule in declared_shape.dynamic_fields() {
+        for model_field in model.fields() {
+            if field_has_decorator_names(model_field, field_rule.decorator_identifier_path().names()) {
+                map.insert(model_field.name().to_string(), model_field.type_expr().resolved().clone());
+            }
+        }
+    }
+    SynthesizedShape::new(map)
 }
