@@ -516,8 +516,8 @@ namespace std {
     /// @name Action
     /// Specify disabled actions
     declare unique model decorator action {
-        variant(enable?: (Enumerable<Action>))
-        variant(disable: (Enumerable<Action>))
+        variant(enable?: Enumerable<Action>)
+        variant(disable: Enumerable<Action>)
     }
 
     /// @name Generate Client

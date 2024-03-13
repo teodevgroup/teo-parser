@@ -14,6 +14,7 @@ use crate::ast::node::Node;
 use crate::ast::pipeline_item_declaration::PipelineItemDeclaration;
 use crate::ast::r#enum::Enum;
 use crate::ast::struct_declaration::StructDeclaration;
+use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
 use crate::completion::completion_item::CompletionItem;
 use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::utils::output::readable_namespace_path;
@@ -35,6 +36,7 @@ pub(super) fn completion_item_from_top(top: &Node) -> CompletionItem {
         Node::PipelineItemDeclaration(p) => completion_item_from_pipeline_item_declaration(p),
         Node::StructDeclaration(s) => completion_item_from_struct_declaration(s),
         Node::UseMiddlewaresBlock(_) => unreachable!(),
+        Node::SynthesizedShapeDeclaration(s) => completion_item_from_synthesized_shape_declaration(s),
         _ => unreachable!(),
     }
 }
@@ -167,6 +169,15 @@ pub(super) fn completion_item_from_struct_declaration(struct_declaration: &Struc
         label: struct_declaration.identifier().name.clone(),
         namespace_path: Some(readable_namespace_path(&struct_declaration.string_path)),
         documentation: documentation_from_comment(struct_declaration.comment()),
+        detail: None,
+    }
+}
+
+pub(super) fn completion_item_from_synthesized_shape_declaration(declaration: &SynthesizedShapeDeclaration) -> CompletionItem {
+    CompletionItem {
+        label: declaration.identifier().name.clone(),
+        namespace_path: Some(readable_namespace_path(&declaration.string_path)),
+        documentation: documentation_from_comment(declaration.comment()),
         detail: None,
     }
 }

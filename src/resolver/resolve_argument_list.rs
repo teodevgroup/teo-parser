@@ -71,12 +71,6 @@ pub(super) fn resolve_argument_list<'a, 'b>(
                 context,
                 pipeline_type_context,
             );
-            if errors.is_empty() {
-                for warning in warnings {
-                    context.insert_diagnostics_warning(*warning.span(), warning.message());
-                }
-                return t;
-            }
             if matched {
                 for error in errors {
                     context.insert_diagnostics_error(*error.span(), error.message());

@@ -2,6 +2,7 @@ use crate::ast::argument_list_declaration::ArgumentListDeclaration;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
 use crate::r#type::r#type::Type;
 
+#[derive(Debug)]
 pub struct CallableVariant<'a> {
     pub generics_declarations: Vec<&'a GenericsDeclaration>,
     pub argument_list_declaration: Option<&'a ArgumentListDeclaration>,

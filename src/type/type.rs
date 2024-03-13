@@ -1089,7 +1089,7 @@ impl Type {
                 let result = definition.members.keys().contains(&other.as_field_name().unwrap().to_string());
                 (result, true)
             } else {
-                (false, true)
+                (false, false)
             }
         } else {
             let result = self.test(other);

@@ -47,7 +47,7 @@ pub(super) fn parse_synthesized_shape_declaration(pair: Pair<'_>, context: &Pars
             Rule::double_comment_block => parse_append!(parse_code_comment(current, context), children),
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
             Rule::BUILTIN_KEYWORD => {
-                parse_insert_keyword!(context, current, children, "declare");
+                parse_insert_keyword!(context, current, children, "builtin");
                 builtin = true;
             },
             Rule::SYNTHESIZED_KEYWORD => parse_insert_keyword!(context, current, children, "synthesized"),
