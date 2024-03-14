@@ -109,6 +109,7 @@ fn parse_shape_field_declaration(pair: Pair<'_>, context: &ParserContext) -> Syn
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
+    parse_container_node_variables_cleanup!(context);
     SynthesizedShapeFieldDeclaration {
         span,
         path,
