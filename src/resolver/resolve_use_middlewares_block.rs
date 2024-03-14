@@ -16,6 +16,8 @@ use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_middleware;
 
 pub(super) fn resolve_use_middlewares_block<'a>(block: &'a UseMiddlewaresBlock, context: &'a ResolverContext<'a>) {
+    let actual_availability = context.current_availability();
+    *block.actual_availability.borrow_mut() = actual_availability;
     resolve_use_middlewares_array_literal(block.array_literal(), context)
 }
 
