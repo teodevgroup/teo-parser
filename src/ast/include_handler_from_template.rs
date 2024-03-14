@@ -81,4 +81,5 @@ impl Resolve<IncludeHandlerFromTemplateResolved> for IncludeHandlerFromTemplate 
 pub struct IncludeHandlerFromTemplateResolved {
     pub input_type: Option<Type>,
     pub output_type: Type,
+    pub template_path: Vec<String>,
 }

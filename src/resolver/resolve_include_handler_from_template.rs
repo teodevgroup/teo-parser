@@ -35,6 +35,7 @@ pub(super) fn resolve_include_handler_from_template_decorators<'a>(
         let mut resolved = IncludeHandlerFromTemplateResolved {
             input_type: None,
             output_type: Type::Any,
+            template_path: template.string_path.clone(),
         };
         if let Some(template_input_type_expr) = template.input_type() {
             let input_type = template_input_type_expr.resolved();
