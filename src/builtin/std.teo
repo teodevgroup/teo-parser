@@ -971,7 +971,13 @@ namespace std {
 
     declare pipeline item validate<T>(pipeline?: Pipeline<T, Ignored>): T -> T
 
-    // or, and, not, all, any
+    // declare pipeline item all<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
+
+    // declare pipeline item any<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
+
+    declare pipeline item do<T>(pipeline?: Pipeline<T, Ignored>): T -> T
+
+    declare pipeline item not<T>(pipeline?: Pipeline<T, Ignored>): T -> T
 
     /// @name Self
     /// Get the current pipeline context object
