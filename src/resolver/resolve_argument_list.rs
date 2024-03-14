@@ -391,16 +391,34 @@ fn flatten_field_type_reference<'a>(t: Type, context: &'a ResolverContext<'a>) -
                         Type::Undetermined
                     }
                 },
-                Type::InterfaceObject(reference, _types) => {
+                Type::InterfaceObject(reference, types) => {
                     let interface = context.schema.find_top_by_path(reference.path()).unwrap().as_interface_declaration().unwrap();
-                    if let Some(field) = interface.fields().find(|f| f.identifier().name() == field_name) {
-                        field.type_expr().resolved().clone()
+                    let shape = interface.shape_from_generics(types);
+                    shape.get(field_name).cloned().unwrap_or(Type::Undetermined)
+                },
+                Type::SynthesizedShape(shape) => {
+                    shape.get(field_name).cloned().unwrap_or(Type::Undetermined)
+                },
+                Type::SynthesizedShapeReference(shape_reference) => {
+                    if let Some(shape) = shape_reference.fetch_synthesized_definition(context.schema) {
+                        flatten_field_type_reference(shape.clone(), context)
                     } else {
                         Type::Undetermined
                     }
                 },
+                Type::DeclaredSynthesizedShape(reference, inner) => {
+                    if let Some(model_reference) = inner.as_model_object() {
+                        let model = context.schema.find_top_by_path(model_reference.path()).unwrap().as_model().unwrap();
+                        if let Some(shape) = model.resolved().declared_shapes.get(reference.string_path()) {
+                            shape.get(field_name).cloned().unwrap_or(Type::Undetermined)
+                        } else {
+                            Type::Undetermined
+                        }
+                    } else {
+                        Type::Undetermined
+                    }
+                }
                 _ => Type::Undetermined
-
             }
         } else {
             Type::Undetermined
