@@ -1400,6 +1400,6 @@ namespace std {
 
         declare handler template identity(Empty): Data<Result<Self>>
 
-        declare middleware identityFromJwt(secret: String)
+        declare middleware identityFromJwt(secret?: String)
     }
 }
