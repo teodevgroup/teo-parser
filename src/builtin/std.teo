@@ -1394,7 +1394,7 @@ namespace std {
 
         declare model field decorator companion
 
-        declare pipeline item jwt(secret: String, expired: (Int64 | Pipeline<Self, Int64>)?): Self -> String
+        declare pipeline item jwt(expired: (Int64 | Pipeline<Self, Int64>)?): Self -> String
 
         declare handler template signIn(SignInInput<Self>): DataMeta<Result<Self>, TokenInfo>
 
