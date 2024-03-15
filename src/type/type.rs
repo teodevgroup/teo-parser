@@ -853,6 +853,7 @@ impl Type {
             Type::Range(inner) => inner.contains_generics(),
             Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
             Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_generics()),
+            Type::DeclaredSynthesizedShape(_, inner) => inner.contains_generics(),
             Type::StructObject(_, types) => types.iter().any(|t| t.contains_generics()),
             Type::DataSetGroup(inner) => inner.contains_generics(),
             Type::DataSetRecord(a, b) => a.contains_generics() || b.contains_generics(),
@@ -875,6 +876,7 @@ impl Type {
             Type::Range(inner) => inner.contains_keywords(),
             Type::SynthesizedShape(shape) => !shape.generics().is_empty(),
             Type::InterfaceObject(_, types) => types.iter().any(|t| t.contains_keywords()),
+            Type::DeclaredSynthesizedShape(_, inner) => inner.contains_keywords(),
             Type::StructObject(_, types) => types.iter().any(|t| t.contains_keywords()),
             Type::DataSetGroup(inner) => inner.contains_keywords(),
             Type::DataSetRecord(a, b) => a.contains_keywords() || b.contains_keywords(),
@@ -942,6 +944,7 @@ impl Type {
             Type::SynthesizedShapeReference(shape_reference) => if let Some(expect) = expect.as_synthesized_shape_reference() {
                 shape_reference.build_generics_map(map, expect);
             },
+            Type::DeclaredSynthesizedShape(_, inner) => inner.build_generics_map(map, expect),
             Type::Pipeline(a, b) => if let Some(pipeline) = expect.as_pipeline() {
                 a.as_ref().build_generics_map(map, pipeline.0);
                 b.as_ref().build_generics_map(map, pipeline.1);
@@ -1125,6 +1128,7 @@ impl Type {
                 Box::new(f_ref(a, &f)),
                 Box::new(f_ref(b, &f)),
             ),
+            Type::DeclaredSynthesizedShape(r, t) => Type::DeclaredSynthesizedShape(r.clone(), Box::new(f_ref(t, &f))),
             _ => self.clone(),
         }
     }
@@ -1137,6 +1141,7 @@ impl Type {
             Type::Tuple(types) => types.clone(),
             Type::Range(inner) => vec![inner.as_ref().clone()],
             Type::InterfaceObject(_, types) => types.clone(),
+            Type::DeclaredSynthesizedShape(_, inner) => vec![inner.as_ref().clone()],
             Type::StructObject(_, types) => types.clone(),
             Type::Pipeline(input, output) => vec![input.as_ref().clone(), output.as_ref().clone()],
             _ => vec![]
