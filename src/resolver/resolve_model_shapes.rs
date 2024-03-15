@@ -1682,7 +1682,11 @@ pub(crate) fn resolve_declared_shape(declared_shape: &SynthesizedShapeDeclaratio
     for field_rule in declared_shape.dynamic_fields() {
         for model_field in model.fields() {
             if field_has_decorator_names(model_field, field_rule.decorator_identifier_path().names()) {
-                map.insert(model_field.name().to_string(), model_field.type_expr().resolved().clone());
+                if field_rule.optional {
+                    map.insert(model_field.name().to_string(), model_field.type_expr().resolved().wrap_in_optional());
+                } else {
+                    map.insert(model_field.name().to_string(), model_field.type_expr().resolved().clone());
+                }
             }
         }
     }
