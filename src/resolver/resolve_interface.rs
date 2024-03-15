@@ -2,10 +2,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use indexmap::{indexmap, IndexMap};
 use maplit::{btreemap, btreeset};
 use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
+use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
 use crate::ast::type_expr::TypeExpr;
+use crate::r#type::keyword::Keyword;
+use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
+use crate::resolver::resolve_decorator::resolve_decorator;
 use crate::resolver::resolve_field::{FieldParentType, resolve_field_class, resolve_field_types};
 use crate::resolver::resolve_generics::{resolve_generics_constraint, resolve_generics_declaration};
 use crate::resolver::resolve_type_expr::resolve_type_expr;
@@ -72,6 +76,16 @@ pub(super) fn resolve_interface_declaration_types<'a>(interface_declaration: &'a
         }
     }
     interface_declaration.resolve(InterfaceDeclarationResolved::new(SynthesizedShape::new(map)));
+}
+
+pub(super) fn resolve_interface_declaration_decorators<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {
+    let model_type = Type::ModelObject(Reference::new(interface_declaration.path.clone(), interface_declaration.string_path.clone()));
+    // decorators
+    for decorator in interface_declaration.decorators() {
+        resolve_decorator(decorator, context, &btreemap!{
+            Keyword::SelfIdentifier => model_type.clone()
+        }, ReferenceSpace::InterfaceDecorator);
+    }
 }
 
 pub(super) fn resolve_interface_declaration_shapes<'a>(interface_declaration: &'a InterfaceDeclaration, context: &'a ResolverContext<'a>) {

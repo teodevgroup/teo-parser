@@ -8,7 +8,7 @@ use crate::resolver::resolve_declared_synthesized_shape::resolve_declared_synthe
 use crate::resolver::resolve_decorator_declaration::resolve_decorator_declaration_references;
 use crate::resolver::resolve_enum::resolve_enum_types;
 use crate::resolver::resolve_handler_template_declaration::{resolve_handler_template_declaration_decorators, resolve_handler_template_declaration_types};
-use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
+use crate::resolver::resolve_interface::{resolve_interface_declaration_decorators, resolve_interface_declaration_shapes, resolve_interface_declaration_types};
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
 use crate::resolver::resolve_model_shapes::{resolve_model_declared_shapes, resolve_model_shapes};
@@ -104,6 +104,7 @@ pub(super) fn resolve_source_consumers<'a>(context: &'a ResolverContext<'a>) {
             Node::DataSet(data_set) => resolve_data_set_records(data_set, context),
             Node::Namespace(namespace) => resolve_namespace_consumers(namespace, context),
             Node::Model(model) => resolve_model_decorators(model, context),
+            Node::InterfaceDeclaration(interface) => resolve_interface_declaration_decorators(interface, context),
             Node::HandlerDeclaration(handler_declaration) => resolve_handler_declaration_decorators(handler_declaration, context, None),
             Node::HandlerTemplateDeclaration(handler_template_declaration) => resolve_handler_template_declaration_decorators(handler_template_declaration, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_decorators(handler_group, context),
