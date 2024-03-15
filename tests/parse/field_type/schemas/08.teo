@@ -28,7 +28,7 @@ model User {
     email: String
     @identity.checker(
         $do($get(.value).eq($self.get(.password)))
-        .do($get(.companions).get(.authCodeToken).presents))
+        .do($get(.companions).presents.get(.authCodeToken).presents))
     password: String
     @identity.companion @virtual
     authCodeToken: String?
