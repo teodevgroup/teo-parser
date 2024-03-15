@@ -12,6 +12,7 @@ use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
 use crate::ast::unit::Unit;
 use crate::expr::ReferenceType;
+use crate::r#type::keyword::Keyword;
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_enum::{SynthesizedEnum, SynthesizedEnumMember};
@@ -36,7 +37,6 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     let mut interface_enums = IndexMap::new();
     let mut shapes = IndexMap::new();
     let mut shape_available_context = ShapeAvailableContext::new();
-    let mut declared_shapes = IndexMap::new();
 
     // scalar field
     enums.insert(SynthesizedEnumReferenceKind::ScalarFields, resolve_model_scalar_fields(model));
@@ -228,17 +228,9 @@ pub(super) fn resolve_model_shapes<'a>(model: &'a Model, context: &'a ResolverCo
     // scalar update input
     shapes.insert((SynthesizedShapeReferenceKind::ScalarUpdateInput, None), resolve_scalar_update_input(model));
 
-    // declared
-    for declared_shape in context.schema.declared_shapes() {
-        if !declared_shape.builtin {
-            declared_shapes.insert(declared_shape.string_path.clone(), resolve_declared_shape(declared_shape, model));
-        }
-    }
-
     model.resolved_mut().enums = enums;
     model.resolved_mut().shapes = shapes;
     model.resolved_mut().interface_enums = interface_enums;
-    model.resolved_mut().declared_shapes = declared_shapes;
 }
 
 fn resolve_model_select_shape(model: &Model) -> Type {
@@ -1668,8 +1660,25 @@ pub(crate) fn resolve_static_update_input_for_type<'a>(t: &Type, atomic: bool, c
     }
 }
 
+pub(crate) fn resolve_model_declared_shapes<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
+    let mut declared_shapes = IndexMap::new();
+    // declared
+    for declared_shape in context.schema.declared_shapes() {
+        if !declared_shape.builtin {
+            declared_shapes.insert(declared_shape.string_path.clone(), resolve_declared_shape(declared_shape, model));
+        }
+    }
+    model.resolved_mut().declared_shapes = declared_shapes;
+}
+
 pub(crate) fn resolve_declared_shape(declared_shape: &SynthesizedShapeDeclaration, model: &Model) -> SynthesizedShape {
     let mut map = indexmap! {};
+    let keywords_map = btreemap! {
+        Keyword::SelfIdentifier => Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone())),
+    };
+    for field in declared_shape.static_fields() {
+        map.insert(field.name().to_string(), field.type_expr().resolved().replace_keywords(&keywords_map));
+    }
     for field_rule in declared_shape.dynamic_fields() {
         for model_field in model.fields() {
             if field_has_decorator_names(model_field, field_rule.decorator_identifier_path().names()) {

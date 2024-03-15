@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use maplit::btreemap;
-use serde::{Serialize, Serializer};
+use serde::Serialize;
 use crate::ast::doc_comment::DocComment;
 use crate::ast::field::Field;
 use crate::ast::generics::{GenericsConstraint, GenericsDeclaration};
@@ -12,10 +12,12 @@ use crate::ast::partial_field::PartialField;
 use crate::format::Writer;
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::Type;
-use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
+
+use super::decorator::Decorator;
+use super::span::Span;
 
 declare_container_node!(InterfaceDeclaration, named, availability,
     pub(crate) comment: Option<usize>,
@@ -25,6 +27,10 @@ declare_container_node!(InterfaceDeclaration, named, availability,
     pub(crate) extends: Vec<usize>,
     pub(crate) fields: Vec<usize>,
     pub(crate) partial_fields: Vec<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorator_spans: Vec<Span>,
+    pub(crate) empty_field_decorator_spans: Vec<Span>,
+    pub(crate) unattached_field_decorators: Vec<Decorator>,
     pub(crate) resolved: RefCell<Option<InterfaceDeclarationResolved>>,
 );
 
@@ -35,6 +41,8 @@ node_children_iter!(InterfaceDeclaration, TypeExpr, ExtendsIter, extends);
 node_children_iter!(InterfaceDeclaration, Field, FieldsIter, fields);
 
 node_children_iter!(InterfaceDeclaration, PartialField, PartialFieldsIter, partial_fields);
+
+node_children_iter!(InterfaceDeclaration, Decorator, DecoratorsIter, decorators);
 
 impl InterfaceDeclaration {
 
@@ -51,6 +59,8 @@ impl InterfaceDeclaration {
     node_children_iter_fn!(fields, FieldsIter);
 
     node_children_iter_fn!(partial_fields, PartialFieldsIter);
+
+    node_children_iter_fn!(decorators, DecoratorsIter);
 
     pub fn shape_from_generics(&self, generics: &Vec<Type>) -> SynthesizedShape {
         let map = self.calculate_generics_map(generics);

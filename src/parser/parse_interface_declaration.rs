@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use crate::ast::interface::{InterfaceDeclaration, InterfaceDeclarationResolved};
+use crate::parser::parse_decorator::parse_decorator;
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_keyword, parse_insert_punctuation, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_availability_end::parse_availability_end;
 use crate::parser::parse_availability_flag::parse_availability_flag;
@@ -23,6 +24,10 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &ParserContex
         actual_availability
     ) = parse_container_node_variables!(pair, context, named, availability);
     let mut comment = None;
+    let mut decorators = vec![];
+    let mut empty_decorator_spans = vec![];
+    let mut empty_field_decorator_spans = vec![];
+    let mut unattached_field_decorators = vec![];
     let mut identifier = 0;
     let mut generics_declaration = None;
     let mut generics_constraint = None;
@@ -51,6 +56,16 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &ParserContex
             Rule::generics_declaration => parse_set_optional!(parse_generics_declaration(current, context), children, generics_declaration),
             Rule::type_expression => parse_insert!(parse_type_expression(current, context), children, extends),
             Rule::generics_constraint => parse_set_optional!(parse_generics_constraint(current, context), children, generics_constraint),
+            Rule::decorator => if inside_block {
+                unattached_field_decorators.push(parse_decorator(current, context));
+            } else {
+                parse_insert!(parse_decorator(current, context), children, decorators);
+            },
+            Rule::empty_decorator => if inside_block {
+                empty_field_decorator_spans.push(parse_span(&current));
+            } else {
+                empty_decorator_spans.push(parse_span(&current));
+            },
             Rule::field_declaration => parse_insert!(parse_field(current, context), children, fields),
             Rule::partial_field => parse_insert!(parse_partial_field(current, context), children, partial_fields),
             Rule::availability_start => parse_append!(parse_availability_flag(current, context), children),
@@ -73,6 +88,10 @@ pub(super) fn parse_interface_declaration(pair: Pair<'_>, context: &ParserContex
         extends,
         fields,
         partial_fields,
+        decorators,
+        empty_decorator_spans,        
+        empty_field_decorator_spans,
+        unattached_field_decorators,
         resolved: RefCell::new(None),
     }
 }

@@ -23,11 +23,11 @@ pub(super) fn resolve_handler_template_declaration_types<'a>(
     resolve_type_expr(handler_template_declaration.output_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     if let Some(input_type) = handler_template_declaration.input_type() {
         match handler_template_declaration.input_format {
-            HandlerInputFormat::Form => crate::resolver::resolve_handler_group::validate_form_type(input_type.resolved(), input_type.span(), context, crate::resolver::resolve_handler_group::is_valid_form_input_type),
-            HandlerInputFormat::Json => crate::resolver::resolve_handler_group::validate_form_type(input_type.resolved(), input_type.span(), context, crate::resolver::resolve_handler_group::is_valid_json_input_type),
+            HandlerInputFormat::Form => crate::resolver::resolve_handler_group::validate_handler_related_types(input_type.resolved(), input_type.span(), context, crate::resolver::resolve_handler_group::is_valid_form_input_type),
+            HandlerInputFormat::Json => crate::resolver::resolve_handler_group::validate_handler_related_types(input_type.resolved(), input_type.span(), context, crate::resolver::resolve_handler_group::is_valid_json_input_type),
         }
     }
-    crate::resolver::resolve_handler_group::validate_form_type(&handler_template_declaration.output_type().resolved(), handler_template_declaration.output_type().span(), context, crate::resolver::resolve_handler_group::is_valid_json_output_type);
+    crate::resolver::resolve_handler_group::validate_handler_related_types(&handler_template_declaration.output_type().resolved(), handler_template_declaration.output_type().span(), context, crate::resolver::resolve_handler_group::is_valid_json_output_type);
 }
 
 pub(super) fn resolve_handler_template_declaration_decorators<'a>(

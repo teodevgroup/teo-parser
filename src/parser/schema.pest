@@ -483,7 +483,9 @@ config_declaration = {
 // #############
 
 interface_declaration = {
-    triple_comment_block? ~ INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA?)? ~ generics_constraint? ~ BLOCK_OPEN
+    triple_comment_block? ~ 
+    (decorator | double_comment_block | empty_decorator | (NEWLINE | WHITESPACE))* ~
+    INTERFACE_KEYWORD ~ identifier ~ generics_declaration? ~ (EXTENDS_KEYWORD ~ type_expression ~ (COMMA ~ type_expression)* ~ COMMA?)? ~ generics_constraint? ~ BLOCK_OPEN
     ~ (field_declaration | partial_field | triple_comment_block | double_comment_block | availability_start | availability_end | EMPTY_LINES | BLOCK_LEVEL_CATCH_ALL)*
     ~ BLOCK_CLOSE
 }

@@ -18,18 +18,17 @@ use crate::r#type::synthesized_interface_enum_reference::SynthesizedInterfaceEnu
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::r#type::synthesized_shape_reference::SynthesizedShapeReferenceKind;
 use crate::r#type::Type;
-use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::resolved::Resolve;
 use crate::traits::write::Write;
 
 declare_container_node!(Model, named, availability,
     pub(crate) comment: Option<usize>,
-    pub(crate) decorators: Vec<usize>,
-    pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) identifier: usize,
     pub(crate) fields: Vec<usize>,
     pub(crate) partial_fields: Vec<usize>,
+    pub(crate) decorators: Vec<usize>,
+    pub(crate) empty_decorator_spans: Vec<Span>,
     pub(crate) empty_field_decorator_spans: Vec<Span>,
     pub(crate) unattached_field_decorators: Vec<Decorator>,
     pub(crate) handlers: Vec<usize>,

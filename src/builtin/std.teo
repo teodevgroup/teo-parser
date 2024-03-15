@@ -760,6 +760,14 @@ namespace std {
 
     #end
 
+    /// @name Generate Client
+    /// Specify whether generate client for this model
+    declare unique interface decorator generateClient(generate?: Bool)
+
+    /// @name Generate Entity
+    /// Specify whether generate entity for this model
+    declare unique interface decorator generateEntity(generate?: Bool)
+
     /// @name Map
     /// Specify HTTP method and request path for this handler
     declare unique handler decorator map(method?: Method?, path?: String?, ignorePrefix: Bool?, interface: String?)
@@ -1371,6 +1379,7 @@ namespace std {
             declare optional synthesized field with @identity.companion
         }
 
+        @generateClient(false) @generateEntity(false)
         interface SignInCheckerArgs<T, M> {
             value: T
             companions: M

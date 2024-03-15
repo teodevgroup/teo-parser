@@ -12,7 +12,7 @@ use crate::resolver::resolve_handler_template_declaration::{resolve_handler_temp
 use crate::resolver::resolve_interface::{resolve_interface_declaration_shapes, resolve_interface_declaration_types};
 use crate::resolver::resolve_middleware::resolve_middleware_references;
 use crate::resolver::resolve_model::{resolve_model_decorators, resolve_model_fields, resolve_model_references};
-use crate::resolver::resolve_model_shapes::resolve_model_shapes;
+use crate::resolver::resolve_model_shapes::{resolve_model_declared_shapes, resolve_model_shapes};
 use crate::resolver::resolve_pipeline_item_declaration::resolve_pipeline_item_declaration_references;
 use crate::resolver::resolve_struct_declaration::resolve_struct_declaration_types;
 use crate::resolver::resolve_use_middlewares_block::resolve_use_middlewares_block;
@@ -24,6 +24,18 @@ pub(super) fn resolve_namespace_model_fields<'a>(namespace: &'a Namespace, conte
         match node {
             Node::Model(m) => resolve_model_fields(m, context),
             Node::Namespace(n) => resolve_namespace_model_fields(n, context),
+            _ => (),
+        }
+    }
+    context.pop_namespace();
+}
+
+pub(super) fn resolve_namespace_model_declared_shapes<'a>(namespace: &'a Namespace, context: &'a ResolverContext<'a>) {
+    context.push_namespace(namespace);
+    for node in namespace.children.values() {
+        match node {
+            Node::Model(m) => resolve_model_declared_shapes(m, context),
+            Node::Namespace(n) => resolve_namespace_model_declared_shapes(n, context),
             _ => (),
         }
     }

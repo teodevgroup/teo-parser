@@ -49,11 +49,11 @@ pub(super) fn resolve_handler_declaration_types<'a>(
     resolve_type_expr(handler_declaration.output_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
     if let Some(input_type) = handler_declaration.input_type() {
         match handler_declaration.input_format {
-            HandlerInputFormat::Form => validate_form_type(input_type.resolved(), input_type.span(), context, is_valid_form_input_type),
-            HandlerInputFormat::Json => validate_form_type(input_type.resolved(), input_type.span(), context, is_valid_json_input_type),
+            HandlerInputFormat::Form => validate_handler_related_types(input_type.resolved(), input_type.span(), context, is_valid_form_input_type),
+            HandlerInputFormat::Json => validate_handler_related_types(input_type.resolved(), input_type.span(), context, is_valid_json_input_type),
         }
     }
-    validate_form_type(&handler_declaration.output_type().resolved(), handler_declaration.output_type().span(), context, is_valid_json_output_type);
+    validate_handler_related_types(&handler_declaration.output_type().resolved(), handler_declaration.output_type().span(), context, is_valid_json_output_type);
 }
 
 pub(super) fn resolve_handler_declaration_decorators<'a>(
@@ -101,7 +101,7 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
     }
 }
 
-pub(super) fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
+pub(super) fn validate_handler_related_types<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
     match r#type {
         Type::Any => (),
         Type::SynthesizedShapeReference(shape_reference) => {
@@ -143,6 +143,7 @@ pub(super) fn validate_form_type<'a, F>(r#type: &'a Type, span: Span, context: &
                 }
             }
         }
+        Type::DeclaredSynthesizedShape(_, __) => (),
         _ => context.insert_diagnostics_error(span, "handler argument type should be interface or any")
 
     }
@@ -208,6 +209,7 @@ pub(super) fn is_valid_json_input_type<'a>(r#type: &'a Type) -> Option<&'static 
             }
             None
         }
+        Type::DeclaredSynthesizedShape(_, _) => None,
         Type::Tuple(_) => Some("invalid handler input type: Tuple is not supported"),
         Type::Range(_) => Some("invalid handler input type: Range is not supported"),
         Type::Union(_) => Some("invalid handler input type: Union is not supported"),
@@ -268,6 +270,7 @@ pub(super) fn is_valid_json_output_type<'a>(r#type: &'a Type) -> Option<&'static
         Type::Regex => Some("invalid handler output type: Regex is not supported"),
         Type::StructObject(_, _) => Some("invalid handler output type: StructObject is not supported"),
         Type::Pipeline(_, _) => Some("invalid handler output type: Pipeline is not supported"),
+        Type::DeclaredSynthesizedShape(_, _) => None,
         _ => None,
     }
 }
