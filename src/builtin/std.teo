@@ -1376,10 +1376,10 @@ namespace std {
             companions: M
         }
 
-        interface SignInInput<T> where T: Model {
-            credentials: SignInArgs<T>
-            select: Select<T>?
-            include: Include<T>?
+        declare synthesized shape SignInInput {
+            credentials: SignInArgs<Self>
+            select: Select<Self>?
+            include: Include<Self>?
         }
 
         declare synthesized shape SignInArgs {
