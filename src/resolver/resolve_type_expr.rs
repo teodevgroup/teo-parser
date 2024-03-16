@@ -105,7 +105,7 @@ fn resolve_type_expr_kind<'a>(
                 availability,
             );
             if !resolved.is_optional() && g.item_optional {
-                resolved = Type::Optional(Box::new(resolved));
+                resolved = resolved.wrap_in_optional();
             }
             if !g.arity.is_scalar() {
                 match g.arity {
@@ -114,7 +114,7 @@ fn resolve_type_expr_kind<'a>(
                     _ => ()
                 };
                 if g.collection_optional {
-                    resolved = Type::Optional(Box::new(resolved));
+                    resolved = resolved.wrap_in_optional();
                 }
             }
             resolved
@@ -129,7 +129,7 @@ fn resolve_type_expr_kind<'a>(
                 availability,
             )).collect());
             if !resolved.is_optional() && t.item_optional {
-                resolved = Type::Optional(Box::new(resolved));
+                resolved = resolved.wrap_in_optional();
             }
             if !t.arity.is_scalar() {
                 match t.arity {
@@ -138,7 +138,7 @@ fn resolve_type_expr_kind<'a>(
                     _ => ()
                 };
                 if t.collection_optional {
-                    resolved = Type::Optional(Box::new(resolved));
+                    resolved = resolved.wrap_in_optional();
                 }
             }
             resolved
@@ -149,7 +149,7 @@ fn resolve_type_expr_kind<'a>(
                 Box::new(resolve_type_expr(subscript.argument(), generics_declaration, generics_constraint, keywords_map, context, availability)),
             );
             if !resolved.is_optional() && subscript.item_optional {
-                resolved = Type::Optional(Box::new(resolved));
+                resolved = resolved.wrap_in_optional();
             }
             if !subscript.arity.is_scalar() {
                 match subscript.arity {
@@ -158,7 +158,7 @@ fn resolve_type_expr_kind<'a>(
                     _ => ()
                 };
                 if subscript.collection_optional {
-                    resolved = Type::Optional(Box::new(resolved));
+                    resolved = resolved.wrap_in_optional();
                 }
             }
             resolved
@@ -182,7 +182,7 @@ fn resolve_type_expr_kind<'a>(
             }
             let mut result = Type::SynthesizedShape(SynthesizedShape::new(map));
             if typed_shape.item_optional {
-                result = Type::Optional(Box::new(result));
+                result = result.wrap_in_optional();
             }
             if !typed_shape.arity.is_scalar() {
                 match typed_shape.arity {
@@ -191,7 +191,7 @@ fn resolve_type_expr_kind<'a>(
                     _ => ()
                 };
                 if typed_shape.collection_optional {
-                    result = Type::Optional(Box::new(result));
+                    result = result.wrap_in_optional();
                 }
             }
             result
@@ -341,7 +341,7 @@ fn resolve_type_item<'a>(
         }
     }
     if type_item.item_optional {
-        base = Some(Type::Optional(Box::new(base.unwrap())));
+        base = Some(base.unwrap().wrap_in_optional());
     }
     if !type_item.arity.is_scalar() {
         match type_item.arity {
@@ -350,7 +350,7 @@ fn resolve_type_item<'a>(
             _ => (),
         }
         if type_item.collection_optional {
-            base = Some(Type::Optional(Box::new(base.unwrap())))
+            base = Some(base.unwrap().wrap_in_optional())
         }
     }
     base.unwrap()

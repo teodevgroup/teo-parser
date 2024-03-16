@@ -630,7 +630,7 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
     }
     let new_type = if retval.len() == 2 && retval.contains(&Type::Null) {
         let t = retval.iter().find(|t| !t.is_null()).unwrap().clone();
-        Type::Array(Box::new(Type::Optional(Box::new(t))))
+        Type::Array(Box::new(t.wrap_in_optional()))
     } else if retval.len() == 1 {
         Type::Array(Box::new(retval.iter().next().unwrap().clone()))
     } else {
@@ -781,7 +781,7 @@ pub(super) fn resolve_dictionary_literal_as_dictionary_type<'a>(a: &'a Dictionar
     }
     let new_type = if retval.len() == 2 && retval.contains(&Type::Null) {
         let t = retval.iter().find(|t| !t.is_null()).unwrap().clone();
-        Type::Dictionary(Box::new(Type::Optional(Box::new(t))))
+        Type::Dictionary(Box::new(t.wrap_in_optional()))
     } else if retval.len() == 1 {
         Type::Dictionary(Box::new(retval.iter().next().unwrap().clone()))
     } else {

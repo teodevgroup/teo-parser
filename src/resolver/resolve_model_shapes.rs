@@ -869,7 +869,7 @@ fn resolve_result_type(model: &Model) -> Type {
                     return_type = Type::Array(Box::new(return_type));
                 }
                 if optional {
-                    return_type = Type::Optional(Box::new(return_type));
+                    return_type = return_type.wrap_in_optional();
                 }
                 map.insert(field.name().to_owned(), return_type);
             }

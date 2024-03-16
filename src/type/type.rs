@@ -1119,7 +1119,7 @@ impl Type {
             Type::Range(t) => Type::Range(Box::new(f_ref(t, &f))),
             Type::Union(types) => Type::Union(types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::FieldType(a, b) => f(a.as_ref(), b.as_ref()),
-            Type::Optional(t) => Type::Optional(Box::new(f_ref(t, &f))),
+            Type::Optional(t) => f_ref(t, &f).wrap_in_optional(),
             Type::Pipeline(t1, t2) => Type::Pipeline(Box::new(f_ref(t1, &f)), Box::new(f_ref(t2, &f))),
             Type::InterfaceObject(r, types) => Type::InterfaceObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
             Type::StructObject(r, types) => Type::StructObject(r.clone(), types.iter().map(|t| f_ref(t, &f)).collect()),
