@@ -1381,14 +1381,19 @@ namespace std {
             token: String
         }
 
+        declare synthesized shape SignInCheckerIds {
+            declare optional synthesized field with @identity.id
+        }
+
         declare synthesized shape SignInCheckerCompanions {
             declare optional synthesized field with @identity.companion
         }
 
         @generateClient(false) @generateEntity(false)
-        interface SignInCheckerArgs<T, M> {
+        interface SignInCheckerArgs<T, C, I> {
             value: T
-            companions: M
+            companions: C
+            ids: I
         }
 
         declare synthesized shape SignInInput {
@@ -1411,7 +1416,7 @@ namespace std {
 
         declare model field decorator id
 
-        declare model field decorator checker(pipeline?: Pipeline<SignInCheckerArgs<ThisFieldType, SignInCheckerCompanions<Self>>, Ignored>)
+        declare model field decorator checker(pipeline?: Pipeline<SignInCheckerArgs<ThisFieldType, SignInCheckerCompanions<Self>, SignInCheckerIds<Self>>, Ignored>)
 
         declare model field decorator companion
 
