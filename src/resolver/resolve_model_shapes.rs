@@ -404,7 +404,7 @@ fn resolve_model_scalar_fields(model: &Model) -> SynthesizedEnum {
     let mut members = vec![];
     for field in model.fields() {
         if let Some(settings) = field.resolved().class.as_model_primitive_field() {
-            if !settings.dropped && !is_field_writeonly(field) {
+            if !settings.dropped {
                 members.push(SynthesizedEnumMember {
                     name: field.name().to_owned(),
                     comment: field.comment().cloned(),
