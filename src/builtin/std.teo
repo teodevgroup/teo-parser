@@ -927,7 +927,7 @@ namespace std {
 
     /// @name Message
     /// If error occurred, replace error message and error code if specified
-    declare pipeline item message<T, U>(pipeline?: Pipeline<T, U>, message?: String, code?: Int): T -> U
+    declare pipeline item message<T, U>(pipeline?: Pipeline<T, U>, message?: String, code?: Int?): T -> U
 
     declare pipeline item presents<T>: T? -> T
 
