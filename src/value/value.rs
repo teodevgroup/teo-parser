@@ -11,9 +11,7 @@ use itertools::Itertools;
 use regex::Regex;
 use teo_result::Error;
 use crate::value::index::Index;
-use crate::value::model_object::ModelObject;
 use crate::value::pipeline::Pipeline;
-use crate::value::struct_object::StructObject;
 
 use super::{file::File, interface_enum_variant::InterfaceEnumVariant, option_variant::OptionVariant, range::Range};
 
@@ -40,7 +38,6 @@ pub enum Value {
     Regex(Regex),
     File(File),
     Pipeline(Pipeline),
-    ModelObject(ModelObject),
 }
 
 impl Value {
@@ -338,17 +335,6 @@ impl Value {
         }
     }
 
-    pub fn is_model_object(&self) -> bool {
-        self.as_model_object().is_some()
-    }
-
-    pub fn as_model_object(&self) -> Option<&ModelObject> {
-        match self {
-            Value::ModelObject(s) => Some(s),
-            _ => None,
-        }
-    }
-
     // Compound queries
 
     pub fn is_any_int(&self) -> bool {
@@ -430,8 +416,6 @@ impl Value {
             Value::File(_) => "File",
             Value::InterfaceEnumVariant(_) => "InterfaceEnumVariant",
             Value::Pipeline(_) => "Pipeline",
-            Value::StructObject(_) => "StructObject",
-            Value::ModelObject(_) => "ModelObject",
         }
     }
 
@@ -468,8 +452,6 @@ impl Value {
             Value::File(_) => false,
             Value::InterfaceEnumVariant(_) => false,
             Value::Pipeline(_) => false,
-            Value::StructObject(_) => false,
-            Value::ModelObject(_) => false,
         })
     }
 
@@ -882,8 +864,8 @@ impl PartialOrd for Value {
             (DateTime(s), DateTime(o)) => s.partial_cmp(o),
             (Array(s), Array(o)) => s.partial_cmp(o),
             (Tuple(s), Tuple(o)) => s.partial_cmp(o),
-            (EnumVariant(s), EnumVariant(o)) => s.value.partial_cmp(&o.value),
             (OptionVariant(s), OptionVariant(o)) => s.value.partial_cmp(&o.value),
+            (InterfaceEnumVariant(s), InterfaceEnumVariant(o)) => s.value.partial_cmp(&o.value),
             _ => None,
         }
     }
@@ -950,6 +932,8 @@ impl Display for Value {
                 f.write_str("/")
             }
             Value::File(file) => Display::fmt(file, f),
+            Value::InterfaceEnumVariant(interface_enum_variant) => Display::fmt(interface_enum_variant, f),
+            Value::Pipeline(pipeline) => Display::fmt(pipeline, f),
         }
     }
 }
