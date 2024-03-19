@@ -40,7 +40,6 @@ pub enum Value {
     Regex(Regex),
     File(File),
     Pipeline(Pipeline),
-    StructObject(StructObject),
     ModelObject(ModelObject),
 }
 
@@ -335,17 +334,6 @@ impl Value {
     pub fn as_pipeline(&self) -> Option<&Pipeline> {
         match self {
             Value::Pipeline(p) => Some(p),
-            _ => None,
-        }
-    }
-
-    pub fn is_struct_object(&self) -> bool {
-        self.as_struct_object().is_some()
-    }
-
-    pub fn as_struct_object(&self) -> Option<&StructObject> {
-        match self {
-            Value::StructObject(s) => Some(s),
             _ => None,
         }
     }
