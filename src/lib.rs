@@ -12,10 +12,11 @@ pub mod traits;
 pub mod availability;
 pub mod expr;
 pub mod format;
+pub mod value;
 #[macro_use]
 pub mod macros;
 
-use std::collections::{BTreeMap};
+use std::collections::BTreeMap;
 use crate::ast::schema::Schema;
 use crate::completion::completion_item::CompletionItem;
 use crate::definition::definition::Definition;
