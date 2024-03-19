@@ -5,8 +5,9 @@ use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Su
 use std::str::FromStr;
 use bigdecimal::{BigDecimal, Zero};
 use bson::oid::ObjectId;
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, NaiveDate, SecondsFormat, Utc};
 use indexmap::IndexMap;
+use itertools::Itertools;
 use regex::Regex;
 use teo_result::Error;
 use crate::value::index::Index;
@@ -951,9 +952,6 @@ impl Display for Value {
                     f.write_str(",")?;
                 }
                 f.write_str(")")
-            }
-            Value::EnumVariant(e) => {
-                f.write_str(&format!(".{}", &e.value))
             }
             Value::OptionVariant(o) => {
                 f.write_str(&o.display)
