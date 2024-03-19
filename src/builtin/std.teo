@@ -1075,6 +1075,10 @@ namespace std {
     /// Perform map and collect results on array
     declare pipeline item map<T, U>(pipeline?: Pipeline<T, U>): T[] -> U[]
 
+    /// @name Identity
+    /// Fetch identity from the request.
+    declare pipeline item identity(): Ignored -> Any
+
     #end
 
     /// @name Empty
