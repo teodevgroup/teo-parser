@@ -1077,7 +1077,7 @@ namespace std {
 
     /// @name Identity
     /// Fetch identity from the request.
-    declare pipeline item identity(): Ignored -> Any
+    declare pipeline item account(): Ignored -> Any
 
     #end
 
