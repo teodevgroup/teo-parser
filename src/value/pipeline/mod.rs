@@ -3,7 +3,7 @@ pub mod item;
 use std::fmt::{Display, Formatter};
 pub use item::Item;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Pipeline {
     pub items: Vec<Item>
 }

@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
+use serde::Serialize;
 use crate::value::Value;
 use super::super::super::r#type::reference::Reference;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Item {
     pub reference: Reference,
     pub args: BTreeMap<String, Value>
