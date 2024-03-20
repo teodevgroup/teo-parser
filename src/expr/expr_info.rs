@@ -1,6 +1,5 @@
-use teo_teon::Value;
+use crate::value::Value;
 use crate::expr::ReferenceInfo;
-use crate::r#type::reference::Reference;
 use crate::r#type::Type;
 
 #[derive(Debug, Clone)]

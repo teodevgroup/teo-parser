@@ -4,10 +4,9 @@ use array_tool::vec::Join;
 use indexmap::{IndexMap, indexmap};
 use itertools::Itertools;
 use maplit::{btreemap, hashset};
-use teo_teon::types::enum_variant::EnumVariant;
-use teo_teon::types::range::Range;
-use teo_teon::Value;
-use teo_teon::types::option_variant::OptionVariant;
+use crate::value::range::Range;
+use crate::value::{value, Value};
+use crate::value::option_variant::OptionVariant;
 use crate::ast::argument_list::ArgumentList;
 use crate::ast::arith_expr::{ArithExpr, ArithExprOperator};
 use crate::ast::bracket_expression::BracketExpression;
@@ -33,6 +32,7 @@ use crate::r#type::synthesized_interface_enum::{SynthesizedInterfaceEnum, Synthe
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
+use crate::value::interface_enum_variant::InterfaceEnumVariant;
 
 pub(super) fn resolve_expression<'a>(expression: &'a Expression, context: &'a ResolverContext<'a>, expected: &Type, keywords_map: &BTreeMap<Keyword, Type>) -> ExprInfo {
     let t = resolve_expression_kind(&expression.kind, context, expected, keywords_map);
@@ -210,29 +210,31 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 reference_info: None,
             }
         };
-        if let Some(argument_list_declaration) = member.argument_list_declaration() {
-            if let Some(argument_list) = e.argument_list() {
-                resolve_argument_list(
-                    e.identifier().span,
-                    Some(argument_list),
-                    vec![CallableVariant {
-                        generics_declarations: vec![],
-                        argument_list_declaration: Some(argument_list_declaration),
-                        generics_constraints: vec![],
-                        pipeline_input: None,
-                        pipeline_output: None,
-                    }],
-                    &btreemap!{},
-                    context,
-                    None
-                );
-            } else {
-                if !argument_list_declaration.every_argument_is_optional() {
-                    context.insert_diagnostics_error(e.span, format!("expect argument list"));
-                    return ExprInfo {
-                        r#type: Type::EnumVariant(enum_reference.clone()),
-                        value: None,
-                        reference_info: None,
+        if r#enum.interface {
+            if let Some(argument_list_declaration) = member.argument_list_declaration() {
+                if let Some(argument_list) = e.argument_list() {
+                    resolve_argument_list(
+                        e.identifier().span,
+                        Some(argument_list),
+                        vec![CallableVariant {
+                            generics_declarations: vec![],
+                            argument_list_declaration: Some(argument_list_declaration),
+                            generics_constraints: vec![],
+                            pipeline_input: None,
+                            pipeline_output: None,
+                        }],
+                        &btreemap!{},
+                        context,
+                        None
+                    );
+                } else {
+                    if !argument_list_declaration.every_argument_is_optional() {
+                        context.insert_diagnostics_error(e.span, format!("expect argument list"));
+                        return ExprInfo {
+                            r#type: Type::EnumVariant(enum_reference.clone()),
+                            value: None,
+                            reference_info: None,
+                        }
                     }
                 }
             }
@@ -246,14 +248,14 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 })),
                 reference_info: None,
             }
-        } else {
+        } else if r#enum.interface {
             ExprInfo {
                 r#type: Type::EnumVariant(enum_reference.clone()),
-                value: Some(Value::EnumVariant(EnumVariant {
+                value: Some(Value::InterfaceEnumVariant(InterfaceEnumVariant {
                     value: member.resolved().as_str().unwrap().to_string(),
                     args: if let Some(argument_list) = e.argument_list() {
                         let mut has_runtime_value = false;
-                        let mut args = btreemap! {};
+                        let mut args: BTreeMap<String, Value> = btreemap! {};
                         for argument in argument_list.arguments() {
                             if !argument.is_resolved() {
                                 has_runtime_value = true;
@@ -272,6 +274,12 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                         None
                     },
                 })),
+                reference_info: None,
+            }
+        } else {
+            ExprInfo {
+                r#type: Type::EnumVariant(enum_reference.clone()),
+                value: Some(Value::String(member.resolved().as_str().unwrap().to_string())),
                 reference_info: None,
             }
         }
@@ -313,10 +321,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 if let Some(record) = group.records().find(|r| r.identifier().name() == e.identifier().name()) {
                     return ExprInfo {
                         r#type: expected.clone(),
-                        value: Some(Value::EnumVariant(EnumVariant {
-                            value: e.identifier().name().to_owned(),
-                            args: None,
-                        })),
+                        value: Some(Value::String(e.identifier().name().to_owned())),
                         reference_info: Some(ReferenceInfo::new(ReferenceType::DataSetRecord, Reference::new(record.path.clone(), record.string_path.clone()), None)),
                     };
                 }
@@ -343,10 +348,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 if shape.get(e.identifier().name()).is_some() {
                     ExprInfo {
                         r#type: expected.clone(),
-                        value: Some(Value::EnumVariant(EnumVariant {
-                            value: e.identifier().name().to_string(),
-                            args: None,
-                        })),
+                        value: Some(Value::String(e.identifier().name().to_string())),
                         reference_info: None,
                     }
                 } else {
@@ -362,10 +364,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                 if shape.get(e.identifier().name()).is_some() {
                     ExprInfo {
                         r#type: expected.clone(),
-                        value: Some(Value::EnumVariant(EnumVariant {
-                            value: e.identifier().name().to_string(),
-                            args: None,
-                        })),
+                        value: Some(Value::String(e.identifier().name().to_string())),
                         reference_info: None,
                     }
                 } else {
@@ -383,10 +382,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                         if shape.get(e.identifier().name()).is_some() {
                             ExprInfo {
                                 r#type: expected.clone(),
-                                value: Some(Value::EnumVariant(EnumVariant {
-                                    value: e.identifier().name().to_string(),
-                                    args: None,
-                                })),
+                                value: Some(Value::String(e.identifier().name().to_string())),
                                 reference_info: None,
                             }
                         } else {
@@ -421,10 +417,7 @@ pub(super) fn resolve_enum_variant_literal<'a>(e: &'a EnumVariantLiteral, contex
                         if shape.get(e.identifier().name()).is_some() {
                             ExprInfo {
                                 r#type: expected.clone(),
-                                value: Some(Value::EnumVariant(EnumVariant {
-                                    value: e.identifier().name().to_string(),
-                                    args: None,
-                                })),
+                                value: Some(Value::String(e.identifier().name().to_string())),
                                 reference_info: None,
                             }
                         } else {
@@ -475,10 +468,7 @@ fn resolve_enum_variant_literal_from_synthesized_enum<'a>(e: &EnumVariantLiteral
     if synthesized_enum.keys.contains(&e.identifier().name) {
         ExprInfo {
             r#type: source.clone(),
-            value: Some(Value::EnumVariant(EnumVariant {
-                value: e.identifier().name().to_string(),
-                args: None,
-            })),
+            value: Some(Value::String(e.identifier().name().to_string())),
             reference_info: None,
 
         }
@@ -528,20 +518,14 @@ fn resolve_enum_variant_literal_from_synthesized_interface_enum<'a>(e: &'a EnumV
                 let args = check_and_build_args_for_interface_enum_variant_literal(argument_list, member_definition, context);
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: e.identifier().name().to_string(),
-                        args: Some(args),
-                    })),
+                    value: Some(Value::String(e.identifier().name().to_string())),
                     reference_info: None,
                 }
             } else {
                 context.insert_diagnostics_error(argument_list.span, "unexpected argument list");
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: e.identifier().name().to_string(),
-                        args: None,
-                    })),
+                    value: Some(Value::String(e.identifier().name().to_string())),
                     reference_info: None,
                 }
             }
@@ -549,20 +533,14 @@ fn resolve_enum_variant_literal_from_synthesized_interface_enum<'a>(e: &'a EnumV
             if member_definition.args.is_empty() || member_definition.all_arguments_are_optional() {
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: e.identifier().name().to_string(),
-                        args: None,
-                    })),
+                    value: Some(Value::String(e.identifier().name().to_string())),
                     reference_info: None,
                 }
             } else {
                 context.insert_diagnostics_error(e.span, "expect argument list");
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::EnumVariant(EnumVariant {
-                        value: e.identifier().name().to_string(),
-                        args: None,
-                    })),
+                    value: Some(Value::String(e.identifier().name().to_string())),
                     reference_info: None,
                 }
             }

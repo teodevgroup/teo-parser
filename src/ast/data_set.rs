@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use teo_teon::value::Value;
+use crate::value::value::Value;
 
 use crate::ast::identifier::Identifier;
 use crate::ast::identifier_path::IdentifierPath;

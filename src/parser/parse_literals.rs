@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use snailquote::unescape;
 use regex::Regex;
-use teo_teon::value::Value;
+use crate::value::Value;
 use crate::ast::literals::{ArrayLiteral, BoolLiteral, DictionaryLiteral, EnumVariantLiteral, NullLiteral, NumericLiteral, RegexLiteral, StringLiteral, TupleLiteral};
 use crate::{parse_append, parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert, parse_insert_punctuation, parse_node_variables, parse_set, parse_set_optional};
 use crate::parser::parse_argument::parse_argument_list;

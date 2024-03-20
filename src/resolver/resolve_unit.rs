@@ -1,8 +1,6 @@
 use std::collections::BTreeMap;
 use maplit::btreemap;
-use teo_teon::types::enum_variant::EnumVariant;
-use teo_teon::types::option_variant::OptionVariant;
-use teo_teon::Value;
+use crate::value::option_variant::OptionVariant;
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::reference_space::ReferenceSpace;
 use crate::ast::span::Span;
@@ -20,6 +18,8 @@ use crate::utils::top_filter::top_filter_for_reference_type;
 use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::synthesized_shape::SynthesizedShape;
 use crate::resolver::resolve_identifier::{resolve_identifier_path_names_with_filter_to_expr_info, resolve_identifier_path_names_with_filter_to_top};
+use crate::value::interface_enum_variant::InterfaceEnumVariant;
+use crate::value::Value;
 
 pub(super) fn resolve_unit<'a>(
     unit: &'a Unit,
@@ -293,10 +293,7 @@ fn resolve_enum_reference_for_unit<'a>(
                         display: format!(".{}", identifier.name()),
                     })
                 } else {
-                    Value::EnumVariant(EnumVariant {
-                        value: identifier.name().to_owned(),
-                        args: None,
-                    })
+                    Value::String(identifier.name().to_owned())
                 }), Some(ReferenceInfo::new(
                     ReferenceType::EnumMember,
                     Reference::new(m.path.clone(), m.string_path.clone()),
@@ -320,47 +317,55 @@ fn resolve_enum_variant_for_unit<'a>(
     expression: &'a Expression,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
-    let Some(value) = current.value().map(|v| v.as_enum_variant()).flatten() else {
-        context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(ExprInfo::undetermined());
-    };
-    if value.args.is_some() {
-        context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(ExprInfo::undetermined());
-    }
     let enum_declaration = context.source().find_node_by_string_path(
         &current.r#type.as_enum_variant().unwrap().str_path(),
         &top_filter_for_reference_type(ReferenceSpace::Default),
         context.current_availability()
     ).unwrap().as_enum().unwrap();
-    let member_declaration = enum_declaration.members().find(|m| m.identifier().name() == value.value.as_str()).unwrap();
-    if let Some(_) = member_declaration.argument_list_declaration() {
-        match &expression.kind {
-            ExpressionKind::ArgumentList(argument_list) => {
-                resolve_argument_list(
-                    last_span,
-                    Some(argument_list),
-                    member_declaration.callable_variants(),
-                    &btreemap! {},
-                    context,
-                    None
-                );
-                let args = argument_list.arguments().map(|argument| {
-                    Some((argument.resolved_name()?.to_string(), argument.value().resolved().value.clone()?))
-                }).collect::<Option<BTreeMap<String, Value>>>();
-                expression.resolve_and_return(ExprInfo::new(current.r#type.clone(), args.map(|args| Value::EnumVariant(EnumVariant {
-                    value: value.value.clone(),
-                    args: Some(args),
-                })), current.reference_info().cloned()))
-            },
-            _ => {
-                context.insert_diagnostics_error(expression.span(), "invalid expression");
-                return expression.resolve_and_return(ExprInfo::undetermined());
+    if enum_declaration.interface {
+        let Some(value) = current.value().map(|v| v.as_interface_enum_variant()).flatten() else {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            return expression.resolve_and_return(ExprInfo::undetermined());
+        };
+        let member_declaration = enum_declaration.members().find(|m| m.identifier().name() == value.value.as_str()).unwrap();
+        if let Some(_) = member_declaration.argument_list_declaration() {
+            match &expression.kind {
+                ExpressionKind::ArgumentList(argument_list) => {
+                    resolve_argument_list(
+                        last_span,
+                        Some(argument_list),
+                        member_declaration.callable_variants(),
+                        &btreemap! {},
+                        context,
+                        None
+                    );
+                    let args = argument_list.arguments().map(|argument| {
+                        Some((argument.resolved_name()?.to_string(), argument.value().resolved().value.clone()?))
+                    }).collect::<Option<BTreeMap<String, Value>>>();
+                    expression.resolve_and_return(ExprInfo::new(current.r#type.clone(), args.map(|args| Value::InterfaceEnumVariant(InterfaceEnumVariant {
+                        value: value.value.clone(),
+                        args: Some(args),
+                    })), current.reference_info().cloned()))
+                },
+                _ => {
+                    context.insert_diagnostics_error(expression.span(), "invalid expression");
+                    return expression.resolve_and_return(ExprInfo::undetermined());
+                }
             }
+        } else {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            return expression.resolve_and_return(ExprInfo::undetermined());
         }
     } else {
-        context.insert_diagnostics_error(expression.span(), "invalid expression");
-        return expression.resolve_and_return(ExprInfo::undetermined());
+        let Some(value) = current.value().map(|v| v.as_str()).flatten() else {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            return expression.resolve_and_return(ExprInfo::undetermined());
+        };
+        if enum_declaration.members().find(|m| m.identifier().name() == value).is_none() {
+            context.insert_diagnostics_error(expression.span(), "invalid expression");
+            return expression.resolve_and_return(ExprInfo::undetermined());
+        }
+        expression.resolve_and_return(ExprInfo::new(current.r#type.clone(), Some(Value::String(value.to_string())), current.reference_info().cloned()))
     }
 }
 
@@ -710,10 +715,7 @@ fn unit_type_coerce<'a>(expression_span: Span, resolved: &ExprInfo, expected: &T
                 if definition.keys.contains(&field_name.to_owned()) {
                     return ExprInfo {
                         r#type: expected.unwrap_optional().unwrap_enumerable().unwrap_optional().clone(),
-                        value: Some(Value::EnumVariant(EnumVariant {
-                            value: field_name.to_owned(),
-                            args: None,
-                        })),
+                        value: Some(Value::String(field_name.to_owned())),
                         reference_info: resolved.reference_info.clone()
                     };
                 } else {

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use std::sync::Mutex;
 use maplit::btreemap;
-use teo_teon::value::Value;
+use crate::value::value::Value;
 use crate::ast::arith_expr::{ArithExpr, ArithExprOperator};
 use crate::ast::expression::{Expression, ExpressionKind};
 use crate::ast::r#enum::{Enum, EnumMember};

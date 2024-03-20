@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use serde::Serialize;
-use teo_teon::Value;
+use crate::value::Value;
 use crate::ast::schema::Schema;
 
 use crate::r#type::reference::Reference;

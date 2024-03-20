@@ -73,7 +73,7 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
             if let Some(first_argument) = argument_list.arguments().next() {
                 if first_argument.resolved().name.as_str() == "method" {
                     if let Some(value) = first_argument.value().resolved().value() {
-                        if let Some(enum_variant) = value.as_enum_variant() {
+                        if let Some(enum_variant) = value.as_interface_enum_variant() {
                             enum_variant.value.as_str() == "get" || enum_variant.value.as_str() == "delete"
                         } else {
                             false
