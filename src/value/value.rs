@@ -11,9 +11,8 @@ use itertools::Itertools;
 use regex::Regex;
 use teo_result::Error;
 use crate::value::index::Index;
-use crate::value::pipeline::Pipeline;
 
-use super::{file::File, interface_enum_variant::InterfaceEnumVariant, option_variant::OptionVariant, range::Range};
+use super::{interface_enum_variant::InterfaceEnumVariant, option_variant::OptionVariant, range::Range};
 
 /// Unlike the Value that runtime defines, this value is for parser use only.
 #[derive(Debug, Clone)]
@@ -36,8 +35,6 @@ pub enum Value {
     OptionVariant(OptionVariant),
     InterfaceEnumVariant(InterfaceEnumVariant),
     Regex(Regex),
-    File(File),
-    Pipeline(Pipeline),
 }
 
 impl Value {
@@ -312,29 +309,6 @@ impl Value {
         }
     }
 
-    pub fn is_file(&self) -> bool {
-        self.as_file().is_some()
-    }
-
-    pub fn as_file(&self) -> Option<&File> {
-        match self {
-            Value::File(f) => Some(f),
-            _ => None,
-        }
-    }
-
-
-    pub fn is_pipeline(&self) -> bool {
-        self.as_pipeline().is_some()
-    }
-
-    pub fn as_pipeline(&self) -> Option<&Pipeline> {
-        match self {
-            Value::Pipeline(p) => Some(p),
-            _ => None,
-        }
-    }
-
     // Compound queries
 
     pub fn is_any_int(&self) -> bool {
@@ -413,9 +387,7 @@ impl Value {
             Value::Tuple(_) => "Tuple",
             Value::OptionVariant(_) => "OptionVariant",
             Value::Regex(_) => "RegExp",
-            Value::File(_) => "File",
             Value::InterfaceEnumVariant(_) => "InterfaceEnumVariant",
-            Value::Pipeline(_) => "Pipeline",
         }
     }
 
@@ -449,9 +421,7 @@ impl Value {
             Value::Tuple(_) => false,
             Value::OptionVariant(o) => o.normal_not(),
             Value::Regex(_) => false,
-            Value::File(_) => false,
             Value::InterfaceEnumVariant(_) => false,
-            Value::Pipeline(_) => false,
         })
     }
 
@@ -837,8 +807,6 @@ impl PartialEq for Value {
             (OptionVariant(s), OptionVariant(o)) => s.value == o.value,
             (InterfaceEnumVariant(s), InterfaceEnumVariant(o)) => s == o,
             (Regex(s), Regex(o)) => s.as_str() == o.as_str(),
-            (File(s), File(o)) => s == o,
-            (Pipeline(s), Pipeline(o)) => s == o,
             _ => false,
         }
     }
@@ -931,9 +899,7 @@ impl Display for Value {
                 f.write_str(&format!("{}", r.as_str().replace("/", "\\/")))?;
                 f.write_str("/")
             }
-            Value::File(file) => Display::fmt(file, f),
             Value::InterfaceEnumVariant(interface_enum_variant) => Display::fmt(interface_enum_variant, f),
-            Value::Pipeline(pipeline) => Display::fmt(pipeline, f),
         }
     }
 }

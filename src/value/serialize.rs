@@ -77,14 +77,6 @@ impl Serialize for Value {
                 map.serialize_entry("$regex", &r.to_string())?;
                 map.end()
             }
-            Value::File(f) => {
-                let mut map = serializer.serialize_map(Some(1))?;
-                map.serialize_entry("$file", &f)?;
-                map.end()
-            }
-            _ => {
-                panic!("unsupported serialize type");
-            }
         }
     }
 }
