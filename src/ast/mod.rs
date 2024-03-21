@@ -59,3 +59,4 @@ pub mod synthesized_shape_declaration;
 pub mod synthesized_shape_field_declaration;
 pub mod handler_template_declaration;
 pub mod include_handler_from_template;
+pub mod type_as_value_expression;

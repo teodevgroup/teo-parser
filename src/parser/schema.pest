@@ -65,6 +65,7 @@ INTERFACE_KEYWORD = { "interface" }
 OPTION_KEYWORD = { "option" }
 EXTENDS_KEYWORD = { "extends" }
 WHERE_KEYWORD = { "where" }
+TYPE_KEYWORD = { "type" }
 
 CATCH_ALL = { (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 BLOCK_LEVEL_CATCH_ALL = { !BLOCK_CLOSE ~ CATCH_ALL }
@@ -272,13 +273,14 @@ identifier_unit = {
 
 empty_dot = { DOT }
 
-operand = { unit | pipeline | empty_pipeline }
+operand = { unit | pipeline | empty_pipeline | type_as_value_expression }
 
 expression = {
     arith_expr |
     unit |
     pipeline |
-    empty_pipeline
+    empty_pipeline |
+    type_as_value_expression
 }
 
 // #############
@@ -597,3 +599,8 @@ handler_template_declaration = {
   COLON ~
   type_expression
 }
+
+// #############
+// type as value expression
+// #############
+type_as_value_expression = { TYPE_KEYWORD ~ type_expression }

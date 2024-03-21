@@ -51,6 +51,7 @@ use crate::ast::struct_declaration::StructDeclaration;
 use crate::ast::subscript::Subscript;
 use crate::ast::synthesized_shape_declaration::SynthesizedShapeDeclaration;
 use crate::ast::synthesized_shape_field_declaration::SynthesizedShapeFieldDeclaration;
+use crate::ast::type_as_value_expression::TypeAsValueExpression;
 use crate::ast::type_expr::{TypeBinaryOperation, TypedEnum, TypedShape, TypedShapeItem, TypeExpr, TypeGenerics, TypeGroup, TypeItem, TypeSubscript, TypeTuple};
 use crate::ast::unit::Unit;
 use crate::ast::use_middlewares::UseMiddlewaresBlock;
@@ -145,6 +146,7 @@ pub enum Node {
     SynthesizedShapeFieldDeclaration(SynthesizedShapeFieldDeclaration),
     HandlerTemplateDeclaration(HandlerTemplateDeclaration),
     IncludeHandlerFromTemplate(IncludeHandlerFromTemplate),
+    TypeAsValueExpression(TypeAsValueExpression),
 }
 
 impl Node {
@@ -1040,6 +1042,17 @@ impl Node {
         }
     }
 
+    pub fn is_type_as_value_expression(&self) -> bool {
+        self.as_type_as_value_expression().is_some()
+    }
+
+    pub fn as_type_as_value_expression(&self) -> Option<&TypeAsValueExpression> {
+        match self {
+            Node::TypeAsValueExpression(c) => Some(c),
+            _ => None,
+        }
+    }
+
     pub fn as_dyn_node_trait(&self) -> &dyn NodeTrait {
         match self {
             Node::Argument(n) => n,
@@ -1123,6 +1136,7 @@ impl Node {
             Node::SynthesizedShapeFieldDeclaration(n) => n,
             Node::HandlerTemplateDeclaration(n) => n,
             Node::IncludeHandlerFromTemplate(n) => n,
+            Node::TypeAsValueExpression(n) => n,
         }
     }
 
