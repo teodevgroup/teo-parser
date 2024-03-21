@@ -70,6 +70,10 @@ pub enum Type {
     /// the meta type which values are represented by type expressions
     Type,
 
+    /// Type Value as Type
+    ///
+    TypeValueAsType(Box<Type>),
+
     // Value types
 
     /// Null
@@ -333,6 +337,17 @@ impl Type {
         match self {
             Self::Type => true,
             _ => false,
+        }
+    }
+
+    pub fn is_type_value_as_type(&self) -> bool {
+        self.as_type_value_as_type().is_some()
+    }
+
+    pub fn as_type_value_as_type(&self) -> Option<&Type> {
+        match self {
+            Self::TypeValueAsType(inner) => Some(inner),
+            _ => None,
         }
     }
 
@@ -1020,6 +1035,7 @@ impl Type {
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
             Type::Type => other.is_type(),
+            Type::TypeValueAsType(t) => other.is_type_value_as_type() && other.as_type_value_as_type().unwrap() == t.as_ref(),
             Type::Null => other.is_null(),
             Type::Bool => other.is_bool(),
             Type::Int => other.is_int(),
@@ -1289,6 +1305,7 @@ impl Display for Type {
             Type::GenericItem(name) => f.write_str(name),
             Type::Keyword(k) => Display::fmt(k, f),
             Type::Type => f.write_str("Type"),
+            Type::TypeValueAsType(inner) => f.write_str(&format!("TypeValueAsType<{}>", inner)),
             Type::Null => f.write_str("Null"),
             Type::Bool => f.write_str("Bool"),
             Type::Int => f.write_str("Int"),

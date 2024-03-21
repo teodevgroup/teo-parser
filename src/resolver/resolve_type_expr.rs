@@ -446,6 +446,13 @@ fn type_item_builtin_match<'a>(
             check_generics_amount(0, type_item, context);
             Some(Type::Type)
         },
+        "TypeValueAsType" => {
+            check_generics_amount(1, type_item, context);
+            check_generics_amount(1, type_item, context);
+            Some(Type::TypeValueAsType(Box::new(type_item.generic_items().get(0).map_or(Type::Any, |t| {
+                resolve_type_expr(t, generics_declaration, generics_constraint, keywords_map, context, availability)
+            }))))
+        }
         "Null" => {
             check_generics_amount(0, type_item, context);
             Some(Type::Null)
