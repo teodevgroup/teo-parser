@@ -10,4 +10,14 @@ mod test {
         assert_eq!(diagnostics.has_errors(), false);
         assert_eq!(diagnostics.has_warnings(), true);
     }
+
+    #[test]
+    fn type_as_value_generic_should_work_as_expected() {
+        let path_buf = std::env::current_dir().unwrap().join("tests/parse/type_as_value_expression/schemas/02.teo");
+        let path = path_buf.to_str().unwrap();
+        let (_, diagnostics) = parse(path, None, None);
+        print_diagnostics(&diagnostics, true);
+        assert_eq!(diagnostics.has_errors(), false);
+        assert_eq!(diagnostics.has_warnings(), false);
+    }
 }

@@ -47,10 +47,6 @@ impl Keyword {
         self.name.as_str() == "client"
     }
 
-    pub fn is_test(&self) -> bool {
-        self.name.as_str() == "tests"
-    }
-
     pub fn is_debug(&self) -> bool {
         self.name.as_str() == "debug"
     }

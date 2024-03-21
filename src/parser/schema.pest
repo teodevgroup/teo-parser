@@ -33,7 +33,6 @@ CONNECTOR_KEYWORD = { "connector" }
 CLIENT_KEYWORD = { "client" }
 ENTITY_KEYWORD = { "entity" }
 DEBUG_KEYWORD = { "debug" }
-TEST_KEYWORD = { "test" }
 NAMESPACE_KEYWORD = { "namespace" }
 STATIC_FILES_KEYWORD = { "static files" }
 IMPORT_KEYWORD = { "import" }
@@ -322,7 +321,7 @@ partial_argument_declaration = { identifier ~ OPTIONAL? ~ COLON }
 // config blocks
 // #############
 
-config_keywords = { SERVER_KEYWORD | CONNECTOR_KEYWORD | CLIENT_KEYWORD | ENTITY_KEYWORD | DEBUG_KEYWORD | TEST_KEYWORD }
+config_keywords = { SERVER_KEYWORD | CONNECTOR_KEYWORD | CLIENT_KEYWORD | ENTITY_KEYWORD | DEBUG_KEYWORD }
 
 config_block = {
     config_keywords

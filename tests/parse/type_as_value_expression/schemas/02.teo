@@ -1,0 +1,49 @@
+connector {
+    provider: .postgres,
+    url: "postgres://127.0.0.1:5432/somedemo"
+}
+
+server {
+    bind: ("0.0.0.0", 5688)
+}
+
+entity {
+    provider: .python,
+    dest: "./entities"
+}
+
+client {
+    provider: .typeScript,
+    dest: "../client",
+    package: false,
+    host: .string("http://localhost:5688")
+}
+
+@canMutate($match($account, [
+    $case($cast(User), $when(.update | .delete, $is($self))),
+    $case($cast(Admin), $valid),
+    $case($cast(Null), $when(.create, $valid))
+]))
+@identity.tokenIssuer($identity.jwt(expired: 3600 * 24 * 365))
+@identity.jwtSecret(ENV["JWT_SECRET"]!)
+model User {
+    @id @readonly @autoIncrement
+    id: Int
+    @identity.id
+    email: String
+    @identity.checker(
+        $do($get(.value).eq($self.get(.password)))
+        .do($get(.companions).presents.get(.authCodeToken).presents))
+    password: String
+    @identity.companion @virtual
+    authCodeToken: String?
+    include handler identity.signIn
+    include handler identity.identity
+}
+
+model Admin {
+  @id @readonly @autoIncrement
+  id: Int
+}
+
+middlewares [identity.identityFromJwt(secret: ENV["JWT_SECRET"]!)]

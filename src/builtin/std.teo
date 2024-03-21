@@ -402,12 +402,6 @@ namespace std {
         logMigrations: Bool?
         logSeedRecords: Bool?
     }
-
-    declare config test {
-        resetAfterQuery: Bool?
-        resetAfterMutation: Bool?
-        resetDataSets: ResetDatasets?
-    }
     #end
 
     #if available(database)

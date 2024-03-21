@@ -92,10 +92,6 @@ impl Schema {
         self.references.debug.as_ref().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap())
     }
 
-    pub fn test(&self) -> Option<&Config> {
-        self.references.test.as_ref().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap())
-    }
-
     pub fn connectors(&self) -> Vec<&Config> {
         self.references.connectors.iter().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap()).collect()
     }
@@ -173,7 +169,6 @@ pub struct SchemaReferences {
     pub configs: Vec<Vec<usize>>,
     pub server: Option<Vec<usize>>,
     pub debug: Option<Vec<usize>>,
-    pub test: Option<Vec<usize>>,
     pub connectors: Vec<Vec<usize>>,
     pub entities: Vec<Vec<usize>>,
     pub clients: Vec<Vec<usize>>,
@@ -210,7 +205,6 @@ impl SchemaReferences {
             models: vec![],
             data_sets: vec![],
             debug: None,
-            test: None,
             interfaces: vec![],
             namespaces: vec![],
             config_declarations: vec![],
@@ -236,8 +230,6 @@ impl SchemaReferences {
             self.server = Some(config.path().clone());
         } else if config.keyword().is_entity() {
             self.entities.push(config.path().clone());
-        } else if config.keyword().is_test() {
-            self.test = Some(config.path().clone());
         } else if config.keyword().is_debug() {
             self.debug = Some(config.path().clone());
         }

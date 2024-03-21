@@ -1038,7 +1038,7 @@ impl Type {
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
             Type::Type => other.is_type(),
-            Type::TypeValueAsType(t) => other.is_type_value_as_type() && other.as_type_value_as_type().unwrap() == t.as_ref(),
+            Type::TypeValueAsType(_) => true,
             Type::Null => other.is_null(),
             Type::Bool => other.is_bool(),
             Type::Int => other.is_int(),
