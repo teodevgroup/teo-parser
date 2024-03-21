@@ -919,8 +919,6 @@ namespace std {
 
     declare pipeline item regexMatch(regex?: Regex): String -> String
 
-    // declare pipeline item identity: Ignored -> Any?
-
     /// @name Print
     /// Print the current pipeline ctx value for debug purpose.
     declare pipeline item print<T>(label?: String?): T -> T
@@ -985,13 +983,33 @@ namespace std {
 
     declare pipeline item validate<T>(pipeline?: Pipeline<T, Ignored>): T -> T
 
-    // declare pipeline item all<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
+    declare pipeline item all<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
 
-    // declare pipeline item any<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
+    declare pipeline item any<T>(pipelines?: Pipeline<T, Ignored>[]): T -> T
 
     declare pipeline item do<T>(pipeline?: Pipeline<T, Ignored>): T -> T
 
     declare pipeline item not<T>(pipeline?: Pipeline<T, Ignored>): T -> T
+
+    /// @name Cast
+    /// Cast the output value to the type described in the argument
+    declare pipeline item cast<T>(target?: TypeValueAsType<T>): Any -> T
+
+    /// @name Match
+    /// Match the value against the arms and return the result
+    declare pipeline item match<T, U, V>(value?: Pipeline<T, U>, arms?: Pipeline<U, V>[]): T -> V
+
+    /// @name Case
+    /// `$case` is designed to be used together with `$match`
+    declare pipeline item case<T, U, V>(arm?: Pipeline<T, U>, exec?: Pipeline<U, V>): T -> V
+
+    /// @name As Any
+    /// Cast the value to Any type
+    declare pipeline item asAny: Ignored -> Any
+
+    /// @name Is
+    /// True if input is value. For model objects, it performs a natural match. Otherwise, a `==` is used
+    declare pipeline item is<T>(value?: T | Pipeline<T, T>): T -> T
 
     /// @name Self
     /// Get the current pipeline context object
