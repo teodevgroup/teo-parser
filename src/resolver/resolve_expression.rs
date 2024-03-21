@@ -630,7 +630,6 @@ fn resolve_array_literal<'a>(a: &'a ArrayLiteral, context: &'a ResolverContext<'
         r#type: new_type,
         value: if unresolved { None } else { Some(Value::Array(retval_values)) },
         reference_info: None,
-
     }
 }
 

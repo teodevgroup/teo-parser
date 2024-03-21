@@ -282,6 +282,9 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
             }
         }
     }
+    if errors.is_empty() {
+        matched = true;
+    }
     (errors, warnings, callable_variant.pipeline_output.clone().map(|t| flatten_field_type_reference(t.replace_keywords(keywords_map).replace_generics(&generics_map), context)), matched)
 }
 
