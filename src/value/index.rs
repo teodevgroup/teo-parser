@@ -35,7 +35,7 @@ impl Index for usize {
                 let len = vec.len();
                 vec.get_mut(*self).unwrap_or_else(|| {
                     panic!(
-                        "cannot access index {} of Teon array of length {}",
+                        "cannot access index {} of parser value array of length {}",
                         self, len
                     )
                 })
@@ -44,12 +44,12 @@ impl Index for usize {
                 let len = vec.len();
                 vec.get_mut(*self).unwrap_or_else(|| {
                     panic!(
-                        "cannot access index {} of Teon tuple of length {}",
+                        "cannot access index {} of parser value tuple of length {}",
                         self, len
                     )
                 })
             },
-            _ => panic!("cannot access index {} of Teon {}", self, v.type_hint()),
+            _ => panic!("cannot access index {} of parser value {}", self, v),
         }
     }
 }
@@ -76,7 +76,7 @@ impl Index for str {
         }
         match v {
             Value::Dictionary(map) => map.entry(self.to_owned()).or_insert(Value::Null),
-            _ => panic!("cannot access key {:?} in Teon {}", self, v.type_hint()),
+            _ => panic!("cannot access key {:?} in parser value {}", self, v),
         }
     }
 }

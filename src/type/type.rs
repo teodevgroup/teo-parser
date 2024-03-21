@@ -66,7 +66,7 @@ pub enum Type {
     ///
     Keyword(Keyword),
 
-    // Teon types
+    // Value types
 
     /// Null
     ///

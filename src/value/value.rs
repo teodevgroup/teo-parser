@@ -10,6 +10,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use regex::Regex;
 use teo_result::Error;
+use crate::r#type::Type;
 use crate::value::index::Index;
 
 use super::{interface_enum_variant::InterfaceEnumVariant, option_variant::OptionVariant, range::Range};
@@ -35,6 +36,7 @@ pub enum Value {
     OptionVariant(OptionVariant),
     InterfaceEnumVariant(InterfaceEnumVariant),
     Regex(Regex),
+    Type(Type),
 }
 
 impl Value {
@@ -309,6 +311,17 @@ impl Value {
         }
     }
 
+    pub fn is_type(&self) -> bool {
+        self.as_type().is_some()
+    }
+
+    pub fn as_type(&self) -> Option<&Type> {
+        match self {
+            Value::Type(t) => Some(t),
+            _ => None,
+        }
+    }
+
     // Compound queries
 
     pub fn is_any_int(&self) -> bool {
@@ -366,31 +379,6 @@ impl Value {
         mem::replace(self, Value::Null)
     }
 
-    // Type hint
-
-    pub fn type_hint(&self) -> &str {
-        match self {
-            Value::Null => "Null",
-            Value::Bool(_) => "Bool",
-            Value::Int(_) => "Int",
-            Value::Int64(_) => "Int64",
-            Value::Float32(_) => "Float32",
-            Value::Float(_) => "Float",
-            Value::Decimal(_) => "Decimal",
-            Value::ObjectId(_) => "ObjectId",
-            Value::String(_) => "String",
-            Value::Date(_) => "Date",
-            Value::DateTime(_) => "DateTime",
-            Value::Array(_) => "Array",
-            Value::Dictionary(_) => "Dictionary",
-            Value::Range(_) => "Range",
-            Value::Tuple(_) => "Tuple",
-            Value::OptionVariant(_) => "OptionVariant",
-            Value::Regex(_) => "RegExp",
-            Value::InterfaceEnumVariant(_) => "InterfaceEnumVariant",
-        }
-    }
-
     pub fn recip(&self) -> teo_result::Result<Value> {
         Ok(match self {
             Value::Int(n) => Value::Float((*n as f64).recip()),
@@ -422,6 +410,7 @@ impl Value {
             Value::OptionVariant(o) => o.normal_not(),
             Value::Regex(_) => false,
             Value::InterfaceEnumVariant(_) => false,
+            Value::Type(_) => false,
         })
     }
 
@@ -465,7 +454,7 @@ fn check_enum_operands(name: &str, lhs: &Value, rhs: &Value) -> teo_result::Resu
 }
 
 fn operand_error_message(operand: &Value, name: &str) -> Error {
-    Error::new(format!("cannot {name} {}", operand.type_hint()))
+    Error::new(format!("cannot {name} {}", operand))
 }
 
 fn check_operands<F>(lhs: &Value, rhs: &Value, name: &str, matcher: F) -> teo_result::Result<()> where F: Fn(&Value) -> bool {
@@ -479,7 +468,7 @@ fn check_operands<F>(lhs: &Value, rhs: &Value, name: &str, matcher: F) -> teo_re
 }
 
 fn operands_error_message(lhs: &Value, rhs: &Value, name: &str) -> Error {
-    Error::new(format!("cannot {name} {} with {}", lhs.type_hint(), rhs.type_hint()))
+    Error::new(format!("cannot {name} {:?} with {:?}", lhs, rhs))
 }
 
 impl Add for &Value {
@@ -900,6 +889,7 @@ impl Display for Value {
                 f.write_str("/")
             }
             Value::InterfaceEnumVariant(interface_enum_variant) => Display::fmt(interface_enum_variant, f),
+            Value::Type(t) => Display::fmt(t, f),
         }
     }
 }

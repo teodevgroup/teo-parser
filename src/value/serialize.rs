@@ -77,6 +77,11 @@ impl Serialize for Value {
                 map.serialize_entry("$regex", &r.to_string())?;
                 map.end()
             }
+            Value::Type(t) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("$type", &format!("{}", t))?;
+                map.end()
+            }
         }
     }
 }
