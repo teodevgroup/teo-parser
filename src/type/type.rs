@@ -1038,7 +1038,7 @@ impl Type {
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
             Type::Type => other.is_type(),
-            Type::TypeValueAsType(_) => true,
+            Type::TypeValueAsType(inner) => other.is_type_value_as_type() && other.as_type_value_as_type().unwrap() == inner.as_ref(),
             Type::Null => other.is_null(),
             Type::Bool => other.is_bool(),
             Type::Int => other.is_int(),
@@ -1125,6 +1125,8 @@ impl Type {
             } else {
                 (false, false)
             }
+        } else if self.is_type_value_as_type() && other.is_type() {
+            (true, true)
         } else {
             let result = self.test(other);
             (result, result)

@@ -20,9 +20,9 @@ client {
 }
 
 @canMutate($match($account, [
-    $case($cast(User), $when(.update | .delete, $is($self))),
-    $case($cast(Admin), $valid),
-    $case($cast(Null), $when(.create, $valid))
+    $case($cast(type User), $when(.update | .delete, $is($self).asAny)),
+    $case($cast(type Admin), $valid.asAny),
+    $case($cast(type Null), $when(.create, $valid).asAny)
 ]))
 @identity.tokenIssuer($identity.jwt(expired: 3600 * 24 * 365))
 @identity.jwtSecret(ENV["JWT_SECRET"]!)

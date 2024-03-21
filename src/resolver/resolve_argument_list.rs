@@ -180,6 +180,21 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                                 &mut matched,
                                 context,
                             );
+                            if named_argument.value().resolved().r#type().is_type() && desired_type.is_generic_item() {
+                                for cs in &callable_variant.generics_constraints {
+                                    for item in cs.items() {
+                                        if let Some(t) = item.type_expr().resolved().as_type_value_as_type() {
+                                            if t == &desired_type {
+                                                if let Some(value) = named_argument.value().resolved().value() {
+                                                    if value.is_type() {
+                                                        generics_map.insert(item.identifier().name().to_string(), value.as_type().unwrap().clone());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     named_argument.resolve(ArgumentResolved {
@@ -217,7 +232,6 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                     if let Some(argument_declaration) = argument_list_declaration.get(name) {
                         let desired_type_original = argument_declaration.type_expr().resolved();
                         let mut desired_type = flatten_field_type_reference(desired_type_original.replace_keywords(keywords_map).replace_generics(&generics_map), context);
-
                         resolve_expression(unnamed_argument.value(), context, &desired_type, keywords_map);
                         if !desired_type.test(unnamed_argument.value().resolved().r#type()) {
                             if !desired_type.is_undetermined() && !unnamed_argument.value().resolved().r#type().is_undetermined() {
@@ -249,6 +263,21 @@ fn try_resolve_argument_list_for_callable_variant<'a, 'b>(
                                     &mut matched,
                                     context,
                                 );
+                                if unnamed_argument.value().resolved().r#type().is_type() && desired_type.is_generic_item() {
+                                    for cs in &callable_variant.generics_constraints {
+                                        for item in cs.items() {
+                                            if let Some(t) = item.type_expr().resolved().as_type_value_as_type() {
+                                                if t == &desired_type {
+                                                    if let Some(value) = unnamed_argument.value().resolved().value() {
+                                                        if value.is_type() {
+                                                            generics_map.insert(item.identifier().name().to_string(), value.as_type().unwrap().clone());
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         unnamed_argument.resolve(ArgumentResolved {

@@ -987,7 +987,7 @@ namespace std {
 
     /// @name Cast
     /// Cast the output value to the type described in the argument
-    declare pipeline item cast<T>(target?: TypeValueAsType<T>): Any -> T
+    declare pipeline item cast<T, K>(target?: K): Any -> T where T: TypeValueAsType<K>, K: Type
 
     /// @name Match
     /// Match the value against the arms and return the result
