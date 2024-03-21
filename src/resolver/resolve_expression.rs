@@ -518,14 +518,20 @@ fn resolve_enum_variant_literal_from_synthesized_interface_enum<'a>(e: &'a EnumV
                 let args = check_and_build_args_for_interface_enum_variant_literal(argument_list, member_definition, context);
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::String(e.identifier().name().to_string())),
+                    value: Some(Value::InterfaceEnumVariant(InterfaceEnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: Some(args),
+                    })),
                     reference_info: None,
                 }
             } else {
                 context.insert_diagnostics_error(argument_list.span, "unexpected argument list");
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::String(e.identifier().name().to_string())),
+                    value: Some(Value::InterfaceEnumVariant(InterfaceEnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
                     reference_info: None,
                 }
             }
@@ -533,14 +539,20 @@ fn resolve_enum_variant_literal_from_synthesized_interface_enum<'a>(e: &'a EnumV
             if member_definition.args.is_empty() || member_definition.all_arguments_are_optional() {
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::String(e.identifier().name().to_string())),
+                    value: Some(Value::InterfaceEnumVariant(InterfaceEnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
                     reference_info: None,
                 }
             } else {
                 context.insert_diagnostics_error(e.span, "expect argument list");
                 ExprInfo {
                     r#type: source.clone(),
-                    value: Some(Value::String(e.identifier().name().to_string())),
+                    value: Some(Value::InterfaceEnumVariant(InterfaceEnumVariant {
+                        value: e.identifier().name().to_string(),
+                        args: None,
+                    })),
                     reference_info: None,
                 }
             }
