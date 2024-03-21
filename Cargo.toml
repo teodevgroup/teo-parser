@@ -32,6 +32,7 @@ educe = "0.5.11"
 indexmap = { version = "2.2.5", features = ["serde"] }
 strum = "0.26"
 strum_macros = "0.26"
+getrandom = { version = "0.2.10", features = ["js"] }
 
 [dev-dependencies]
 backtrace-on-stack-overflow = "0.3.0"
