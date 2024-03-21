@@ -30,3 +30,4 @@ mod resolve_model_shapes;
 mod resolve_declared_synthesized_shape;
 mod resolve_handler_template_declaration;
 mod resolve_include_handler_from_template;
+mod resolve_type_as_value_expression;

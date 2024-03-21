@@ -442,6 +442,10 @@ fn type_item_builtin_match<'a>(
             check_generics_amount(0, type_item, context);
             Some(Type::Keyword(Keyword::ThisFieldType))
         },
+        "Type" => {
+            check_generics_amount(0, type_item, context);
+            Some(Type::Type)
+        },
         "Null" => {
             check_generics_amount(0, type_item, context);
             Some(Type::Null)

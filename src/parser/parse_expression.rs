@@ -11,6 +11,7 @@ use crate::parser::parse_literals::{parse_array_literal, parse_bool_literal, par
 use crate::parser::parse_pipeline::parse_pipeline;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parse_subscript::{parse_int_subscript, parse_subscript};
+use crate::parser::parse_type_as_value_expression::parse_type_as_value_expression;
 use crate::parser::parser_context::ParserContext;
 use crate::parser::pest_parser::{Pair, Rule};
 
@@ -21,6 +22,7 @@ pub(super) fn parse_expression(pair: Pair<'_>, context: &ParserContext) -> Expre
             Rule::unit => return Expression::new(ExpressionKind::Unit(parse_unit(current, context))),
             Rule::pipeline => return Expression::new(ExpressionKind::Pipeline(parse_pipeline(current, context))),
             Rule::empty_pipeline => return Expression::new(ExpressionKind::EmptyPipeline(parse_empty_pipeline(current, context))),
+            Rule::type_as_value_expression => return Expression::new(ExpressionKind::TypeAsValueExpression(parse_type_as_value_expression(current, context))),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }

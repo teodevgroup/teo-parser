@@ -49,4 +49,5 @@ mod parse_empty_decorator;
 mod parse_include_handler_from_template;
 mod parse_handler_template_declaration;
 mod parse_synthesized_shape_declaration;
+mod parse_type_as_value_expression;
 pub(super) mod parse;

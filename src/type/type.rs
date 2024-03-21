@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Write};
 use itertools::Itertools;
 use crate::r#type::keyword::Keyword;
 use serde::Serialize;
@@ -65,6 +65,10 @@ pub enum Type {
     /// Keyword
     ///
     Keyword(Keyword),
+
+    /// Type
+    /// the meta type which values are represented by type expressions
+    Type,
 
     // Value types
 
@@ -322,6 +326,13 @@ impl Type {
         match self {
             Self::Keyword(kw) => Some(kw),
             _ => None,
+        }
+    }
+
+    pub fn is_type(&self) -> bool {
+        match self {
+            Self::Type => true,
+            _ => false,
         }
     }
 
@@ -1008,6 +1019,7 @@ impl Type {
             Type::FieldName(_) => other.is_field_name(),
             Type::GenericItem(_) => true,
             Type::Keyword(k) => other.is_keyword() && k == other.as_keyword().unwrap(),
+            Type::Type => other.is_type(),
             Type::Null => other.is_null(),
             Type::Bool => other.is_bool(),
             Type::Int => other.is_int(),
@@ -1276,6 +1288,7 @@ impl Display for Type {
             Type::FieldName(name) => f.write_str(&format!(".{}", name)),
             Type::GenericItem(name) => f.write_str(name),
             Type::Keyword(k) => Display::fmt(k, f),
+            Type::Type => f.write_str("Type"),
             Type::Null => f.write_str("Null"),
             Type::Bool => f.write_str("Bool"),
             Type::Int => f.write_str("Int"),

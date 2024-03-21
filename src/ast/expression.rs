@@ -14,6 +14,7 @@ use crate::ast::named_expression::NamedExpression;
 use crate::ast::node::Node;
 use crate::ast::span::Span;
 use crate::ast::subscript::Subscript;
+use crate::ast::type_as_value_expression::TypeAsValueExpression;
 use crate::ast::unit::Unit;
 use crate::format::Writer;
 use crate::traits::identifiable::Identifiable;
@@ -44,6 +45,7 @@ pub enum ExpressionKind {
     EmptyPipeline(EmptyPipeline),
     NamedExpression(NamedExpression),
     BracketExpression(BracketExpression),
+    TypeAsValueExpression(TypeAsValueExpression),
 }
 
 impl ExpressionKind {
@@ -70,6 +72,7 @@ impl ExpressionKind {
             ExpressionKind::EmptyPipeline(n) => n,
             ExpressionKind::NamedExpression(n) => n,
             ExpressionKind::BracketExpression(n) => n,
+            ExpressionKind::TypeAsValueExpression(n) => n,
         }
     }
 
@@ -224,6 +227,13 @@ impl ExpressionKind {
     pub fn as_bracket_expression(&self) -> Option<&BracketExpression> {
         match self {
             ExpressionKind::BracketExpression(p) => Some(p),
+            _ => None,
+        }
+    }
+
+    pub fn as_type_as_value_expression(&self) -> Option<&TypeAsValueExpression> {
+        match self {
+            ExpressionKind::TypeAsValueExpression(p) => Some(p),
             _ => None,
         }
     }

@@ -30,6 +30,7 @@ use crate::expr::{ExprInfo, ReferenceInfo, ReferenceType};
 use crate::r#type::reference::Reference;
 use crate::r#type::synthesized_interface_enum::{SynthesizedInterfaceEnum, SynthesizedInterfaceEnumMember};
 use crate::r#type::synthesized_shape::SynthesizedShape;
+use crate::resolver::resolve_type_as_value_expression::resolve_type_as_value_expression;
 use crate::search::search_identifier_path::{search_identifier_path_names_with_filter_to_top, search_identifier_path_names_with_filter_to_top_multiple};
 use crate::utils::top_filter::top_filter_for_reference_type;
 use crate::value::interface_enum_variant::InterfaceEnumVariant;
@@ -72,6 +73,7 @@ fn resolve_expression_kind<'a>(expression: &'a ExpressionKind, context: &'a Reso
         },
         ExpressionKind::NamedExpression(_) => unreachable!(),
         ExpressionKind::BracketExpression(e) => resolve_bracket_expression(e, context, &Type::String, keywords_map),
+        ExpressionKind::TypeAsValueExpression(t) => resolve_type_as_value_expression(t, context),
     }
 }
 
