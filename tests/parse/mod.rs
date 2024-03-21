@@ -8,3 +8,4 @@ pub mod handler;
 pub mod handler_template_inclusion;
 pub mod struct_subscription;
 pub mod pipeline_items;
+pub mod type_as_value_expression;

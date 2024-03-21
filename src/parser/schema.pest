@@ -273,14 +273,14 @@ identifier_unit = {
 
 empty_dot = { DOT }
 
-operand = { unit | pipeline | empty_pipeline | type_as_value_expression }
+operand = { type_as_value_expression | unit | pipeline | empty_pipeline }
 
 expression = {
     arith_expr |
+    type_as_value_expression |
     unit |
     pipeline |
-    empty_pipeline |
-    type_as_value_expression
+    empty_pipeline
 }
 
 // #############
