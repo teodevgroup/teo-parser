@@ -923,7 +923,7 @@ namespace std {
 
     declare pipeline item presents<T>: T? -> T
 
-    declare pipeline item when<T, U>(action?: Action, pipeline?: Pipeline<T, U>): T -> U
+    declare pipeline item when<T, U>(action?: Action, pipeline?: Pipeline<T, U>, otherwise: Pipeline<T, U>?): T -> U
 
     declare pipeline item append {
         variant(value?: String | Pipeline<String, String>): String -> String
