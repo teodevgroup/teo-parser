@@ -172,6 +172,7 @@ pub struct SchemaReferences {
     pub connectors: Vec<Vec<usize>>,
     pub entities: Vec<Vec<usize>>,
     pub clients: Vec<Vec<usize>>,
+    pub admin: Option<Vec<usize>>,
     pub enums: Vec<Vec<usize>>,
     pub models: Vec<Vec<usize>>,
     pub data_sets: Vec<Vec<usize>>,
@@ -201,6 +202,7 @@ impl SchemaReferences {
             server: None,
             entities: vec![],
             clients: vec![],
+            admin: None,
             enums: vec![],
             models: vec![],
             data_sets: vec![],
@@ -232,6 +234,8 @@ impl SchemaReferences {
             self.entities.push(config.path().clone());
         } else if config.keyword().is_debug() {
             self.debug = Some(config.path().clone());
+        } else if config.keyword().is_admin() {
+            self.admin = Some(config.path().clone());
         }
     }
 }

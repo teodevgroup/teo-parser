@@ -369,7 +369,7 @@ namespace std {
         /// Which runtime is used for the generated entities
         provider: Runtime
         /// @name Destination
-        /// Where the generated entities are places
+        /// Where the generated entity is placed
         dest: String
     }
 
@@ -380,7 +380,7 @@ namespace std {
         /// Which programming language is used for the generated client
         provider: ClientLanguage
         /// @name Destination
-        /// Where the generated client are placed
+        /// Where the generated client is placed
         dest: String
         /// @name Package
         /// Whether generate code only or a package, defaults to `true`
@@ -394,6 +394,17 @@ namespace std {
         /// @name Git Commit
         /// Whether do `git commit` after each generation
         gitCommit: Bool?
+    }
+
+    /// @name Admin Dashboard Generator
+    /// Define an admin dashboard generator
+    declare config admin {
+        /// @name Destination
+        /// Where the generated client is placed
+        dest: String
+        /// @name Host
+        /// The host for the generated admin dashboard
+        host: String
     }
 
     #if available(database)

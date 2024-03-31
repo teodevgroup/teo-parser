@@ -50,4 +50,8 @@ impl Keyword {
     pub fn is_debug(&self) -> bool {
         self.name.as_str() == "debug"
     }
+
+    pub fn is_admin(&self) -> bool {
+        self.name.as_str() == "admin"
+    }
 }
