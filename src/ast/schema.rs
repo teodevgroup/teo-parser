@@ -92,6 +92,10 @@ impl Schema {
         self.references.debug.as_ref().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap())
     }
 
+    pub fn admin(&self) -> Option<&Config> {
+        self.references.admin.as_ref().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap())
+    }
+
     pub fn connectors(&self) -> Vec<&Config> {
         self.references.connectors.iter().map(|path| self.find_top_by_path(path).unwrap().as_config().unwrap()).collect()
     }
