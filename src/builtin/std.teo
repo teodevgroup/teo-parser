@@ -404,7 +404,7 @@ namespace std {
         dest: String
         /// @name Host
         /// The host for the generated admin dashboard
-        host: String
+        host: ClientHost
     }
 
     #if available(database)
@@ -1454,5 +1454,26 @@ namespace std {
         declare handler template identity(Empty): Data<Result<Self>>
 
         declare middleware identityFromJwt(secret?: String)
+    }
+
+    /// @name Admin
+    /// The admin dashboard functionalities
+    namespace admin {
+
+        /// @name Administrator
+        /// Use this model as a administrator in admin dashboard
+        declare model decorator administrator
+
+        /// @name Title
+        /// Use this field as a record's title in admin dashboard
+        declare model field decorator title
+
+        /// @name Subtitle
+        /// Use this field as a record's subtitle in admin dashboard
+        declare model field decorator subtitle
+
+        /// @name Cover Image
+        /// Use this field as a record's cover image in admin dashboard
+        declare model field decorator coverImage
     }
 }
