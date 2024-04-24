@@ -1,6 +1,6 @@
 [package]
 name = "teo-parser"
-version = "0.2.23"
+version = "0.2.24"
 edition = "2021"
 description = "Parser for Teo schema language"
 license = "Apache-2.0"
@@ -11,7 +11,7 @@ repository = "https://github.com/teocloud/teo-parser"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-teo-result = { version = "0.2.21", path = "../teo-result" }
+teo-result = { version = "0.2.23", path = "../teo-result" }
 pest = "2.7.8"
 pest_derive = "2.7.8"
 colored = "2.1.0"
