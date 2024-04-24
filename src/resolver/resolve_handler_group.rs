@@ -104,9 +104,13 @@ pub(super) fn resolve_handler_declaration_decorators<'a>(
 pub(super) fn validate_handler_related_types<'a, F>(r#type: &'a Type, span: Span, context: &'a ResolverContext<'a>, f: F) where F: Fn(&Type) -> Option<&'static str> {
     match r#type {
         Type::Any => (),
+        Type::Keyword(_) => (),
         Type::SynthesizedShapeReference(shape_reference) => {
-            let t = shape_reference.fetch_synthesized_definition(context.schema).unwrap();
-            if let Some(shape) = t.as_synthesized_shape() {
+            let t = shape_reference.fetch_synthesized_definition(context.schema);
+            if t.is_none() {
+                return ();
+            }
+            if let Some(shape) = t.unwrap().as_synthesized_shape() {
                 for (_, t) in shape.iter() {
                     if let Some(e) = t.as_enum_variant() {
                         let enum_declaration = context.schema.find_top_by_path(e.path()).unwrap().as_enum().unwrap();
@@ -144,8 +148,7 @@ pub(super) fn validate_handler_related_types<'a, F>(r#type: &'a Type, span: Span
             }
         }
         Type::DeclaredSynthesizedShape(_, __) => (),
-        _ => context.insert_diagnostics_error(span, "handler argument type should be interface or any")
-
+        _ => context.insert_diagnostics_error(span, "handler argument type should be interface or any"),
     }
 }
 

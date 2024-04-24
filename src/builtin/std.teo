@@ -405,6 +405,9 @@ namespace std {
         /// @name Host
         /// The host for the generated admin dashboard
         host: ClientHost
+        /// @name Languages
+        /// The supported languages
+        languages: admin.Language[]?
     }
 
     #if available(database)
@@ -1451,7 +1454,7 @@ namespace std {
 
         declare handler template signIn(SignInInput<Self>): DataMeta<Result<Self>, TokenInfo>
 
-        declare handler template identity(Empty): Data<Result<Self>>
+        declare handler template identity(Args<Self>): Data<Result<Self>>
 
         declare middleware identityFromJwt(secret?: String)
     }
@@ -1459,6 +1462,22 @@ namespace std {
     /// @name Admin
     /// The admin dashboard functionalities
     namespace admin {
+
+        /// @name Language
+        /// The human language that is supported
+        interface enum Language {
+            enUs
+            enUk
+            de
+            fr
+            es
+            hi
+            he
+            ja
+            ko
+            zhCn
+            zhTw
+        }
 
         /// @name Administrator
         /// Use this model as a administrator in admin dashboard
