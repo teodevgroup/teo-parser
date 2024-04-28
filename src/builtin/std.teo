@@ -1495,6 +1495,10 @@ namespace std {
         /// Use this field as a record's cover image in admin dashboard
         declare model field decorator coverImage
 
+        /// @name Secure Input
+        /// Treat this field's input as secure input in admin dashboard
+        declare model field decorator secureInput
+
         /// @name Embedded
         /// The related object or objects display in this model's form
         declare model relation decorator embedded
