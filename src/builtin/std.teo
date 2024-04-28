@@ -1483,6 +1483,10 @@ namespace std {
         /// Use this model as a administrator in admin dashboard
         declare model decorator administrator
 
+        /// @name Ignore
+        /// Ignore this model in admin dashboard
+        declare model decorator ignore
+
         /// @name Title
         /// Use this field as a record's title in admin dashboard
         declare model field decorator title
