@@ -1353,6 +1353,7 @@ namespace std {
     }
 
     @generateClient(false) @generateEntity(false) @showInStudio(false) @synthesizeShapes(false)
+    @admin.ignore
     model DataSetRecord {
 
         @id @default($cuid)
@@ -1368,6 +1369,7 @@ namespace std {
     }
 
     @generateClient(false) @generateEntity(false) @showInStudio(false) @synthesizeShapes(false)
+    @admin.ignore
     model DataSetRelation {
 
         @id @default($cuid)
