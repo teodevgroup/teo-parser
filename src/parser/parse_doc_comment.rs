@@ -40,8 +40,8 @@ fn parse_comment_line(pair: Pair<'_>, context: &ParserContext) -> (Option<String
     let mut content = "".to_owned();
     for current in pair.into_inner() {
         match current.as_rule() {
-            Rule::comment_token => token = Some(current.as_str().to_string()),
-            Rule::doc_content => content = current.as_str().to_string(),
+            Rule::comment_token => token = Some(current.as_str().trim().to_string()),
+            Rule::doc_content => content = current.as_str().trim().to_string(),
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
