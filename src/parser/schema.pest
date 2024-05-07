@@ -197,9 +197,9 @@ subscript = { BRACKET_OPEN ~ expression ~ BRACKET_CLOSE }
 // #############
 // comments
 // #############
-comment_token = { AT ~ (!(WHITESPACE | NEWLINE) ~ ANY)+ }
+comment_token = { AT ~ (!(NEWLINE | WHITESPACE) ~ ANY)+ }
 doc_content = @{ (!NEWLINE ~ ANY)* }
-triple_comment = ${ WHITESPACE* ~ "///" ~ comment_token? ~ doc_content }
+triple_comment = ${ WHITESPACE* ~ "///" ~ WHITESPACE* ~ comment_token? ~ doc_content }
 double_comment = ${ WHITESPACE* ~ (!"///") ~ "//" ~ doc_content }
 triple_comment_block = { (triple_comment ~ NEWLINE?)+ }
 double_comment_block = { (double_comment ~ NEWLINE?)+ }
