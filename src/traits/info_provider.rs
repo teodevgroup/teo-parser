@@ -10,6 +10,10 @@ pub trait InfoProvider: Identifiable + NamedIdentifiable + HasAvailability {
         self.string_path().iter().rev().skip(self.namespace_skip()).rev().map(AsRef::as_ref).collect()
     }
 
+    fn namespace_string_path(&self) -> Vec<String> {
+        self.string_path().iter().rev().skip(self.namespace_skip()).rev().map(|s| s.to_owned()).collect()
+    }
+
     fn namespace_path(&self) -> Vec<usize> {
         self.path().iter().rev().skip(self.namespace_skip()).rev().map(|u| *u).collect()
     }
