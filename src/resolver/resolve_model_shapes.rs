@@ -744,9 +744,9 @@ fn resolve_update_nested_one_input_type(model: &Model, without: Option<&str>) ->
     map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("set".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_optional());
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
-        SynthesizedShapeReference::update_with_where_unique_input_without(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
+        SynthesizedShapeReference::update_input_without(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
-        SynthesizedShapeReference::update_with_where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))
+        SynthesizedShapeReference::update_input(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_optional());
     map.insert("upsert".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
         SynthesizedShapeReference::upsert_with_where_unique_input_without(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
