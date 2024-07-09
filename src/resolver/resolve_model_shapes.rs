@@ -771,6 +771,7 @@ fn resolve_update_nested_many_input_type(model: &Model, without: Option<&str>) -
         SynthesizedShapeReference::connect_or_create_input(Reference::new(model.path.clone(), model.string_path.clone()))
     }).wrap_in_enumerable().wrap_in_optional());
     map.insert("connect".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
+    map.insert("set".to_owned(), Type::SynthesizedShapeReference(SynthesizedShapeReference::where_unique_input(Reference::new(model.path.clone(), model.string_path.clone()))).wrap_in_enumerable().wrap_in_optional());
     map.insert("update".to_owned(), Type::SynthesizedShapeReference(if let Some(without) = without {
         SynthesizedShapeReference::update_with_where_unique_input_without(Reference::new(model.path.clone(), model.string_path.clone()), without.to_owned())
     } else {
