@@ -468,6 +468,7 @@ handler_declaration = {
 }
 
 middleware_declaration = {
+    triple_comment_block? ~
     DECLARE_KEYWORD ~ (REQUEST_KEYWORD|HANDLER_KEYWORD) ~ MIDDLEWARE_KEYWORD ~ identifier ~ argument_list_declaration?
 }
 
@@ -508,7 +509,7 @@ namespace = {
 // use_middlewares_block
 // #############
 use_middlewares_block = {
-    (HANDLER_KEYWORD|REQUEST_KEYWORD) ~ MIDDLEWARES_KEYWORD ~ array_literal
+    triple_comment_block? ~ (HANDLER_KEYWORD|REQUEST_KEYWORD) ~ MIDDLEWARES_KEYWORD ~ array_literal
 }
 
 // #############

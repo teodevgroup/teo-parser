@@ -46,4 +46,4 @@ model Admin {
   id: Int
 }
 
-middlewares [identity.identityFromJwt(secret: ENV["JWT_SECRET"]!)]
+handler middlewares [identity.identityFromJwt(secret: ENV["JWT_SECRET"]!)]

@@ -36,4 +36,4 @@ model User {
     include handler identity.identity
 }
 
-middlewares [identity.identityFromJwt(secret: ENV["JWT_SECRET"]!)]
+handler middlewares [identity.identityFromJwt(secret: ENV["JWT_SECRET"]!)]

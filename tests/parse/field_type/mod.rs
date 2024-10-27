@@ -73,6 +73,8 @@ mod test {
         let path_buf = std::env::current_dir().unwrap().join("tests/parse/field_type/schemas/06.teo");
         let path = path_buf.to_str().unwrap();
         let (_, diagnostics) = parse(path, None, None);
+        println!("{:?}", diagnostics.errors());
+        println!("{:?}", diagnostics.warnings());
         assert_eq!(diagnostics.has_errors(), true);
         assert_eq!(diagnostics.has_warnings(), false);
         assert_eq!(diagnostics.errors().len(), 1);
