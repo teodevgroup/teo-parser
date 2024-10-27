@@ -8,10 +8,17 @@ use crate::traits::has_availability::HasAvailability;
 use crate::traits::info_provider::InfoProvider;
 use crate::traits::write::Write;
 
+#[derive(Debug, Copy, Clone)]
+pub enum MiddlewareType {
+    RequestMiddleware,
+    HandlerMiddleware,
+}
+
 declare_container_node!(MiddlewareDeclaration, named, availability,
     pub(crate) identifier: usize,
     pub(crate) argument_list_declaration: Option<usize>,
     pub(crate) comment: Option<usize>,
+    pub(crate) middleware_type: MiddlewareType,
 );
 
 impl_container_node_defaults!(MiddlewareDeclaration, named, availability);

@@ -33,6 +33,7 @@ indexmap = { version = "2.6", features = ["serde"] }
 strum = "0.26"
 strum_macros = "0.26"
 getrandom = { version = "0.2", features = ["js"] }
+time = "0.3.36"
 
 [dev-dependencies]
 backtrace-on-stack-overflow = "0.3.0"

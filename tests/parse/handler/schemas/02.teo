@@ -13,6 +13,6 @@ declare handler helloWorldPost(): Any
 @map(.patch, "/")
 declare handler helloWorldPatch(): Any
 
-declare middleware timing
+declare request middleware timing
 
-middlewares [timing]
+request middlewares [timing]

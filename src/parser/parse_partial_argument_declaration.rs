@@ -14,7 +14,7 @@ pub(super) fn parse_partial_argument_declaration(pair: Pair<'_>, context: &Parse
     ) = parse_container_node_variables!(pair, context);
     let mut identifier = 0;
     let mut colon = 0;
-    let mut optional = None;
+    let optional = None;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::OPTIONAL => parse_set!(Punctuation::new("?", parse_span(&current), context.next_path()), children, colon),

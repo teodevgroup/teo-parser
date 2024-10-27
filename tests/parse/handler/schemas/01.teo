@@ -11,6 +11,6 @@ server {
 @map(.get, "/")
 declare handler helloWorld(Any): Any
 
-declare middleware timing
+declare handler middleware timing
 
-middlewares [timing]
+handler middlewares [timing]

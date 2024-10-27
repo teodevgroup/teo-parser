@@ -1,4 +1,4 @@
-use crate::ast::middleware::MiddlewareDeclaration;
+use crate::ast::middleware::{MiddlewareDeclaration, MiddlewareType};
 use crate::{parse_container_node_variables, parse_container_node_variables_cleanup, parse_insert_keyword, parse_set_identifier_and_string_path, parse_set_optional};
 use crate::parser::parse_argument_list_declaration::parse_argument_list_declaration;
 use crate::parser::parse_doc_comment::parse_doc_comment;
@@ -18,6 +18,7 @@ pub(super) fn parse_middleware_declaration(pair: Pair<'_>, context: &ParserConte
     let mut identifier = 0;
     let mut argument_list_declaration = None;
     let mut comment = None;
+    let mut middleware_type = MiddlewareType::RequestMiddleware;
     for current in pair.into_inner() {
         match current.as_rule() {
             Rule::DECLARE_KEYWORD => parse_insert_keyword!(context, current, children, "declare"),
@@ -25,6 +26,14 @@ pub(super) fn parse_middleware_declaration(pair: Pair<'_>, context: &ParserConte
             Rule::triple_comment_block => parse_set_optional!(parse_doc_comment(current, context), children, comment),
             Rule::identifier => parse_set_identifier_and_string_path!(context, current, children, identifier, string_path),
             Rule::argument_list_declaration => parse_set_optional!(parse_argument_list_declaration(current, context), children, argument_list_declaration),
+            Rule::HANDLER_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "handler");
+                middleware_type = MiddlewareType::HandlerMiddleware;
+            },
+            Rule::REQUEST_KEYWORD => {
+                parse_insert_keyword!(context, current, children, "request");
+                middleware_type = MiddlewareType::RequestMiddleware;
+            },
             _ => context.insert_unparsed(parse_span(&current)),
         }
     }
@@ -38,6 +47,7 @@ pub(super) fn parse_middleware_declaration(pair: Pair<'_>, context: &ParserConte
         actual_availability,
         comment,
         identifier,
+        middleware_type,
         argument_list_declaration,
     }
 }

@@ -1109,11 +1109,11 @@ namespace std {
 
     /// @name CORS
     /// Enable CORS for the handlers
-    declare middleware cors(origin: String, methods: String[], headers: String[], maxAge: Int)
+    declare request middleware cors(origin: String, methods: String[], headers: String[], maxAge: Int)
 
     /// @name Log Request
     /// Log request to the terminal
-    declare middleware logRequest
+    declare request middleware logRequest
 
     /// @name Empty
     /// The empty interface
@@ -1466,7 +1466,7 @@ namespace std {
 
         declare handler template identity(Args<Self>): Data<Result<Self>>
 
-        declare middleware identityFromJwt(secret?: String)
+        declare handler middleware identityFromJwt(secret?: String)
     }
 
     /// @name Admin

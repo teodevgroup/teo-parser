@@ -55,6 +55,7 @@ CONFIG_KEYWORD = { "config" }
 MIDDLEWARE_KEYWORD = { "middleware" }
 MIDDLEWARES_KEYWORD = { "middlewares" }
 DECORATOR_KEYWORD = { "decorator" }
+REQUEST_KEYWORD = { "request" }
 HANDLER_KEYWORD = { "handler" }
 TEMPLATE_KEYWORD = { "template" }
 INCLUDE_KEYWORD = { "include" }
@@ -467,7 +468,7 @@ handler_declaration = {
 }
 
 middleware_declaration = {
-    DECLARE_KEYWORD ~ MIDDLEWARE_KEYWORD ~ identifier ~ argument_list_declaration?
+    DECLARE_KEYWORD ~ (REQUEST_KEYWORD|HANDLER_KEYWORD) ~ MIDDLEWARE_KEYWORD ~ identifier ~ argument_list_declaration?
 }
 
 config_declaration = {
@@ -507,7 +508,7 @@ namespace = {
 // use_middlewares_block
 // #############
 use_middlewares_block = {
-    MIDDLEWARES_KEYWORD ~ array_literal
+    (HANDLER_KEYWORD|REQUEST_KEYWORD) ~ MIDDLEWARES_KEYWORD ~ array_literal
 }
 
 // #############
