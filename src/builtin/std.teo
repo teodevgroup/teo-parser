@@ -1107,6 +1107,14 @@ namespace std {
 
     #end
 
+    /// @name CORS
+    /// Enable CORS for the handlers
+    declare middleware cors(origin: String, methods: String[], headers: String[], maxAge: Int)
+
+    /// @name Log Request
+    /// Log request to the terminal
+    declare middleware logRequest
+
     /// @name Empty
     /// The empty interface
     interface Empty { }
