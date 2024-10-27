@@ -40,6 +40,10 @@ impl MiddlewareDeclaration {
             pipeline_output: None,
         }]
     }
+
+    pub fn middleware_type(&self) -> MiddlewareType {
+        self.middleware_type
+    }
 }
 
 impl InfoProvider for MiddlewareDeclaration {

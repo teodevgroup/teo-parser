@@ -15,6 +15,10 @@ impl_container_node_defaults!(UseMiddlewaresBlock, named, availability);
 
 impl UseMiddlewaresBlock {
     node_child_fn!(array_literal, ArrayLiteral);
+
+    pub fn middleware_type(&self) -> MiddlewareType {
+        self.middleware_type
+    }
 }
 
 impl InfoProvider for UseMiddlewaresBlock {
