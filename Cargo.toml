@@ -5,7 +5,7 @@ edition = "2021"
 description = "Parser for Teo schema language"
 license = "Apache-2.0"
 homepage = "https://teodev.io"
-documentation = "https://docs.teocloud.io"
+documentation = "https://docs.teodev.io"
 repository = "https://github.com/teodevgroup/teo-parser"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
