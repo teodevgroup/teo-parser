@@ -42,7 +42,7 @@ pub(super) fn resolve_model_types<'a>(model: &'a Model, context: &'a ResolverCon
 pub(super) fn resolve_model_references<'a>(model: &'a Model, context: &'a ResolverContext<'a>) {
     // handlers
     for handler in model.handlers() {
-        resolve_handler_declaration_types(handler, context);
+        resolve_handler_declaration_types(handler, context, Some(model));
     }
 }
 

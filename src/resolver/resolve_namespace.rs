@@ -92,7 +92,7 @@ pub(super) fn resolve_namespace_references<'a>(namespace: &'a Namespace, context
             Node::MiddlewareDeclaration(middleware) => resolve_middleware_references(middleware, context),
             Node::Namespace(namespace) => resolve_namespace_references(namespace, context),
             Node::Model(model) => resolve_model_references(model, context),
-            Node::HandlerDeclaration(handler) => resolve_handler_declaration_types(handler, context),
+            Node::HandlerDeclaration(handler) => resolve_handler_declaration_types(handler, context, None),
             Node::HandlerTemplateDeclaration(handler_template) => resolve_handler_template_declaration_types(handler_template, context),
             Node::HandlerGroupDeclaration(handler_group) => resolve_handler_group_references(handler_group, context),
             Node::DecoratorDeclaration(d) => resolve_decorator_declaration_references(d, context),

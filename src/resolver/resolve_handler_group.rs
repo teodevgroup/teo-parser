@@ -21,7 +21,7 @@ pub(super) fn resolve_handler_group_references<'a>(
         context.insert_duplicated_identifier(handler_group.identifier().span);
     }
     for handler_declaration in handler_group.handler_declarations() {
-        resolve_handler_declaration_types(handler_declaration, context)
+        resolve_handler_declaration_types(handler_declaration, context, None)
     }
     context.add_examined_default_path(handler_group.string_path.clone(), Availability::default());
 }
@@ -38,15 +38,20 @@ pub(super) fn resolve_handler_group_decorators<'a>(
 pub(super) fn resolve_handler_declaration_types<'a>(
     handler_declaration: &'a HandlerDeclaration,
     context: &'a ResolverContext<'a>,
+    model: Option<&'a Model>,
 ) {
     if context.has_examined_default_path(&handler_declaration.string_path, Availability::default()) {
         context.insert_duplicated_identifier(handler_declaration.identifier().span);
     }
     context.add_examined_default_path(handler_declaration.string_path.clone(), Availability::default());
-    if let Some(input_type) = handler_declaration.input_type() {
-        resolve_type_expr(input_type, &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+    let mut keywords_map = btreemap! {};
+    if let Some(model) = model {
+        keywords_map.insert(Keyword::SelfIdentifier, Type::ModelObject(Reference::new(model.path.clone(), model.string_path.clone())));
     }
-    resolve_type_expr(handler_declaration.output_type(), &vec![], &vec![], &btreemap! {}, context, context.current_availability());
+    if let Some(input_type) = handler_declaration.input_type() {
+        resolve_type_expr(input_type, &vec![], &vec![], &keywords_map, context, context.current_availability());
+    }
+    resolve_type_expr(handler_declaration.output_type(), &vec![], &vec![], &keywords_map, context, context.current_availability());
     if let Some(input_type) = handler_declaration.input_type() {
         match handler_declaration.input_format {
             HandlerInputFormat::Form => validate_handler_related_types(input_type.resolved(), input_type.span(), context, is_valid_form_input_type),
