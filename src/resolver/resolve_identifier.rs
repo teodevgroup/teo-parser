@@ -20,11 +20,27 @@ use crate::traits::named_identifiable::NamedIdentifiable;
 use crate::traits::node_trait::NodeTrait;
 use crate::traits::resolved::Resolve;
 use crate::utils::top_filter::top_filter_for_reference_type;
+use crate::value::Value;
 
 pub(super) fn resolve_identifier_with_diagnostic_message<'a>(
     identifier: &Identifier,
     context: &'a ResolverContext<'a>,
 ) -> ExprInfo {
+    if identifier.name.as_str() == "FILE" {
+        return ExprInfo::new(Type::String, Some(Value::String(context.source().file_path.clone())), None);
+    }
+    if identifier.name.as_str() == "DIR" {
+        let mut filepath = context.source().file_path.clone();
+        let slash_position = filepath.rfind("/");
+        if let Some(slash_position) = slash_position {
+            filepath = filepath[..(slash_position + 1)].to_string();
+        }
+        let backward_slash_position = filepath.rfind("\\");
+        if let Some(backward_slash_position) = backward_slash_position {
+            filepath = filepath[..(backward_slash_position + 1)].to_string();
+        }
+        return ExprInfo::new(Type::String, Some(Value::String(filepath)), None);
+    }
     if let Some(result) = resolve_identifier(identifier, context, ReferenceSpace::Default, context.current_availability()) {
         result
     } else {
