@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap};
 use maplit::btreemap;
+use path_clean::clean;
 use crate::ast::schema::{Schema, SchemaReferences};
 use crate::ast::source::Source;
 use crate::builtin::STD_TEO;
@@ -26,10 +27,12 @@ pub fn parse(
         sources.insert(std_source.id, std_source);
     }
     // user schema
+    // we don't trust this main path. Clean it.
+    let main = clean(main.as_ref()).to_str().unwrap().to_string();
     parse_user_source(
         &mut sources,
-        main.as_ref(),
-        &(parser_context.file_util.parent_directory)(main.as_ref()),
+        &main,
+        &(parser_context.file_util.parent_directory)(&main),
         &mut parser_context
     );
     let schema = Schema { sources, references: parser_context.schema_references_mut().clone() };

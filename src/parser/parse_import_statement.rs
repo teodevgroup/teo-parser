@@ -1,8 +1,6 @@
 use crate::availability::Availability;
-
 use crate::ast::import::Import;
 use crate::ast::literals::StringLiteral;
-
 use crate::parser::parse_literals::parse_string_literal;
 use crate::parser::parse_span::parse_span;
 use crate::parser::parser_context::ParserContext;
@@ -25,7 +23,7 @@ pub(super) fn parse_import_statement(pair: Pair<'_>, source_path: &str, context:
     if let Some(file_found) = match_import_file(&file_path, context) {
         file_path = file_found;
     } else {
-        context.insert_error(source.as_ref().unwrap().span.clone(), "ImportError: file doesn't exist")
+        context.insert_error(source.as_ref().unwrap().span.clone(), "import file doesn't exist")
     }
     Import {
         path: context.next_path(),
